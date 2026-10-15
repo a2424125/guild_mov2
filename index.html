@@ -259,7 +259,6 @@
       flex: 1;
     }
 
-    /* 원형 아바타 및 왼쪽 상단 미니 '나' 배지 */
     .avatar-wrapper-relative {
       position: relative;
       flex-shrink: 0;
@@ -299,7 +298,6 @@
       display: flex; align-items: center; gap: 5px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    /* 🎯 닉네임 밑에 표기되는 직업 클래스 태그 */
     .member-class-desc {
       font-size: 0.68rem;
       font-weight: 600;
@@ -420,18 +418,43 @@
       padding: 7px 11px; border-radius: 6px; font-size: 0.85rem;
       line-height: 1.4; word-break: break-all;
       box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+      white-space: pre-wrap;
     }
     .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other); color: var(--kakao-text-black); }
     .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me); color: var(--kakao-text-black); }
     .chat-timestamp { font-size: 0.62rem; color: var(--kakao-time-gray); white-space: nowrap; margin-bottom: 1px; }
 
+    /* 보스 알림 시스템 카드 디자인 */
     .system-alert-row { align-self: center; width: 100%; max-width: 440px; margin: 4px 0; }
     .system-alert-bubble {
-      background: #ffffff; border-left: 4px solid #ef4444; border-radius: 8px;
-      padding: 9px 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-      display: flex; align-items: center; gap: 10px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
     }
-    .system-alert-bubble.info-type { border-left-color: #38bdf8; }
+    .system-alert-bubble.alert-7min { border-left: 5px solid #eab308; }
+    .system-alert-bubble.alert-3min { border-left: 5px solid #f97316; }
+    .system-alert-bubble.alert-spawned { border-left: 5px solid #ef4444; background: #fff5f5; }
+    .system-alert-bubble.alert-info { border-left: 5px solid #38bdf8; }
+
+    .btn-boss-quick-cut {
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+      flex-shrink: 0;
+    }
+    .btn-boss-quick-cut:hover { background: #dc2626; }
 
     .kakao-input-area {
       background: #ffffff; border-top: 1px solid #d4d4d4;
@@ -502,7 +525,7 @@
       outline: none; margin-bottom: 10px;
     }
 
-    /* 🎯 RPG 직업군 프리셋 선택 그리드 */
+    /* 직업군 그리드 */
     .class-preset-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -529,15 +552,8 @@
       background: #e0f2fe;
       transform: translateY(-2px);
     }
-    .class-icon-big {
-      font-size: 1.35rem;
-      line-height: 1;
-    }
-    .class-title-small {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: #334155;
-    }
+    .class-icon-big { font-size: 1.35rem; line-height: 1; }
+    .class-title-small { font-size: 0.68rem; font-weight: 700; color: #334155; }
 
     /* 토스트 */
     .kakao-toast-box {
@@ -680,7 +696,7 @@
       </div>
     </header>
 
-    <!-- 공지 배너 -->
+    <!-- 최신 공지 배너 -->
     <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
       <div class="d-flex align-items-center" style="min-width: 0; flex: 1;">
         <i class="fa-solid fa-bullhorn notice-icon-part"></i>
@@ -692,11 +708,13 @@
     <!-- 대화 메시지 영역 -->
     <div class="chat-messages-container" id="chatMessagesView">
       <div class="system-alert-row">
-        <div class="system-alert-bubble info-type">
+        <div class="system-alert-bubble alert-info">
           <i class="fa-solid fa-circle-info text-info fs-5"></i>
           <div style="font-size: 0.8rem; line-height: 1.4;">
-            <strong>길드 카카오톡 메신저</strong>에 연결되었습니다.<br>
-            프로필에서 본인의 게임 직업(궁수, 힐러, 전사 등)을 설정할 수 있습니다.
+            <strong>길드 카카오톡 메신저 & 보스타이머</strong> 가동 완료!<br>
+            • <code>!컷 [보스명] [1100]</code> : 컷 시간 등록 및 젠 계산<br>
+            • <code>!예약 [보스명] [2200]</code> : 특정 시간으로 젠 예약<br>
+            • <code>!보스</code> : 전체 보스타임 현황 출력
           </div>
         </div>
       </div>
@@ -707,11 +725,10 @@
 
     <!-- 하단 메시지 입력창 -->
     <footer class="kakao-input-area">
-      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요. (@ 길드원 멘션)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
+      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
       <div class="input-bottom-tools">
         <div class="input-tool-icons">
-          <!-- 직업 변경 팝업 아이콘 -->
           <i class="fa-regular fa-face-smile" title="내 직업/프로필 설정" onclick="openProfileEditModal()"></i>
           <i class="fa-solid fa-paperclip" title="보스 토벌 스샷 등록" onclick="openModulePage('PageRegister')"></i>
         </div>
@@ -740,7 +757,7 @@
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
-  <!-- 4. 🎯 직업군 이모티콘 및 클래스명 설정 모달 -->
+  <!-- 직업 선택 모달 -->
   <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
@@ -869,6 +886,7 @@
   <script>
     var supabaseClient = null;
     var cachedMemberList = [];
+    var cachedBossList = [];
     var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
     var myCurrentPin = localStorage.getItem("guild_my_pin") || "";
     var myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
@@ -901,6 +919,7 @@
       await loadGuildMetadata();
       await loadTopNoticeHeader();
       await loadGuildMembersData();
+      await loadBossTimersList();
 
       if (!myCurrentNick || !myCurrentPin) {
         showGuildLoginModal();
@@ -946,6 +965,13 @@
       } catch (e) {}
     }
 
+    async function loadBossTimersList() {
+      try {
+        const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
+        cachedBossList = bosses || [];
+      } catch (e) {}
+    }
+
     window.loadGuildMembersData = async function() {
       try {
         const members = await apiRequest("guild_members?select=*&order=name.asc");
@@ -981,7 +1007,6 @@
       return 4;
     }
 
-    // 🎯 [핵심] 길드원 목록 렌더링 (각 프로필 밑에 궁수, 힐러 등 직업 표기)
     function renderDrawerMemberList(list) {
       const container = document.getElementById("drawerMembersListArea");
       if (!list || list.length === 0) {
@@ -1020,7 +1045,6 @@
                   <span>${m.name}</span>
                   <span class="role-badge-tag ${roleTagClass}">${roleStr}</span>
                 </div>
-                <!-- 🎯 각 닉네임 밑에 '궁수', '힐러' 등 직업 표기 -->
                 <div class="member-class-desc">
                   <span>${displayClass}</span>
                 </div>
@@ -1080,7 +1104,6 @@
       }
     }
 
-    // 🎯 직업 선택 팝업 제어
     function openProfileEditModal() {
       document.getElementById("modalProfileEdit").style.display = "flex";
     }
@@ -1088,7 +1111,6 @@
       document.getElementById("modalProfileEdit").style.display = "none";
     }
 
-    // 🎯 직업과 이모티콘 세트 선택 함수
     function selectClassProfile(icon, className) {
       myCurrentAvatar = icon;
       myCurrentClass = `${icon} ${className}`;
@@ -1317,6 +1339,7 @@
         .subscribe();
     }
 
+    // 🎯 보스 알림 & 컷 버튼 포함 말풍선 렌더링
     function renderKakaoChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isSystem = (msg.msg_type === "boss_alert" || msg.msg_type === "system");
@@ -1332,14 +1355,35 @@
 
       let html = "";
       if (isSystem) {
+        let alertClass = "alert-info";
+        let isSpawned = false;
+        let targetBossName = "";
+
+        if (msg.message.includes("7분 전")) alertClass = "alert-7min";
+        else if (msg.message.includes("3분 전")) alertClass = "alert-3min";
+        else if (msg.message.includes("젠 완료") || msg.message.includes("출현")) {
+          alertClass = "alert-spawned";
+          isSpawned = true;
+          // 보스 이름 추출
+          const match = msg.message.match(/\[([^\]]+)\]/);
+          if (match) targetBossName = match[1];
+        }
+
         html = `
           <div class="system-alert-row">
-            <div class="system-alert-bubble">
-              <i class="fa-solid fa-skull text-danger fs-5"></i>
-              <div style="font-size: 0.82rem;">
-                <strong class="text-danger">[${msg.sender_name}]</strong><br>
-                ${escapeHtmlText(msg.message)}
+            <div class="system-alert-bubble ${alertClass}">
+              <div class="d-flex align-items-center gap-2" style="min-width:0; flex:1;">
+                <i class="fa-solid fa-bullhorn text-danger fs-5 flex-shrink-0"></i>
+                <div style="font-size: 0.82rem; line-height: 1.4; word-break: break-all;">
+                  <strong class="text-danger">[${msg.sender_name}]</strong><br>
+                  ${escapeHtmlText(msg.message)}
+                </div>
               </div>
+              ${isSpawned && targetBossName ? `
+                <button type="button" class="btn-boss-quick-cut" onclick="triggerQuickCutAction('${targetBossName}')">
+                  <i class="fa-solid fa-skull me-1"></i>지금 컷
+                </button>
+              ` : ''}
             </div>
           </div>
         `;
@@ -1412,6 +1456,191 @@
       }
     }
 
+    // ==========================================
+    // 🎯 [핵심] 보스 채팅 명령어 엔진 (!컷, !예약, !보스)
+    // ==========================================
+    function parseCustomTimeString(timeStr) {
+      if (!timeStr) return null;
+      let clean = timeStr.replace(/[^0-9]/g, '');
+      if (clean.length === 3) clean = '0' + clean; // 예: 900 -> 0900
+      if (clean.length !== 4) return null;
+
+      const hour = parseInt(clean.slice(0, 2), 10);
+      const min = parseInt(clean.slice(2, 4), 10);
+      if (hour < 0 || hour > 23 || min < 0 || min > 59) return null;
+
+      const target = new Date();
+      target.setHours(hour, min, 0, 0);
+      return target;
+    }
+
+    function formatTimeKorean(dateObj) {
+      const h = dateObj.getHours();
+      const m = String(dateObj.getMinutes()).padStart(2, '0');
+      const ampm = h >= 12 ? '오후' : '오전';
+      const hour12 = h % 12 || 12;
+      return `${ampm} ${hour12}:${m}`;
+    }
+
+    async function handleBossChatCommands(rawText) {
+      const trimmed = rawText.trim();
+
+      // 1. !보스 명령어 (현황 출력)
+      if (trimmed === '!보스') {
+        await loadBossTimersList();
+        if (cachedBossList.length === 0) {
+          sendBotReply("등록된 보스 타이머가 없습니다.");
+          return true;
+        }
+
+        const now = Date.now();
+        let report = "[⏰ 보스타임 현황 보고]\n──────────────────\n";
+        
+        cachedBossList.sort((a,b) => {
+          const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
+          const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
+          return tA - tB;
+        });
+
+        cachedBossList.forEach(b => {
+          if (!b.next_spawn_time) {
+            report += `• ${b.boss_name} : 컷 대기\n`;
+            return;
+          }
+          const nextDate = new Date(b.next_spawn_time);
+          const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
+
+          if (diffSec <= 0) {
+            const passM = Math.floor(Math.abs(diffSec) / 60);
+            report += `• 🚨 ${b.boss_name} : 젠 완료 (+${passM}분 경과)\n`;
+          } else {
+            const h = Math.floor(diffSec / 3600);
+            const m = Math.floor((diffSec % 3600) / 60);
+            const remainText = `${h > 0 ? h + '시간 ' : ''}${m}분 후`;
+            report += `• ⏳ ${b.boss_name} : ${formatTimeKorean(nextDate)} (${remainText})\n`;
+          }
+        });
+        report += "──────────────────\n명령어: !컷 [보스명] [시간], !예약 [보스명] [시간]";
+        sendBotReply(report);
+        return true;
+      }
+
+      // 2. !컷 명령어 (!컷 레마넌트 1100 또는 !컷 레마넌트)
+      if (trimmed.startsWith('!컷')) {
+        const parts = trimmed.split(/\s+/);
+        if (parts.length < 2) {
+          sendBotReply("⚠️ 올바른 형식: !컷 [보스명] [시간]\n예: !컷 레마넌트 1100 또는 !컷 레마넌트");
+          return true;
+        }
+
+        const bossName = parts[1];
+        const timeInput = parts[2]; // 없을 수도 있음
+
+        await loadBossTimersList();
+        const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+        if (!boss) {
+          sendBotReply(`❌ [${bossName}] 보스를 찾을 수 없습니다. 등록된 보스명을 확인하세요.`);
+          return true;
+        }
+
+        let cutDate = new Date();
+        if (timeInput) {
+          const parsed = parseCustomTimeString(timeInput);
+          if (!parsed) {
+            sendBotReply("⚠️ 시간 형식이 잘못되었습니다. (예: 1100 또는 11:00)");
+            return true;
+          }
+          cutDate = parsed;
+        }
+
+        const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
+
+        await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+          last_cut_time: cutDate.toISOString(),
+          next_spawn_time: nextSpawn.toISOString()
+        });
+
+        const cutStr = formatTimeKorean(cutDate);
+        const spawnStr = formatTimeKorean(nextSpawn);
+        sendBotReply(`⚔️ [${boss.boss_name}] ${cutStr} 컷 확인!\n👉 다음 젠 예정: ${spawnStr} (${boss.cycle_min / 60}시간 후)`);
+        await loadBossTimersList();
+        return true;
+      }
+
+      // 3. !예약 명령어 (!예약 베나토리아 2200)
+      if (trimmed.startsWith('!예약')) {
+        const parts = trimmed.split(/\s+/);
+        if (parts.length < 3) {
+          sendBotReply("⚠️ 올바른 형식: !예약 [보스명] [시간]\n예: !예약 베나토리아 2200");
+          return true;
+        }
+
+        const bossName = parts[1];
+        const timeInput = parts[2];
+
+        await loadBossTimersList();
+        const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+        if (!boss) {
+          sendBotReply(`❌ [${bossName}] 보스를 찾을 수 없습니다.`);
+          return true;
+        }
+
+        const spawnDate = parseCustomTimeString(timeInput);
+        if (!spawnDate) {
+          sendBotReply("⚠️ 시간 형식이 잘못되었습니다. (예: 2200 또는 22:00)");
+          return true;
+        }
+
+        await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+          next_spawn_time: spawnDate.toISOString()
+        });
+
+        const spawnStr = formatTimeKorean(spawnDate);
+        sendBotReply(`🕒 [${boss.boss_name}] 젠 시간 예약 완료!\n👉 예정 시각: ${spawnStr}`);
+        await loadBossTimersList();
+        return true;
+      }
+
+      return false; // 일반 대화
+    }
+
+    async function sendBotReply(text) {
+      try {
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "보스타이머 봇",
+          message: text,
+          msg_type: "boss_alert",
+          mentions: []
+        }]);
+      } catch (e) {}
+    }
+
+    // 🎯 젠 완료 알림 카드 내의 [지금 컷] 버튼 클릭 시 동작
+    window.triggerQuickCutAction = async function(bossName) {
+      await loadBossTimersList();
+      const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+      if (!boss) return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
+
+      const cutDate = new Date();
+      const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
+
+      try {
+        await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+          last_cut_time: cutDate.toISOString(),
+          next_spawn_time: nextSpawn.toISOString()
+        });
+
+        const cutStr = formatTimeKorean(cutDate);
+        const spawnStr = formatTimeKorean(nextSpawn);
+        sendBotReply(`⚔️ [${boss.boss_name}] ${cutStr} 컷 처리 완료!\n👉 다음 젠 예정: ${spawnStr} (${boss.cycle_min / 60}시간 후)`);
+        showKakaoToast(`[${boss.boss_name}] 컷 처리 완료!`, "🎉");
+        await loadBossTimersList();
+      } catch (err) {
+        showKakaoToast("컷 처리 실패: " + err.message, "❌");
+      }
+    };
+
+    // 일반 메시지 전송 및 명령어 라우팅
     async function handleSendMessage() {
       const textarea = document.getElementById("inputChatMessage");
       const text = textarea.value.trim();
@@ -1423,14 +1652,20 @@
         return;
       }
 
+      textarea.value = "";
+      handleInputState(textarea);
+      closeMentionPopup();
+
+      // 보스 명령어 판별
+      if (text.startsWith('!') || text.startsWith('！')) {
+        const isCommand = await handleBossChatCommands(text);
+        if (isCommand) return;
+      }
+
       const detectedMentions = [];
       cachedMemberList.forEach(m => {
         if (text.includes(`@${m.name}`)) detectedMentions.push(m.name);
       });
-
-      textarea.value = "";
-      handleInputState(textarea);
-      closeMentionPopup();
 
       try {
         await apiRequest("guild_chats", "POST", [{
@@ -1530,6 +1765,9 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
+    // ==========================================
+    // 🎯 [핵심] 7분 전, 3분 전, 젠 완료 실시간 감시 엔진
+    // ==========================================
     function startBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
@@ -1537,31 +1775,41 @@
         try {
           const now = Date.now();
           const timers = await apiRequest("boss_timers?select=*");
+          cachedBossList = timers || [];
           
           (timers || []).forEach(b => {
             if (!b.next_spawn_time) return;
             const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
 
-            const key5Min = `${b.id}_5min_${b.next_spawn_time}`;
-            if (diffSec <= 300 && diffSec > 240 && !notifiedBossSpawnMap.has(key5Min)) {
-              notifiedBossSpawnMap.add(key5Min);
-              sendBossAlertBroadcast(`⏳ [보스 알림] ${b.boss_name} 젠 5분 전입니다!`);
+            // 1. 7분 전 알림 (410초 ~ 420초 사이)
+            const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
+            if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
+              notifiedBossSpawnMap.add(key7Min);
+              sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`);
             }
 
+            // 2. 3분 전 알림 (170초 ~ 180초 사이)
+            const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
+            if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
+              notifiedBossSpawnMap.add(key3Min);
+              sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`);
+            }
+
+            // 3. 젠 완료 시점 (0초 이하 ~ -60초 사이)
             const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
             if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
               notifiedBossSpawnMap.add(keySpawned);
-              sendBossAlertBroadcast(`🚨 [보스 젠] ${b.boss_name} 젠 완료! 즉시 처치 바랍니다!`);
+              sendBossAlertBroadcast(`🔥 [${b.boss_name}] 젠 완료! 출현했습니다! 즉시 처치 바랍니다!`);
             }
           });
         } catch (e) {}
-      }, 5000);
+      }, 4000);
     }
 
     async function sendBossAlertBroadcast(msgText) {
       try {
         await apiRequest("guild_chats", "POST", [{
-          sender_name: "보스 알림",
+          sender_name: "보스 알림 봇",
           message: msgText,
           msg_type: "boss_alert",
           mentions: []
