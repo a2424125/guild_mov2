@@ -30,7 +30,7 @@
       --kakao-text-black: #191919;
       --kakao-time-gray: #556677;
       --kakao-header-bg: #abc1d1;
-      --drawer-width: 270px; /* 햄버거 메뉴와 길드원 목록 서랍 크기 완전 일치 */
+      --drawer-width: 270px;
     }
 
     * {
@@ -66,9 +66,7 @@
       opacity: 1;
     }
 
-    /* ========================================================
-       1. 햄버거 관리 메뉴 서랍 (Drawer)
-       ======================================================== */
+    /* 1. 햄버거 메뉴 서랍 (270px) */
     .app-sidebar-drawer {
       position: fixed;
       top: 0; left: 0;
@@ -148,25 +146,28 @@
       align-items: center;
       gap: 8px;
       min-width: 0;
+      cursor: pointer;
     }
     .user-avatar {
-      width: 34px; height: 34px;
-      border-radius: 12px;
+      width: 38px; height: 38px;
+      border-radius: 14px;
       background: #fee500;
       border: 1px solid #e5cf00;
       display: flex;
       align-items: center; justify-content: center;
-      color: #191919; font-size: 0.95rem; font-weight: 800;
+      color: #191919; font-size: 1.15rem; font-weight: 800;
       flex-shrink: 0;
+      position: relative;
     }
     .user-name-text {
       font-size: 0.85rem; font-weight: 700; color: #191919;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    .user-sub-class {
+      font-size: 0.7rem; color: #0284c7; font-weight: 600;
+    }
 
-    /* ========================================================
-       2. 길드원 목록 서랍 (햄버거 메뉴와 정확히 동일한 크기 270px)
-       ======================================================== */
+    /* 2. 길드원 목록 서랍 (270px) */
     .app-members-drawer {
       position: fixed;
       top: 0; left: 0;
@@ -216,7 +217,6 @@
     }
     .btn-tool-icon:hover { background: #e2e8f0; color: #1e293b; }
 
-    /* 길드원 검색창 */
     .members-search-wrap {
       padding: 8px 12px;
       background: #ffffff;
@@ -233,7 +233,6 @@
       outline: none;
     }
 
-    /* 길드원 리스트 스크롤 영역 */
     .members-list-scroll {
       flex: 1;
       overflow-y: auto;
@@ -242,7 +241,6 @@
     .members-list-scroll::-webkit-scrollbar { width: 4px; }
     .members-list-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 
-    /* 카카오톡 친구 프로필 행 아이템 */
     .kakao-member-row {
       display: flex;
       align-items: center;
@@ -260,17 +258,38 @@
       min-width: 0;
       flex: 1;
     }
+
+    /* 원형 아바타 및 왼쪽 상단 미니 '나' 배지 */
+    .avatar-wrapper-relative {
+      position: relative;
+      flex-shrink: 0;
+    }
     .member-avatar-round {
-      width: 36px; height: 36px;
-      border-radius: 13px;
+      width: 38px; height: 38px;
+      border-radius: 14px;
       background: #e2e8f0;
       border: 1px solid #cbd5e1;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.9rem; color: #3b82f6;
-      flex-shrink: 0;
+      font-weight: 800; font-size: 1.15rem; color: #3b82f6;
     }
     .member-avatar-round.master { background: #fef08a; border-color: #eab308; color: #854d0e; }
     .member-avatar-round.sub { background: #f3e8ff; border-color: #c084fc; color: #6b21a8; }
+
+    .mini-badge-me-tag {
+      position: absolute;
+      top: -3px;
+      left: -4px;
+      background: #f59e0b;
+      color: #ffffff;
+      font-size: 0.58rem;
+      font-weight: 900;
+      padding: 1px 4px;
+      border-radius: 8px;
+      border: 1.5px solid #ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+      line-height: 1.1;
+      pointer-events: none;
+    }
 
     .member-info-col {
       display: flex; flex-direction: column; min-width: 0;
@@ -280,6 +299,17 @@
       display: flex; align-items: center; gap: 5px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
+    /* 🎯 닉네임 밑에 표기되는 직업 클래스 태그 */
+    .member-class-desc {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #0284c7;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .role-badge-tag {
       font-size: 0.65rem; font-weight: 700; padding: 1px 4px;
       border-radius: 4px; white-space: nowrap;
@@ -299,9 +329,7 @@
     }
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
-    /* ========================================================
-       3. 메인 채팅 레이아웃
-       ======================================================== */
+    /* 3. 메인 대화창 */
     .app-main-layout {
       flex: 1;
       width: 100%; height: 100vh;
@@ -377,11 +405,14 @@
       width: 38px; height: 38px; border-radius: 14px;
       background: #ffffff; border: 1px solid #d9d9d9;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.95rem; color: #3b82f6; flex-shrink: 0;
+      font-weight: 800; font-size: 1.15rem; color: #3b82f6; flex-shrink: 0;
     }
     .chat-msg-body { display: flex; flex-direction: column; max-width: 70%; }
     .chat-item-row.me .chat-msg-body { align-items: flex-end; }
-    .chat-sender-name { font-size: 0.76rem; color: #333; margin-bottom: 3px; font-weight: 500; }
+    .chat-sender-name {
+      font-size: 0.76rem; color: #333; margin-bottom: 3px; font-weight: 600;
+      display: flex; align-items: center; gap: 4px;
+    }
     .chat-bubble-flex { display: flex; align-items: flex-end; gap: 5px; }
     .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
@@ -412,10 +443,12 @@
       resize: none; font-size: 0.86rem; color: #191919;
       background: transparent; padding: 0; font-family: inherit;
     }
+    .input-textarea-custom::placeholder { color: #999999; }
+
     .input-bottom-tools {
       display: flex; justify-content: space-between; align-items: center; margin-top: 4px;
     }
-    .input-tool-icons { display: flex; gap: 10px; color: #777; font-size: 1.05rem; }
+    .input-tool-icons { display: flex; gap: 12px; color: #777; font-size: 1.1rem; }
     .input-tool-icons i { cursor: pointer; }
     .btn-kakao-send {
       background: #e2e2e2; border: none; color: #999;
@@ -437,7 +470,7 @@
     }
     .mention-item-row:hover { background: #f7f7f7; color: #1e88e5; }
 
-    /* 모듈 오버레이 창 */
+    /* 모듈 오버레이 */
     .module-display-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: #ffffff; z-index: 200; display: none; flex-direction: column;
@@ -451,7 +484,7 @@
       flex: 1; overflow-y: auto; padding: 12px; max-width: 620px; width: 100%; margin: 0 auto;
     }
 
-    /* 카카오톡 스타일 커스텀 모달 팝업 */
+    /* 팝업 모달 공통 */
     .kakao-modal-backdrop {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.45); z-index: 9999999;
@@ -460,7 +493,7 @@
     }
     .kakao-modal-card {
       background: #ffffff; border-radius: 14px;
-      width: 100%; max-width: 310px; padding: 20px 18px;
+      width: 100%; max-width: 330px; padding: 20px 18px;
       text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
     .kakao-modal-card input, .kakao-modal-card select {
@@ -468,9 +501,45 @@
       border-radius: 8px; padding: 8px 12px; font-size: 0.85rem;
       outline: none; margin-bottom: 10px;
     }
-    .kakao-modal-card input:focus { border-color: #fee500; background: #fff; }
 
-    /* 토스트 알림 */
+    /* 🎯 RPG 직업군 프리셋 선택 그리드 */
+    .class-preset-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      max-height: 240px;
+      overflow-y: auto;
+      margin-bottom: 14px;
+    }
+    .class-preset-cell {
+      padding: 8px 4px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 1.5px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .class-preset-cell:hover, .class-preset-cell.active {
+      border-color: #0284c7;
+      background: #e0f2fe;
+      transform: translateY(-2px);
+    }
+    .class-icon-big {
+      font-size: 1.35rem;
+      line-height: 1;
+    }
+    .class-title-small {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #334155;
+    }
+
+    /* 토스트 */
     .kakao-toast-box {
       position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-20px);
       background: #333333; color: #ffffff; padding: 10px 18px; border-radius: 24px;
@@ -483,10 +552,10 @@
 </head>
 <body>
 
-  <!-- 공통 어두운 백드롭 (메뉴 또는 길드원 목록 열릴 때) -->
+  <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
 
-  <!-- 1. 좌측 햄버거 메뉴 서랍 (270px) -->
+  <!-- 1. 햄버거 메뉴 서랍 (270px) -->
   <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -532,11 +601,11 @@
     </ul>
 
     <div class="sidebar-footer">
-      <div class="user-profile-badge">
-        <div class="user-avatar" id="sidebarAvatarInitial">?</div>
+      <div class="user-profile-badge" onclick="openProfileEditModal()">
+        <div class="user-avatar" id="sidebarAvatarIcon">👤</div>
         <div>
           <div class="user-name-text" id="sidebarUserNickName">로그인 필요</div>
-          <div class="text-secondary" style="font-size: 0.68rem;" id="sidebarUserRoleText">길드원</div>
+          <div class="user-sub-class" id="sidebarUserClassText">직업 설정하기</div>
         </div>
       </div>
       <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size: 0.72rem;" onclick="handleUserLogout()">
@@ -545,15 +614,14 @@
     </div>
   </aside>
 
-  <!-- 2. 🎯 길드원 목록 서랍 (햄버거 메뉴와 똑같이 270px 크기로 좌측에서 오픈!) -->
+  <!-- 2. 길드원 목록 서랍 (270px) -->
   <aside id="membersSidebarDrawer" class="app-members-drawer">
     <div class="members-drawer-header">
       <div class="members-drawer-title">
         <i class="fa-solid fa-users text-primary"></i>
-        <span>길드원 목록 (<span id="drawerMemberCount">0</span>)</span>
+        <span>길드원 (<span id="drawerMemberCount">0</span>)</span>
       </div>
       <div class="members-header-tools">
-        <!-- 🎯 상단 작은 아이콘으로 길드원 등록 & 새로고침 -->
         <button type="button" class="btn-tool-icon" title="길드원 추가" onclick="openAddMemberPopup()">
           <i class="fa-solid fa-user-plus text-primary"></i>
         </button>
@@ -569,7 +637,7 @@
     <!-- 검색창 -->
     <div class="members-search-wrap">
       <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 22px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.78rem;"></i>
-      <input type="text" id="inputDrawerMemberSearch" class="members-search-input" placeholder="길드원 닉네임 검색..." onkeyup="filterDrawerMembers()">
+      <input type="text" id="inputDrawerMemberSearch" class="members-search-input" placeholder="길드원 검색..." onkeyup="filterDrawerMembers()">
     </div>
 
     <!-- 길드원 프로필 리스트 -->
@@ -578,7 +646,7 @@
     </div>
   </aside>
 
-  <!-- 3. 메인 카카오톡 대화방 레이아웃 -->
+  <!-- 3. 메인 대화방 -->
   <div class="app-main-layout">
     <header class="kakao-chat-header">
       <div class="header-left-area">
@@ -590,7 +658,6 @@
         </div>
         <div class="room-info-box">
           <div class="room-title-text" id="chatRoomTitle">길드 대화방</div>
-          <!-- 🎯 인원수를 누르면 바로 길드원 목록 서랍(270px) 오픈! -->
           <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)">
             <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
           </div>
@@ -607,14 +674,13 @@
         <button type="button" class="btn-kakao-head" title="보스타임" onclick="openModulePage('PageTimer')">
           <i class="fa-regular fa-clock"></i>
         </button>
-        <!-- 🎯 상단 우측 길드원 아이콘을 눌러도 길드원 서랍 바로 오픈! -->
-        <button type="button" class="btn-kakao-head" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)">
+        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
           <i class="fa-solid fa-user-group"></i>
         </button>
       </div>
     </header>
 
-    <!-- 상단 최신 공지 배너 -->
+    <!-- 공지 배너 -->
     <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
       <div class="d-flex align-items-center" style="min-width: 0; flex: 1;">
         <i class="fa-solid fa-bullhorn notice-icon-part"></i>
@@ -630,7 +696,7 @@
           <i class="fa-solid fa-circle-info text-info fs-5"></i>
           <div style="font-size: 0.8rem; line-height: 1.4;">
             <strong>길드 카카오톡 메신저</strong>에 연결되었습니다.<br>
-            상단 <strong>인원수</strong> 또는 <strong>친구 아이콘</strong>을 누르면 길드원 서랍이 열립니다.
+            프로필에서 본인의 게임 직업(궁수, 힐러, 전사 등)을 설정할 수 있습니다.
           </div>
         </div>
       </div>
@@ -645,7 +711,8 @@
       
       <div class="input-bottom-tools">
         <div class="input-tool-icons">
-          <i class="fa-regular fa-face-smile" title="이모티콘"></i>
+          <!-- 직업 변경 팝업 아이콘 -->
+          <i class="fa-regular fa-face-smile" title="내 직업/프로필 설정" onclick="openProfileEditModal()"></i>
           <i class="fa-solid fa-paperclip" title="보스 토벌 스샷 등록" onclick="openModulePage('PageRegister')"></i>
         </div>
         <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
@@ -654,7 +721,7 @@
       </div>
     </footer>
 
-    <!-- 기타 모듈(공지, 보스타임 등) 오버레이 -->
+    <!-- 모듈 오버레이 -->
     <div id="moduleOverlay" class="module-display-overlay">
       <div class="module-nav-header">
         <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" onclick="closeModuleOverlay()">
@@ -667,13 +734,58 @@
     </div>
   </div>
 
-  <!-- 카카오톡 스타일 토스트 알림창 -->
+  <!-- 토스트 알림창 -->
   <div id="kakaoToastBox" class="kakao-toast-box">
     <span id="kakaoToastIcon">💬</span>
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
-  <!-- 카카오톡 스타일 모달 1: 신규 길드원 등록 팝업 -->
+  <!-- 4. 🎯 직업군 이모티콘 및 클래스명 설정 모달 -->
+  <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card">
+      <h6 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.74rem;">프로필과 대화창에 표기될 직업을 선택하세요.</p>
+      
+      <div class="class-preset-grid">
+        <div class="class-preset-cell" onclick="selectClassProfile('🏹', '궁수')">
+          <span class="class-icon-big">🏹</span>
+          <span class="class-title-small">궁수</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🌿', '힐러')">
+          <span class="class-icon-big">🌿</span>
+          <span class="class-title-small">힐러</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('⚔️', '전사')">
+          <span class="class-icon-big">⚔️</span>
+          <span class="class-title-small">전사</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🛡️', '탱커')">
+          <span class="class-icon-big">🛡️</span>
+          <span class="class-title-small">탱커</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🪄', '마법사')">
+          <span class="class-icon-big">🪄</span>
+          <span class="class-title-small">마법사</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👊', '무투사')">
+          <span class="class-icon-big">👊</span>
+          <span class="class-title-small">무투사</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🥷', '암살자')">
+          <span class="class-icon-big">🥷</span>
+          <span class="class-title-small">암살자</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👑', '길드장')">
+          <span class="class-icon-big">👑</span>
+          <span class="class-title-small">길드장</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-light btn-sm w-100 py-2" onclick="closeProfileEditModal()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 모달: 신규 길드원 등록 -->
   <div id="modalAddMemberPopup" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>신규 길드원 등록</h6>
@@ -694,7 +806,7 @@
     </div>
   </div>
 
-  <!-- 카카오톡 스타일 모달 2: 길드원 정보 수정 (직급/닉네임) -->
+  <!-- 모달: 길드원 정보 수정 -->
   <div id="modalEditMemberPopup" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-user-pen text-info me-1"></i>길드원 정보 수정</h6>
@@ -717,7 +829,7 @@
     </div>
   </div>
 
-  <!-- 카카오톡 스타일 모달 3: 비밀번호(PIN) 변경 -->
+  <!-- 모달: 비밀번호 변경 -->
   <div id="modalPinChangePopup" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
@@ -755,20 +867,18 @@
   </div>
 
   <script>
-    // ==========================================
-    // [완벽 연동] supabase.js의 새 설정으로만 연결
-    // ==========================================
     var supabaseClient = null;
     var cachedMemberList = [];
     var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
     var myCurrentPin = localStorage.getItem("guild_my_pin") || "";
+    var myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+    var myCurrentClass = localStorage.getItem("guild_my_class") || "미설정";
     var bossWatcherInterval = null;
     var notifiedBossSpawnMap = new Set();
     var deferredPrompt = null;
     var kakaoToastTimer = null;
     var targetPinMember = null;
 
-    // 카카오톡 스타일 토스트 알림 함수
     function showKakaoToast(msg, icon = "💬") {
       const box = document.getElementById("kakaoToastBox");
       const m = document.getElementById("kakaoToastMsg");
@@ -784,7 +894,6 @@
     }
 
     async function initApp() {
-      // supabase.js에 정의된 새 DB 정보 사용
       if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
         supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
       }
@@ -837,13 +946,11 @@
       } catch (e) {}
     }
 
-    // 길드원 명단 로드 & 서랍 화면 렌더링
     window.loadGuildMembersData = async function() {
       try {
         const members = await apiRequest("guild_members?select=*&order=name.asc");
         cachedMemberList = members || [];
 
-        // 직급순 정렬
         cachedMemberList.sort((a, b) => {
           const pA = getRolePriority(a.role);
           const pB = getRolePriority(b.role);
@@ -854,7 +961,6 @@
         document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
         document.getElementById("drawerMemberCount").innerText = cachedMemberList.length;
 
-        // 로그인 선택창 갱신
         const select = document.getElementById("loginMemberSelect");
         if (select) {
           select.innerHTML = '<option value="">닉네임을 선택하세요...</option>' + 
@@ -875,7 +981,7 @@
       return 4;
     }
 
-    // 🎯 길드원 목록 서랍(270px) 안의 프로필 리스트 렌더링
+    // 🎯 [핵심] 길드원 목록 렌더링 (각 프로필 밑에 궁수, 힐러 등 직업 표기)
     function renderDrawerMemberList(list) {
       const container = document.getElementById("drawerMembersListArea");
       if (!list || list.length === 0) {
@@ -898,20 +1004,26 @@
           roleTagClass = "role-tag-elite";
         }
 
-        const initial = m.name.charAt(0);
         const isMe = (m.name === myCurrentNick);
+        const displayAvatar = isMe ? myCurrentAvatar : (m.avatar || m.name.charAt(0));
+        const displayClass = isMe ? myCurrentClass : (m.job_class || '직업 미지정');
 
         return `
           <div class="kakao-member-row">
             <div class="member-row-left" onclick="openPinChangePopup(${m.id})">
-              <div class="member-avatar-round ${avatarClass}">${initial}</div>
+              <div class="avatar-wrapper-relative">
+                <div class="member-avatar-round ${avatarClass}">${displayAvatar}</div>
+                ${isMe ? '<div class="mini-badge-me-tag">나</div>' : ''}
+              </div>
               <div class="member-info-col">
                 <div class="member-name-text">
                   <span>${m.name}</span>
                   <span class="role-badge-tag ${roleTagClass}">${roleStr}</span>
-                  ${isMe ? '<span class="badge bg-warning text-dark px-1" style="font-size:0.6rem;">나</span>' : ''}
                 </div>
-                <span class="text-secondary" style="font-size: 0.65rem;">클릭하여 비번 변경</span>
+                <!-- 🎯 각 닉네임 밑에 '궁수', '힐러' 등 직업 표기 -->
+                <div class="member-class-desc">
+                  <span>${displayClass}</span>
+                </div>
               </div>
             </div>
             <div class="member-row-actions">
@@ -929,12 +1041,11 @@
       renderDrawerMemberList(filtered);
     }
 
-    // 🎯 서랍 열기/닫기 제어 (메뉴 서랍 vs 길드원 서랍)
     function toggleMenuDrawer(isOpen) {
       const drawer = document.getElementById("menuSidebarDrawer");
       const backdrop = document.getElementById("commonDrawerBackdrop");
       if (isOpen) {
-        toggleMembersDrawer(false); // 길드원 서랍 닫기
+        toggleMembersDrawer(false);
         backdrop.classList.add("show");
         drawer.classList.add("open");
       } else {
@@ -947,7 +1058,7 @@
       const drawer = document.getElementById("membersSidebarDrawer");
       const backdrop = document.getElementById("commonDrawerBackdrop");
       if (isOpen) {
-        toggleMenuDrawer(false); // 메뉴 서랍 닫기
+        toggleMenuDrawer(false);
         backdrop.classList.add("show");
         drawer.classList.add("open");
       } else {
@@ -969,7 +1080,30 @@
       }
     }
 
-    // 🎯 1. 신규 길드원 등록 팝업 제어
+    // 🎯 직업 선택 팝업 제어
+    function openProfileEditModal() {
+      document.getElementById("modalProfileEdit").style.display = "flex";
+    }
+    function closeProfileEditModal() {
+      document.getElementById("modalProfileEdit").style.display = "none";
+    }
+
+    // 🎯 직업과 이모티콘 세트 선택 함수
+    function selectClassProfile(icon, className) {
+      myCurrentAvatar = icon;
+      myCurrentClass = `${icon} ${className}`;
+      
+      localStorage.setItem("guild_my_avatar", icon);
+      localStorage.setItem("guild_my_class", myCurrentClass);
+
+      document.getElementById("sidebarAvatarIcon").innerText = icon;
+      document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
+
+      showKakaoToast(`내 직업이 [${myCurrentClass}]로 설정되었습니다!`, "🎉");
+      closeProfileEditModal();
+      renderDrawerMemberList(cachedMemberList);
+    }
+
     function openAddMemberPopup() {
       document.getElementById("newMemberNickInput").value = "";
       document.getElementById("newMemberRoleSelect").value = "일반";
@@ -999,7 +1133,6 @@
       }
     }
 
-    // 🎯 2. 길드원 수정 팝업 제어
     function openEditMemberPopup(id, name, role) {
       document.getElementById("editMemberId").value = id;
       document.getElementById("editOldName").value = name;
@@ -1033,7 +1166,6 @@
       }
     }
 
-    // 🎯 3. 길드원 삭제
     async function deleteMemberAction(id, name) {
       if (!confirm(`[${name}] 길드원을 정말 삭제하시겠습니까?`)) return;
 
@@ -1046,7 +1178,6 @@
       }
     }
 
-    // 🎯 4. 개인 비밀번호(PIN) 변경
     function openPinChangePopup(memberId) {
       const target = cachedMemberList.find(m => m.id === memberId);
       if (!target) return;
@@ -1093,14 +1224,12 @@
       }
     }
 
-    // 로그인 검증
     async function verifyStoredSession(nick, pin) {
       try {
         const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(nick)}&select=name,pin,role`);
         if (res && res.length > 0) {
           const dbPin = String(res[0].pin || '0000').trim();
           if (dbPin === String(pin).trim()) {
-            document.getElementById("sidebarUserRoleText").innerText = res[0].role || '길드원';
             return true;
           }
         }
@@ -1148,6 +1277,7 @@
       updateProfileUI(selectedName);
       document.getElementById("guildLoginModal").style.display = "none";
       showKakaoToast(`[${selectedName}] 님 반갑습니다!`, "🎉");
+      renderDrawerMemberList(cachedMemberList);
     }
 
     function handleUserLogout() {
@@ -1162,7 +1292,8 @@
 
     function updateProfileUI(nick) {
       document.getElementById("sidebarUserNickName").innerText = nick;
-      document.getElementById("sidebarAvatarInitial").innerText = nick.charAt(0);
+      document.getElementById("sidebarAvatarIcon").innerText = myCurrentAvatar;
+      document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
     }
 
     async function loadPastChatMessages() {
@@ -1231,7 +1362,9 @@
           <div class="chat-item-row other">
             <div class="chat-sender-avatar">${initial}</div>
             <div class="chat-msg-body">
-              <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
+              <div class="chat-sender-name">
+                <span>${escapeHtmlText(msg.sender_name)}</span>
+              </div>
               <div class="chat-bubble-flex">
                 <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">
                   ${formatMessageWithMentions(msg.message)}
