@@ -3,13 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>길드 메신저 & 관리 시스템</title>
+  <title>길드 메신저 & 통합 관리 시스템</title>
+
+  <!-- PWA 앱 설치 설정 -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#080d1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="길드메신저">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
   <!-- 부트스트랩 & 폰트어썸 CDN -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Supabase JS 클라이언트 공식 SDK (Realtime 지원용) -->
+  <!-- Supabase JS 공식 SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -20,8 +28,12 @@
       --accent-blue: #38bdf8;
       --chat-bubble-me: #0284c7;
       --chat-bubble-other: #111e38;
-      --chat-alert-bg: rgba(239, 68, 68, 0.15);
-      --chat-alert-border: #ef4444;
+      --sidebar-width: 250px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -33,139 +45,68 @@
       padding: 0;
       overflow: hidden;
       display: flex;
-      flex-direction: column;
     }
 
-    /* 상단 헤더 바 (스케치 레이아웃) */
-    .chat-header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: #080d1a;
-      border-bottom: 1px solid var(--card-border);
-      height: 54px;
-      flex-shrink: 0;
-      z-index: 100;
-    }
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-    .btn-hamburger {
-      background: transparent;
-      border: none;
-      color: #ffffff;
-      font-size: 1.25rem;
-      cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .header-guild-title {
-      font-size: 1rem;
-      font-weight: 800;
-      color: #ffffff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
-    }
-    .btn-header-icon {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 1rem;
-      cursor: pointer;
-      padding: 4px;
-    }
-    .badge-member-count {
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      color: #38bdf8;
-      font-size: 0.74rem;
-      font-weight: 700;
-      padding: 4px 8px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-    }
-
-    /* 좌측 슬라이드 햄버거 메뉴 (Drawer) */
-    .drawer-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
-      z-index: 99999;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.25s ease;
-    }
-    .drawer-backdrop.show {
-      display: block;
-      opacity: 1;
-    }
-    .drawer-sidebar {
-      position: fixed;
-      top: 0;
-      left: -280px;
-      width: 270px;
+    /* 1. PC 카카오톡 좌측 사이드바 (넓은 화면 고정, 모바일 슬라이드) */
+    .app-sidebar {
+      width: var(--sidebar-width);
       height: 100vh;
       background: #090e1c;
       border-right: 1px solid var(--card-border);
-      z-index: 100000;
-      transition: left 0.25s ease;
       display: flex;
       flex-direction: column;
-      box-shadow: 10px 0 25px rgba(0, 0, 0, 0.8);
+      flex-shrink: 0;
+      z-index: 1000;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .drawer-sidebar.open {
-      left: 0;
-    }
-    .drawer-header {
-      padding: 16px 14px;
-      border-bottom: 1px solid var(--card-border);
+
+    .sidebar-header {
+      height: 56px;
+      padding: 0 16px;
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: center;
+      border-bottom: 1px solid var(--card-border);
       background: #060a14;
+      flex-shrink: 0;
     }
-    .drawer-title {
+
+    .sidebar-brand {
       font-weight: 800;
-      color: #ffffff;
       font-size: 0.95rem;
+      color: #ffffff;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
+      user-select: none;
     }
-    .drawer-menu-list {
+
+    .sidebar-close-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.1rem;
+      cursor: pointer;
+    }
+
+    .sidebar-menu-list {
       list-style: none;
       padding: 10px 8px;
       margin: 0;
       overflow-y: auto;
       flex: 1;
     }
-    .drawer-menu-item {
+    .sidebar-menu-list::-webkit-scrollbar { width: 4px; }
+    .sidebar-menu-list::-webkit-scrollbar-thumb { background: #1e2c47; border-radius: 4px; }
+
+    .sidebar-menu-item {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 12px 14px;
+      padding: 11px 14px;
       color: #cbd5e1;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 700;
       border-radius: 10px;
       cursor: pointer;
@@ -173,60 +114,159 @@
       margin-bottom: 4px;
       user-select: none;
     }
-    .drawer-menu-item:hover {
-      background: rgba(56, 189, 248, 0.12);
+    .sidebar-menu-item:hover, .sidebar-menu-item.active {
+      background: rgba(56, 189, 248, 0.14);
       color: #38bdf8;
     }
-    .drawer-menu-item i {
+    .sidebar-menu-item i {
       width: 20px;
       text-align: center;
       font-size: 1rem;
     }
 
-    /* 본문 레이아웃: 채팅방 메인 뷰 */
-    .chat-main-container {
+    .sidebar-footer {
+      padding: 12px 14px;
+      border-top: 1px solid var(--card-border);
+      background: #060a14;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.2);
+      border: 1px solid #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      font-size: 0.85rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .user-name-text {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* 2. 우측 메인 영역 */
+    .app-main-layout {
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      height: 100vh;
+      min-width: 0;
       position: relative;
-      background-color: var(--bg-dark);
+      background: var(--bg-dark);
     }
 
-    /* 채팅 메시지 스크롤 영역 */
-    .chat-messages-area {
+    .main-top-header {
+      height: 56px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #080d1a;
+      border-bottom: 1px solid var(--card-border);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+    .header-left-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .btn-mobile-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-size: 1.25rem;
+      padding: 4px;
+      cursor: pointer;
+    }
+    .header-chat-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .header-right-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-header-action {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 6px;
+    }
+    .badge-member-count {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    /* 채팅 메시지 뷰 */
+    .chat-messages-container {
       flex: 1;
       overflow-y: auto;
-      padding: 14px 12px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      background-color: var(--bg-dark);
     }
-    .chat-messages-area::-webkit-scrollbar { width: 5px; }
-    .chat-messages-area::-webkit-scrollbar-thumb { background: #1e2c47; border-radius: 6px; }
+    .chat-messages-container::-webkit-scrollbar { width: 5px; }
+    .chat-messages-container::-webkit-scrollbar-thumb { background: #1e2c47; border-radius: 6px; }
 
-    /* 말풍선 스타일 */
-    .chat-row {
+    .chat-msg-row {
       display: flex;
       flex-direction: column;
-      max-width: 82%;
+      max-width: 78%;
     }
-    .chat-row.me {
+    .chat-msg-row.me {
       align-self: flex-end;
       align-items: flex-end;
     }
-    .chat-row.other {
+    .chat-msg-row.other {
       align-self: flex-start;
       align-items: flex-start;
     }
-    .chat-sender-name {
+    .chat-sender-nick {
       font-size: 0.72rem;
       font-weight: 700;
       color: #94a3b8;
       margin-bottom: 3px;
       padding-left: 2px;
     }
-    .chat-bubble {
+    .chat-msg-bubble {
       padding: 9px 13px;
       border-radius: 14px;
       font-size: 0.85rem;
@@ -234,118 +274,100 @@
       word-break: break-all;
       position: relative;
     }
-    .chat-row.me .chat-bubble {
+    .chat-msg-row.me .chat-msg-bubble {
       background: var(--chat-bubble-me);
       color: #ffffff;
       border-bottom-right-radius: 2px;
     }
-    .chat-row.other .chat-bubble {
+    .chat-msg-row.other .chat-msg-bubble {
       background: var(--chat-bubble-other);
       color: #f1f5f9;
       border: 1px solid #1e293b;
       border-bottom-left-radius: 2px;
     }
-    .chat-time-tag {
+    .chat-msg-time {
       font-size: 0.65rem;
       color: #64748b;
       margin-top: 2px;
     }
-
-    /* 멘션 강조 말풍선 */
-    .chat-bubble.is-mentioned {
+    .chat-msg-bubble.is-mentioned {
       border: 1.5px solid #facc15 !important;
       box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
     }
 
-    /* 보스 젠 & 시스템 알림 박스 */
-    .chat-system-alert {
+    .system-alert-card {
       align-self: center;
       width: 100%;
-      max-width: 440px;
+      max-width: 480px;
       margin: 4px 0;
     }
-    .alert-boss-box {
-      background: var(--chat-alert-bg);
-      border: 1px solid var(--chat-alert-border);
+    .system-alert-box {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid #ef4444;
       border-radius: 12px;
-      padding: 9px 14px;
+      padding: 10px 14px;
       display: flex;
       align-items: center;
       gap: 10px;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
-    }
-    .alert-boss-icon {
-      font-size: 1.25rem;
-      color: #f87171;
-    }
-    .alert-boss-text {
-      font-size: 0.8rem;
-      color: #ffffff;
-      line-height: 1.35;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
     }
 
-    /* 하단 입력 폼 바 */
-    .chat-input-bar {
+    /* 하단 입력 폼 */
+    .chat-input-wrapper {
+      padding: 10px 14px;
       background: #080d1a;
       border-top: 1px solid var(--card-border);
-      padding: 8px 10px;
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-shrink: 0;
       position: relative;
+      flex-shrink: 0;
     }
-    .chat-text-input {
+    .chat-input-field {
       flex: 1;
       background: #0d1527;
       border: 1px solid #233554;
       border-radius: 20px;
-      padding: 9px 14px;
+      padding: 9px 16px;
       font-size: 0.85rem;
       color: #ffffff;
       outline: none;
+      height: 40px;
     }
-    .chat-text-input:focus {
-      border-color: #38bdf8;
-    }
-    .chat-text-input::placeholder {
-      color: #64748b;
-    }
-    .btn-send-chat {
+    .chat-input-field:focus { border-color: #38bdf8; }
+    .btn-chat-send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
       border: none;
-      color: #ffffff;
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
+      color: #fff;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       flex-shrink: 0;
-      transition: all 0.15s;
+      transition: transform 0.15s ease;
     }
-    .btn-send-chat:active {
-      transform: scale(0.92);
-    }
+    .btn-chat-send:active { transform: scale(0.92); }
 
     /* @ 멘션 자동완성 팝업 */
-    .mention-popup-box {
+    .mention-popup-container {
       position: absolute;
-      bottom: 56px;
-      left: 10px;
-      right: 10px;
-      max-width: 300px;
+      bottom: 58px;
+      left: 14px;
+      right: 14px;
+      max-width: 280px;
       background: #0d1527;
       border: 1px solid #38bdf8;
       border-radius: 12px;
-      max-height: 160px;
+      max-height: 180px;
       overflow-y: auto;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.85);
       display: none;
-      z-index: 1000;
+      z-index: 100;
     }
-    .mention-item {
+    .mention-item-row {
       padding: 8px 12px;
       font-size: 0.8rem;
       font-weight: 700;
@@ -355,296 +377,329 @@
       align-items: center;
       gap: 6px;
     }
-    .mention-item:hover {
-      background: rgba(56, 189, 248, 0.15);
-      color: #38bdf8;
-    }
+    .mention-item-row:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
 
-    /* 모듈 오버레이 뷰 (기존 10개 모듈 실행창) */
-    .module-modal-view {
-      position: fixed;
+    /* 3. 모듈 오버레이 뷰 */
+    .module-display-overlay {
+      position: absolute;
       top: 0;
       left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
+      height: 100%;
       background: var(--bg-dark);
-      z-index: 50000;
+      z-index: 200;
       display: none;
       flex-direction: column;
     }
-    .module-header-nav {
+    .module-nav-header {
+      height: 56px;
+      padding: 0 16px;
+      background: #080d1a;
+      border-bottom: 1px solid var(--card-border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
-      background: #080d1a;
-      border-bottom: 1px solid var(--card-border);
-      height: 52px;
       flex-shrink: 0;
     }
-    .module-content-scroll {
+    .module-scroll-body {
       flex: 1;
       overflow-y: auto;
-      padding: 10px;
-      max-width: 520px;
+      padding: 12px;
+      max-width: 600px;
       width: 100%;
       margin: 0 auto;
-      box-sizing: border-box;
     }
 
-    /* 본인 닉네임 설정 모달 */
-    .profile-setup-backdrop {
+    .mobile-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+    }
+    .mobile-backdrop.active { display: block; }
+
+    /* 미디어 쿼리 (모바일 화면) */
+    @media (max-width: 768px) {
+      .app-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateX(-100%);
+      }
+      .app-sidebar.show {
+        transform: translateX(0);
+      }
+      .sidebar-close-btn {
+        display: block;
+      }
+      .btn-mobile-hamburger {
+        display: block;
+      }
+      .chat-msg-row {
+        max-width: 86%;
+      }
+    }
+
+    /* 닉네임 설정 모달 */
+    .profile-modal-bg {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(6, 10, 20, 0.85);
-      backdrop-filter: blur(8px);
-      z-index: 9999999;
+      backdrop-filter: blur(6px);
+      z-index: 999999;
       display: flex; align-items: center; justify-content: center;
       padding: 16px;
     }
-    .profile-setup-card {
+    .profile-modal-card {
       background: #0d1527;
       border: 1.5px solid #38bdf8;
       border-radius: 18px;
       width: 100%; max-width: 320px;
-      padding: 20px;
+      padding: 22px 18px;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.85);
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. 상단 글로벌 헤더 -->
-  <header class="chat-header-bar">
-    <div class="header-left">
-      <button type="button" class="btn-hamburger" onclick="toggleSidebarMenu(true)">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-      <div class="header-guild-title" id="topGuildTitle">불편한사람들 길드</div>
-    </div>
-    <div class="header-right">
-      <button type="button" class="btn-header-icon" title="대화 검색" onclick="focusChatSearch()">
-        <i class="fa-solid fa-magnifying-glass"></i>
-      </button>
-      <div class="badge-member-count" id="badgeOnlineCount" title="등록 길드원 수">
-        <i class="fa-solid fa-users"></i> <span id="onlineCountText">0명</span>
-      </div>
-      <button type="button" class="btn btn-outline-info btn-xs py-0 px-2" style="font-size: 0.72rem; border-radius: 6px;" onclick="openProfileSettingModal()">
-        <i class="fa-solid fa-user me-1"></i><span id="headerMyNick">내정보</span>
-      </button>
-    </div>
-  </header>
+  <!-- 모바일 사이드바 오픈 시 백드롭 -->
+  <div id="mobileBackdrop" class="mobile-backdrop" onclick="toggleMobileSidebar(false)"></div>
 
-  <!-- 2. 좌측 슬라이드 햄버거 메뉴 (Drawer) -->
-  <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleSidebarMenu(false)"></div>
-  <aside id="drawerSidebar" class="drawer-sidebar">
-    <div class="drawer-header">
-      <div class="drawer-title">
-        <span style="font-size: 1.2rem;">🛡️</span>
-        <span id="drawerGuildNameText">길드 관리 메뉴</span>
+  <!-- 좌측 사이드바 (PC: 고정 노출 / 모바일: 슬라이드 서랍) -->
+  <aside id="appSidebar" class="app-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <span style="font-size: 1.25rem;">🛡️</span>
+        <span id="sidebarGuildName">길드 메신저</span>
       </div>
-      <button type="button" class="btn-close btn-close-white" style="font-size: 0.75rem;" onclick="toggleSidebarMenu(false)"></button>
+      <button type="button" class="sidebar-close-btn" onclick="toggleMobileSidebar(false)">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
-    <!-- 스케치에 작성해주신 10개 메뉴 항목 완벽 연동 -->
-    <ul class="drawer-menu-list">
-      <li class="drawer-menu-item" onclick="openModuleModal('PageNotice')">
+    <!-- 10대 관리 메뉴 (스케치 반영) -->
+    <ul class="sidebar-menu-list">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageNotice')">
         <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageMembers')">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageMembers')">
         <i class="fa-solid fa-users text-primary"></i><span>길드원목록</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageRegister')">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageRegister')">
         <i class="fa-solid fa-crosshairs text-danger"></i><span>보스참여등록</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageRecords')">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageRecords')">
         <i class="fa-solid fa-scroll text-warning"></i><span>보스참여자</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageWish')">
-        <i class="fa-solid fa-gift text-pink" style="color: #f472b6;"></i><span>분배희망신청</span>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageWish')">
+        <i class="fa-solid fa-gift" style="color: #f472b6;"></i><span>분배희망신청</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageSettle')">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageSettle')">
         <i class="fa-solid fa-coins text-success"></i><span>정산내역</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageFinance')">
-        <i class="fa-solid fa-landmark text-purple" style="color: #c084fc;"></i><span>길드비용현황</span>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
+        <i class="fa-solid fa-landmark" style="color: #c084fc;"></i><span>길드비용현황</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageTimer')">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageTimer')">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageEnemies')">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
         <i class="fa-solid fa-skull text-danger"></i><span>원수목록</span>
       </li>
-      <li class="drawer-menu-item" onclick="openModuleModal('PageSettings')">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-info"></i><span>설정</span>
       </li>
     </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge" onclick="openProfileModal()" style="cursor: pointer;">
+        <div class="user-avatar" id="sidebarAvatarInitial">?</div>
+        <div class="user-name-text" id="sidebarUserNickName">닉네임 설정</div>
+      </div>
+      <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" style="font-size: 0.72rem;" onclick="openProfileModal()">
+        변경
+      </button>
+    </div>
   </aside>
 
-  <!-- 3. 메인 채팅창 뷰 -->
-  <main class="chat-main-container">
-    <div class="chat-messages-area" id="chatMessageListArea">
-      <!-- 시스템 안내 환영 메시지 -->
-      <div class="chat-system-alert">
-        <div class="alert-boss-box" style="border-color: #38bdf8; background: rgba(56, 189, 248, 0.1);">
+  <!-- 우측 메인 대화방 레이아웃 -->
+  <div class="app-main-layout">
+    <header class="main-top-header">
+      <div class="header-left-tools">
+        <button type="button" class="btn-mobile-hamburger" onclick="toggleMobileSidebar(true)">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <span class="header-chat-title" id="chatHeaderTitle">전체 길드 대화방</span>
+      </div>
+
+      <div class="header-right-tools">
+        <!-- PWA PC/모바일 설치 버튼 -->
+        <button type="button" class="btn-header-action" id="btnPwaInstall" style="display: none;" title="앱 설치">
+          <i class="fa-solid fa-download text-warning"></i>
+        </button>
+        <button type="button" class="btn-header-action" title="채팅창 포커스" onclick="focusChatInput()">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <div class="badge-member-count" title="등록 길드원 수">
+          <i class="fa-solid fa-users"></i>
+          <span id="headerMemberCountText">0명</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 중앙 채팅방 메시지 뷰 -->
+    <div class="chat-messages-container" id="chatMessagesView">
+      <div class="system-alert-card">
+        <div class="system-alert-box" style="background: rgba(56, 189, 248, 0.1); border-color: #38bdf8;">
           <i class="fa-solid fa-circle-info text-info fs-5"></i>
-          <div class="alert-boss-text">
-            길드 실시간 메신저에 접속했습니다.<br>
-            보스 젠 10분/5분 전 알림과 길드원 대화가 실시간으로 수신됩니다.
+          <div style="font-size: 0.8rem; line-height: 1.4;">
+            <strong>길드 메신저 & 통합 관리 시스템</strong>에 연결되었습니다.<br>
+            보스 젠 5분 전/젠 완료 알림과 길드원 대화가 실시간으로 수신됩니다.
           </div>
         </div>
       </div>
     </div>
 
     <!-- @ 멘션 자동완성 팝업 -->
-    <div id="mentionPopup" class="mention-popup-box"></div>
+    <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 메시지 입력창 바 -->
-    <footer class="chat-input-bar">
-      <input type="text" id="chatTextInput" class="chat-text-input" placeholder="메시지를 입력하세요... (@ 입력 시 멘션)" autocomplete="off" onkeypress="if(event.keyCode===13){ sendChatMessage(); }">
-      <button type="button" class="btn-send-chat" onclick="sendChatMessage()">
+    <!-- 하단 메시지 입력 바 -->
+    <footer class="chat-input-wrapper">
+      <input type="text" id="inputChatMessage" class="chat-input-field" placeholder="메시지 입력... (@로 길드원 멘션)" autocomplete="off" onkeypress="if(event.keyCode===13){ handleSendMessage(); }">
+      <button type="button" class="btn-chat-send" onclick="handleSendMessage()">
         <i class="fa-solid fa-paper-plane"></i>
       </button>
     </footer>
-  </main>
 
-  <!-- 4. 모듈 오버레이 뷰 (기존 10개 모듈 띄우는 창) -->
-  <div id="moduleModalView" class="module-modal-view">
-    <div class="module-header-nav">
-      <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" onclick="closeModuleModal()">
-        <i class="fa-solid fa-arrow-left me-1"></i>채팅방으로 복귀
-      </button>
-      <span class="fw-bold text-white small" id="moduleNavTitle">기능 화면</span>
-      <div style="width: 50px;"></div>
+    <!-- 기존 10개 모듈 오버레이 창 -->
+    <div id="moduleOverlay" class="module-display-overlay">
+      <div class="module-nav-header">
+        <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" onclick="closeModuleOverlay()">
+          <i class="fa-solid fa-arrow-left me-1"></i>채팅방으로 복귀
+        </button>
+        <span class="fw-bold text-white small" id="overlayNavTitle">기능 화면</span>
+        <div style="width: 50px;"></div>
+      </div>
+      <div class="module-scroll-body" id="overlayBodyContent"></div>
     </div>
-    <div class="module-content-scroll" id="moduleContentContainer"></div>
   </div>
 
-  <!-- 5. 닉네임 설정 모달 -->
-  <div id="modalProfileSetup" class="profile-setup-backdrop" style="display: none;">
-    <div class="profile-setup-card">
-      <div style="font-size: 2rem; margin-bottom: 8px;">👤</div>
-      <h6 class="fw-bold text-white mb-2">길드원 본인 확인</h6>
+  <!-- 길드원 본인 닉네임 설정 모달 -->
+  <div id="profileModal" class="profile-modal-bg" style="display: none;">
+    <div class="profile-modal-card">
+      <div style="font-size: 2.2rem; margin-bottom: 8px;">👤</div>
+      <h6 class="fw-bold text-white mb-2">본인 닉네임 확인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.74rem;">채팅 및 알림 수신에 사용할 본인 닉네임을 선택하세요.</p>
       
-      <select id="selectMyMemberName" class="form-select form-select-sm mb-3" style="background:#080d1a; border-color:#233554; color:#fff;">
-        <option value="">닉네임 선택...</option>
+      <select id="selectMemberNickDropdown" class="form-select form-select-sm mb-3" style="background:#080d1a; border-color:#233554; color:#fff;">
+        <option value="">본인 닉네임 선택...</option>
       </select>
 
-      <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" onclick="saveMyNicknameProfile()">
+      <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" onclick="confirmMyNickname()">
         확인 완료
       </button>
     </div>
   </div>
 
-  <!-- 오디오 알림음 (Base64 비프음) -->
-  <audio id="audioNotification" preload="auto">
-    <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vT18AAAA=" type="audio/wav">
-  </audio>
-
-  <!-- 공통 Supabase 통신 모듈 -->
+  <!-- 공통 통신 모듈 -->
   <script src="supabase.js"></script>
 
   <script>
-    // Supabase Realtime 채널 객체
-    var realtimeClient = null;
-    var cachedAllMembers = [];
-    var myCurrentNickname = localStorage.getItem("guild_my_nickname") || "";
-    var bossCheckTimerInterval = null;
-    var announcedBossSpawns = new Set(); // 중복 알림 방지 맵
+    var supabaseClient = null;
+    var cachedMemberList = [];
+    var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
+    var bossWatcherInterval = null;
+    var notifiedBossSpawnMap = new Set();
+    var deferredPrompt = null; // PWA 설치 프롬프트
 
-    // 1. 초기 시스템 및 웹소켓 세팅
-    async function initMessengerApp() {
-      // Supabase v2 JS 인스턴스 초기화
+    async function initApp() {
+      // 1. Supabase Realtime SDK 초기화
       if (window.supabase) {
-        realtimeClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
       }
 
-      await loadGuildName();
-      await loadAllGuildMembers();
-      await loadRecentChatMessages();
-      subscribeRealtimeChats();
-      startBossSpawnWatcher();
+      await loadGuildMetadata();
+      await loadGuildMembersData();
+      await loadPastChatMessages();
+      listenRealtimeChatMessages();
+      startBossWatchTimer();
 
-      // 닉네임 미설정 시 모달 띄우기
-      if (!myCurrentNickname) {
-        openProfileSettingModal();
+      if (!myCurrentNick) {
+        openProfileModal();
       } else {
-        document.getElementById("headerMyNick").innerText = myCurrentNickname;
+        updateProfileUI(myCurrentNick);
       }
 
-      setupMentionKeyEvents();
+      bindMentionInputEvents();
+      setupPwaInstallation();
     }
 
     // 길드명 로드
-    async function loadGuildName() {
+    async function loadGuildMetadata() {
       try {
         const res = await apiRequest("guild_settings?key=eq.guild_name");
         if (res && res.length > 0 && res[0].value) {
           const gName = res[0].value;
-          document.getElementById("topGuildTitle").innerText = `${gName} 길드`;
-          document.getElementById("drawerGuildNameText").innerText = `${gName} 관리`;
+          document.getElementById("sidebarGuildName").innerText = `${gName} 길드`;
+          document.getElementById("chatHeaderTitle").innerText = `${gName} 전체 대화방`;
           document.title = `${gName} 길드 메신저`;
         }
       } catch (e) {}
     }
 
-    // 길드원 목록 불러오기
-    async function loadAllGuildMembers() {
+    // 길드원 명단 로드
+    async function loadGuildMembersData() {
       try {
-        const data = await apiRequest("guild_members?select=name&order=name.asc");
-        cachedAllMembers = (data || []).map(m => m.name);
-        document.getElementById("onlineCountText").innerText = `${cachedAllMembers.length}명`;
+        const members = await apiRequest("guild_members?select=name&order=name.asc");
+        cachedMemberList = (members || []).map(m => m.name);
+        document.getElementById("headerMemberCountText").innerText = `${cachedMemberList.length}명`;
 
-        const select = document.getElementById("selectMyMemberName");
+        const select = document.getElementById("selectMemberNickDropdown");
         select.innerHTML = '<option value="">본인 닉네임 선택...</option>' + 
-          cachedAllMembers.map(name => `<option value="${name}" ${name === myCurrentNickname ? 'selected' : ''}>${name}</option>`).join('');
+          cachedMemberList.map(name => `<option value="${name}" ${name === myCurrentNick ? 'selected' : ''}>${name}</option>`).join('');
       } catch (e) {}
     }
 
-    // 최근 채팅 불러오기
-    async function loadRecentChatMessages() {
-      const container = document.getElementById("chatMessageListArea");
+    // 과거 채팅 로드
+    async function loadPastChatMessages() {
       try {
-        const chats = await apiRequest("guild_chats?select=*&order=id.desc&limit=40");
-        if (chats && chats.length > 0) {
-          chats.reverse().forEach(c => appendChatMessageBubble(c, false));
-          scrollChatToBottom();
+        const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=50");
+        if (list && list.length > 0) {
+          list.reverse().forEach(c => renderChatBubble(c, false));
+          scrollChatBottom();
         }
       } catch (e) {}
     }
 
-    // Supabase Realtime 웹소켓 구독
-    function subscribeRealtimeChats() {
-      if (!realtimeClient) return;
+    // Supabase Realtime 웹소켓 연결
+    function listenRealtimeChatMessages() {
+      if (!supabaseClient) return;
 
-      realtimeClient
+      supabaseClient
         .channel("public:guild_chats")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
-          const newMsg = payload.new;
-          appendChatMessageBubble(newMsg, true);
+          renderChatBubble(payload.new, true);
         })
         .subscribe();
     }
 
-    // 말풍선 화면 렌더링
-    function appendChatMessageBubble(msg, isRealtime = true) {
-      const container = document.getElementById("chatMessageListArea");
+    // 채팅 렌더링
+    function renderChatBubble(msg, isRealtime = true) {
+      const container = document.getElementById("chatMessagesView");
       const isSystem = (msg.msg_type === "boss_alert" || msg.msg_type === "system");
-      const isMe = (msg.sender_name === myCurrentNickname);
-      const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNickname);
-
+      const isMe = (msg.sender_name === myCurrentNick);
+      const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
       const timeStr = (msg.created_at || '').slice(11, 16);
 
-      let elemHtml = "";
-
+      let html = "";
       if (isSystem) {
-        elemHtml = `
-          <div class="chat-system-alert">
-            <div class="alert-boss-box">
-              <i class="fa-solid fa-bullhorn alert-boss-icon"></i>
-              <div class="alert-boss-text">
+        html = `
+          <div class="system-alert-card">
+            <div class="system-alert-box">
+              <i class="fa-solid fa-bullhorn text-danger fs-5"></i>
+              <div style="font-size: 0.82rem;">
                 <strong class="text-danger">[${msg.sender_name}]</strong><br>
                 ${msg.message}
               </div>
@@ -652,47 +707,43 @@
           </div>
         `;
       } else {
-        const rowClass = isMe ? "chat-row me" : "chat-row other";
+        const rowClass = isMe ? "chat-msg-row me" : "chat-msg-row other";
         const bubbleExtra = isMentioned ? "is-mentioned" : "";
 
-        elemHtml = `
+        html = `
           <div class="${rowClass}">
-            ${!isMe ? `<div class="chat-sender-name">${msg.sender_name}</div>` : ''}
-            <div class="chat-bubble ${bubbleExtra}">
-              ${escapeHtml(msg.message)}
+            ${!isMe ? `<div class="chat-sender-nick">${msg.sender_name}</div>` : ''}
+            <div class="chat-msg-bubble ${bubbleExtra}">
+              ${escapeHtmlText(msg.message)}
             </div>
-            <div class="chat-time-tag">${timeStr}</div>
+            <div class="chat-msg-time">${timeStr}</div>
           </div>
         `;
       }
 
-      container.insertAdjacentHTML('beforeend', elemHtml);
-      scrollChatToBottom();
+      container.insertAdjacentHTML('beforeend', html);
+      scrollChatBottom();
 
-      // 실시간 수신 시 알림음 재생
       if (isRealtime && !isMe) {
-        playBeepAlert(isMentioned || isSystem);
+        triggerBeepSound(isMentioned || isSystem);
       }
     }
 
-    // 채팅 전송
-    async function sendChatMessage() {
-      const input = document.getElementById("chatTextInput");
+    // 메시지 전송
+    async function handleSendMessage() {
+      const input = document.getElementById("inputChatMessage");
       const text = input.value.trim();
       if (!text) return;
 
-      if (!myCurrentNickname) {
+      if (!myCurrentNick) {
         alert("본인 닉네임을 먼저 설정해주세요.");
-        openProfileSettingModal();
+        openProfileModal();
         return;
       }
 
-      // @ 멘션 추출
       const detectedMentions = [];
-      cachedAllMembers.forEach(name => {
-        if (text.includes(`@${name}`)) {
-          detectedMentions.push(name);
-        }
+      cachedMemberList.forEach(name => {
+        if (text.includes(`@${name}`)) detectedMentions.push(name);
       });
 
       input.value = "";
@@ -700,7 +751,7 @@
 
       try {
         await apiRequest("guild_chats", "POST", [{
-          sender_name: myCurrentNickname,
+          sender_name: myCurrentNick,
           message: text,
           msg_type: "chat",
           mentions: detectedMentions
@@ -711,19 +762,19 @@
     }
 
     // @ 멘션 자동완성 리스너
-    function setupMentionKeyEvents() {
-      const input = document.getElementById("chatTextInput");
-      const popup = document.getElementById("mentionPopup");
+    function bindMentionInputEvents() {
+      const input = document.getElementById("inputChatMessage");
+      const popup = document.getElementById("mentionPopupBox");
 
       input.addEventListener("input", () => {
         const val = input.value;
-        const lastAtIdx = val.lastIndexOf("@");
-        if (lastAtIdx !== -1) {
-          const query = val.slice(lastAtIdx + 1).toLowerCase();
-          const matched = cachedAllMembers.filter(m => m.toLowerCase().includes(query));
+        const lastAt = val.lastIndexOf("@");
+        if (lastAt !== -1) {
+          const q = val.slice(lastAt + 1).toLowerCase();
+          const matched = cachedMemberList.filter(m => m.toLowerCase().includes(q));
           if (matched.length > 0) {
             popup.innerHTML = matched.slice(0, 5).map(name => `
-              <div class="mention-item" onclick="insertMentionNickname('${name}')">
+              <div class="mention-item-row" onclick="applyMentionNick('${name}')">
                 <i class="fa-solid fa-at text-info"></i> ${name}
               </div>
             `).join('');
@@ -735,24 +786,24 @@
       });
     }
 
-    function insertMentionNickname(name) {
-      const input = document.getElementById("chatTextInput");
+    function applyMentionNick(name) {
+      const input = document.getElementById("inputChatMessage");
       const val = input.value;
-      const lastAtIdx = val.lastIndexOf("@");
-      input.value = val.slice(0, lastAtIdx) + `@${name} ` ;
+      const lastAt = val.lastIndexOf("@");
+      input.value = val.slice(0, lastAt) + `@${name} `;
       closeMentionPopup();
       input.focus();
     }
 
     function closeMentionPopup() {
-      document.getElementById("mentionPopup").style.display = "none";
+      document.getElementById("mentionPopupBox").style.display = "none";
     }
 
-    // 백그라운드 보스 젠 타이머 감시 (1초마다 검사하여 젠 5분전/젠완료 시 자동 브리핑)
-    function startBossSpawnWatcher() {
-      if (bossCheckTimerInterval) clearInterval(bossCheckTimerInterval);
+    // 보스 젠 백그라운드 워처
+    function startBossWatchTimer() {
+      if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
-      bossCheckTimerInterval = setInterval(async () => {
+      bossWatcherInterval = setInterval(async () => {
         try {
           const now = Date.now();
           const timers = await apiRequest("boss_timers?select=*");
@@ -761,58 +812,55 @@
             if (!b.next_spawn_time) return;
             const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
 
-            // 1. 젠 5분 전 (290초 ~ 300초 사이 1회)
             const key5Min = `${b.id}_5min_${b.next_spawn_time}`;
-            if (diffSec <= 300 && diffSec > 240 && !announcedBossSpawns.has(key5Min)) {
-              announcedBossSpawns.add(key5Min);
-              sendAutoBossAlert(`⏳ [보스 임박] **${b.boss_name}** 젠 5분 전입니다! 집결 준비하세요!`);
+            if (diffSec <= 300 && diffSec > 240 && !notifiedBossSpawnMap.has(key5Min)) {
+              notifiedBossSpawnMap.add(key5Min);
+              sendBossAlertBroadcast(`⏳ [보스 임박] **${b.boss_name}** 젠 5분 전입니다! 집결 준비하세요!`);
             }
 
-            // 2. 젠 완료 시점 (0초 이하 1회)
             const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
-            if (diffSec <= 0 && diffSec > -60 && !announcedBossSpawns.has(keySpawned)) {
-              announcedBossSpawns.add(keySpawned);
-              sendAutoBossAlert(`🚨 [보스 젠 완료] **${b.boss_name}** 출현! 즉시 처치 바랍니다!`);
+            if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
+              notifiedBossSpawnMap.add(keySpawned);
+              sendBossAlertBroadcast(`🚨 [보스 젠 완료] **${b.boss_name}** 출현! 즉시 처치 바랍니다!`);
             }
           });
         } catch (e) {}
       }, 5000);
     }
 
-    // 시스템 봇 알림 발송 함수
-    async function sendAutoBossAlert(textMsg) {
+    async function sendBossAlertBroadcast(msgText) {
       try {
         await apiRequest("guild_chats", "POST", [{
           sender_name: "보스 알림 봇",
-          message: textMsg,
+          message: msgText,
           msg_type: "boss_alert",
           mentions: []
         }]);
       } catch (e) {}
     }
 
-    // 좌측 슬라이드 드로어 토글
-    function toggleSidebarMenu(isOpen) {
-      const drawer = document.getElementById("drawerSidebar");
-      const backdrop = document.getElementById("drawerBackdrop");
-      if (isOpen) {
-        backdrop.classList.add("show");
-        drawer.classList.add("open");
+    // 모바일 사이드바 제어
+    function toggleMobileSidebar(show) {
+      const sidebar = document.getElementById("appSidebar");
+      const backdrop = document.getElementById("mobileBackdrop");
+      if (show) {
+        sidebar.classList.add("show");
+        backdrop.classList.add("active");
       } else {
-        backdrop.classList.remove("show");
-        drawer.classList.remove("open");
+        sidebar.classList.remove("show");
+        backdrop.classList.remove("active");
       }
     }
 
-    // 기존 10개 모듈 오버레이 창으로 열기
-    async function openModuleModal(pageName) {
-      toggleSidebarMenu(false);
+    // 기존 10대 모듈 화면 열기/닫기
+    async function openModulePage(pageName) {
+      toggleMobileSidebar(false);
 
-      const modalView = document.getElementById("moduleModalView");
-      const container = document.getElementById("moduleContentContainer");
-      const titleElem = document.getElementById("moduleNavTitle");
+      const overlay = document.getElementById("moduleOverlay");
+      const body = document.getElementById("overlayBodyContent");
+      const navTitle = document.getElementById("overlayNavTitle");
 
-      const menuTitleMap = {
+      const titleMap = {
         "PageNotice": "공지사항",
         "PageMembers": "길드원목록",
         "PageRegister": "보스참여등록",
@@ -825,79 +873,108 @@
         "PageSettings": "설정"
       };
 
-      titleElem.innerText = menuTitleMap[pageName] || "길드 관리";
-      modalView.style.display = "flex";
-      container.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>모듈을 불러오는 중...</div>`;
+      navTitle.innerText = titleMap[pageName] || "기능 화면";
+      overlay.style.display = "flex";
+      body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
 
       try {
         const res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
         if (!res.ok) throw new Error("로드 실패");
         const html = await res.text();
-        container.innerHTML = html;
+        body.innerHTML = html;
 
-        document.querySelectorAll(".dynamic-modal-script").forEach(el => el.remove());
-
-        const scripts = container.querySelectorAll("script");
-        scripts.forEach(s => {
-          const newScript = document.createElement("script");
-          newScript.className = "dynamic-modal-script";
-          if (s.src) newScript.src = s.src;
-          else newScript.textContent = s.textContent;
-          document.body.appendChild(newScript);
+        document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
+        body.querySelectorAll("script").forEach(s => {
+          const sc = document.createElement("script");
+          sc.className = "module-dynamic-script";
+          if (s.src) sc.src = s.src;
+          else sc.textContent = s.textContent;
+          document.body.appendChild(sc);
         });
-      } catch (err) {
-        container.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${err.message}</div>`;
+      } catch (e) {
+        body.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${e.message}</div>`;
       }
     }
 
-    function closeModuleModal() {
-      document.getElementById("moduleModalView").style.display = "none";
-      document.getElementById("moduleContentContainer").innerHTML = "";
-      document.querySelectorAll(".dynamic-modal-script").forEach(el => el.remove());
+    function closeModuleOverlay() {
+      document.getElementById("moduleOverlay").style.display = "none";
+      document.getElementById("overlayBodyContent").innerHTML = "";
+      document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     }
 
-    // 닉네임 설정 모달 제어
-    function openProfileSettingModal() {
-      document.getElementById("modalProfileSetup").style.display = "flex";
+    // 프로필 모달 제어
+    function openProfileModal() {
+      document.getElementById("profileModal").style.display = "flex";
     }
-    function saveMyNicknameProfile() {
-      const sel = document.getElementById("selectMyMemberName").value;
-      if (!sel) return alert("닉네임을 선택해주세요!");
-      myCurrentNickname = sel;
-      localStorage.setItem("guild_my_nickname", sel);
-      document.getElementById("headerMyNick").innerText = sel;
-      document.getElementById("modalProfileSetup").style.display = "none";
+    function confirmMyNickname() {
+      const val = document.getElementById("selectMemberNickDropdown").value;
+      if (!val) return alert("본인 닉네임을 선택해주세요!");
+      myCurrentNick = val;
+      localStorage.setItem("guild_my_nickname", val);
+      updateProfileUI(val);
+      document.getElementById("profileModal").style.display = "none";
+    }
+    function updateProfileUI(nick) {
+      document.getElementById("sidebarUserNickName").innerText = nick;
+      document.getElementById("sidebarAvatarInitial").innerText = nick.charAt(0);
     }
 
-    // 유틸리티 함수
-    function scrollChatToBottom() {
-      const area = document.getElementById("chatMessageListArea");
-      area.scrollTop = area.scrollHeight;
+    // PWA 앱 설치 이벤트 연결
+    function setupPwaInstallation() {
+      const installBtn = document.getElementById("btnPwaInstall");
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn) installBtn.style.display = "inline-flex";
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener("click", async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === "accepted") {
+            installBtn.style.display = "none";
+          }
+          deferredPrompt = null;
+        });
+      }
     }
-    function escapeHtml(text) {
-      return text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+
+    function scrollChatBottom() {
+      const box = document.getElementById("chatMessagesView");
+      box.scrollTop = box.scrollHeight;
     }
-    function focusChatSearch() {
-      const input = document.getElementById("chatTextInput");
-      input.focus();
+    function escapeHtmlText(t) {
+      return t.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
     }
-    function playBeepAlert(isImportant = false) {
+    function focusChatInput() {
+      document.getElementById("inputChatMessage").focus();
+    }
+    function triggerBeepSound(isImportant = false) {
       try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
         osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.frequency.value = isImportant ? 880 : 587; // A5 or D5 음
+        gain.connect(ctx.destination);
+        osc.frequency.value = isImportant ? 880 : 587;
         gain.gain.value = 0.1;
         osc.start();
         setTimeout(() => osc.stop(), 180);
       } catch (e) {}
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      initMessengerApp();
-    });
+    // 서비스 워커 등록
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('PWA ServiceWorker 등록 완료:', reg.scope))
+          .catch(err => console.warn('PWA 등록 실패:', err));
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", initApp);
   </script>
 </body>
 </html>
