@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>이클불편</title>
+  <title>길드톡</title>
 
   <!-- PWA 앱 설치 설정 -->
   <link rel="manifest" href="/manifest.json">
@@ -13,12 +13,15 @@
   <meta name="apple-mobile-web-app-title" content="길드톡">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
-  <!-- 부트스트랩 & 폰트어썸 CDN -->
+  <!-- 부트스트랩 & 폰트어썸 아이콘 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Supabase JS 공식 SDK -->
+  <!-- Supabase 공식 SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- 1. 통신 모듈(supabase.js) 먼저 로드 -->
+  <script src="supabase.js"></script>
 
   <style>
     :root {
@@ -29,7 +32,7 @@
       --kakao-text-black: #191919;
       --kakao-time-gray: #556677;
       --kakao-header-bg: #abc1d1;
-      --sidebar-width: 260px;
+      --sidebar-width: 270px;
     }
 
     * {
@@ -49,7 +52,7 @@
       position: relative;
     }
 
-    /* 1. 슬라이드 메뉴 서랍 */
+    /* 1. 슬라이드 서랍 메뉴 */
     .drawer-backdrop {
       position: fixed;
       top: 0;
@@ -184,7 +187,7 @@
       text-overflow: ellipsis;
     }
 
-    /* 2. 카카오톡 메인 채팅창 뷰 */
+    /* 2. 카카오톡 메인 화면 */
     .app-main-layout {
       flex: 1;
       width: 100%;
@@ -243,6 +246,7 @@
       font-size: 0.76rem;
       color: #556677;
       font-weight: 500;
+      cursor: pointer;
     }
     .header-right-tools {
       display: flex;
@@ -262,7 +266,7 @@
       background: rgba(0, 0, 0, 0.05);
     }
 
-    /* 상단 공지 배너 */
+    /* 공지 배너 */
     .kakao-notice-banner {
       background: #ffffff;
       border-radius: 8px;
@@ -291,14 +295,8 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .notice-fold-btn {
-      color: #888888;
-      font-size: 0.75rem;
-      margin-left: 6px;
-      flex-shrink: 0;
-    }
 
-    /* 대화 영역 */
+    /* 대화창 스크롤 영역 */
     .chat-messages-container {
       flex: 1;
       overflow-y: auto;
@@ -507,14 +505,14 @@
       color: #1e88e5;
     }
 
-    /* 3. 모듈 오버레이 */
+    /* 모듈 오버레이 창 (기존 10개 모듈 표시) */
     .module-display-overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #060a14;
+      background: #ffffff;
       z-index: 200;
       display: none;
       flex-direction: column;
@@ -522,8 +520,8 @@
     .module-nav-header {
       height: 54px;
       padding: 0 16px;
-      background: #080d1a;
-      border-bottom: 1px solid #1a2742;
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -533,16 +531,16 @@
       flex: 1;
       overflow-y: auto;
       padding: 12px;
-      max-width: 600px;
+      max-width: 620px;
       width: 100%;
       margin: 0 auto;
     }
 
-    /* 4. 길드 간편 로그인 모달 */
+    /* 로그인 모달 */
     .login-modal-bg {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.65);
+      background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(4px);
       z-index: 9999999;
       display: flex; align-items: center; justify-content: center;
@@ -551,7 +549,7 @@
     .login-modal-card {
       background: #ffffff;
       border-radius: 16px;
-      width: 100%; max-width: 330px;
+      width: 100%; max-width: 320px;
       padding: 24px 20px;
       text-align: center;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
@@ -575,7 +573,7 @@
   <!-- 메뉴 백드롭 -->
   <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleSidebarMenu(false)"></div>
 
-  <!-- 좌측 햄버거 메뉴 서랍 (스케치 기반 10대 관리 메뉴) -->
+  <!-- 좌측 햄버거 메뉴 서랍 (10대 관리 메뉴) -->
   <aside id="appSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -634,19 +632,22 @@
     </div>
   </aside>
 
-  <!-- 카카오톡 메인 채팅창 -->
+  <!-- 카카오톡 메인 대화창 레이아웃 -->
   <div class="app-main-layout">
     <header class="kakao-chat-header">
       <div class="header-left-area">
-        <button type="button" class="btn-kakao-head" title="메뉴 서랍 열기" onclick="toggleSidebarMenu(true)">
+        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleSidebarMenu(true)">
           <i class="fa-solid fa-bars"></i>
         </button>
         <div class="room-avatar-circle" id="chatRoomAvatar">
           <i class="fa-solid fa-users"></i>
         </div>
         <div class="room-info-box">
-          <div class="room-title-text" id="chatRoomTitle">이클불편</div>
-          <div class="room-count-text"><i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span></div>
+          <div class="room-title-text" id="chatRoomTitle">길드 대화방</div>
+          <!-- 🎯 인원수를 누르면 바로 길드원 목록 서랍이 열림 -->
+          <div class="room-count-text" title="길드원 목록 열기" onclick="openModulePage('PageMembers')">
+            <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
+          </div>
         </div>
       </div>
 
@@ -660,19 +661,19 @@
         <button type="button" class="btn-kakao-head" title="보스타임 바로가기" onclick="openModulePage('PageTimer')">
           <i class="fa-regular fa-clock"></i>
         </button>
-        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleSidebarMenu(true)">
-          <i class="fa-solid fa-bars-staggered"></i>
+        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="openModulePage('PageMembers')">
+          <i class="fa-solid fa-user-group"></i>
         </button>
       </div>
     </header>
 
-    <!-- 카카오톡 상단 최신 공지 배너 -->
+    <!-- 상단 최신 공지 배너 -->
     <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
       <div class="d-flex align-items-center" style="min-width: 0; flex: 1;">
         <i class="fa-solid fa-bullhorn notice-icon-part"></i>
-        <div class="notice-text-content" id="kakaoTopNoticeText">길드 공지사항을 불러오는 중...</div>
+        <div class="notice-text-content" id="kakaoTopNoticeText">공지사항을 불러오는 중...</div>
       </div>
-      <i class="fa-solid fa-chevron-down notice-fold-btn"></i>
+      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.75rem;"></i>
     </div>
 
     <!-- 대화 메시지 영역 -->
@@ -698,7 +699,7 @@
       <div class="input-bottom-tools">
         <div class="input-tool-icons">
           <i class="fa-regular fa-face-smile" title="이모티콘"></i>
-          <i class="fa-solid fa-paperclip" title="보스 토벌 스샷 등록" onclick="openModulePage('PageRegister')"></i>
+          <i class="fa-solid fa-paperclip" title="보스 토벌 스크린샷 등록" onclick="openModulePage('PageRegister')"></i>
         </div>
         <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
           전송
@@ -706,20 +707,20 @@
       </div>
     </footer>
 
-    <!-- 기존 10대 관리 모듈 오버레이 -->
+    <!-- 10대 관리 모듈 오버레이 창 -->
     <div id="moduleOverlay" class="module-display-overlay">
       <div class="module-nav-header">
-        <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" onclick="closeModuleOverlay()">
+        <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" onclick="closeModuleOverlay()">
           <i class="fa-solid fa-arrow-left me-1"></i>채팅방으로 복귀
         </button>
-        <span class="fw-bold text-white small" id="overlayNavTitle">기능 화면</span>
+        <span class="fw-bold text-dark small" id="overlayNavTitle">기능 화면</span>
         <div style="width: 50px;"></div>
       </div>
       <div class="module-scroll-body" id="overlayBodyContent"></div>
     </div>
   </div>
 
-  <!-- 4. 길드원 간편 본인인증 로그인 모달 (닉네임 + 개인 PIN) -->
+  <!-- 길드원 간편 본인인증 로그인 모달 -->
   <div id="guildLoginModal" class="login-modal-bg" style="display: none;">
     <div class="login-modal-card">
       <div class="login-logo-box">
@@ -743,14 +744,41 @@
       <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="font-size: 0.88rem;" onclick="executeGuildLogin()">
         로그인
       </button>
-      <div class="text-secondary" style="font-size: 0.68rem;">* 비밀번호 변경은 [길드원목록] 메뉴에서 직접 가능합니다.</div>
+      <div class="text-secondary" style="font-size: 0.68rem;">* 비밀번호 변경은 [길드원목록] 메뉴에서 언제든 가능합니다.</div>
     </div>
   </div>
 
-  <!-- 공통 Supabase 통신 모듈 -->
-  <script src="supabase.js"></script>
-
   <script>
+    // ==========================================
+    // [완벽 방어] 전역 apiRequest 선언 보장
+    // ==========================================
+    window.SUPABASE_CONFIG = window.SUPABASE_CONFIG || {
+      url: "https://vwmfehfmtzyvronvdxvt.supabase.co",
+      anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3bWZlaGZtdHp5dnJvbnZkeHZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE2MTgwODIsImV4cCI6MjEwNzE5NDA4Mn0.-C6FfESuRVsERAymSTJf7i8FPMYYE7eMKIhvJadyjkQ"
+    };
+
+    window.apiRequest = window.apiRequest || async function(endpoint, method = "GET", body = null, extraHeaders = {}) {
+      const url = `${window.SUPABASE_CONFIG.url}/rest/v1/${endpoint}`;
+      const headers = {
+        "apikey": window.SUPABASE_CONFIG.anonKey,
+        "Authorization": `Bearer ${window.SUPABASE_CONFIG.anonKey}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+        ...extraHeaders
+      };
+
+      const options = { method, headers };
+      if (body) options.body = JSON.stringify(body);
+
+      const res = await fetch(url, options);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || `HTTP ${res.status}`);
+      }
+      if (res.status === 204) return null;
+      return await res.json();
+    };
+
     var supabaseClient = null;
     var cachedMemberList = [];
     var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
@@ -761,14 +789,13 @@
 
     async function initApp() {
       if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        supabaseClient = window.supabase.createClient(window.SUPABASE_CONFIG.url, window.SUPABASE_CONFIG.anonKey);
       }
 
       await loadGuildMetadata();
       await loadTopNoticeHeader();
       await loadGuildMembersData();
 
-      // 세션 확인: 로그인 정보가 없거나 검증 필요 시 로그인 모달 호출
       if (!myCurrentNick || !myCurrentPin) {
         showGuildLoginModal();
       } else {
@@ -788,10 +815,9 @@
       setupPwaInstallation();
     }
 
-    // 길드 메타데이터 로드
     async function loadGuildMetadata() {
       try {
-        const res = await apiRequest("guild_settings?key=eq.guild_name");
+        const res = await window.apiRequest("guild_settings?key=eq.guild_name");
         if (res && res.length > 0 && res[0].value) {
           const gName = res[0].value;
           document.getElementById("sidebarGuildName").innerText = `${gName} 관리`;
@@ -802,10 +828,9 @@
       } catch (e) {}
     }
 
-    // 상단 공지사항 헤더 바 로드
     async function loadTopNoticeHeader() {
       try {
-        const notices = await apiRequest("guild_notices?select=title,content&order=id.desc&limit=1");
+        const notices = await window.apiRequest("guild_notices?select=title,content&order=id.desc&limit=1");
         if (notices && notices.length > 0) {
           const item = notices[0];
           document.getElementById("kakaoTopNoticeText").innerText = `${item.title} - ${item.content}`;
@@ -815,23 +840,23 @@
       } catch (e) {}
     }
 
-    // 길드원 명단 로드 (로그인 드롭다운 및 멘션용)
-    async function loadGuildMembersData() {
+    window.loadGuildMembersData = async function() {
       try {
-        const members = await apiRequest("guild_members?select=name,role,pin&order=name.asc");
+        const members = await window.apiRequest("guild_members?select=name,role,pin&order=name.asc");
         cachedMemberList = members || [];
         document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
 
         const select = document.getElementById("loginMemberSelect");
-        select.innerHTML = '<option value="">닉네임을 선택하세요...</option>' + 
-          cachedMemberList.map(m => `<option value="${m.name}" ${m.name === myCurrentNick ? 'selected' : ''}>${m.name} (${m.role || '일반'})</option>`).join('');
+        if (select) {
+          select.innerHTML = '<option value="">닉네임을 선택하세요...</option>' + 
+            cachedMemberList.map(m => `<option value="${m.name}" ${m.name === myCurrentNick ? 'selected' : ''}>${m.name} (${m.role || '일반'})</option>`).join('');
+        }
       } catch (e) {}
-    }
+    };
 
-    // 저장된 로그인 세션 검증
     async function verifyStoredSession(nick, pin) {
       try {
-        const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(nick)}&select=name,pin,role`);
+        const res = await window.apiRequest(`guild_members?name=eq.${encodeURIComponent(nick)}&select=name,pin,role`);
         if (res && res.length > 0) {
           const dbPin = String(res[0].pin || '0000').trim();
           if (dbPin === String(pin).trim()) {
@@ -843,13 +868,11 @@
       return false;
     }
 
-    // 로그인 모달 표시
     function showGuildLoginModal() {
       document.getElementById("guildLoginModal").style.display = "flex";
       document.getElementById("loginPinInput").value = "";
     }
 
-    // 로그인 실행
     async function executeGuildLogin() {
       const selectedName = document.getElementById("loginMemberSelect").value;
       const inputPin = document.getElementById("loginPinInput").value.trim();
@@ -864,7 +887,7 @@
         expectedPin = String(targetMember.pin).trim();
       } else {
         try {
-          const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(selectedName)}&select=pin,role`);
+          const res = await window.apiRequest(`guild_members?name=eq.${encodeURIComponent(selectedName)}&select=pin,role`);
           if (res && res.length > 0 && res[0].pin) {
             expectedPin = String(res[0].pin).trim();
           }
@@ -878,7 +901,6 @@
         return;
       }
 
-      // 로그인 성공: 로컬에 영구 저장 (카카오톡 자동로그인 유지)
       myCurrentNick = selectedName;
       myCurrentPin = inputPin;
       localStorage.setItem("guild_my_nickname", selectedName);
@@ -886,10 +908,8 @@
 
       updateProfileUI(selectedName);
       document.getElementById("guildLoginModal").style.display = "none";
-      alert(`🎉 [${selectedName}] 님 반갑습니다! 정상 로그인되었습니다.`);
     }
 
-    // 로그아웃 처리
     function handleUserLogout() {
       if (!confirm("정말로 로그아웃하시겠습니까?")) return;
       localStorage.removeItem("guild_my_nickname");
@@ -905,10 +925,9 @@
       document.getElementById("sidebarAvatarInitial").innerText = nick.charAt(0);
     }
 
-    // 과거 대화 목록 로드
     async function loadPastChatMessages() {
       try {
-        const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=50");
+        const list = await window.apiRequest("guild_chats?select=*&order=id.desc&limit=50");
         if (list && list.length > 0) {
           list.reverse().forEach(c => renderKakaoChatBubble(c, false));
           scrollChatBottom();
@@ -916,7 +935,6 @@
       } catch (e) {}
     }
 
-    // Supabase Realtime 수신 리스너
     function listenRealtimeChatMessages() {
       if (!supabaseClient) return;
 
@@ -928,7 +946,6 @@
         .subscribe();
     }
 
-    // 카카오톡 스타일 말풍선 렌더링
     function renderKakaoChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isSystem = (msg.msg_type === "boss_alert" || msg.msg_type === "system");
@@ -1022,7 +1039,6 @@
       }
     }
 
-    // 메시지 전송
     async function handleSendMessage() {
       const textarea = document.getElementById("inputChatMessage");
       const text = textarea.value.trim();
@@ -1044,7 +1060,7 @@
       closeMentionPopup();
 
       try {
-        await apiRequest("guild_chats", "POST", [{
+        await window.apiRequest("guild_chats", "POST", [{
           sender_name: myCurrentNick,
           message: text,
           msg_type: "chat",
@@ -1055,7 +1071,6 @@
       }
     }
 
-    // @ 멘션 리스너
     function bindMentionInputEvents() {
       const textarea = document.getElementById("inputChatMessage");
       const popup = document.getElementById("mentionPopupBox");
@@ -1094,7 +1109,6 @@
       document.getElementById("mentionPopupBox").style.display = "none";
     }
 
-    // 햄버거 메뉴 토글
     function toggleSidebarMenu(isOpen) {
       const drawer = document.getElementById("appSidebarDrawer");
       const backdrop = document.getElementById("drawerBackdrop");
@@ -1107,8 +1121,7 @@
       }
     }
 
-    // 기존 10대 관리 모듈 열기
-    async function openModulePage(pageName) {
+    window.openModulePage = async function(pageName) {
       toggleSidebarMenu(false);
 
       const overlay = document.getElementById("moduleOverlay");
@@ -1149,22 +1162,21 @@
       } catch (e) {
         body.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${e.message}</div>`;
       }
-    }
+    };
 
-    function closeModuleOverlay() {
+    window.closeModuleOverlay = function() {
       document.getElementById("moduleOverlay").style.display = "none";
       document.getElementById("overlayBodyContent").innerHTML = "";
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
-    }
+    };
 
-    // 보스 젠 백그라운드 워처
     function startBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
       bossWatcherInterval = setInterval(async () => {
         try {
           const now = Date.now();
-          const timers = await apiRequest("boss_timers?select=*");
+          const timers = await window.apiRequest("boss_timers?select=*");
           
           (timers || []).forEach(b => {
             if (!b.next_spawn_time) return;
@@ -1188,7 +1200,7 @@
 
     async function sendBossAlertBroadcast(msgText) {
       try {
-        await apiRequest("guild_chats", "POST", [{
+        await window.apiRequest("guild_chats", "POST", [{
           sender_name: "보스 알림",
           message: msgText,
           msg_type: "boss_alert",
@@ -1197,7 +1209,6 @@
       } catch (e) {}
     }
 
-    // PWA 설치 버튼 핸들러
     function setupPwaInstallation() {
       const installBtn = document.getElementById("btnPwaInstall");
       window.addEventListener("beforeinstallprompt", (e) => {
