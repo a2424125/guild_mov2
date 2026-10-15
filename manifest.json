@@ -1,0 +1,23 @@
+{
+  "name": "ECLIPSE 길드 메신저",
+  "short_name": "길드메신저",
+  "description": "길드 실시간 대화 및 보스/정산 통합 관리 시스템",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060a14",
+  "theme_color": "#080d1a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3670/3670157.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3670/3670157.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
