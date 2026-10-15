@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>길드 메신저 & 통합 관리 시스템</title>
+  <title>이클불편</title>
 
   <!-- PWA 앱 설치 설정 -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#080d1a">
+  <meta name="theme-color" content="#abc1d1">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="길드메신저">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="길드톡">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
   <!-- 부트스트랩 & 폰트어썸 CDN -->
@@ -22,12 +22,14 @@
 
   <style>
     :root {
-      --bg-dark: #060a14;
-      --card-bg: #0d1527;
-      --card-border: #1a2742;
-      --accent-blue: #38bdf8;
-      --chat-bubble-me: #0284c7;
-      --chat-bubble-other: #111e38;
+      /* 카카오톡 고유 테마 컬러 */
+      --kakao-bg: #abc1d1;
+      --kakao-yellow: #fee500;
+      --kakao-bubble-me: #fee500;
+      --kakao-bubble-other: #ffffff;
+      --kakao-text-black: #191919;
+      --kakao-time-gray: #556677;
+      --kakao-header-bg: #abc1d1;
       --sidebar-width: 260px;
     }
 
@@ -37,9 +39,9 @@
     }
 
     body {
-      background-color: var(--bg-dark);
-      color: #f1f5f9;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--kakao-bg);
+      color: var(--kakao-text-black);
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
       height: 100vh;
       margin: 0;
       padding: 0;
@@ -49,7 +51,7 @@
     }
 
     /* ========================================================
-       1. 햄버거 메뉴를 눌렀을 때만 나타나는 슬라이드 서랍 (PC/모바일 공통)
+       1. 햄버거 메뉴를 눌렀을 때만 나타나는 슬라이드 서랍
        ======================================================== */
     .drawer-backdrop {
       position: fixed;
@@ -57,12 +59,11 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(4px);
+      background: rgba(0, 0, 0, 0.45);
       z-index: 99998;
       display: none;
       opacity: 0;
-      transition: opacity 0.25s ease;
+      transition: opacity 0.2s ease;
     }
     .drawer-backdrop.show {
       display: block;
@@ -75,34 +76,34 @@
       left: 0;
       width: var(--sidebar-width);
       height: 100vh;
-      background: #090e1c;
-      border-right: 1px solid var(--card-border);
+      background: #ffffff;
+      border-right: 1px solid #dcdcdc;
       z-index: 99999;
-      transform: translateX(-100%); /* 기본 상태: 숨김 */
+      transform: translateX(-100%);
       transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
-      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.85);
+      box-shadow: 5px 0 20px rgba(0, 0, 0, 0.15);
     }
     .app-sidebar-drawer.open {
-      transform: translateX(0); /* 열림 상태 */
+      transform: translateX(0);
     }
 
     .sidebar-header {
-      height: 56px;
+      height: 60px;
       padding: 0 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid var(--card-border);
-      background: #060a14;
+      border-bottom: 1px solid #ececec;
+      background: #f7f7f7;
       flex-shrink: 0;
     }
 
     .sidebar-brand {
       font-weight: 800;
-      font-size: 0.95rem;
-      color: #ffffff;
+      font-size: 1rem;
+      color: #191919;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -112,16 +113,9 @@
     .sidebar-close-btn {
       background: none;
       border: none;
-      color: #94a3b8;
+      color: #707070;
       font-size: 1.2rem;
       cursor: pointer;
-      padding: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .sidebar-close-btn:hover {
-      color: #ffffff;
     }
 
     .sidebar-menu-list {
@@ -131,37 +125,34 @@
       overflow-y: auto;
       flex: 1;
     }
-    .sidebar-menu-list::-webkit-scrollbar { width: 4px; }
-    .sidebar-menu-list::-webkit-scrollbar-thumb { background: #1e2c47; border-radius: 4px; }
-
     .sidebar-menu-item {
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 12px 14px;
-      color: #cbd5e1;
+      color: #333333;
       font-size: 0.88rem;
-      font-weight: 700;
-      border-radius: 10px;
+      font-weight: 600;
+      border-radius: 8px;
       cursor: pointer;
-      transition: all 0.15s ease;
-      margin-bottom: 4px;
+      transition: background 0.15s ease;
+      margin-bottom: 3px;
       user-select: none;
     }
     .sidebar-menu-item:hover {
-      background: rgba(56, 189, 248, 0.14);
-      color: #38bdf8;
+      background: #f0f0f0;
+      color: #111111;
     }
     .sidebar-menu-item i {
       width: 22px;
       text-align: center;
-      font-size: 1.05rem;
+      font-size: 1rem;
     }
 
     .sidebar-footer {
       padding: 12px 14px;
-      border-top: 1px solid var(--card-border);
-      background: #060a14;
+      border-top: 1px solid #ececec;
+      background: #fafafa;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -172,32 +163,33 @@
       align-items: center;
       gap: 8px;
       min-width: 0;
+      cursor: pointer;
     }
     .user-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: rgba(56, 189, 248, 0.2);
-      border: 1px solid #38bdf8;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #38bdf8;
-      font-size: 0.85rem;
+      color: #475569;
+      font-size: 0.9rem;
       font-weight: 800;
       flex-shrink: 0;
     }
     .user-name-text {
-      font-size: 0.82rem;
+      font-size: 0.85rem;
       font-weight: 700;
-      color: #ffffff;
+      color: #191919;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     /* ========================================================
-       2. 메인 대화방 레이아웃 (기본 전체 화면)
+       2. 카카오톡 메인 채팅창 뷰 (스카이블루 배경)
        ======================================================== */
     .app-main-layout {
       flex: 1;
@@ -206,224 +198,339 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      background: var(--bg-dark);
+      background: var(--kakao-bg);
     }
 
-    /* 상단 헤더: 햄버거 버튼 + 제목 + 툴바 */
-    .main-top-header {
-      height: 56px;
-      padding: 0 16px;
+    /* 카카오톡 상단 헤더 */
+    .kakao-chat-header {
+      height: 54px;
+      padding: 0 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: #080d1a;
-      border-bottom: 1px solid var(--card-border);
+      background: var(--kakao-header-bg);
       flex-shrink: 0;
       z-index: 10;
     }
-    .header-left-tools {
+    .header-left-area {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       min-width: 0;
     }
-    .btn-hamburger-menu {
-      background: none;
-      border: none;
-      color: #ffffff;
-      font-size: 1.35rem;
-      padding: 4px;
-      cursor: pointer;
+    .room-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      background: #5b8296;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .btn-hamburger-menu:hover {
-      color: #38bdf8;
-    }
-    .header-chat-title {
-      font-size: 1rem;
-      font-weight: 800;
       color: #ffffff;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .room-info-box {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .room-title-text {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #191919;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .room-count-text {
+      font-size: 0.76rem;
+      color: #556677;
+      font-weight: 500;
     }
     .header-right-tools {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
     }
-    .btn-header-action {
+    .btn-kakao-head {
       background: none;
       border: none;
-      color: #94a3b8;
-      font-size: 1rem;
+      color: #3b4b59;
+      font-size: 1.05rem;
       cursor: pointer;
       padding: 6px;
+      border-radius: 6px;
     }
-    .btn-header-action:hover {
-      color: #ffffff;
-    }
-    .badge-member-count {
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      color: #38bdf8;
-      font-size: 0.74rem;
-      font-weight: 700;
-      padding: 4px 9px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      white-space: nowrap;
+    .btn-kakao-head:hover {
+      background: rgba(0, 0, 0, 0.05);
     }
 
-    /* 채팅 메시지 영역 */
+    /* 카카오톡 상단 공지 배너 */
+    .kakao-notice-banner {
+      background: #ffffff;
+      border-radius: 8px;
+      margin: 8px 12px 4px 12px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      flex-shrink: 0;
+      z-index: 5;
+    }
+    .notice-icon-part {
+      color: #1e88e5;
+      font-size: 0.95rem;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .notice-text-content {
+      flex: 1;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #222222;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .notice-fold-btn {
+      color: #888888;
+      font-size: 0.75rem;
+      margin-left: 6px;
+      flex-shrink: 0;
+    }
+
+    /* 대화 내용 스크롤 영역 */
     .chat-messages-container {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
+      padding: 10px 14px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      background-color: var(--bg-dark);
     }
     .chat-messages-container::-webkit-scrollbar { width: 5px; }
-    .chat-messages-container::-webkit-scrollbar-thumb { background: #1e2c47; border-radius: 6px; }
+    .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 6px; }
 
-    .chat-msg-row {
-      display: flex;
-      flex-direction: column;
-      max-width: 78%;
-    }
-    .chat-msg-row.me {
-      align-self: flex-end;
-      align-items: flex-end;
-    }
-    .chat-msg-row.other {
-      align-self: flex-start;
-      align-items: flex-start;
-    }
-    .chat-sender-nick {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: #94a3b8;
-      margin-bottom: 3px;
-      padding-left: 2px;
-    }
-    .chat-msg-bubble {
-      padding: 9px 13px;
-      border-radius: 14px;
-      font-size: 0.85rem;
-      line-height: 1.45;
-      word-break: break-all;
-      position: relative;
-    }
-    .chat-msg-row.me .chat-msg-bubble {
-      background: var(--chat-bubble-me);
-      color: #ffffff;
-      border-bottom-right-radius: 2px;
-    }
-    .chat-msg-row.other .chat-msg-bubble {
-      background: var(--chat-bubble-other);
-      color: #f1f5f9;
-      border: 1px solid #1e293b;
-      border-bottom-left-radius: 2px;
-    }
-    .chat-msg-time {
-      font-size: 0.65rem;
-      color: #64748b;
-      margin-top: 2px;
-    }
-    .chat-msg-bubble.is-mentioned {
-      border: 1.5px solid #facc15 !important;
-      box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
-    }
-
-    .system-alert-card {
+    /* 카톡 날짜 구분선 */
+    .chat-date-divider {
       align-self: center;
-      width: 100%;
-      max-width: 480px;
-      margin: 4px 0;
-    }
-    .system-alert-box {
-      background: rgba(239, 68, 68, 0.12);
-      border: 1px solid #ef4444;
+      background: rgba(0, 0, 0, 0.12);
+      color: #ffffff;
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 3px 12px;
       border-radius: 12px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
+      margin: 6px 0;
     }
 
-    /* 하단 입력 폼 */
-    .chat-input-wrapper {
-      padding: 10px 14px;
-      background: #080d1a;
-      border-top: 1px solid var(--card-border);
+    /* 카카오톡 말풍선 레이아웃 */
+    .chat-item-row {
       display: flex;
-      align-items: center;
+      width: 100%;
+      margin-bottom: 2px;
+    }
+    .chat-item-row.other {
+      align-items: flex-start;
       gap: 8px;
-      position: relative;
-      flex-shrink: 0;
     }
-    .chat-input-field {
-      flex: 1;
-      background: #0d1527;
-      border: 1px solid #233554;
-      border-radius: 20px;
-      padding: 9px 16px;
-      font-size: 0.85rem;
-      color: #ffffff;
-      outline: none;
-      height: 40px;
+    .chat-item-row.me {
+      justify-content: flex-end;
     }
-    .chat-input-field:focus { border-color: #38bdf8; }
-    .btn-chat-send {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
-      border: none;
-      color: #fff;
+
+    .chat-sender-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid #d9d9d9;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #3b82f6;
       flex-shrink: 0;
-      transition: transform 0.15s ease;
     }
-    .btn-chat-send:active { transform: scale(0.92); }
+
+    .chat-msg-body {
+      display: flex;
+      flex-direction: column;
+      max-width: 70%;
+    }
+    .chat-item-row.me .chat-msg-body {
+      align-items: flex-end;
+    }
+
+    .chat-sender-name {
+      font-size: 0.76rem;
+      color: #333333;
+      margin-bottom: 3px;
+      font-weight: 500;
+    }
+
+    .chat-bubble-flex {
+      display: flex;
+      align-items: flex-end;
+      gap: 5px;
+    }
+    .chat-item-row.me .chat-bubble-flex {
+      flex-direction: row-reverse;
+    }
+
+    .chat-bubble {
+      padding: 7px 11px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      word-break: break-all;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
+
+    .chat-item-row.other .chat-bubble {
+      background: var(--kakao-bubble-other);
+      color: var(--kakao-text-black);
+    }
+    .chat-item-row.me .chat-bubble {
+      background: var(--kakao-bubble-me);
+      color: var(--kakao-text-black);
+    }
+
+    .chat-timestamp {
+      font-size: 0.62rem;
+      color: var(--kakao-time-gray);
+      white-space: nowrap;
+      margin-bottom: 1px;
+    }
+
+    /* 멘션 강조 태그 */
+    .mention-tag-kakao {
+      background: #eef3f7;
+      color: #2b6cb0;
+      font-weight: 700;
+      border-radius: 4px;
+      padding: 1px 4px;
+      display: inline-block;
+    }
+
+    /* 보스 젠 및 시스템 알림 카드 */
+    .system-alert-row {
+      align-self: center;
+      width: 100%;
+      max-width: 440px;
+      margin: 4px 0;
+    }
+    .system-alert-bubble {
+      background: #ffffff;
+      border-left: 4px solid #ef4444;
+      border-radius: 8px;
+      padding: 9px 12px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .system-alert-bubble.info-type {
+      border-left-color: #38bdf8;
+    }
+
+    /* 카카오톡 하단 입력창 */
+    .kakao-input-area {
+      background: #ffffff;
+      border-top: 1px solid #d4d4d4;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .input-textarea-custom {
+      width: 100%;
+      height: 48px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 0.86rem;
+      color: #191919;
+      background: transparent;
+      padding: 0;
+      font-family: inherit;
+    }
+    .input-textarea-custom::placeholder {
+      color: #999999;
+    }
+
+    .input-bottom-tools {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+    .input-tool-icons {
+      display: flex;
+      gap: 10px;
+      color: #777777;
+      font-size: 1.05rem;
+    }
+    .input-tool-icons i {
+      cursor: pointer;
+    }
+    .input-tool-icons i:hover {
+      color: #333333;
+    }
+
+    .btn-kakao-send {
+      background: #e2e2e2;
+      border: none;
+      color: #999999;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-kakao-send.active {
+      background: var(--kakao-yellow);
+      color: #191919;
+    }
 
     /* @ 멘션 자동완성 팝업 */
     .mention-popup-container {
       position: absolute;
-      bottom: 58px;
-      left: 14px;
-      right: 14px;
-      max-width: 280px;
-      background: #0d1527;
-      border: 1px solid #38bdf8;
-      border-radius: 12px;
+      bottom: 90px;
+      left: 12px;
+      max-width: 260px;
+      background: #ffffff;
+      border: 1px solid #cccccc;
+      border-radius: 8px;
       max-height: 180px;
       overflow-y: auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.85);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
       display: none;
       z-index: 100;
     }
     .mention-item-row {
       padding: 8px 12px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #e2e8f0;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #333333;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
+      border-bottom: 1px solid #f4f4f4;
     }
-    .mention-item-row:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+    .mention-item-row:hover {
+      background: #f7f7f7;
+      color: #1e88e5;
+    }
 
     /* 3. 모듈 오버레이 뷰 (기존 10개 모듈 표시) */
     .module-display-overlay {
@@ -432,16 +539,16 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: var(--bg-dark);
+      background: #060a14;
       z-index: 200;
       display: none;
       flex-direction: column;
     }
     .module-nav-header {
-      height: 56px;
+      height: 54px;
       padding: 0 16px;
       background: #080d1a;
-      border-bottom: 1px solid var(--card-border);
+      border-bottom: 1px solid #1a2742;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -456,23 +563,22 @@
       margin: 0 auto;
     }
 
-    /* 닉네임 설정 모달 */
+    /* 프로필 모달 */
     .profile-modal-bg {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(6, 10, 20, 0.85);
-      backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 999999;
       display: flex; align-items: center; justify-content: center;
       padding: 16px;
     }
     .profile-modal-card {
-      background: #0d1527;
-      border: 1.5px solid #38bdf8;
-      border-radius: 18px;
+      background: #ffffff;
+      border-radius: 12px;
       width: 100%; max-width: 320px;
       padding: 22px 18px;
       text-align: center;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
   </style>
 </head>
@@ -481,11 +587,11 @@
   <!-- 1. 메뉴 열릴 때 뒤쪽 배경 어둡게 처리하는 백드롭 -->
   <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleSidebarMenu(false)"></div>
 
-  <!-- 2. 좌측 햄버거 메뉴 서랍 (기본 상태는 숨겨져 있고, 버튼 누르면 열림) -->
+  <!-- 2. 좌측 햄버거 메뉴 서랍 (스케치해주신 10대 관리 메뉴) -->
   <aside id="appSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
-        <span style="font-size: 1.25rem;">🛡️</span>
+        <i class="fa-solid fa-shield-halved text-primary"></i>
         <span id="sidebarGuildName">길드 메뉴</span>
       </div>
       <button type="button" class="sidebar-close-btn" onclick="toggleSidebarMenu(false)">
@@ -493,7 +599,6 @@
       </button>
     </div>
 
-    <!-- 스케치에 작성해주신 10대 메뉴 리스트 -->
     <ul class="sidebar-menu-list">
       <li class="sidebar-menu-item" onclick="openModulePage('PageNotice')">
         <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
@@ -514,7 +619,7 @@
         <i class="fa-solid fa-coins text-success"></i><span>정산내역</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
-        <i class="fa-solid fa-landmark" style="color: #c084fc;"></i><span>길드비용현황</span>
+        <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageTimer')">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
@@ -523,55 +628,75 @@
         <i class="fa-solid fa-skull text-danger"></i><span>원수목록</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
-        <i class="fa-solid fa-gear text-info"></i><span>설정</span>
+        <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
     </ul>
 
     <div class="sidebar-footer">
-      <div class="user-profile-badge" onclick="openProfileModal()" style="cursor: pointer;">
+      <div class="user-profile-badge" onclick="openProfileModal()">
         <div class="user-avatar" id="sidebarAvatarInitial">?</div>
         <div class="user-name-text" id="sidebarUserNickName">닉네임 설정</div>
       </div>
-      <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" style="font-size: 0.72rem;" onclick="openProfileModal()">
+      <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" style="font-size: 0.72rem;" onclick="openProfileModal()">
         변경
       </button>
     </div>
   </aside>
 
-  <!-- 3. 메인 전체 대화방 레이아웃 -->
+  <!-- 3. 카카오톡 메인 채팅 화면 -->
   <div class="app-main-layout">
-    <header class="main-top-header">
-      <div class="header-left-tools">
-        <!-- 🎯 햄버거 메뉴 버튼: 누르면 좌측 메뉴가 슬라이드로 나옴 -->
-        <button type="button" class="btn-hamburger-menu" title="메뉴 열기" onclick="toggleSidebarMenu(true)">
+    <!-- 카카오톡 상단 헤더 바 -->
+    <header class="kakao-chat-header">
+      <div class="header-left-area">
+        <button type="button" class="btn-kakao-head" title="메뉴 서랍 열기" onclick="toggleSidebarMenu(true)">
           <i class="fa-solid fa-bars"></i>
         </button>
-        <span class="header-chat-title" id="chatHeaderTitle">전체 길드 대화방</span>
+        <div class="room-avatar-circle" id="chatRoomAvatar">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="room-info-box">
+          <div class="room-title-text" id="chatRoomTitle">이클불편</div>
+          <div class="room-count-text"><i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span></div>
+        </div>
       </div>
 
       <div class="header-right-tools">
-        <!-- PWA PC/모바일 설치 버튼 -->
-        <button type="button" class="btn-header-action" id="btnPwaInstall" style="display: none;" title="앱 설치">
-          <i class="fa-solid fa-download text-warning"></i>
+        <!-- PWA 설치 버튼 -->
+        <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
+          <i class="fa-solid fa-download"></i>
         </button>
-        <button type="button" class="btn-header-action" title="채팅창 포커스" onclick="focusChatInput()">
+        <button type="button" class="btn-kakao-head" title="대화 검색" onclick="focusChatInput()">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
-        <div class="badge-member-count" title="등록 길드원 수">
-          <i class="fa-solid fa-users"></i>
-          <span id="headerMemberCountText">0명</span>
-        </div>
+        <button type="button" class="btn-kakao-head" title="보스타임 바로가기" onclick="openModulePage('PageTimer')">
+          <i class="fa-regular fa-clock"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleSidebarMenu(true)">
+          <i class="fa-solid fa-bars-staggered"></i>
+        </button>
       </div>
     </header>
 
-    <!-- 중앙 대화창 스크롤 뷰 -->
+    <!-- 카카오톡 상단 최신 공지 배너 -->
+    <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
+      <div class="d-flex align-items-center" style="min-width: 0; flex: 1;">
+        <i class="fa-solid fa-bullhorn notice-icon-part"></i>
+        <div class="notice-text-content" id="kakaoTopNoticeText">길드 최신 공지사항을 불러오는 중...</div>
+      </div>
+      <i class="fa-solid fa-chevron-down notice-fold-btn"></i>
+    </div>
+
+    <!-- 대화 메시지 영역 -->
     <div class="chat-messages-container" id="chatMessagesView">
-      <div class="system-alert-card">
-        <div class="system-alert-box" style="background: rgba(56, 189, 248, 0.1); border-color: #38bdf8;">
+      <div class="chat-date-divider" id="chatTodayDateDivider">2026년 10월 15일 목요일</div>
+      
+      <!-- 시스템 안내 카드 -->
+      <div class="system-alert-row">
+        <div class="system-alert-bubble info-type">
           <i class="fa-solid fa-circle-info text-info fs-5"></i>
           <div style="font-size: 0.8rem; line-height: 1.4;">
-            <strong>길드 메신저 & 통합 관리 시스템</strong>에 연결되었습니다.<br>
-            상단 좌측 <strong>햄버거 버튼(☰)</strong>을 누르면 보스/정산/공지 등 관리 메뉴가 열립니다.
+            <strong>길드 카카오톡 메신저</strong>에 연결되었습니다.<br>
+            보스 젠 알림과 길드원 대화가 실시간으로 수신됩니다.
           </div>
         </div>
       </div>
@@ -580,12 +705,19 @@
     <!-- @ 멘션 자동완성 팝업 -->
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 메시지 입력 바 -->
-    <footer class="chat-input-wrapper">
-      <input type="text" id="inputChatMessage" class="chat-input-field" placeholder="메시지 입력... (@로 길드원 멘션)" autocomplete="off" onkeypress="if(event.keyCode===13){ handleSendMessage(); }">
-      <button type="button" class="btn-chat-send" onclick="handleSendMessage()">
-        <i class="fa-solid fa-paper-plane"></i>
-      </button>
+    <!-- 카카오톡 하단 입력창 바 -->
+    <footer class="kakao-input-area">
+      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요. (@ 길드원 멘션)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
+      
+      <div class="input-bottom-tools">
+        <div class="input-tool-icons">
+          <i class="fa-regular fa-face-smile" title="이모티콘"></i>
+          <i class="fa-solid fa-paperclip" title="파일 첨부" onclick="openModulePage('PageRegister')"></i>
+        </div>
+        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
+          전송
+        </button>
+      </div>
     </footer>
 
     <!-- 기존 10대 관리 모듈 오버레이 창 -->
@@ -601,24 +733,24 @@
     </div>
   </div>
 
-  <!-- 본인 닉네임 설정 모달 -->
+  <!-- 닉네임 설정 모달 -->
   <div id="profileModal" class="profile-modal-bg" style="display: none;">
     <div class="profile-modal-card">
-      <div style="font-size: 2.2rem; margin-bottom: 8px;">👤</div>
-      <h6 class="fw-bold text-white mb-2">본인 닉네임 확인</h6>
+      <div style="font-size: 2rem; margin-bottom: 8px;">👤</div>
+      <h6 class="fw-bold text-dark mb-2">본인 닉네임 선택</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.74rem;">채팅 및 알림 수신에 사용할 본인 닉네임을 선택하세요.</p>
       
-      <select id="selectMemberNickDropdown" class="form-select form-select-sm mb-3" style="background:#080d1a; border-color:#233554; color:#fff;">
+      <select id="selectMemberNickDropdown" class="form-select form-select-sm mb-3">
         <option value="">본인 닉네임 선택...</option>
       </select>
 
-      <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" onclick="confirmMyNickname()">
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" onclick="confirmMyNickname()">
         확인 완료
       </button>
     </div>
   </div>
 
-  <!-- 공통 통신 모듈 -->
+  <!-- 공통 Supabase 통신 모듈 -->
   <script src="supabase.js"></script>
 
   <script>
@@ -630,12 +762,12 @@
     var deferredPrompt = null;
 
     async function initApp() {
-      // 1. Supabase Realtime SDK 초기화
       if (window.supabase) {
         supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
       }
 
       await loadGuildMetadata();
+      await loadTopNoticeHeader();
       await loadGuildMembersData();
       await loadPastChatMessages();
       listenRealtimeChatMessages();
@@ -658,8 +790,21 @@
         if (res && res.length > 0 && res[0].value) {
           const gName = res[0].value;
           document.getElementById("sidebarGuildName").innerText = `${gName} 관리`;
-          document.getElementById("chatHeaderTitle").innerText = `${gName} 전체 대화방`;
-          document.title = `${gName} 길드 메신저`;
+          document.getElementById("chatRoomTitle").innerText = gName;
+          document.title = gName;
+        }
+      } catch (e) {}
+    }
+
+    // 상단 공지사항 헤더 바 로드
+    async function loadTopNoticeHeader() {
+      try {
+        const notices = await apiRequest("guild_notices?select=title,content&order=id.desc&limit=1");
+        if (notices && notices.length > 0) {
+          const item = notices[0];
+          document.getElementById("kakaoTopNoticeText").innerText = `${item.title} - ${item.content}`;
+        } else {
+          document.getElementById("kakaoTopNoticeText").innerText = "등록된 공지사항이 없습니다.";
         }
       } catch (e) {}
     }
@@ -669,7 +814,7 @@
       try {
         const members = await apiRequest("guild_members?select=name&order=name.asc");
         cachedMemberList = (members || []).map(m => m.name);
-        document.getElementById("headerMemberCountText").innerText = `${cachedMemberList.length}명`;
+        document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
 
         const select = document.getElementById("selectMemberNickDropdown");
         select.innerHTML = '<option value="">본인 닉네임 선택...</option>' + 
@@ -682,7 +827,7 @@
       try {
         const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=50");
         if (list && list.length > 0) {
-          list.reverse().forEach(c => renderChatBubble(c, false));
+          list.reverse().forEach(c => renderKakaoChatBubble(c, false));
           scrollChatBottom();
         }
       } catch (e) {}
@@ -695,43 +840,67 @@
       supabaseClient
         .channel("public:guild_chats")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
-          renderChatBubble(payload.new, true);
+          renderKakaoChatBubble(payload.new, true);
         })
         .subscribe();
     }
 
-    // 말풍선 렌더링
-    function renderChatBubble(msg, isRealtime = true) {
+    // 카카오톡 스타일 말풍선 렌더링
+    function renderKakaoChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isSystem = (msg.msg_type === "boss_alert" || msg.msg_type === "system");
       const isMe = (msg.sender_name === myCurrentNick);
       const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
-      const timeStr = (msg.created_at || '').slice(11, 16);
+      
+      const timeDate = msg.created_at ? new Date(msg.created_at) : new Date();
+      const hours = timeDate.getHours();
+      const minutes = String(timeDate.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? '오후' : '오전';
+      const formattedHour = hours % 12 || 12;
+      const timeStr = `${ampm} ${formattedHour}:${minutes}`;
 
       let html = "";
       if (isSystem) {
         html = `
-          <div class="system-alert-card">
-            <div class="system-alert-box">
-              <i class="fa-solid fa-bullhorn text-danger fs-5"></i>
+          <div class="system-alert-row">
+            <div class="system-alert-bubble">
+              <i class="fa-solid fa-skull text-danger fs-5"></i>
               <div style="font-size: 0.82rem;">
                 <strong class="text-danger">[${msg.sender_name}]</strong><br>
-                ${msg.message}
+                ${escapeHtmlText(msg.message)}
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (isMe) {
+        // 내가 보낸 메시지 (노란색 말풍선, 오른쪽 배치)
+        html = `
+          <div class="chat-item-row me">
+            <div class="chat-msg-body">
+              <div class="chat-bubble-flex">
+                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">
+                  ${formatMessageWithMentions(msg.message)}
+                </div>
+                <div class="chat-timestamp">${timeStr}</div>
               </div>
             </div>
           </div>
         `;
       } else {
-        const rowClass = isMe ? "chat-msg-row me" : "chat-msg-row other";
-        const bubbleExtra = isMentioned ? "is-mentioned" : "";
-
+        // 상대방이 보낸 메시지 (프로필 + 닉네임 + 흰색 말풍선)
+        const initial = (msg.sender_name || '?').charAt(0);
         html = `
-          <div class="${rowClass}">
-            ${!isMe ? `<div class="chat-sender-nick">${msg.sender_name}</div>` : ''}
-            <div class="chat-msg-bubble ${bubbleExtra}">
-              ${escapeHtmlText(msg.message)}
+          <div class="chat-item-row other">
+            <div class="chat-sender-avatar">${initial}</div>
+            <div class="chat-msg-body">
+              <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
+              <div class="chat-bubble-flex">
+                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">
+                  ${formatMessageWithMentions(msg.message)}
+                </div>
+                <div class="chat-timestamp">${timeStr}</div>
+              </div>
             </div>
-            <div class="chat-msg-time">${timeStr}</div>
           </div>
         `;
       }
@@ -744,10 +913,40 @@
       }
     }
 
+    // 멘션 텍스트 하이라이트 포맷
+    function formatMessageWithMentions(text) {
+      let safeText = escapeHtmlText(text);
+      cachedMemberList.forEach(name => {
+        const mentionTarget = `@${name}`;
+        if (safeText.includes(mentionTarget)) {
+          safeText = safeText.replaceAll(mentionTarget, `<span class="mention-tag-kakao">@${name}</span>`);
+        }
+      });
+      return safeText.replace(/\n/g, '<br>');
+    }
+
+    // 메시지 입력 감지 (전송 버튼 활성화)
+    function handleInputState(textarea) {
+      const btn = document.getElementById("btnKakaoSend");
+      if (textarea.value.trim().length > 0) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    }
+
+    // 엔터키 전송 처리 (Shift+Enter는 줄바꿈)
+    function checkEnterKey(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        handleSendMessage();
+      }
+    }
+
     // 메시지 전송
     async function handleSendMessage() {
-      const input = document.getElementById("inputChatMessage");
-      const text = input.value.trim();
+      const textarea = document.getElementById("inputChatMessage");
+      const text = textarea.value.trim();
       if (!text) return;
 
       if (!myCurrentNick) {
@@ -761,7 +960,8 @@
         if (text.includes(`@${name}`)) detectedMentions.push(name);
       });
 
-      input.value = "";
+      textarea.value = "";
+      handleInputState(textarea);
       closeMentionPopup();
 
       try {
@@ -776,13 +976,13 @@
       }
     }
 
-    // @ 멘션 자동완성 리스너
+    // @ 멘션 리스너
     function bindMentionInputEvents() {
-      const input = document.getElementById("inputChatMessage");
+      const textarea = document.getElementById("inputChatMessage");
       const popup = document.getElementById("mentionPopupBox");
 
-      input.addEventListener("input", () => {
-        const val = input.value;
+      textarea.addEventListener("input", () => {
+        const val = textarea.value;
         const lastAt = val.lastIndexOf("@");
         if (lastAt !== -1) {
           const q = val.slice(lastAt + 1).toLowerCase();
@@ -790,7 +990,7 @@
           if (matched.length > 0) {
             popup.innerHTML = matched.slice(0, 5).map(name => `
               <div class="mention-item-row" onclick="applyMentionNick('${name}')">
-                <i class="fa-solid fa-at text-info"></i> ${name}
+                <i class="fa-solid fa-at text-primary"></i> ${name}
               </div>
             `).join('');
             popup.style.display = "block";
@@ -802,19 +1002,20 @@
     }
 
     function applyMentionNick(name) {
-      const input = document.getElementById("inputChatMessage");
-      const val = input.value;
+      const textarea = document.getElementById("inputChatMessage");
+      const val = textarea.value;
       const lastAt = val.lastIndexOf("@");
-      input.value = val.slice(0, lastAt) + `@${name} `;
+      textarea.value = val.slice(0, lastAt) + `@${name} `;
       closeMentionPopup();
-      input.focus();
+      textarea.focus();
+      handleInputState(textarea);
     }
 
     function closeMentionPopup() {
       document.getElementById("mentionPopupBox").style.display = "none";
     }
 
-    // 🎯 햄버거 메뉴 열기/닫기 제어 함수 (PC/모바일 공통 동작)
+    // 햄버거 메뉴 열기/닫기
     function toggleSidebarMenu(isOpen) {
       const drawer = document.getElementById("appSidebarDrawer");
       const backdrop = document.getElementById("drawerBackdrop");
@@ -829,7 +1030,7 @@
 
     // 기존 10대 관리 모듈 열기
     async function openModulePage(pageName) {
-      toggleSidebarMenu(false); // 메뉴 서랍 닫기
+      toggleSidebarMenu(false);
 
       const overlay = document.getElementById("moduleOverlay");
       const body = document.getElementById("overlayBodyContent");
@@ -893,13 +1094,13 @@
             const key5Min = `${b.id}_5min_${b.next_spawn_time}`;
             if (diffSec <= 300 && diffSec > 240 && !notifiedBossSpawnMap.has(key5Min)) {
               notifiedBossSpawnMap.add(key5Min);
-              sendBossAlertBroadcast(`⏳ [보스 임박] **${b.boss_name}** 젠 5분 전입니다! 집결 준비하세요!`);
+              sendBossAlertBroadcast(`⏳ [보스 알림] ${b.boss_name} 젠 5분 전입니다!`);
             }
 
             const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
             if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
               notifiedBossSpawnMap.add(keySpawned);
-              sendBossAlertBroadcast(`🚨 [보스 젠 완료] **${b.boss_name}** 출현! 즉시 처치 바랍니다!`);
+              sendBossAlertBroadcast(`🚨 [보스 젠] ${b.boss_name} 젠 완료! 즉시 처치 바랍니다!`);
             }
           });
         } catch (e) {}
@@ -909,7 +1110,7 @@
     async function sendBossAlertBroadcast(msgText) {
       try {
         await apiRequest("guild_chats", "POST", [{
-          sender_name: "보스 알림 봇",
+          sender_name: "보스 알림",
           message: msgText,
           msg_type: "boss_alert",
           mentions: []
@@ -961,7 +1162,7 @@
       box.scrollTop = box.scrollHeight;
     }
     function escapeHtmlText(t) {
-      return t.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+      return (t || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
     }
     function focusChatInput() {
       document.getElementById("inputChatMessage").focus();
@@ -974,16 +1175,15 @@
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.frequency.value = isImportant ? 880 : 587;
-        gain.gain.value = 0.1;
+        gain.gain.value = 0.08;
         osc.start();
-        setTimeout(() => osc.stop(), 180);
+        setTimeout(() => osc.stop(), 150);
       } catch (e) {}
     }
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
-          .then(reg => console.log('PWA ServiceWorker 등록 완료:', reg.scope))
           .catch(err => console.warn('PWA 등록 실패:', err));
       });
     }
