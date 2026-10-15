@@ -28,7 +28,7 @@
       --accent-blue: #38bdf8;
       --chat-bubble-me: #0284c7;
       --chat-bubble-other: #111e38;
-      --sidebar-width: 250px;
+      --sidebar-width: 260px;
     }
 
     * {
@@ -45,19 +45,47 @@
       padding: 0;
       overflow: hidden;
       display: flex;
+      position: relative;
     }
 
-    /* 1. PC 카카오톡 좌측 사이드바 (넓은 화면 고정, 모바일 슬라이드) */
-    .app-sidebar {
+    /* ========================================================
+       1. 햄버거 메뉴를 눌렀을 때만 나타나는 슬라이드 서랍 (PC/모바일 공통)
+       ======================================================== */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 99998;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .drawer-backdrop.show {
+      display: block;
+      opacity: 1;
+    }
+
+    .app-sidebar-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: var(--sidebar-width);
       height: 100vh;
       background: #090e1c;
       border-right: 1px solid var(--card-border);
+      z-index: 99999;
+      transform: translateX(-100%); /* 기본 상태: 숨김 */
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
-      flex-shrink: 0;
-      z-index: 1000;
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 10px 0 30px rgba(0, 0, 0, 0.85);
+    }
+    .app-sidebar-drawer.open {
+      transform: translateX(0); /* 열림 상태 */
     }
 
     .sidebar-header {
@@ -82,12 +110,18 @@
     }
 
     .sidebar-close-btn {
-      display: none;
       background: none;
       border: none;
       color: #94a3b8;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sidebar-close-btn:hover {
+      color: #ffffff;
     }
 
     .sidebar-menu-list {
@@ -104,9 +138,9 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 11px 14px;
+      padding: 12px 14px;
       color: #cbd5e1;
-      font-size: 0.86rem;
+      font-size: 0.88rem;
       font-weight: 700;
       border-radius: 10px;
       cursor: pointer;
@@ -114,14 +148,14 @@
       margin-bottom: 4px;
       user-select: none;
     }
-    .sidebar-menu-item:hover, .sidebar-menu-item.active {
+    .sidebar-menu-item:hover {
       background: rgba(56, 189, 248, 0.14);
       color: #38bdf8;
     }
     .sidebar-menu-item i {
-      width: 20px;
+      width: 22px;
       text-align: center;
-      font-size: 1rem;
+      font-size: 1.05rem;
     }
 
     .sidebar-footer {
@@ -131,6 +165,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-shrink: 0;
     }
     .user-profile-badge {
       display: flex;
@@ -161,17 +196,20 @@
       text-overflow: ellipsis;
     }
 
-    /* 2. 우측 메인 영역 */
+    /* ========================================================
+       2. 메인 대화방 레이아웃 (기본 전체 화면)
+       ======================================================== */
     .app-main-layout {
       flex: 1;
+      width: 100%;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      min-width: 0;
       position: relative;
       background: var(--bg-dark);
     }
 
+    /* 상단 헤더: 햄버거 버튼 + 제목 + 툴바 */
     .main-top-header {
       height: 56px;
       padding: 0 16px;
@@ -186,17 +224,22 @@
     .header-left-tools {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       min-width: 0;
     }
-    .btn-mobile-hamburger {
-      display: none;
+    .btn-hamburger-menu {
       background: none;
       border: none;
       color: #ffffff;
-      font-size: 1.25rem;
+      font-size: 1.35rem;
       padding: 4px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-hamburger-menu:hover {
+      color: #38bdf8;
     }
     .header-chat-title {
       font-size: 1rem;
@@ -219,6 +262,9 @@
       cursor: pointer;
       padding: 6px;
     }
+    .btn-header-action:hover {
+      color: #ffffff;
+    }
     .badge-member-count {
       background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.35);
@@ -233,7 +279,7 @@
       white-space: nowrap;
     }
 
-    /* 채팅 메시지 뷰 */
+    /* 채팅 메시지 영역 */
     .chat-messages-container {
       flex: 1;
       overflow-y: auto;
@@ -379,7 +425,7 @@
     }
     .mention-item-row:hover { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
 
-    /* 3. 모듈 오버레이 뷰 */
+    /* 3. 모듈 오버레이 뷰 (기존 10개 모듈 표시) */
     .module-display-overlay {
       position: absolute;
       top: 0;
@@ -410,38 +456,6 @@
       margin: 0 auto;
     }
 
-    .mobile-backdrop {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(4px);
-      z-index: 999;
-    }
-    .mobile-backdrop.active { display: block; }
-
-    /* 미디어 쿼리 (모바일 화면) */
-    @media (max-width: 768px) {
-      .app-sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        transform: translateX(-100%);
-      }
-      .app-sidebar.show {
-        transform: translateX(0);
-      }
-      .sidebar-close-btn {
-        display: block;
-      }
-      .btn-mobile-hamburger {
-        display: block;
-      }
-      .chat-msg-row {
-        max-width: 86%;
-      }
-    }
-
     /* 닉네임 설정 모달 */
     .profile-modal-bg {
       position: fixed;
@@ -464,22 +478,22 @@
 </head>
 <body>
 
-  <!-- 모바일 사이드바 오픈 시 백드롭 -->
-  <div id="mobileBackdrop" class="mobile-backdrop" onclick="toggleMobileSidebar(false)"></div>
+  <!-- 1. 메뉴 열릴 때 뒤쪽 배경 어둡게 처리하는 백드롭 -->
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="toggleSidebarMenu(false)"></div>
 
-  <!-- 좌측 사이드바 (PC: 고정 노출 / 모바일: 슬라이드 서랍) -->
-  <aside id="appSidebar" class="app-sidebar">
+  <!-- 2. 좌측 햄버거 메뉴 서랍 (기본 상태는 숨겨져 있고, 버튼 누르면 열림) -->
+  <aside id="appSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
         <span style="font-size: 1.25rem;">🛡️</span>
-        <span id="sidebarGuildName">길드 메신저</span>
+        <span id="sidebarGuildName">길드 메뉴</span>
       </div>
-      <button type="button" class="sidebar-close-btn" onclick="toggleMobileSidebar(false)">
+      <button type="button" class="sidebar-close-btn" onclick="toggleSidebarMenu(false)">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
-    <!-- 10대 관리 메뉴 (스케치 반영) -->
+    <!-- 스케치에 작성해주신 10대 메뉴 리스트 -->
     <ul class="sidebar-menu-list">
       <li class="sidebar-menu-item" onclick="openModulePage('PageNotice')">
         <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
@@ -524,11 +538,12 @@
     </div>
   </aside>
 
-  <!-- 우측 메인 대화방 레이아웃 -->
+  <!-- 3. 메인 전체 대화방 레이아웃 -->
   <div class="app-main-layout">
     <header class="main-top-header">
       <div class="header-left-tools">
-        <button type="button" class="btn-mobile-hamburger" onclick="toggleMobileSidebar(true)">
+        <!-- 🎯 햄버거 메뉴 버튼: 누르면 좌측 메뉴가 슬라이드로 나옴 -->
+        <button type="button" class="btn-hamburger-menu" title="메뉴 열기" onclick="toggleSidebarMenu(true)">
           <i class="fa-solid fa-bars"></i>
         </button>
         <span class="header-chat-title" id="chatHeaderTitle">전체 길드 대화방</span>
@@ -549,14 +564,14 @@
       </div>
     </header>
 
-    <!-- 중앙 채팅방 메시지 뷰 -->
+    <!-- 중앙 대화창 스크롤 뷰 -->
     <div class="chat-messages-container" id="chatMessagesView">
       <div class="system-alert-card">
         <div class="system-alert-box" style="background: rgba(56, 189, 248, 0.1); border-color: #38bdf8;">
           <i class="fa-solid fa-circle-info text-info fs-5"></i>
           <div style="font-size: 0.8rem; line-height: 1.4;">
             <strong>길드 메신저 & 통합 관리 시스템</strong>에 연결되었습니다.<br>
-            보스 젠 5분 전/젠 완료 알림과 길드원 대화가 실시간으로 수신됩니다.
+            상단 좌측 <strong>햄버거 버튼(☰)</strong>을 누르면 보스/정산/공지 등 관리 메뉴가 열립니다.
           </div>
         </div>
       </div>
@@ -573,7 +588,7 @@
       </button>
     </footer>
 
-    <!-- 기존 10개 모듈 오버레이 창 -->
+    <!-- 기존 10대 관리 모듈 오버레이 창 -->
     <div id="moduleOverlay" class="module-display-overlay">
       <div class="module-nav-header">
         <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" onclick="closeModuleOverlay()">
@@ -586,7 +601,7 @@
     </div>
   </div>
 
-  <!-- 길드원 본인 닉네임 설정 모달 -->
+  <!-- 본인 닉네임 설정 모달 -->
   <div id="profileModal" class="profile-modal-bg" style="display: none;">
     <div class="profile-modal-card">
       <div style="font-size: 2.2rem; margin-bottom: 8px;">👤</div>
@@ -612,7 +627,7 @@
     var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
     var bossWatcherInterval = null;
     var notifiedBossSpawnMap = new Set();
-    var deferredPrompt = null; // PWA 설치 프롬프트
+    var deferredPrompt = null;
 
     async function initApp() {
       // 1. Supabase Realtime SDK 초기화
@@ -636,13 +651,13 @@
       setupPwaInstallation();
     }
 
-    // 길드명 로드
+    // 길드 메타데이터 로드
     async function loadGuildMetadata() {
       try {
         const res = await apiRequest("guild_settings?key=eq.guild_name");
         if (res && res.length > 0 && res[0].value) {
           const gName = res[0].value;
-          document.getElementById("sidebarGuildName").innerText = `${gName} 길드`;
+          document.getElementById("sidebarGuildName").innerText = `${gName} 관리`;
           document.getElementById("chatHeaderTitle").innerText = `${gName} 전체 대화방`;
           document.title = `${gName} 길드 메신저`;
         }
@@ -662,7 +677,7 @@
       } catch (e) {}
     }
 
-    // 과거 채팅 로드
+    // 과거 대화 목록 로드
     async function loadPastChatMessages() {
       try {
         const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=50");
@@ -673,7 +688,7 @@
       } catch (e) {}
     }
 
-    // Supabase Realtime 웹소켓 연결
+    // Supabase Realtime 수신 리스너
     function listenRealtimeChatMessages() {
       if (!supabaseClient) return;
 
@@ -685,7 +700,7 @@
         .subscribe();
     }
 
-    // 채팅 렌더링
+    // 말풍선 렌더링
     function renderChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isSystem = (msg.msg_type === "boss_alert" || msg.msg_type === "system");
@@ -799,62 +814,22 @@
       document.getElementById("mentionPopupBox").style.display = "none";
     }
 
-    // 보스 젠 백그라운드 워처
-    function startBossWatchTimer() {
-      if (bossWatcherInterval) clearInterval(bossWatcherInterval);
-
-      bossWatcherInterval = setInterval(async () => {
-        try {
-          const now = Date.now();
-          const timers = await apiRequest("boss_timers?select=*");
-          
-          (timers || []).forEach(b => {
-            if (!b.next_spawn_time) return;
-            const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
-
-            const key5Min = `${b.id}_5min_${b.next_spawn_time}`;
-            if (diffSec <= 300 && diffSec > 240 && !notifiedBossSpawnMap.has(key5Min)) {
-              notifiedBossSpawnMap.add(key5Min);
-              sendBossAlertBroadcast(`⏳ [보스 임박] **${b.boss_name}** 젠 5분 전입니다! 집결 준비하세요!`);
-            }
-
-            const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
-            if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
-              notifiedBossSpawnMap.add(keySpawned);
-              sendBossAlertBroadcast(`🚨 [보스 젠 완료] **${b.boss_name}** 출현! 즉시 처치 바랍니다!`);
-            }
-          });
-        } catch (e) {}
-      }, 5000);
-    }
-
-    async function sendBossAlertBroadcast(msgText) {
-      try {
-        await apiRequest("guild_chats", "POST", [{
-          sender_name: "보스 알림 봇",
-          message: msgText,
-          msg_type: "boss_alert",
-          mentions: []
-        }]);
-      } catch (e) {}
-    }
-
-    // 모바일 사이드바 제어
-    function toggleMobileSidebar(show) {
-      const sidebar = document.getElementById("appSidebar");
-      const backdrop = document.getElementById("mobileBackdrop");
-      if (show) {
-        sidebar.classList.add("show");
-        backdrop.classList.add("active");
+    // 🎯 햄버거 메뉴 열기/닫기 제어 함수 (PC/모바일 공통 동작)
+    function toggleSidebarMenu(isOpen) {
+      const drawer = document.getElementById("appSidebarDrawer");
+      const backdrop = document.getElementById("drawerBackdrop");
+      if (isOpen) {
+        backdrop.classList.add("show");
+        drawer.classList.add("open");
       } else {
-        sidebar.classList.remove("show");
-        backdrop.classList.remove("active");
+        backdrop.classList.remove("show");
+        drawer.classList.remove("open");
       }
     }
 
-    // 기존 10대 모듈 화면 열기/닫기
+    // 기존 10대 관리 모듈 열기
     async function openModulePage(pageName) {
-      toggleMobileSidebar(false);
+      toggleSidebarMenu(false); // 메뉴 서랍 닫기
 
       const overlay = document.getElementById("moduleOverlay");
       const body = document.getElementById("overlayBodyContent");
@@ -902,6 +877,46 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     }
 
+    // 보스 젠 백그라운드 워처
+    function startBossWatchTimer() {
+      if (bossWatcherInterval) clearInterval(bossWatcherInterval);
+
+      bossWatcherInterval = setInterval(async () => {
+        try {
+          const now = Date.now();
+          const timers = await apiRequest("boss_timers?select=*");
+          
+          (timers || []).forEach(b => {
+            if (!b.next_spawn_time) return;
+            const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
+
+            const key5Min = `${b.id}_5min_${b.next_spawn_time}`;
+            if (diffSec <= 300 && diffSec > 240 && !notifiedBossSpawnMap.has(key5Min)) {
+              notifiedBossSpawnMap.add(key5Min);
+              sendBossAlertBroadcast(`⏳ [보스 임박] **${b.boss_name}** 젠 5분 전입니다! 집결 준비하세요!`);
+            }
+
+            const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
+            if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
+              notifiedBossSpawnMap.add(keySpawned);
+              sendBossAlertBroadcast(`🚨 [보스 젠 완료] **${b.boss_name}** 출현! 즉시 처치 바랍니다!`);
+            }
+          });
+        } catch (e) {}
+      }, 5000);
+    }
+
+    async function sendBossAlertBroadcast(msgText) {
+      try {
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "보스 알림 봇",
+          message: msgText,
+          msg_type: "boss_alert",
+          mentions: []
+        }]);
+      } catch (e) {}
+    }
+
     // 프로필 모달 제어
     function openProfileModal() {
       document.getElementById("profileModal").style.display = "flex";
@@ -919,7 +934,7 @@
       document.getElementById("sidebarAvatarInitial").innerText = nick.charAt(0);
     }
 
-    // PWA 앱 설치 이벤트 연결
+    // PWA 설치 버튼 핸들러
     function setupPwaInstallation() {
       const installBtn = document.getElementById("btnPwaInstall");
       window.addEventListener("beforeinstallprompt", (e) => {
@@ -965,7 +980,6 @@
       } catch (e) {}
     }
 
-    // 서비스 워커 등록
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
