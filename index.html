@@ -49,7 +49,7 @@
       overflow: hidden;
       display: flex;
       position: relative;
-      min-width: 270px;
+      min-width: 260px;
     }
 
     /* 서랍 공통 백드롭 */
@@ -329,7 +329,7 @@
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
     /* ========================================================
-       3. 메인 대화창 (글자 길이에 딱 맞는 콤팩트 여백 카카오톡)
+       3. 메인 대화창 (카카오톡 1:1 밀착 여백)
        ======================================================== */
     .app-main-layout {
       flex: 1;
@@ -392,12 +392,11 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* 대화창 스크롤 영역 */
     .chat-messages-container {
       flex: 1; overflow-y: auto;
       padding: 8px 10px;
       display: flex; flex-direction: column;
-      gap: 6px;
+      gap: 5px; /* 카톡처럼 말풍선 사이 간격 촘촘하게 */
     }
     .chat-messages-container::-webkit-scrollbar { width: 4px; }
     .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
@@ -416,11 +415,10 @@
       background: #fee2e2; border-color: #ef4444; color: #dc2626;
     }
 
-    /* 🎯 말풍선 컨테이너가 텍스트 길이에 딱 맞게 콤팩트하게 줄어들도록 설정 */
     .chat-msg-body {
       display: flex;
       flex-direction: column;
-      max-width: 82%;
+      max-width: 84%;
       width: fit-content;
       align-items: flex-start;
     }
@@ -440,14 +438,14 @@
     }
     .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
-    /* 🎯 [완벽 수정] 실제 카카오톡과 똑같은 타이트한 말풍선 패딩 & 폰트 크기 */
+    /* 🎯 카카오톡 실제 말풍선: 글자 크기에 딱 맞게 감싸기 */
     .chat-bubble {
       display: inline-block;
       width: fit-content;
       max-width: 100%;
       padding: 6px 9px;
       border-radius: 5px; 
-      font-size: 0.78rem; /* 12.5px */
+      font-size: 0.78rem;
       line-height: 1.35;
       word-break: break-all;
       box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
@@ -456,7 +454,6 @@
     .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other); color: var(--kakao-text-black); }
     .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me); color: var(--kakao-text-black); }
 
-    /* 노란색 안읽은 숫자 + 시간 박스 */
     .chat-meta-box {
       display: flex;
       flex-direction: column;
@@ -481,20 +478,20 @@
       line-height: 1;
     }
 
-    /* 보스 리젠 현황 브리핑 전용 카드 */
+    /* 보스 리젠 브리핑 카드 */
     .boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
       padding: 7px 9px !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
       width: fit-content !important;
-      min-width: 200px;
+      min-width: 190px;
     }
     .boss-brief-title {
       font-size: 0.78rem;
       font-weight: 800;
       color: #191919;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
       padding-bottom: 3px;
       border-bottom: 1px dashed #e2e8f0;
       display: flex;
@@ -524,7 +521,7 @@
       color: #334155;
       font-size: 0.62rem;
       font-weight: 700;
-      padding: 1.5px 4px;
+      padding: 1px 4px;
       border-radius: 3px;
       cursor: pointer;
     }
@@ -533,17 +530,20 @@
       border-color: #fca5a5;
       color: #b91c1c;
     }
-    .btn-boss-inline:hover { opacity: 0.85; }
 
-    /* 🎯 [완벽 수정] 보스 알림 상자가 가로로 꽉 차지 않고 글자 크기만큼만 타이트하게 감싸도록 변경 */
+    /* 🎯 [완벽 수정] 보스 알림 카드: 휑한 빈 공간 없이 글자 크기에 딱 맞춤 */
     .boss-alert-mini-card {
       background: #ffffff !important;
-      border-radius: 6px !important;
+      border-radius: 5px !important;
       padding: 6px 9px !important;
-      font-size: 0.76rem !important;
+      font-size: 0.78rem !important;
       line-height: 1.35 !important;
       width: fit-content !important;
-      display: inline-block !important;
+      max-width: 100% !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
     }
     .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
     .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
@@ -551,21 +551,22 @@
       border-left: 4px solid #ef4444 !important;
       background: #fff8f8 !important;
     }
+    .boss-alert-mini-card.alert-cut {
+      border-left: 4px solid #38bdf8 !important;
+    }
 
     .btn-boss-alert-cut {
       background: #ef4444;
       color: #ffffff;
       border: none;
-      font-size: 0.68rem;
+      font-size: 0.66rem;
       font-weight: 800;
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 4px;
       cursor: pointer;
       white-space: nowrap;
-      margin-left: 6px;
-      display: inline-block;
-      vertical-align: middle;
-      transition: all 0.15s;
+      margin-left: 4px;
+      flex-shrink: 0;
     }
     .btn-boss-alert-cut:hover { background: #dc2626; }
     .btn-boss-alert-cut.disabled, .btn-boss-alert-cut:disabled {
@@ -1022,7 +1023,6 @@
     var kakaoToastTimer = null;
     var targetPinMember = null;
 
-    // 🎯 컷 처리된 메시지 ID 목록 (새로고침 시에도 비활성화 유지)
     var processedCutMessageIds = new Set(JSON.parse(localStorage.getItem("processed_cut_msg_ids") || "[]"));
 
     function saveProcessedCutId(msgId) {
@@ -1473,6 +1473,7 @@
         .subscribe();
     }
 
+    // 🎯 [완벽 수정] 여백 낭비 없는 카카오톡 실시간 말풍선 렌더링
     function renderKakaoChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isMe = (msg.sender_name === myCurrentNick);
@@ -1489,6 +1490,7 @@
       const unreadCount = Math.max(1, totalMembers - 14);
 
       let html = "";
+      const cleanMessageText = (msg.message || '').trim();
 
       // 1) 보스알리미 리젠 브리핑 카드
       if (msg.msg_type === "boss_briefing") {
@@ -1499,7 +1501,7 @@
               <div class="chat-sender-name">보스알리미</div>
               <div class="chat-bubble-flex">
                 <div class="chat-bubble boss-brief-bubble">
-                  ${msg.message}
+                  ${cleanMessageText}
                 </div>
                 <div class="chat-meta-box">
                   <span class="chat-unread-count">${unreadCount}</span>
@@ -1510,24 +1512,24 @@
           </div>
         `;
       }
-      // 2) 봇 알림 카드 (7분/3분/젠완료)
+      // 2) 보스 자동 알림 봇 (7분 전/3분 전/젠 완료 콤팩트 카드)
       else if (msg.msg_type === "boss_alert") {
         let cardTypeClass = "alert-3m";
         let hasCutBtn = false;
         let cutTargetBoss = "";
 
-        if (msg.message.includes("7분 전")) cardTypeClass = "alert-7m";
-        else if (msg.message.includes("젠 완료") || msg.message.includes("출현")) {
+        if (cleanMessageText.includes("7분 전")) cardTypeClass = "alert-7m";
+        else if (cleanMessageText.includes("컷 완료") || cleanMessageText.includes("컷 확인")) cardTypeClass = "alert-cut";
+        else if (cleanMessageText.includes("젠 완료") || cleanMessageText.includes("출현")) {
           cardTypeClass = "alert-spawn";
           hasCutBtn = true;
-          const match = msg.message.match(/\[([^\]]+)\]/);
+          const match = cleanMessageText.match(/\[([^\]]+)\]/);
           if (match) cutTargetBoss = match[1];
         }
 
-        // 🎯 20분 경과 여부 & 이미 컷 처리 여부 확인
         const nowMs = Date.now();
         const msgAgeMinutes = (nowMs - timeDate.getTime()) / (1000 * 60);
-        const isExpired = (msgAgeMinutes > 20); // 20분 초과 시 비활성화
+        const isExpired = (msgAgeMinutes > 20);
         const isAlreadyCut = processedCutMessageIds.has(String(msg.id));
 
         let cutButtonHtml = "";
@@ -1548,9 +1550,8 @@
             <div class="chat-msg-body">
               <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
               <div class="chat-bubble-flex">
-                <div class="chat-bubble boss-alert-mini-card ${cardTypeClass}">
-                  <span style="vertical-align:middle;">${escapeHtmlText(msg.message)}</span>
-                  ${cutButtonHtml}
+                <div class="boss-alert-mini-card ${cardTypeClass}">
+                  <span>${escapeHtmlText(cleanMessageText)}</span>${cutButtonHtml}
                 </div>
                 <div class="chat-meta-box">
                   <span class="chat-unread-count">${unreadCount}</span>
@@ -1567,9 +1568,7 @@
           <div class="chat-item-row me">
             <div class="chat-msg-body">
               <div class="chat-bubble-flex">
-                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">
-                  ${formatMessageWithMentions(msg.message)}
-                </div>
+                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
                 <div class="chat-meta-box">
                   <span class="chat-unread-count">1</span>
                   <span class="chat-timestamp">${timeStr}</span>
@@ -1590,9 +1589,7 @@
                 <span>${escapeHtmlText(msg.sender_name)}</span>
               </div>
               <div class="chat-bubble-flex">
-                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">
-                  ${formatMessageWithMentions(msg.message)}
-                </div>
+                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
                 <div class="chat-meta-box">
                   <span class="chat-unread-count">${unreadCount}</span>
                   <span class="chat-timestamp">${timeStr}</span>
@@ -1820,7 +1817,6 @@
       }
     };
 
-    // 🎯 젠 완료 시 나타나는 [컷] 버튼 1회 클릭 처리 및 비활성화
     window.triggerQuickCutAction = async function(bossName, btnId, msgId) {
       const btn = document.getElementById(btnId);
       if (btn) {
@@ -1865,7 +1861,6 @@
       }
     };
 
-    // 명령어 처리 엔진
     async function handleBossChatCommands(rawText) {
       const trimmed = rawText.trim();
 
@@ -1957,7 +1952,6 @@
       return false;
     }
 
-    // 🎯 [핵심] 메시지 전송: 명령어일 때도 내 말풍선이 먼저 채팅창에 등록된 뒤 봇이 응답
     async function handleSendMessage() {
       const textarea = document.getElementById("inputChatMessage");
       const text = textarea.value.trim();
@@ -1975,7 +1969,6 @@
 
       const isCommand = (text.startsWith('!') || text.startsWith('！'));
 
-      // 1) 내가 친 메시지(명령어 포함)를 먼저 내 말풍선으로 화면/DB에 올림
       try {
         const detectedMentions = [];
         cachedMemberList.forEach(m => {
@@ -1993,7 +1986,6 @@
         return;
       }
 
-      // 2) 명령어인 경우 봇이 이어서 처리
       if (isCommand) {
         await handleBossChatCommands(text);
       }
@@ -2084,7 +2076,7 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 🎯 7분 전, 3분 전, 젠 완료 실시간 감시 엔진
+    // 🎯 7분 전, 3분 전, 젠 완료 실시간 워처 (앞뒤 공백 없는 한 줄 출력 보장)
     function startBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
@@ -2127,7 +2119,7 @@
       try {
         await apiRequest("guild_chats", "POST", [{
           sender_name: "보스알리미",
-          message: msgText,
+          message: msgText.trim(),
           msg_type: "boss_alert",
           mentions: []
         }]);
