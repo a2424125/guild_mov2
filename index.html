@@ -11,14 +11,14 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="길드톡">
-  <link rel="apple-touch-icon" href="[https://cdn-icons-png.flaticon.com/512/3670/3670157.png](https://cdn-icons-png.flaticon.com/512/3670/3670157.png)">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
   <!-- 부트스트랩 & 폰트어썸 아이콘 -->
-  <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" rel="stylesheet">
-  <link href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
   <!-- Supabase 공식 SDK 및 설정 파일 로드 -->
-  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
   <style>
@@ -336,7 +336,7 @@
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
     /* ========================================================
-       3. 메인 대화창 레이아웃
+       3. 메인 대화창 (카카오톡 PC 1:1 글씨 크기 & 밀착 여백)
        ======================================================== */
     .app-main-layout {
       flex: 1;
@@ -380,4 +380,1851 @@
     }
     .btn-kakao-head {
       background: none; border: none; color: #3b4b59;
-      font-size: 0.95rem; cursor: pointer
+      font-size: 0.95rem; cursor: pointer; padding: 5px; border-radius: 5px;
+    }
+    .btn-kakao-head:hover { background: rgba(0,0,0,0.05); }
+
+    .kakao-notice-banner {
+      background: #ffffff;
+      border-radius: 6px;
+      margin: 6px 10px 2px 10px;
+      padding: 6px 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+    .notice-icon-part { color: #1e88e5; font-size: 0.85rem; margin-right: 6px; flex-shrink: 0; }
+    .notice-text-content {
+      flex: 1; font-size: 0.76rem; font-weight: 600; color: #222;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    /* 대화창 스크롤 영역 */
+    .chat-messages-container {
+      flex: 1; overflow-y: auto;
+      padding: 8px 10px;
+      display: flex; flex-direction: column;
+      gap: 5px;
+    }
+    .chat-messages-container::-webkit-scrollbar { width: 4px; }
+    .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+
+    .chat-item-row { display: flex; width: 100%; margin-bottom: 1px; min-width: 0; }
+    .chat-item-row.other { align-items: flex-start; gap: 6px; }
+    .chat-item-row.me { justify-content: flex-end; }
+
+    .chat-sender-avatar {
+      width: 34px; height: 34px; border-radius: 13px;
+      background: #ffffff; border: 1px solid #dcdcdc;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.95rem; color: #3b82f6; flex-shrink: 0;
+    }
+    .chat-sender-avatar.bot {
+      background: #fee2e2; border-color: #ef4444; color: #dc2626;
+    }
+
+    .chat-msg-body {
+      display: flex;
+      flex-direction: column;
+      max-width: 86%;
+      width: fit-content;
+      align-items: flex-start;
+      min-width: 0;
+    }
+    .chat-item-row.me .chat-msg-body {
+      align-items: flex-end;
+    }
+    
+    .chat-sender-name {
+      font-size: 0.72rem; color: #333; margin-bottom: 2px; font-weight: 600;
+      display: flex; align-items: center; gap: 3px;
+    }
+    .chat-bubble-flex {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      width: fit-content;
+    }
+    .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
+
+    /* 말풍선 여백 밀착 (상하 6px, 좌우 9px) */
+    .chat-bubble {
+      display: inline-block;
+      width: fit-content;
+      max-width: 100%;
+      padding: 6px 9px;
+      border-radius: 5px; 
+      font-size: 0.78rem;
+      line-height: 1.35;
+      word-break: break-all;
+      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+      white-space: pre-wrap;
+    }
+    .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other); color: var(--kakao-text-black); }
+    .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me); color: var(--kakao-text-black); }
+
+    .chat-meta-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+      margin-bottom: 1px;
+    }
+    .chat-item-row.other .chat-meta-box {
+      align-items: flex-start;
+    }
+    .chat-unread-count {
+      color: var(--kakao-unread-yellow);
+      font-size: 0.62rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .chat-timestamp {
+      font-size: 0.6rem;
+      color: var(--kakao-time-gray);
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    /* 보스 리젠 브리핑 카드 */
+    .boss-brief-bubble {
+      background: #ffffff !important;
+      border-radius: 6px !important;
+      padding: 7px 9px !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+      width: fit-content !important;
+      min-width: 190px;
+    }
+    .boss-brief-title {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: #191919;
+      margin-bottom: 4px;
+      padding-bottom: 3px;
+      border-bottom: 1px dashed #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .boss-brief-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 0;
+      font-size: 0.74rem;
+    }
+    .boss-brief-line.spawned {
+      color: #dc2626;
+      font-weight: 700;
+    }
+    .boss-inline-actions {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .btn-boss-inline {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .btn-boss-inline.cut {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #b91c1c;
+    }
+
+    /* 🎯 보스 알림 콤팩트 카드 */
+    .boss-alert-mini-card {
+      background: #ffffff !important;
+      border-radius: 5px !important;
+      padding: 6px 9px !important;
+      font-size: 0.78rem !important;
+      line-height: 1.35 !important;
+      width: fit-content !important;
+      max-width: 100% !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 4px !important;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
+    }
+    .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
+    .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
+    .boss-alert-mini-card.alert-spawn {
+      border-left: 4px solid #ef4444 !important;
+      background: #fff8f8 !important;
+    }
+    .boss-alert-mini-card.alert-cut {
+      border-left: 4px solid #38bdf8 !important;
+    }
+
+    .btn-boss-alert-cut {
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      font-size: 0.66rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      margin-left: 4px;
+      flex-shrink: 0;
+    }
+    .btn-boss-alert-cut:hover { background: #dc2626; }
+    .btn-boss-alert-cut.disabled, .btn-boss-alert-cut:disabled {
+      background: #94a3b8 !important;
+      color: #ffffff !important;
+      cursor: not-allowed !important;
+      opacity: 0.7;
+    }
+
+    /* 하단 입력창 */
+    .kakao-input-area {
+      background: #ffffff; border-top: 1px solid #d4d4d4;
+      padding: 6px 10px; display: flex; flex-direction: column;
+      flex-shrink: 0; position: relative; min-width: 0;
+    }
+    .input-textarea-custom {
+      width: 100%; height: 42px; border: none; outline: none;
+      resize: none; font-size: 0.82rem; color: #191919;
+      background: transparent; padding: 0; font-family: inherit;
+    }
+    .input-textarea-custom::placeholder { color: #999999; }
+
+    .input-bottom-tools {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 2px;
+    }
+    .input-tool-icons { display: flex; gap: 10px; color: #777; font-size: 1rem; }
+    .input-tool-icons i { cursor: pointer; }
+    .btn-kakao-send {
+      background: #e2e2e2; border: none; color: #999;
+      font-size: 0.76rem; font-weight: 700; padding: 4px 11px;
+      border-radius: 3px; cursor: pointer; transition: all 0.15s ease;
+    }
+    .btn-kakao-send.active { background: var(--kakao-yellow); color: #191919; }
+
+    .mention-popup-container {
+      position: absolute; bottom: 82px; left: 10px; max-width: 240px;
+      background: #ffffff; border: 1px solid #ccc; border-radius: 6px;
+      max-height: 160px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: none; z-index: 100;
+    }
+    .mention-item-row {
+      padding: 6px 10px; font-size: 0.78rem; font-weight: 600;
+      color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px;
+      border-bottom: 1px solid #f4f4f4;
+    }
+    .mention-item-row:hover { background: #f7f7f7; color: #1e88e5; }
+
+    /* 모듈 오버레이 (기존 다크 테마 카드와 일치하도록 다크 배경 적용) */
+    .module-display-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: #060a14; z-index: 200; display: none; flex-direction: column;
+    }
+    .module-nav-header {
+      height: 48px; padding: 0 14px; background: #080d1a;
+      border-bottom: 1px solid #1a2742; display: flex; align-items: center;
+      justify-content: space-between; flex-shrink: 0;
+    }
+    .module-scroll-body {
+      flex: 1; overflow-y: auto; padding: 10px; max-width: 600px; width: 100%; margin: 0 auto;
+    }
+
+    /* 팝업 모달 공통 */
+    .kakao-modal-backdrop {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.45); z-index: 9999999;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .kakao-modal-card {
+      background: #ffffff; border-radius: 12px;
+      width: 100%; max-width: 310px; padding: 18px 16px;
+      text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+    }
+    .kakao-modal-card input, .kakao-modal-card select {
+      width: 100%; background: #f7f7f7; border: 1px solid #e2e8f0;
+      border-radius: 7px; padding: 7px 10px; font-size: 0.82rem;
+      outline: none; margin-bottom: 8px;
+    }
+
+    .class-preset-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      max-height: 220px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+    }
+    .class-preset-cell {
+      padding: 6px 3px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .class-preset-cell:hover, .class-preset-cell.active {
+      border-color: #0284c7;
+      background: #e0f2fe;
+    }
+    .class-icon-big { font-size: 1.2rem; line-height: 1; }
+    .class-title-small { font-size: 0.65rem; font-weight: 700; color: #334155; }
+
+    /* 토스트 */
+    .kakao-toast-box {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-20px);
+      background: #333333; color: #ffffff; padding: 8px 16px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+      z-index: 99999999; opacity: 0; pointer-events: none; transition: all 0.2s ease;
+      white-space: nowrap; display: flex; align-items: center; gap: 6px;
+    }
+    .kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <!-- 공통 백드롭 -->
+  <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
+
+  <!-- 1. 햄버거 메뉴 서랍 (260px) -->
+  <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
+    <div class="sidebar-header">
+      <div class="sidebar-brand">
+        <i class="fa-solid fa-shield-halved text-primary"></i>
+        <span id="menuGuildNameText">길드 메뉴</span>
+      </div>
+      <button type="button" class="sidebar-close-btn" onclick="toggleMenuDrawer(false)">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <ul class="sidebar-menu-list">
+      <li class="sidebar-menu-item" onclick="openModulePage('PageNotice')">
+        <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleMembersDrawer(true);">
+        <i class="fa-solid fa-users text-primary"></i><span>길드원목록</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageRegister')">
+        <i class="fa-solid fa-crosshairs text-danger"></i><span>보스참여등록</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageRecords')">
+        <i class="fa-solid fa-scroll text-warning"></i><span>보스참여자</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageWish')">
+        <i class="fa-solid fa-gift" style="color: #f472b6;"></i><span>분배희망신청</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageSettle')">
+        <i class="fa-solid fa-coins text-success"></i><span>정산내역</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
+        <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); postBossBriefingToChat();">
+        <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임 (채팅 브리핑)</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
+        <i class="fa-solid fa-skull text-danger"></i><span>원수목록</span>
+      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
+        <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge" onclick="openProfileEditModal()">
+        <div class="user-avatar" id="sidebarAvatarIcon">👤</div>
+        <div>
+          <div class="user-name-text" id="sidebarUserNickName">로그인 필요</div>
+          <div class="user-sub-class" id="sidebarUserClassText">직업 설정하기</div>
+        </div>
+      </div>
+      <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size: 0.7rem;" onclick="handleUserLogout()">
+        로그아웃
+      </button>
+    </div>
+  </aside>
+
+  <!-- 2. 길드원 목록 서랍 (260px) -->
+  <aside id="membersSidebarDrawer" class="app-members-drawer">
+    <div class="members-drawer-header">
+      <div class="members-drawer-title">
+        <i class="fa-solid fa-users text-primary"></i>
+        <span>길드원 (<span id="drawerMemberCount">0</span>)</span>
+      </div>
+      <div class="members-header-tools">
+        <button type="button" class="btn-tool-icon" title="길드원 추가" onclick="openAddMemberPopup()">
+          <i class="fa-solid fa-user-plus text-primary"></i>
+        </button>
+        <button type="button" class="btn-tool-icon" title="새로고침" onclick="loadGuildMembersData()">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleMembersDrawer(false)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="members-search-wrap">
+      <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 20px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.75rem;"></i>
+      <input type="text" id="inputDrawerMemberSearch" class="members-search-input" placeholder="길드원 검색..." onkeyup="filterDrawerMembers()">
+    </div>
+
+    <div class="members-list-scroll" id="drawerMembersListArea">
+      <div class="text-secondary small text-center py-4">길드원을 불러오는 중...</div>
+    </div>
+  </aside>
+
+  <!-- 3. 메인 대화방 -->
+  <div class="app-main-layout">
+    <header class="kakao-chat-header">
+      <div class="header-left-area">
+        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleMenuDrawer(true)">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="room-avatar-circle" id="chatRoomAvatar">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="room-info-box">
+          <div class="room-title-text" id="chatRoomTitle">길드 대화방</div>
+          <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)">
+            <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right-tools">
+        <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="대화 검색" onclick="focusChatInput()">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="보스타임 브리핑" onclick="postBossBriefingToChat()">
+          <i class="fa-regular fa-clock"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
+          <i class="fa-solid fa-user-group"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- 최신 공지 배너 -->
+    <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
+      <div class="d-flex align-items-center" style="min-width: 0; flex: 1;">
+        <i class="fa-solid fa-bullhorn notice-icon-part"></i>
+        <div class="notice-text-content" id="kakaoTopNoticeText">공지사항을 불러오는 중...</div>
+      </div>
+      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.72rem;"></i>
+    </div>
+
+    <!-- 대화 메시지 영역 -->
+    <div class="chat-messages-container" id="chatMessagesView">
+      <div class="text-center my-1">
+        <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
+      </div>
+    </div>
+
+    <!-- @ 멘션 자동완성 팝업 -->
+    <div id="mentionPopupBox" class="mention-popup-container"></div>
+
+    <!-- 하단 메시지 입력창 -->
+    <footer class="kakao-input-area">
+      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
+      
+      <div class="input-bottom-tools">
+        <div class="input-tool-icons">
+          <i class="fa-regular fa-face-smile" title="내 직업/프로필 설정" onclick="openProfileEditModal()"></i>
+          <i class="fa-solid fa-paperclip" title="보스 토벌 스샷 등록" onclick="openModulePage('PageRegister')"></i>
+        </div>
+        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
+          전송
+        </button>
+      </div>
+    </footer>
+
+    <!-- 모듈 오버레이 (다크 테마 통일) -->
+    <div id="moduleOverlay" class="module-display-overlay">
+      <div class="module-nav-header">
+        <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" onclick="closeModuleOverlay()">
+          <i class="fa-solid fa-arrow-left me-1"></i>채팅방으로 복귀
+        </button>
+        <span class="fw-bold text-white small" id="overlayNavTitle">기능 화면</span>
+        <div style="width: 50px;"></div>
+      </div>
+      <div class="module-scroll-body" id="overlayBodyContent"></div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림창 -->
+  <div id="kakaoToastBox" class="kakao-toast-box">
+    <span id="kakaoToastIcon">💬</span>
+    <span id="kakaoToastMsg">알림 메시지</span>
+  </div>
+
+  <!-- 직업 선택 모달 -->
+  <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card">
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">프로필과 대화창에 표기될 직업을 선택하세요.</p>
+      
+      <div class="class-preset-grid">
+        <div class="class-preset-cell" onclick="selectClassProfile('🏹', '궁수')">
+          <span class="class-icon-big">🏹</span>
+          <span class="class-title-small">궁수</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🌿', '힐러')">
+          <span class="class-icon-big">🌿</span>
+          <span class="class-title-small">힐러</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('⚔️', '전사')">
+          <span class="class-icon-big">⚔️</span>
+          <span class="class-title-small">전사</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🛡️', '탱커')">
+          <span class="class-icon-big">🛡️</span>
+          <span class="class-title-small">탱커</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🪄', '마법사')">
+          <span class="class-icon-big">🪄</span>
+          <span class="class-title-small">마법사</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👊', '무투사')">
+          <span class="class-icon-big">👊</span>
+          <span class="class-title-small">무투사</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🥷', '암살자')">
+          <span class="class-icon-big">🥷</span>
+          <span class="class-title-small">암살자</span>
+        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👑', '길드장')">
+          <span class="class-icon-big">👑</span>
+          <span class="class-title-small">길드장</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-light btn-sm w-100 py-1" style="font-size:0.78rem;" onclick="closeProfileEditModal()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 컷 / 예약 수동 입력 모달 -->
+  <div id="modalBossActionDialog" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card">
+      <h6 class="fw-bold mb-1" id="bossActionDialogTitle" style="font-size: 0.95rem;">보스 처리</h6>
+      <p class="text-secondary small mb-3" id="bossActionDialogDesc" style="font-size: 0.72rem;">시간을 입력하세요.</p>
+      
+      <input type="hidden" id="targetBossActionType">
+      <input type="hidden" id="targetBossActionName">
+      <input type="text" id="targetBossActionTimeInput" class="text-center" placeholder="예: 1100 또는 11:00" maxlength="5" style="font-size:1rem; font-weight:700;">
+
+      <div class="d-flex gap-2 mt-2">
+        <button type="button" class="btn btn-light btn-sm flex-fill py-1" style="font-size:0.78rem;" onclick="closeBossActionDialog()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none; font-size:0.78rem;" onclick="confirmBossActionDialog()">실행</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달: 신규 길드원 등록 -->
+  <div id="modalAddMemberPopup" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card">
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>신규 길드원 등록</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임과 직급을 설정하세요.</p>
+      
+      <input type="text" id="newMemberNickInput" placeholder="길드원 닉네임 입력" autocomplete="off">
+      <select id="newMemberRoleSelect">
+        <option value="일반" selected>일반</option>
+        <option value="정예">정예</option>
+        <option value="부길드장">부길드장</option>
+        <option value="길드장">길드장</option>
+      </select>
+
+      <div class="d-flex gap-2 mt-2">
+        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closeAddMemberPopup()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitAddMemberAction()">등록하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달: 길드원 정보 수정 -->
+  <div id="modalEditMemberPopup" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card">
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-pen text-info me-1"></i>길드원 정보 수정</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임 변경 시 과거 토벌 기록도 자동 동기화됩니다.</p>
+      
+      <input type="hidden" id="editMemberId">
+      <input type="hidden" id="editOldName">
+      <input type="text" id="editNewName" placeholder="새 닉네임">
+      <select id="editRoleSelect">
+        <option value="일반">일반</option>
+        <option value="정예">정예</option>
+        <option value="부길드장">부길드장</option>
+        <option value="길드장">길드장</option>
+      </select>
+
+      <div class="d-flex gap-2 mt-2">
+        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closeEditMemberPopup()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitEditMemberAction()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모달: 비밀번호 변경 -->
+  <div id="modalPinChangePopup" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card">
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
+      <p class="text-secondary small mb-3" id="pinChangeNoticeText" style="font-size: 0.72rem;">기존 비밀번호와 새 비밀번호를 입력하세요.</p>
+      
+      <input type="password" id="inputOldPin" class="text-center" placeholder="기존 비밀번호 (초기값 0000)" maxlength="16" inputmode="numeric">
+      <input type="password" id="inputNewPin" class="text-center" placeholder="새 비밀번호 (숫자 6자리 이상)" maxlength="16" inputmode="numeric">
+
+      <div class="d-flex gap-2 mt-2">
+        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closePinChangePopup()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitPinChangeAction()">변경 완료</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 로그인 모달 -->
+  <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card">
+      <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
+        <i class="fa-solid fa-comment text-dark"></i>
+      </div>
+      <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 닉네임과 개인 비밀번호를 입력하세요.</p>
+      
+      <select id="loginMemberSelect" style="height: 36px;">
+        <option value="">닉네임을 선택하세요...</option>
+      </select>
+      <input type="password" id="loginPinInput" class="text-center" placeholder="••••" maxlength="16" inputmode="numeric" style="height: 38px; font-size: 1rem; letter-spacing: 4px;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
+
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; font-size: 0.85rem;" onclick="executeGuildLogin()">
+        로그인
+      </button>
+      <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 길드원 목록에서 가능합니다.</div>
+    </div>
+  </div>
+
+  <script>
+    var supabaseClient = null;
+    var cachedMemberList = [];
+    var cachedBossList = [];
+    var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
+    var myCurrentPin = localStorage.getItem("guild_my_pin") || "";
+    var myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+    var myCurrentClass = localStorage.getItem("guild_my_class") || "미설정";
+    var bossWatcherInterval = null;
+    var notifiedBossSpawnMap = new Set();
+    var deferredPrompt = null;
+    var kakaoToastTimer = null;
+    var targetPinMember = null;
+
+    var processedCutMessageIds = new Set(JSON.parse(localStorage.getItem("processed_cut_msg_ids") || "[]"));
+
+    function saveProcessedCutId(msgId) {
+      if (!msgId) return;
+      processedCutMessageIds.add(String(msgId));
+      localStorage.setItem("processed_cut_msg_ids", JSON.stringify(Array.from(processedCutMessageIds)));
+    }
+
+    function showKakaoToast(msg, icon = "💬") {
+      const box = document.getElementById("kakaoToastBox");
+      const m = document.getElementById("kakaoToastMsg");
+      const ic = document.getElementById("kakaoToastIcon");
+      if (!box) return;
+
+      m.innerText = msg;
+      ic.innerText = icon;
+      box.classList.add("show");
+
+      if (kakaoToastTimer) clearTimeout(kakaoToastTimer);
+      kakaoToastTimer = setTimeout(() => box.classList.remove("show"), 2300);
+    }
+
+    // ==========================================
+    // 🕒 [KST 시간 변환 핵심 함수 (이중 가산/과거 날짜 완벽 방어)]
+    // ==========================================
+    function formatKSTChatTime(dateInput) {
+      if (!dateInput) return "";
+      let d;
+      if (typeof dateInput === 'string') {
+        let clean = dateInput.trim();
+        // 타임존 없는 공백 구분 포맷(YYYY-MM-DD HH:mm:ss)일 경우 ISO 규격으로 변환
+        if (clean.includes(' ') && !clean.includes('T')) {
+          clean = clean.replace(' ', 'T');
+        }
+        // 타임존 표기가 없으면 UTC 기준 'Z' 부여
+        if (!clean.endsWith('Z') && !clean.includes('+') && !clean.includes('-')) {
+          clean += 'Z';
+        }
+        d = new Date(clean);
+      } else {
+        d = new Date(dateInput);
+      }
+
+      if (isNaN(d.getTime())) {
+        d = new Date();
+      }
+
+      const formatter = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      return formatter.format(d);
+    }
+
+    function formatTimeKorean(dateObj) {
+      if (!dateObj) return "";
+      const formatter = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      return formatter.format(dateObj);
+    }
+
+    async function initApp() {
+      if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+        supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+      }
+
+      await loadGuildMetadata();
+      await loadTopNoticeHeader();
+      await loadGuildMembersData();
+      await loadBossTimersList();
+
+      if (!myCurrentNick || !myCurrentPin) {
+        showGuildLoginModal();
+      } else {
+        const isValid = await verifyStoredSession(myCurrentNick, myCurrentPin);
+        if (isValid) {
+          updateProfileUI(myCurrentNick);
+        } else {
+          showGuildLoginModal();
+        }
+      }
+
+      await loadPastChatMessages();
+      listenRealtimeChatMessages();
+      startBossWatchTimer();
+
+      bindMentionInputEvents();
+      setupPwaInstallation();
+    }
+
+    async function loadGuildMetadata() {
+      try {
+        const res = await apiRequest("guild_settings?key=eq.guild_name");
+        if (res && res.length > 0 && res[0].value) {
+          const gName = res[0].value;
+          document.getElementById("menuGuildNameText").innerText = `${gName} 관리`;
+          document.getElementById("chatRoomTitle").innerText = gName;
+          document.getElementById("loginGuildTitle").innerText = `${gName} 길드 로그인`;
+          document.title = gName;
+        }
+      } catch (e) {}
+    }
+
+    async function loadTopNoticeHeader() {
+      try {
+        const notices = await apiRequest("guild_notices?select=title,content&order=id.desc&limit=1");
+        if (notices && notices.length > 0) {
+          const item = notices[0];
+          document.getElementById("kakaoTopNoticeText").innerText = `${item.title} - ${item.content}`;
+        } else {
+          document.getElementById("kakaoTopNoticeText").innerText = "등록된 공지사항이 없습니다.";
+        }
+      } catch (e) {}
+    }
+
+    async function loadBossTimersList() {
+      try {
+        const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
+        cachedBossList = bosses || [];
+      } catch (e) {}
+    }
+
+    window.loadGuildMembersData = async function() {
+      try {
+        const members = await apiRequest("guild_members?select=*&order=name.asc");
+        cachedMemberList = members || [];
+
+        cachedMemberList.sort((a, b) => {
+          const pA = getRolePriority(a.role);
+          const pB = getRolePriority(b.role);
+          if (pA !== pB) return pA - pB;
+          return a.name.localeCompare(b.name, 'ko');
+        });
+
+        document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
+        document.getElementById("drawerMemberCount").innerText = cachedMemberList.length;
+
+        const select = document.getElementById("loginMemberSelect");
+        if (select) {
+          select.innerHTML = '<option value="">닉네임을 선택하세요...</option>' + 
+            cachedMemberList.map(m => `<option value="${m.name}" ${m.name === myCurrentNick ? 'selected' : ''}>${m.name} (${m.role || '일반'})</option>`).join('');
+        }
+
+        renderDrawerMemberList(cachedMemberList);
+      } catch (e) {
+        document.getElementById("drawerMembersListArea").innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${e.message}</div>`;
+      }
+    };
+
+    function getRolePriority(role) {
+      const r = String(role || '').trim();
+      if (r === '길드장' || r === '길마') return 1;
+      if (r === '부길드장' || r === '부길마') return 2;
+      if (r === '정예') return 3;
+      return 4;
+    }
+
+    function renderDrawerMemberList(list) {
+      const container = document.getElementById("drawerMembersListArea");
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="text-secondary small text-center py-4">등록된 길드원이 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(m => {
+        const roleStr = String(m.role || '일반').trim();
+        let roleTagClass = "role-tag-normal";
+        let avatarClass = "";
+
+        if (roleStr === "길드장" || roleStr === "길마") {
+          roleTagClass = "role-tag-master";
+          avatarClass = "master";
+        } else if (roleStr === "부길드장" || roleStr === "부길마") {
+          roleTagClass = "role-tag-sub";
+          avatarClass = "sub";
+        } else if (roleStr === "정예") {
+          roleTagClass = "role-tag-elite";
+        }
+
+        const isMe = (m.name === myCurrentNick);
+        const displayAvatar = isMe ? myCurrentAvatar : (m.avatar || m.name.charAt(0));
+        const displayClass = isMe ? myCurrentClass : (m.job_class || '직업 미지정');
+
+        return `
+          <div class="kakao-member-row">
+            <div class="member-row-left" onclick="openPinChangePopup(${m.id})">
+              <div class="avatar-wrapper-relative">
+                <div class="member-avatar-round ${avatarClass}">${displayAvatar}</div>
+                ${isMe ? '<div class="mini-badge-me-tag">나</div>' : ''}
+              </div>
+              <div class="member-info-col">
+                <div class="member-name-text">
+                  <span>${m.name}</span>
+                  <span class="role-badge-tag ${roleTagClass}">${roleStr}</span>
+                </div>
+                <div class="member-class-desc">
+                  <span>${displayClass}</span>
+                </div>
+              </div>
+            </div>
+            <div class="member-row-actions">
+              <button type="button" class="btn-action-pill" onclick="openEditMemberPopup(${m.id}, '${m.name}', '${roleStr}')">수정</button>
+              <button type="button" class="btn-action-pill text-danger" onclick="deleteMemberAction(${m.id}, '${m.name}')">삭제</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterDrawerMembers() {
+      const q = document.getElementById("inputDrawerMemberSearch").value.trim().toLowerCase();
+      const filtered = cachedMemberList.filter(m => m.name.toLowerCase().includes(q) || (m.role || "").toLowerCase().includes(q));
+      renderDrawerMemberList(filtered);
+    }
+
+    function toggleMenuDrawer(isOpen) {
+      const drawer = document.getElementById("menuSidebarDrawer");
+      const backdrop = document.getElementById("commonDrawerBackdrop");
+      if (isOpen) {
+        toggleMembersDrawer(false);
+        backdrop.classList.add("show");
+        drawer.classList.add("open");
+      } else {
+        drawer.classList.remove("open");
+        checkBackdropState();
+      }
+    }
+
+    function toggleMembersDrawer(isOpen) {
+      const drawer = document.getElementById("membersSidebarDrawer");
+      const backdrop = document.getElementById("commonDrawerBackdrop");
+      if (isOpen) {
+        toggleMenuDrawer(false);
+        backdrop.classList.add("show");
+        drawer.classList.add("open");
+      } else {
+        drawer.classList.remove("open");
+        checkBackdropState();
+      }
+    }
+
+    function closeAllDrawers() {
+      toggleMenuDrawer(false);
+      toggleMembersDrawer(false);
+    }
+
+    function checkBackdropState() {
+      const isMenuOpen = document.getElementById("menuSidebarDrawer").classList.contains("open");
+      const isMembersOpen = document.getElementById("membersSidebarDrawer").classList.contains("open");
+      if (!isMenuOpen && !isMembersOpen) {
+        document.getElementById("commonDrawerBackdrop").classList.remove("show");
+      }
+    }
+
+    function openProfileEditModal() {
+      document.getElementById("modalProfileEdit").style.display = "flex";
+    }
+    function closeProfileEditModal() {
+      document.getElementById("modalProfileEdit").style.display = "none";
+    }
+
+    function selectClassProfile(icon, className) {
+      myCurrentAvatar = icon;
+      myCurrentClass = `${icon} ${className}`;
+      
+      localStorage.setItem("guild_my_avatar", icon);
+      localStorage.setItem("guild_my_class", myCurrentClass);
+
+      document.getElementById("sidebarAvatarIcon").innerText = icon;
+      document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
+
+      showKakaoToast(`내 직업이 [${myCurrentClass}]로 설정되었습니다!`, "🎉");
+      closeProfileEditModal();
+      renderDrawerMemberList(cachedMemberList);
+    }
+
+    function openAddMemberPopup() {
+      document.getElementById("newMemberNickInput").value = "";
+      document.getElementById("newMemberRoleSelect").value = "일반";
+      document.getElementById("modalAddMemberPopup").style.display = "flex";
+      setTimeout(() => document.getElementById("newMemberNickInput").focus(), 100);
+    }
+    function closeAddMemberPopup() {
+      document.getElementById("modalAddMemberPopup").style.display = "none";
+    }
+
+    async function submitAddMemberAction() {
+      const name = document.getElementById("newMemberNickInput").value.trim();
+      const role = document.getElementById("newMemberRoleSelect").value;
+
+      if (!name) return showKakaoToast("길드원 닉네임을 입력해주세요!", "⚠️");
+      if (cachedMemberList.some(m => m.name === name)) {
+        return showKakaoToast("이미 존재하는 닉네임입니다!", "⚠️");
+      }
+
+      try {
+        await apiRequest("guild_members", "POST", [{ name, role, pin: "0000" }]);
+        showKakaoToast(`[${name}] 길드원 등록 완료!`, "🎉");
+        closeAddMemberPopup();
+        await loadGuildMembersData();
+      } catch (err) {
+        showKakaoToast("등록 실패: " + err.message, "❌");
+      }
+    }
+
+    function openEditMemberPopup(id, name, role) {
+      document.getElementById("editMemberId").value = id;
+      document.getElementById("editOldName").value = name;
+      document.getElementById("editNewName").value = name;
+      document.getElementById("editRoleSelect").value = role;
+      document.getElementById("modalEditMemberPopup").style.display = "flex";
+    }
+    function closeEditMemberPopup() {
+      document.getElementById("modalEditMemberPopup").style.display = "none";
+    }
+
+    async function submitEditMemberAction() {
+      const id = document.getElementById("editMemberId").value;
+      const oldName = document.getElementById("editOldName").value.trim();
+      const newName = document.getElementById("editNewName").value.trim();
+      const role = document.getElementById("editRoleSelect").value;
+
+      if (!newName) return showKakaoToast("닉네임을 입력하세요!", "⚠️");
+
+      try {
+        if (oldName !== newName) {
+          await apiRequest("rpc/update_member_nickname", "POST", { old_name: oldName, new_name: newName });
+        }
+        await apiRequest(`guild_members?id=eq.${id}`, "PATCH", { role, name: newName });
+
+        showKakaoToast(`[${newName}] 정보가 수정되었습니다!`, "✅");
+        closeEditMemberPopup();
+        await loadGuildMembersData();
+      } catch (err) {
+        showKakaoToast("수정 실패: " + err.message, "❌");
+      }
+    }
+
+    async function deleteMemberAction(id, name) {
+      if (!confirm(`[${name}] 길드원을 정말 삭제하시겠습니까?`)) return;
+
+      try {
+        await apiRequest(`guild_members?id=eq.${id}`, "DELETE");
+        showKakaoToast(`[${name}] 길드원이 삭제되었습니다.`, "🗑️");
+        await loadGuildMembersData();
+      } catch (err) {
+        showKakaoToast("삭제 실패: " + err.message, "❌");
+      }
+    }
+
+    function openPinChangePopup(memberId) {
+      const target = cachedMemberList.find(m => m.id === memberId);
+      if (!target) return;
+
+      targetPinMember = target;
+      const isDefault = (!target.pin || target.pin === "0000");
+      document.getElementById("pinChangeNoticeText").innerText = isDefault
+        ? `[${target.name}] 초기 상태입니다. 기존 비번에 0000을 입력하세요.`
+        : `[${target.name}] 현재 비밀번호와 새 비밀번호를 입력하세요.`;
+
+      document.getElementById("inputOldPin").value = "";
+      document.getElementById("inputNewPin").value = "";
+      document.getElementById("modalPinChangePopup").style.display = "flex";
+    }
+    function closePinChangePopup() {
+      document.getElementById("modalPinChangePopup").style.display = "none";
+      targetPinMember = null;
+    }
+
+    async function submitPinChangeAction() {
+      if (!targetPinMember) return;
+
+      const oldPin = document.getElementById("inputOldPin").value.trim();
+      const newPin = document.getElementById("inputNewPin").value.trim();
+      const currentPin = (targetPinMember.pin || "0000").trim();
+
+      if (oldPin !== currentPin) {
+        return showKakaoToast("기존 비밀번호가 일치하지 않습니다! (기본값: 0000)", "❌");
+      }
+      if (!/^\d+$/.test(newPin) || newPin.length < 6) {
+        return showKakaoToast("새 비밀번호는 숫자 6자리 이상이어야 합니다.", "⚠️");
+      }
+      if (/(\d)\1\1/.test(newPin)) {
+        return showKakaoToast("동일한 숫자를 3회 이상 연속 사용할 수 없습니다 (예: 000)", "⚠️");
+      }
+
+      try {
+        await apiRequest(`guild_members?id=eq.${targetPinMember.id}`, "PATCH", { pin: newPin });
+        showKakaoToast(`[${targetPinMember.name}] 비밀번호 변경 완료!`, "🎉");
+        closePinChangePopup();
+        await loadGuildMembersData();
+      } catch (err) {
+        showKakaoToast("변경 실패: " + err.message, "❌");
+      }
+    }
+
+    async function verifyStoredSession(nick, pin) {
+      try {
+        const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(nick)}&select=name,pin,role`);
+        if (res && res.length > 0) {
+          const dbPin = String(res[0].pin || '0000').trim();
+          if (dbPin === String(pin).trim()) {
+            return true;
+          }
+        }
+      } catch (e) {}
+      return false;
+    }
+
+    function showGuildLoginModal() {
+      document.getElementById("guildLoginModal").style.display = "flex";
+      document.getElementById("loginPinInput").value = "";
+    }
+
+    async function executeGuildLogin() {
+      const selectedName = document.getElementById("loginMemberSelect").value;
+      const inputPin = document.getElementById("loginPinInput").value.trim();
+
+      if (!selectedName) return showKakaoToast("본인 닉네임을 선택해주세요!", "⚠️");
+      if (!inputPin) return showKakaoToast("개인 비밀번호를 입력해주세요!", "⚠️");
+
+      const targetMember = cachedMemberList.find(m => m.name === selectedName);
+      let expectedPin = "0000";
+
+      if (targetMember && targetMember.pin) {
+        expectedPin = String(targetMember.pin).trim();
+      } else {
+        try {
+          const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(selectedName)}&select=pin,role`);
+          if (res && res.length > 0 && res[0].pin) {
+            expectedPin = String(res[0].pin).trim();
+          }
+        } catch (e) {}
+      }
+
+      if (inputPin !== expectedPin) {
+        document.getElementById("loginPinInput").value = "";
+        document.getElementById("loginPinInput").focus();
+        return showKakaoToast("비밀번호가 올바르지 않습니다! (초기값: 0000)", "❌");
+      }
+
+      myCurrentNick = selectedName;
+      myCurrentPin = inputPin;
+      localStorage.setItem("guild_my_nickname", selectedName);
+      localStorage.setItem("guild_my_pin", inputPin);
+
+      updateProfileUI(selectedName);
+      document.getElementById("guildLoginModal").style.display = "none";
+      showKakaoToast(`[${selectedName}] 님 반갑습니다!`, "🎉");
+      renderDrawerMemberList(cachedMemberList);
+    }
+
+    function handleUserLogout() {
+      if (!confirm("정말로 로그아웃하시겠습니까?")) return;
+      localStorage.removeItem("guild_my_nickname");
+      localStorage.removeItem("guild_my_pin");
+      myCurrentNick = "";
+      myCurrentPin = "";
+      toggleMenuDrawer(false);
+      showGuildLoginModal();
+    }
+
+    function updateProfileUI(nick) {
+      document.getElementById("sidebarUserNickName").innerText = nick;
+      document.getElementById("sidebarAvatarIcon").innerText = myCurrentAvatar;
+      document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
+    }
+
+    async function loadPastChatMessages() {
+      try {
+        const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=50");
+        if (list && list.length > 0) {
+          list.reverse().forEach(c => renderKakaoChatBubble(c, false));
+          scrollChatBottom();
+        }
+      } catch (e) {}
+    }
+
+    function listenRealtimeChatMessages() {
+      if (!supabaseClient) return;
+
+      supabaseClient
+        .channel("public:guild_chats")
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
+          renderKakaoChatBubble(payload.new, true);
+        })
+        .subscribe();
+    }
+
+    // 🎯 [완벽 수정] 한국시간 포맷 적용 및 여백 낭비 없는 카카오톡 말풍선 렌더링
+    function renderKakaoChatBubble(msg, isRealtime = true) {
+      const container = document.getElementById("chatMessagesView");
+      const isMe = (msg.sender_name === myCurrentNick);
+      const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
+      
+      // 🎯 한국 시간(Asia/Seoul)으로 정확한 오전/오후 계산
+      const timeStr = formatKSTChatTime(msg.created_at);
+
+      const totalMembers = cachedMemberList.length || 52;
+      const unreadCount = Math.max(1, totalMembers - 14);
+
+      let html = "";
+      const cleanMessageText = (msg.message || '').trim();
+
+      // 1) 보스알리미 리젠 브리핑 카드
+      if (msg.msg_type === "boss_briefing") {
+        html = `
+          <div class="chat-item-row other">
+            <div class="chat-sender-avatar bot">⏰</div>
+            <div class="chat-msg-body">
+              <div class="chat-sender-name">보스알리미</div>
+              <div class="chat-bubble-flex">
+                <div class="chat-bubble boss-brief-bubble">
+                  ${cleanMessageText}
+                </div>
+                <div class="chat-meta-box">
+                  <span class="chat-unread-count">${unreadCount}</span>
+                  <span class="chat-timestamp">${timeStr}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      // 2) 봇 알림 카드 (7분/3분/젠완료)
+      else if (msg.msg_type === "boss_alert") {
+        let cardTypeClass = "alert-3m";
+        let hasCutBtn = false;
+        let cutTargetBoss = "";
+
+        if (cleanMessageText.includes("7분 전")) cardTypeClass = "alert-7m";
+        else if (cleanMessageText.includes("컷 완료") || cleanMessageText.includes("컷 확인")) cardTypeClass = "alert-cut";
+        else if (cleanMessageText.includes("젠 완료") || cleanMessageText.includes("출현")) {
+          cardTypeClass = "alert-spawn";
+          hasCutBtn = true;
+          const match = cleanMessageText.match(/\[([^\]]+)\]/);
+          if (match) cutTargetBoss = match[1];
+        }
+
+        const msgTime = msg.created_at ? new Date(msg.created_at).getTime() : Date.now();
+        const msgAgeMinutes = (Date.now() - msgTime) / (1000 * 60);
+        const isExpired = (msgAgeMinutes > 20);
+        const isAlreadyCut = processedCutMessageIds.has(String(msg.id));
+
+        let cutButtonHtml = "";
+        if (hasCutBtn && cutTargetBoss) {
+          const btnId = `btnCut_${msg.id || Date.now()}`;
+          if (isAlreadyCut) {
+            cutButtonHtml = `<button type="button" class="btn-boss-alert-cut disabled" disabled>완료</button>`;
+          } else if (isExpired) {
+            cutButtonHtml = `<button type="button" class="btn-boss-alert-cut disabled" disabled title="20분 경과로 만료됨">만료</button>`;
+          } else {
+            cutButtonHtml = `<button type="button" id="${btnId}" class="btn-boss-alert-cut" onclick="triggerQuickCutAction('${cutTargetBoss}', '${btnId}', '${msg.id}')">컷</button>`;
+          }
+        }
+
+        html = `
+          <div class="chat-item-row other">
+            <div class="chat-sender-avatar bot">📢</div>
+            <div class="chat-msg-body">
+              <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
+              <div class="chat-bubble-flex">
+                <div class="boss-alert-mini-card ${cardTypeClass}">
+                  <span>${escapeHtmlText(cleanMessageText)}</span>${cutButtonHtml}
+                </div>
+                <div class="chat-meta-box">
+                  <span class="chat-unread-count">${unreadCount}</span>
+                  <span class="chat-timestamp">${timeStr}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      // 3) 내가 보낸 메시지
+      else if (isMe) {
+        html = `
+          <div class="chat-item-row me">
+            <div class="chat-msg-body">
+              <div class="chat-bubble-flex">
+                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
+                <div class="chat-meta-box">
+                  <span class="chat-unread-count">1</span>
+                  <span class="chat-timestamp">${timeStr}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      // 4) 상대방 길드원 메시지
+      else {
+        const initial = (msg.sender_name || '?').charAt(0);
+        html = `
+          <div class="chat-item-row other">
+            <div class="chat-sender-avatar">${initial}</div>
+            <div class="chat-msg-body">
+              <div class="chat-sender-name">
+                <span>${escapeHtmlText(msg.sender_name)}</span>
+              </div>
+              <div class="chat-bubble-flex">
+                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
+                <div class="chat-meta-box">
+                  <span class="chat-unread-count">${unreadCount}</span>
+                  <span class="chat-timestamp">${timeStr}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      container.insertAdjacentHTML('beforeend', html);
+      scrollChatBottom();
+
+      if (isRealtime && !isMe) {
+        triggerBeepSound(isMentioned || msg.msg_type === "boss_alert");
+      }
+    }
+
+    function formatMessageWithMentions(text) {
+      let safeText = escapeHtmlText(text);
+      cachedMemberList.forEach(m => {
+        const name = m.name;
+        const mentionTarget = `@${name}`;
+        if (safeText.includes(mentionTarget)) {
+          safeText = safeText.replaceAll(mentionTarget, `<span class="badge bg-light text-primary" style="font-size:0.75rem;">@${name}</span>`);
+        }
+      });
+      return safeText.replace(/\n/g, '<br>');
+    }
+
+    function handleInputState(textarea) {
+      const btn = document.getElementById("btnKakaoSend");
+      if (textarea.value.trim().length > 0) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    }
+
+    function checkEnterKey(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        handleSendMessage();
+      }
+    }
+
+    function parseCustomTimeString(timeStr) {
+      if (!timeStr) return null;
+      let clean = timeStr.replace(/[^0-9]/g, '');
+      if (clean.length === 3) clean = '0' + clean;
+      if (clean.length !== 4) return null;
+
+      const hour = parseInt(clean.slice(0, 2), 10);
+      const min = parseInt(clean.slice(2, 4), 10);
+      if (hour < 0 || hour > 23 || min < 0 || min > 59) return null;
+
+      const target = new Date();
+      target.setHours(hour, min, 0, 0);
+      return target;
+    }
+
+    window.postBossBriefingToChat = async function() {
+      await loadBossTimersList();
+      if (cachedBossList.length === 0) {
+        return showKakaoToast("등록된 보스 타이머가 없습니다.", "⚠️");
+      }
+
+      const now = Date.now();
+      cachedBossList.sort((a,b) => {
+        const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
+        const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
+        return tA - tB;
+      });
+
+      const currentKstFormatted = formatKSTChatTime(new Date().toISOString());
+      let briefingHtml = `<div class="boss-brief-title"><span>[보스 리젠 현황]</span><span style="font-size:0.65rem; color:#64748b;">${currentKstFormatted} 기준</span></div>`;
+
+      cachedBossList.forEach(b => {
+        if (!b.next_spawn_time) {
+          briefingHtml += `
+            <div class="boss-brief-line">
+              <span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span>
+              <div class="boss-inline-actions">
+                <button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
+                <button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        const nextDate = new Date(b.next_spawn_time);
+        const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
+        const timeDisplay = formatTimeKorean(nextDate);
+
+        if (diffSec <= 0) {
+          const passM = Math.floor(Math.abs(diffSec) / 60);
+          briefingHtml += `
+            <div class="boss-brief-line spawned">
+              <span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨! (+${passM}분)</span>
+              <div class="boss-inline-actions">
+                <button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
+                <button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
+              </div>
+            </div>
+          `;
+        } else {
+          const h = Math.floor(diffSec / 3600);
+          const m = Math.floor((diffSec % 3600) / 60);
+          const remainText = `${h > 0 ? h + '시간 ' : ''}${m}분 남음`;
+          briefingHtml += `
+            <div class="boss-brief-line">
+              <span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay} (${remainText})</span>
+              <div class="boss-inline-actions">
+                <button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
+                <button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      try {
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "보스알리미",
+          message: briefingHtml,
+          msg_type: "boss_briefing",
+          mentions: []
+        }]);
+        showKakaoToast("보스타임이 브리핑되었습니다!", "⏰");
+      } catch (err) {
+        showKakaoToast("브리핑 전송 실패: " + err.message, "❌");
+      }
+    };
+
+    window.openBossActionModal = function(type, bossName) {
+      document.getElementById("targetBossActionType").value = type;
+      document.getElementById("targetBossActionName").value = bossName;
+      document.getElementById("targetBossActionTimeInput").value = "";
+
+      const titleElem = document.getElementById("bossActionDialogTitle");
+      const descElem = document.getElementById("bossActionDialogDesc");
+
+      if (type === 'cut') {
+        titleElem.innerHTML = `<span class="text-danger">[${bossName}]</span> 컷 시간 입력`;
+        descElem.innerText = "잡힌 시간을 입력하세요 (비워두면 현재 시각 컷)";
+      } else {
+        titleElem.innerHTML = `<span class="text-primary">[${bossName}]</span> 젠 예약 시간 입력`;
+        descElem.innerText = "보스가 나타날 예정 시각을 입력하세요 (예: 2200)";
+      }
+
+      document.getElementById("modalBossActionDialog").style.display = "flex";
+      setTimeout(() => document.getElementById("targetBossActionTimeInput").focus(), 100);
+    };
+
+    window.closeBossActionDialog = function() {
+      document.getElementById("modalBossActionDialog").style.display = "none";
+    };
+
+    window.confirmBossActionDialog = async function() {
+      const type = document.getElementById("targetBossActionType").value;
+      const bossName = document.getElementById("targetBossActionName").value;
+      const timeInput = document.getElementById("targetBossActionTimeInput").value.trim();
+
+      await loadBossTimersList();
+      const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+      if (!boss) return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
+
+      closeBossActionDialog();
+
+      if (type === 'cut') {
+        let cutDate = new Date();
+        if (timeInput) {
+          const parsed = parseCustomTimeString(timeInput);
+          if (!parsed) return showKakaoToast("시간 형식이 올바르지 않습니다 (예: 1100)", "⚠️");
+          cutDate = parsed;
+        }
+
+        const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
+        try {
+          await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+            last_cut_time: cutDate.toISOString(),
+            next_spawn_time: nextSpawn.toISOString()
+          });
+
+          await apiRequest("guild_chats", "POST", [{
+            sender_name: "보스알리미",
+            message: `⚔️ [${boss.boss_name}] ${formatTimeKorean(cutDate)} 컷 완료!\n👉 다음 젠 예정: ${formatTimeKorean(nextSpawn)} (${boss.cycle_min / 60}시간 후)`,
+            msg_type: "boss_alert",
+            mentions: []
+          }]);
+          showKakaoToast(`[${boss.boss_name}] 컷 처리 완료!`, "🎉");
+          await loadBossTimersList();
+        } catch (e) {
+          showKakaoToast("처리 실패: " + e.message, "❌");
+        }
+      } else {
+        if (!timeInput) return showKakaoToast("예약 시간을 입력해주세요 (예: 2200)", "⚠️");
+        const spawnDate = parseCustomTimeString(timeInput);
+        if (!spawnDate) return showKakaoToast("시간 형식이 올바르지 않습니다 (예: 2200)", "⚠️");
+
+        try {
+          await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+            next_spawn_time: spawnDate.toISOString()
+          });
+
+          await apiRequest("guild_chats", "POST", [{
+            sender_name: "보스알리미",
+            message: `🕒 [${boss.boss_name}] 젠 시간 예약 완료!\n👉 예정 시각: ${formatTimeKorean(spawnDate)}`,
+            msg_type: "boss_alert",
+            mentions: []
+          }]);
+          showKakaoToast(`[${boss.boss_name}] 예약 완료!`, "🎉");
+          await loadBossTimersList();
+        } catch (e) {
+          showKakaoToast("예약 실패: " + e.message, "❌");
+        }
+      }
+    };
+
+    window.triggerQuickCutAction = async function(bossName, btnId, msgId) {
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "완료";
+        btn.classList.add("disabled");
+      }
+
+      await loadBossTimersList();
+      const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+      if (!boss) {
+        if (btn) { btn.disabled = false; btn.innerText = "컷"; btn.classList.remove("disabled"); }
+        return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
+      }
+
+      const cutDate = new Date();
+      const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
+
+      try {
+        await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+          last_cut_time: cutDate.toISOString(),
+          next_spawn_time: nextSpawn.toISOString()
+        });
+
+        if (msgId) {
+          saveProcessedCutId(msgId);
+        }
+
+        const cutStr = formatTimeKorean(cutDate);
+        const spawnStr = formatTimeKorean(nextSpawn);
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "보스알리미",
+          message: `⚔️ [${boss.boss_name}] ${cutStr} 컷 처리 완료!\n👉 다음 젠 예정: ${spawnStr} (${boss.cycle_min / 60}시간 후)`,
+          msg_type: "boss_alert",
+          mentions: []
+        }]);
+        showKakaoToast(`[${boss.boss_name}] 컷 완료!`, "🎉");
+        await loadBossTimersList();
+      } catch (err) {
+        if (btn) { btn.disabled = false; btn.innerText = "컷"; btn.classList.remove("disabled"); }
+        showKakaoToast("컷 처리 실패: " + err.message, "❌");
+      }
+    };
+
+    async function handleBossChatCommands(rawText) {
+      const trimmed = rawText.trim();
+
+      if (trimmed === '!보스') {
+        postBossBriefingToChat();
+        return true;
+      }
+
+      if (trimmed.startsWith('!컷')) {
+        const parts = trimmed.split(/\s+/);
+        if (parts.length < 2) {
+          showKakaoToast("!컷 [보스명] [시간] 형식으로 입력하세요", "⚠️");
+          return true;
+        }
+
+        const bossName = parts[1];
+        const timeInput = parts[2];
+
+        await loadBossTimersList();
+        const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+        if (!boss) {
+          showKakaoToast(`[${bossName}] 보스를 찾을 수 없습니다.`, "❌");
+          return true;
+        }
+
+        let cutDate = new Date();
+        if (timeInput) {
+          const parsed = parseCustomTimeString(timeInput);
+          if (!parsed) {
+            showKakaoToast("시간 형식이 올바르지 않습니다 (예: 1100)", "⚠️");
+            return true;
+          }
+          cutDate = parsed;
+        }
+
+        const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
+        await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+          last_cut_time: cutDate.toISOString(),
+          next_spawn_time: nextSpawn.toISOString()
+        });
+
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "보스알리미",
+          message: `⚔️ [${boss.boss_name}] ${formatTimeKorean(cutDate)} 컷 확인!\n👉 다음 젠 예정: ${formatTimeKorean(nextSpawn)} (${boss.cycle_min / 60}시간 후)`,
+          msg_type: "boss_alert",
+          mentions: []
+        }]);
+        await loadBossTimersList();
+        return true;
+      }
+
+      if (trimmed.startsWith('!예약')) {
+        const parts = trimmed.split(/\s+/);
+        if (parts.length < 3) {
+          showKakaoToast("!예약 [보스명] [시간] 형식으로 입력하세요", "⚠️");
+          return true;
+        }
+
+        const bossName = parts[1];
+        const timeInput = parts[2];
+
+        await loadBossTimersList();
+        const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+        if (!boss) {
+          showKakaoToast(`[${bossName}] 보스를 찾을 수 없습니다.`, "❌");
+          return true;
+        }
+
+        const spawnDate = parseCustomTimeString(timeInput);
+        if (!spawnDate) {
+          showKakaoToast("시간 형식이 올바르지 않습니다 (예: 2200)", "⚠️");
+          return true;
+        }
+
+        await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+          next_spawn_time: spawnDate.toISOString()
+        });
+
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "보스알리미",
+          message: `🕒 [${boss.boss_name}] 젠 시간 예약 완료!\n👉 예정 시각: ${formatTimeKorean(spawnDate)}`,
+          msg_type: "boss_alert",
+          mentions: []
+        }]);
+        await loadBossTimersList();
+        return true;
+      }
+
+      return false;
+    }
+
+    async function handleSendMessage() {
+      const textarea = document.getElementById("inputChatMessage");
+      const text = textarea.value.trim();
+      if (!text) return;
+
+      if (!myCurrentNick || !myCurrentPin) {
+        showKakaoToast("로그인이 필요합니다.", "⚠️");
+        showGuildLoginModal();
+        return;
+      }
+
+      textarea.value = "";
+      handleInputState(textarea);
+      closeMentionPopup();
+
+      const isCommand = (text.startsWith('!') || text.startsWith('！'));
+
+      try {
+        const detectedMentions = [];
+        cachedMemberList.forEach(m => {
+          if (text.includes(`@${m.name}`)) detectedMentions.push(m.name);
+        });
+
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: myCurrentNick,
+          message: text,
+          msg_type: "chat",
+          mentions: detectedMentions
+        }]);
+      } catch (err) {
+        showKakaoToast("전송 실패: " + err.message, "❌");
+        return;
+      }
+
+      if (isCommand) {
+        await handleBossChatCommands(text);
+      }
+    }
+
+    function bindMentionInputEvents() {
+      const textarea = document.getElementById("inputChatMessage");
+      const popup = document.getElementById("mentionPopupBox");
+
+      textarea.addEventListener("input", () => {
+        const val = textarea.value;
+        const lastAt = val.lastIndexOf("@");
+        if (lastAt !== -1) {
+          const q = val.slice(lastAt + 1).toLowerCase();
+          const matched = cachedMemberList.filter(m => m.name.toLowerCase().includes(q));
+          if (matched.length > 0) {
+            popup.innerHTML = matched.slice(0, 5).map(m => `
+              <div class="mention-item-row" onclick="applyMentionNick('${m.name}')">
+                <i class="fa-solid fa-at text-primary"></i> ${m.name}
+              </div>
+            `).join('');
+            popup.style.display = "block";
+            return;
+          }
+        }
+        popup.style.display = "none";
+      });
+    }
+
+    function applyMentionNick(name) {
+      const textarea = document.getElementById("inputChatMessage");
+      const val = textarea.value;
+      const lastAt = val.lastIndexOf("@");
+      textarea.value = val.slice(0, lastAt) + `@${name} `;
+      closeMentionPopup();
+      textarea.focus();
+      handleInputState(textarea);
+    }
+
+    function closeMentionPopup() {
+      document.getElementById("mentionPopupBox").style.display = "none";
+    }
+
+    window.openModulePage = async function(pageName) {
+      closeAllDrawers();
+
+      const overlay = document.getElementById("moduleOverlay");
+      const body = document.getElementById("overlayBodyContent");
+      const navTitle = document.getElementById("overlayNavTitle");
+
+      const titleMap = {
+        "PageNotice": "공지사항",
+        "PageRegister": "보스참여등록",
+        "PageRecords": "보스참여자",
+        "PageWish": "분배희망신청",
+        "PageSettle": "정산내역",
+        "PageFinance": "길드비용현황",
+        "PageEnemies": "원수목록",
+        "PageSettings": "설정"
+      };
+
+      navTitle.innerText = titleMap[pageName] || "기능 화면";
+      overlay.style.display = "flex";
+      body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
+
+      try {
+        const res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
+        if (!res.ok) throw new Error("로드 실패");
+        const html = await res.text();
+        body.innerHTML = html;
+
+        document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
+        body.querySelectorAll("script").forEach(s => {
+          const sc = document.createElement("script");
+          sc.className = "module-dynamic-script";
+          if (s.src) sc.src = s.src;
+          else sc.textContent = s.textContent;
+          document.body.appendChild(sc);
+        });
+      } catch (e) {
+        body.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${e.message}</div>`;
+      }
+    };
+
+    window.closeModuleOverlay = function() {
+      document.getElementById("moduleOverlay").style.display = "none";
+      document.getElementById("overlayBodyContent").innerHTML = "";
+      document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
+    };
+
+    // 🎯 7분 전, 3분 전, 젠 완료 실시간 워처
+    function startBossWatchTimer() {
+      if (bossWatcherInterval) clearInterval(bossWatcherInterval);
+
+      bossWatcherInterval = setInterval(async () => {
+        try {
+          const now = Date.now();
+          const timers = await apiRequest("boss_timers?select=*");
+          cachedBossList = timers || [];
+          
+          (timers || []).forEach(b => {
+            if (!b.next_spawn_time) return;
+            const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
+
+            // 7분 전 알림
+            const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
+            if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
+              notifiedBossSpawnMap.add(key7Min);
+              sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`);
+            }
+
+            // 3분 전 알림
+            const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
+            if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
+              notifiedBossSpawnMap.add(key3Min);
+              sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`);
+            }
+
+            // 젠 완료 알림
+            const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
+            if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
+              notifiedBossSpawnMap.add(keySpawned);
+              sendBossAlertBroadcast(`🔥 [${b.boss_name}] 젠 완료! 출현했습니다! 즉시 처치 바랍니다!`);
+            }
+          });
+        } catch (e) {}
+      }, 4000);
+    }
+
+    async function sendBossAlertBroadcast(msgText) {
+      try {
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "보스알리미",
+          message: msgText.trim(),
+          msg_type: "boss_alert",
+          mentions: []
+        }]);
+      } catch (e) {}
+    }
+
+    function setupPwaInstallation() {
+      const installBtn = document.getElementById("btnPwaInstall");
+      window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installBtn) installBtn.style.display = "inline-flex";
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener("click", async () => {
+          if (!deferredPrompt) return;
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === "accepted") {
+            installBtn.style.display = "none";
+          }
+          deferredPrompt = null;
+        });
+      }
+    }
+
+    function scrollChatBottom() {
+      const box = document.getElementById("chatMessagesView");
+      box.scrollTop = box.scrollHeight;
+    }
+    function escapeHtmlText(t) {
+      return (t || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+    }
+    function focusChatInput() {
+      document.getElementById("inputChatMessage").focus();
+    }
+    function triggerBeepSound(isImportant = false) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = isImportant ? 880 : 587;
+        gain.gain.value = 0.08;
+        osc.start();
+        setTimeout(() => osc.stop(), 150);
+      } catch (e) {}
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .catch(err => console.warn('PWA 등록 실패:', err));
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
