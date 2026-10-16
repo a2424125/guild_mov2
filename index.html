@@ -7,7 +7,7 @@
 
   <!-- PWA 앱 설치 설정 -->
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#abc1d1">
+  <meta name="theme-color" content="#bacee0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="길드톡">
@@ -23,15 +23,16 @@
 
   <style>
     :root {
-      --kakao-bg: #abc1d1;
+      /* 🎯 실제 PC 카카오톡과 100% 동일한 밝은 파스텔톤 스카이블루 (#bacee0) */
+      --kakao-bg: #bacee0;
       --kakao-yellow: #fee500;
       --kakao-unread-yellow: #ffeb3b;
       --kakao-bubble-me: #fee500;
       --kakao-bubble-other: #ffffff;
       --kakao-text-black: #191919;
       --kakao-time-gray: #556677;
-      --kakao-header-bg: #abc1d1;
-      --drawer-width: 260px;
+      --kakao-header-bg: #bacee0;
+      --drawer-width: 250px;
     }
 
     * {
@@ -39,7 +40,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    body {
+    html, body {
       background-color: var(--kakao-bg);
       color: var(--kakao-text-black);
       font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
@@ -49,7 +50,9 @@
       overflow: hidden;
       display: flex;
       position: relative;
-      min-width: 260px;
+      /* 🎯 최소 너비를 해제하여 카카오톡만큼 슬림하게 줄어들도록 설정 */
+      min-width: 0;
+      width: 100%;
     }
 
     /* 서랍 공통 백드롭 */
@@ -68,7 +71,9 @@
       opacity: 1;
     }
 
-    /* 1. 햄버거 메뉴 서랍 (260px) */
+    /* ========================================================
+       1. 햄버거 메뉴 서랍 (그림자 화면 유출 원천 차단)
+       ======================================================== */
     .app-sidebar-drawer {
       position: fixed;
       top: 0; left: 0;
@@ -78,13 +83,17 @@
       border-right: 1px solid #dcdcdc;
       z-index: 99999;
       transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
       display: flex;
       flex-direction: column;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+      /* 🎯 닫혀 있을 때 그림자가 화면 왼쪽으로 비치지 않도록 none 처리 */
+      box-shadow: none;
+      visibility: hidden;
     }
     .app-sidebar-drawer.open {
       transform: translateX(0);
+      visibility: visible;
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
     }
 
     .sidebar-header {
@@ -169,7 +178,9 @@
       font-size: 0.68rem; color: #0284c7; font-weight: 600;
     }
 
-    /* 2. 길드원 목록 서랍 (260px) */
+    /* ========================================================
+       2. 길드원 목록 서랍 (그림자 화면 유출 원천 차단)
+       ======================================================== */
     .app-members-drawer {
       position: fixed;
       top: 0; left: 0;
@@ -179,13 +190,16 @@
       border-right: 1px solid #dcdcdc;
       z-index: 99999;
       transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
       display: flex;
       flex-direction: column;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12);
+      box-shadow: none;
+      visibility: hidden;
     }
     .app-members-drawer.open {
       transform: translateX(0);
+      visibility: visible;
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
     }
 
     .members-drawer-header {
@@ -329,7 +343,7 @@
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
     /* ========================================================
-       3. 메인 대화창 (카카오톡 1:1 밀착 여백)
+       3. 메인 대화창 레이아웃
        ======================================================== */
     .app-main-layout {
       flex: 1;
@@ -347,9 +361,10 @@
       background: var(--kakao-header-bg);
       flex-shrink: 0;
       z-index: 10;
+      min-width: 0;
     }
     .header-left-area {
-      display: flex; align-items: center; gap: 8px; min-width: 0;
+      display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;
     }
     .room-avatar-circle {
       width: 32px; height: 32px;
@@ -358,7 +373,7 @@
       color: #fff; font-size: 0.95rem; flex-shrink: 0;
     }
     .room-info-box {
-      display: flex; flex-direction: column; min-width: 0;
+      display: flex; flex-direction: column; min-width: 0; flex: 1;
     }
     .room-title-text {
       font-size: 0.88rem; font-weight: 700; color: #191919;
@@ -368,7 +383,7 @@
       font-size: 0.72rem; color: #556677; font-weight: 600; cursor: pointer;
     }
     .header-right-tools {
-      display: flex; align-items: center; gap: 2px;
+      display: flex; align-items: center; gap: 2px; flex-shrink: 0;
     }
     .btn-kakao-head {
       background: none; border: none; color: #3b4b59;
@@ -385,23 +400,26 @@
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
       cursor: pointer;
       flex-shrink: 0;
+      min-width: 0;
     }
     .notice-icon-part { color: #1e88e5; font-size: 0.85rem; margin-right: 6px; flex-shrink: 0; }
     .notice-text-content {
       flex: 1; font-size: 0.76rem; font-weight: 600; color: #222;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      min-width: 0;
     }
 
+    /* 🎯 카카오톡 1:1 패딩 및 간격 */
     .chat-messages-container {
       flex: 1; overflow-y: auto;
       padding: 8px 10px;
       display: flex; flex-direction: column;
-      gap: 5px; /* 카톡처럼 말풍선 사이 간격 촘촘하게 */
+      gap: 5px;
     }
     .chat-messages-container::-webkit-scrollbar { width: 4px; }
     .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
 
-    .chat-item-row { display: flex; width: 100%; margin-bottom: 1px; }
+    .chat-item-row { display: flex; width: 100%; margin-bottom: 1px; min-width: 0; }
     .chat-item-row.other { align-items: flex-start; gap: 6px; }
     .chat-item-row.me { justify-content: flex-end; }
 
@@ -418,9 +436,10 @@
     .chat-msg-body {
       display: flex;
       flex-direction: column;
-      max-width: 84%;
+      max-width: 86%;
       width: fit-content;
       align-items: flex-start;
+      min-width: 0;
     }
     .chat-item-row.me .chat-msg-body {
       align-items: flex-end;
@@ -438,7 +457,7 @@
     }
     .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
-    /* 🎯 카카오톡 실제 말풍선: 글자 크기에 딱 맞게 감싸기 */
+    /* 🎯 말풍선 글자 여백 밀착 (상하 6px, 좌우 9px) */
     .chat-bubble {
       display: inline-block;
       width: fit-content;
@@ -531,7 +550,7 @@
       color: #b91c1c;
     }
 
-    /* 🎯 [완벽 수정] 보스 알림 카드: 휑한 빈 공간 없이 글자 크기에 딱 맞춤 */
+    /* 🎯 보스 알림 카드: 휑한 빈 공간 없이 글자 크기에 딱 밀착 */
     .boss-alert-mini-card {
       background: #ffffff !important;
       border-radius: 5px !important;
@@ -580,7 +599,7 @@
     .kakao-input-area {
       background: #ffffff; border-top: 1px solid #d4d4d4;
       padding: 6px 10px; display: flex; flex-direction: column;
-      flex-shrink: 0; position: relative;
+      flex-shrink: 0; position: relative; min-width: 0;
     }
     .input-textarea-custom {
       width: 100%; height: 42px; border: none; outline: none;
@@ -1473,7 +1492,7 @@
         .subscribe();
     }
 
-    // 🎯 [완벽 수정] 여백 낭비 없는 카카오톡 실시간 말풍선 렌더링
+    // 🎯 [핵심] 휑한 공백 없는 밀착형 카카오톡 말풍선 렌더링
     function renderKakaoChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isMe = (msg.sender_name === myCurrentNick);
@@ -1512,7 +1531,7 @@
           </div>
         `;
       }
-      // 2) 보스 자동 알림 봇 (7분 전/3분 전/젠 완료 콤팩트 카드)
+      // 2) 봇 알림 카드 (7분/3분/젠완료)
       else if (msg.msg_type === "boss_alert") {
         let cardTypeClass = "alert-3m";
         let hasCutBtn = false;
