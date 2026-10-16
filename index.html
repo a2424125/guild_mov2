@@ -5,19 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>길드 대화방</title>
 
-  <!-- PWA 앱 설정 -->
+  <!-- PWA 앱 설치 설정 -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#bacee0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="길드톡">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
+  <link rel="apple-touch-icon" href="[https://cdn-icons-png.flaticon.com/512/3670/3670157.png](https://cdn-icons-png.flaticon.com/512/3670/3670157.png)">
 
-  <!-- CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- 부트스트랩 & 폰트어썸 아이콘 -->
+  <link href="[https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css](https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css)" rel="stylesheet">
+  <link href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)" rel="stylesheet">
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase 공식 SDK 및 설정 파일 로드 -->
+  <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
   <script src="supabase.js"></script>
 
   <style>
@@ -33,7 +34,10 @@
       --drawer-width: 260px;
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     html, body {
       background-color: var(--kakao-bg);
@@ -45,7 +49,7 @@
       overflow: hidden;
       display: flex;
       position: relative;
-      min-width: 260px;
+      min-width: 0;
       width: 100%;
     }
 
@@ -60,9 +64,12 @@
       opacity: 0;
       transition: opacity 0.2s ease;
     }
-    .drawer-backdrop.show { display: block; opacity: 1; }
+    .drawer-backdrop.show {
+      display: block;
+      opacity: 1;
+    }
 
-    /* 메뉴 서랍 (260px) */
+    /* 1. 햄버거 메뉴 서랍 (260px) */
     .app-sidebar-drawer {
       position: fixed;
       top: 0; left: 0;
@@ -95,1381 +102,282 @@
       flex-shrink: 0;
     }
     .sidebar-brand {
-      font-weight: 800; font-size: 0.92rem; color: #191919;
-      display: flex; align-items: center; gap: 7px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: #191919;
+      display: flex;
+      align-items: center;
+      gap: 7px;
     }
     .sidebar-close-btn {
-      background: none; border: none; color: #707070; font-size: 1.15rem; cursor: pointer;
+      background: none; border: none;
+      color: #707070; font-size: 1.15rem;
+      cursor: pointer;
     }
 
     .sidebar-menu-list {
-      list-style: none; padding: 8px 6px; margin: 0; overflow-y: auto; flex: 1;
+      list-style: none;
+      padding: 8px 6px;
+      margin: 0;
+      overflow-y: auto;
+      flex: 1;
     }
     .sidebar-menu-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; color: #333333; font-size: 0.84rem; font-weight: 600;
-      border-radius: 7px; cursor: pointer; transition: background 0.12s ease; margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      color: #333333;
+      font-size: 0.84rem;
+      font-weight: 600;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: background 0.12s ease;
+      margin-bottom: 2px;
     }
     .sidebar-menu-item:hover { background: #f0f0f0; color: #111111; }
     .sidebar-menu-item i { width: 20px; text-align: center; font-size: 0.95rem; }
 
     .sidebar-footer {
-      padding: 10px 14px; border-top: 1px solid #ececec; background: #fafafa;
-      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+      padding: 10px 14px;
+      border-top: 1px solid #ececec;
+      background: #fafafa;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
     }
     .user-profile-badge {
-      display: flex; align-items: center; gap: 8px; min-width: 0; cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      cursor: pointer;
     }
     .user-avatar {
-      width: 32px; height: 32px; border-radius: 11px; background: #fee500; border: 1px solid #e5cf00;
-      display: flex; align-items: center; justify-content: center; color: #191919;
-      font-size: 1rem; font-weight: 800; flex-shrink: 0; position: relative;
+      width: 32px; height: 32px;
+      border-radius: 11px;
+      background: #fee500;
+      border: 1px solid #e5cf00;
+      display: flex;
+      align-items: center; justify-content: center;
+      color: #191919; font-size: 1rem; font-weight: 800;
+      flex-shrink: 0;
+      position: relative;
     }
     .user-name-text {
       font-size: 0.82rem; font-weight: 700; color: #191919;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .user-sub-class { font-size: 0.68rem; color: #0284c7; font-weight: 600; }
+    .user-sub-class {
+      font-size: 0.68rem; color: #0284c7; font-weight: 600;
+    }
 
-    /* 길드원 목록 서랍 (260px) */
+    /* 2. 길드원 목록 서랍 (260px) */
     .app-members-drawer {
-      position: fixed; top: 0; left: 0; width: var(--drawer-width); height: 100vh;
-      background: #ffffff; border-right: 1px solid #dcdcdc; z-index: 99999;
-      transform: translateX(-100%); transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
-      display: flex; flex-direction: column; box-shadow: none; visibility: hidden;
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--drawer-width);
+      height: 100vh;
+      background: #ffffff;
+      border-right: 1px solid #dcdcdc;
+      z-index: 99999;
+      transform: translateX(-100%);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+      display: flex;
+      flex-direction: column;
+      box-shadow: none;
+      visibility: hidden;
     }
     .app-members-drawer.open {
-      transform: translateX(0); visibility: visible; box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+      transform: translateX(0);
+      visibility: visible;
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
     }
+
     .members-drawer-header {
-      height: 50px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between;
-      border-bottom: 1px solid #ececec; background: #f7f7f7; flex-shrink: 0;
+      height: 50px;
+      padding: 0 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #ececec;
+      background: #f7f7f7;
+      flex-shrink: 0;
     }
     .members-drawer-title {
-      font-weight: 800; font-size: 0.92rem; color: #191919; display: flex; align-items: center; gap: 6px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      color: #191919;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .members-header-tools { display: flex; align-items: center; gap: 3px; }
+    .members-header-tools {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
     .btn-tool-icon {
-      background: none; border: none; color: #475569; font-size: 0.95rem; padding: 5px; cursor: pointer; border-radius: 5px;
+      background: none; border: none;
+      color: #475569; font-size: 0.95rem;
+      padding: 5px; cursor: pointer;
+      border-radius: 5px;
     }
     .btn-tool-icon:hover { background: #e2e8f0; color: #1e293b; }
 
     .members-search-wrap {
-      padding: 6px 10px; background: #ffffff; border-bottom: 1px solid #f0f0f0; position: relative;
+      padding: 6px 10px;
+      background: #ffffff;
+      border-bottom: 1px solid #f0f0f0;
+      position: relative;
     }
     .members-search-input {
-      width: 100%; background: #f4f5f7; border: none; border-radius: 14px;
-      padding: 5px 10px 5px 28px; font-size: 0.78rem; outline: none;
+      width: 100%;
+      background: #f4f5f7;
+      border: none;
+      border-radius: 14px;
+      padding: 5px 10px 5px 28px;
+      font-size: 0.78rem;
+      outline: none;
     }
-    .members-list-scroll { flex: 1; overflow-y: auto; padding: 2px 0; }
+
+    .members-list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2px 0;
+    }
     .members-list-scroll::-webkit-scrollbar { width: 4px; }
     .members-list-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 
     .kakao-member-row {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 12px; cursor: pointer; transition: background 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: background 0.12s;
     }
     .kakao-member-row:hover { background: #f8fafc; }
-    .member-row-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
-    .avatar-wrapper-relative { position: relative; flex-shrink: 0; }
+
+    .member-row-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .avatar-wrapper-relative {
+      position: relative;
+      flex-shrink: 0;
+    }
     .member-avatar-round {
-      width: 34px; height: 34px; border-radius: 12px; background: #e2e8f0; border: 1px solid #cbd5e1;
-      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: #3b82f6;
+      width: 34px; height: 34px;
+      border-radius: 12px;
+      background: #e2e8f0;
+      border: 1px solid #cbd5e1;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem; color: #3b82f6;
     }
     .member-avatar-round.master { background: #fef08a; border-color: #eab308; color: #854d0e; }
     .member-avatar-round.sub { background: #f3e8ff; border-color: #c084fc; color: #6b21a8; }
 
     .mini-badge-me-tag {
-      position: absolute; top: -3px; left: -4px; background: #f59e0b; color: #ffffff;
-      font-size: 0.55rem; font-weight: 900; padding: 1px 3px; border-radius: 7px;
-      border: 1px solid #ffffff; line-height: 1; pointer-events: none;
+      position: absolute;
+      top: -3px;
+      left: -4px;
+      background: #f59e0b;
+      color: #ffffff;
+      font-size: 0.55rem;
+      font-weight: 900;
+      padding: 1px 3px;
+      border-radius: 7px;
+      border: 1px solid #ffffff;
+      line-height: 1;
+      pointer-events: none;
     }
-    .member-info-col { display: flex; flex-direction: column; min-width: 0; }
+
+    .member-info-col {
+      display: flex; flex-direction: column; min-width: 0;
+    }
     .member-name-text {
-      font-size: 0.82rem; font-weight: 700; color: #191919; display: flex; align-items: center; gap: 4px;
+      font-size: 0.82rem; font-weight: 700; color: #191919;
+      display: flex; align-items: center; gap: 4px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .member-class-desc {
-      font-size: 0.65rem; font-weight: 600; color: #0284c7; margin-top: 1px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #0284c7;
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+
     .role-badge-tag {
-      font-size: 0.62rem; font-weight: 700; padding: 1px 3px; border-radius: 3px; white-space: nowrap;
+      font-size: 0.62rem; font-weight: 700; padding: 1px 3px;
+      border-radius: 3px; white-space: nowrap;
     }
     .role-tag-master { background: #fef08a; color: #854d0e; }
     .role-tag-sub { background: #f3e8ff; color: #6b21a8; }
     .role-tag-elite { background: #e0f2fe; color: #0369a1; }
     .role-tag-normal { background: #f1f5f9; color: #64748b; }
+
+    .member-row-actions {
+      display: flex; align-items: center; gap: 3px; flex-shrink: 0;
+    }
     .btn-action-pill {
-      background: none; border: 1px solid #e2e8f0; color: #64748b; font-size: 0.65rem; padding: 1px 5px; border-radius: 5px; cursor: pointer;
+      background: none; border: 1px solid #e2e8f0;
+      color: #64748b; font-size: 0.65rem; padding: 1px 5px;
+      border-radius: 5px; cursor: pointer;
     }
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
-    /* 3. 대화창 본체 */
+    /* ========================================================
+       3. 메인 대화창 레이아웃
+       ======================================================== */
     .app-main-layout {
-      flex: 1; width: 100%; height: 100vh; display: flex; flex-direction: column;
-      position: relative; background: var(--kakao-bg); min-width: 0;
+      flex: 1;
+      width: 100%; height: 100vh;
+      display: flex; flex-direction: column;
+      position: relative;
+      background: var(--kakao-bg);
+      min-width: 0;
     }
 
     .kakao-chat-header {
-      height: 48px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between;
-      background: var(--kakao-header-bg); flex-shrink: 0; z-index: 10; min-width: 0;
+      height: 48px;
+      padding: 0 10px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--kakao-header-bg);
+      flex-shrink: 0;
+      z-index: 10;
+      min-width: 0;
     }
-    .header-left-area { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+    .header-left-area {
+      display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;
+    }
     .room-avatar-circle {
-      width: 32px; height: 32px; border-radius: 12px; background: #5b8296; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.95rem; flex-shrink: 0;
+      width: 32px; height: 32px;
+      border-radius: 12px; background: #5b8296;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 0.95rem; flex-shrink: 0;
     }
-    .room-info-box { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+    .room-info-box {
+      display: flex; flex-direction: column; min-width: 0; flex: 1;
+    }
     .room-title-text {
-      font-size: 0.88rem; font-weight: 700; color: #191919; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      font-size: 0.88rem; font-weight: 700; color: #191919;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .room-count-text { font-size: 0.72rem; color: #556677; font-weight: 600; cursor: pointer; }
-    .header-right-tools { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+    .room-count-text {
+      font-size: 0.72rem; color: #556677; font-weight: 600; cursor: pointer;
+    }
+    .header-right-tools {
+      display: flex; align-items: center; gap: 2px; flex-shrink: 0;
+    }
     .btn-kakao-head {
-      background: none; border: none; color: #3b4b59; font-size: 0.95rem; cursor: pointer; padding: 5px; border-radius: 5px;
-    }
-    .btn-kakao-head:hover { background: rgba(0,0,0,0.05); }
-
-    .kakao-notice-banner {
-      background: #ffffff; border-radius: 6px; margin: 6px 10px 2px 10px; padding: 6px 10px;
-      display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-      cursor: pointer; flex-shrink: 0; min-width: 0;
-    }
-    .notice-icon-part { color: #1e88e5; font-size: 0.85rem; margin-right: 6px; flex-shrink: 0; }
-    .notice-text-content {
-      flex: 1; font-size: 0.76rem; font-weight: 600; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
-    }
-
-    /* 🎯 카톡 밀착 여백 리스트 */
-    .chat-messages-container {
-      flex: 1; overflow-y: auto; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px;
-    }
-    .chat-messages-container::-webkit-scrollbar { width: 4px; }
-    .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
-
-    .chat-item-row { display: flex; width: 100%; margin-bottom: 1px; min-width: 0; }
-    .chat-item-row.other { align-items: flex-start; gap: 6px; }
-    .chat-item-row.me { justify-content: flex-end; }
-
-    .chat-sender-avatar {
-      width: 34px; height: 34px; border-radius: 13px; background: #ffffff; border: 1px solid #dcdcdc;
-      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.95rem; color: #3b82f6; flex-shrink: 0;
-    }
-    .chat-sender-avatar.bot { background: #fee2e2; border-color: #ef4444; color: #dc2626; }
-
-    .chat-msg-body {
-      display: flex; flex-direction: column; max-width: 86%; width: fit-content; align-items: flex-start; min-width: 0;
-    }
-    .chat-item-row.me .chat-msg-body { align-items: flex-end; }
-    .chat-sender-name {
-      font-size: 0.72rem; color: #333; margin-bottom: 2px; font-weight: 600; display: flex; align-items: center; gap: 3px;
-    }
-    .chat-bubble-flex { display: flex; align-items: flex-end; gap: 4px; width: fit-content; }
-    .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
-
-    /* 🎯 카톡 밀착 말풍선 */
-    .chat-bubble {
-      display: inline-block; width: fit-content; max-width: 100%; padding: 6px 9px;
-      border-radius: 5px; font-size: 0.78rem; line-height: 1.35; word-break: break-all;
-      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06); white-space: pre-wrap;
-    }
-    .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other); color: var(--kakao-text-black); }
-    .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me); color: var(--kakao-text-black); }
-
-    .chat-meta-box {
-      display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-bottom: 1px;
-    }
-    .chat-item-row.other .chat-meta-box { align-items: flex-start; }
-    .chat-unread-count {
-      color: var(--kakao-unread-yellow); font-size: 0.62rem; font-weight: 800; line-height: 1; margin-bottom: 2px;
-    }
-    .chat-timestamp { font-size: 0.6rem; color: var(--kakao-time-gray); white-space: nowrap; line-height: 1; }
-
-    /* 🎯 [신규] 보스 토벌 참여자 등록 대화형 카드 */
-    .raid-participation-card {
-      background: #ffffff !important;
-      border-radius: 8px !important;
-      padding: 10px 12px !important;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
-      width: fit-content !important;
-      min-width: 250px;
-    }
-    .raid-card-header {
-      font-size: 0.84rem; font-weight: 800; color: #191919;
-      margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #f1f5f9;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .raid-members-preview {
-      font-size: 0.74rem; color: #475569; margin-bottom: 8px; line-height: 1.4;
-      background: #f8fafc; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0;
-    }
-    .raid-btn-group {
-      display: flex; gap: 4px;
-    }
-    .btn-raid-action {
-      flex: 1; font-size: 0.72rem; font-weight: 800; padding: 6px 4px; border-radius: 5px;
-      cursor: pointer; text-align: center; border: none; white-space: nowrap;
-    }
-    .btn-raid-join { background: #fee500; color: #191919; }
-    .btn-raid-join:hover { background: #fdd835; }
-    .btn-raid-select { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-    .btn-raid-select:hover { background: #bae6fd; }
-
-    /* 보스 리젠 브리핑 카드 */
-    .boss-brief-bubble {
-      background: #ffffff !important; border-radius: 6px !important; padding: 7px 9px !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important; width: fit-content !important; min-width: 190px;
-    }
-    .boss-brief-title {
-      font-size: 0.78rem; font-weight: 800; color: #191919; margin-bottom: 4px; padding-bottom: 3px;
-      border-bottom: 1px dashed #e2e8f0; display: flex; justify-content: space-between; align-items: center;
-    }
-    .boss-brief-line {
-      display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 2px 0; font-size: 0.74rem;
-    }
-    .boss-brief-line.spawned { color: #dc2626; font-weight: 700; }
-    .boss-inline-actions { display: flex; gap: 2px; flex-shrink: 0; }
-    .btn-boss-inline {
-      background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; font-size: 0.62rem; font-weight: 700;
-      padding: 1px 4px; border-radius: 3px; cursor: pointer;
-    }
-    .btn-boss-inline.cut { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
-
-    /* 보스 알림 콤팩트 카드 */
-    .boss-alert-mini-card {
-      background: #ffffff !important; border-radius: 5px !important; padding: 6px 9px !important;
-      font-size: 0.78rem !important; line-height: 1.35 !important; width: fit-content !important; max-width: 100% !important;
-      display: inline-flex !important; align-items: center !important; gap: 4px !important; box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
-    }
-    .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
-    .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
-    .boss-alert-mini-card.alert-spawn { border-left: 4px solid #ef4444 !important; background: #fff8f8 !important; }
-    .boss-alert-mini-card.alert-cut { border-left: 4px solid #38bdf8 !important; }
-
-    .btn-boss-alert-cut {
-      background: #ef4444; color: #ffffff; border: none; font-size: 0.66rem; font-weight: 800;
-      padding: 2px 6px; border-radius: 4px; cursor: pointer; white-space: nowrap; margin-left: 4px; flex-shrink: 0;
-    }
-    .btn-boss-alert-cut:hover { background: #dc2626; }
-    .btn-boss-alert-cut.disabled, .btn-boss-alert-cut:disabled {
-      background: #94a3b8 !important; color: #ffffff !important; cursor: not-allowed !important; opacity: 0.7;
-    }
-
-    /* 하단 입력창 */
-    .kakao-input-area {
-      background: #ffffff; border-top: 1px solid #d4d4d4; padding: 6px 10px;
-      display: flex; flex-direction: column; flex-shrink: 0; position: relative; min-width: 0;
-    }
-    .input-textarea-custom {
-      width: 100%; height: 42px; border: none; outline: none; resize: none;
-      font-size: 0.82rem; color: #191919; background: transparent; padding: 0; font-family: inherit;
-    }
-    .input-textarea-custom::placeholder { color: #999999; }
-    .input-bottom-tools {
-      display: flex; justify-content: space-between; align-items: center; margin-top: 2px;
-    }
-    .input-tool-icons { display: flex; gap: 10px; color: #777; font-size: 1rem; }
-    .input-tool-icons i { cursor: pointer; }
-    .btn-kakao-send {
-      background: #e2e2e2; border: none; color: #999; font-size: 0.76rem; font-weight: 700;
-      padding: 4px 11px; border-radius: 3px; cursor: pointer; transition: all 0.15s ease;
-    }
-    .btn-kakao-send.active { background: var(--kakao-yellow); color: #191919; }
-
-    .mention-popup-container {
-      position: absolute; bottom: 82px; left: 10px; max-width: 240px; background: #ffffff; border: 1px solid #ccc;
-      border-radius: 6px; max-height: 160px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 100;
-    }
-    .mention-item-row {
-      padding: 6px 10px; font-size: 0.78rem; font-weight: 600; color: #333; cursor: pointer;
-      display: flex; align-items: center; gap: 5px; border-bottom: 1px solid #f4f4f4;
-    }
-    .mention-item-row:hover { background: #f7f7f7; color: #1e88e5; }
-
-    /* 모듈 오버레이 */
-    .module-display-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #ffffff;
-      z-index: 200; display: none; flex-direction: column;
-    }
-    .module-nav-header {
-      height: 48px; padding: 0 14px; background: #ffffff; border-bottom: 1px solid #e2e8f0;
-      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-    }
-    .module-scroll-body {
-      flex: 1; overflow-y: auto; padding: 10px; max-width: 600px; width: 100%; margin: 0 auto;
-    }
-
-    /* 팝업 모달 */
-    .kakao-modal-backdrop {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.45); z-index: 9999999;
-      display: flex; align-items: center; justify-content: center; padding: 16px;
-    }
-    .kakao-modal-card {
-      background: #ffffff; border-radius: 12px; width: 100%; max-width: 320px;
-      padding: 18px 16px; text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,0.2);
-    }
-    .kakao-modal-card input, .kakao-modal-card select {
-      width: 100%; background: #f7f7f7; border: 1px solid #e2e8f0;
-      border-radius: 7px; padding: 7px 10px; font-size: 0.82rem; outline: none; margin-bottom: 8px;
-    }
-
-    /* 참여자 체크박스 모달 전용 그리드 */
-    .members-check-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
-      max-height: 220px; overflow-y: auto; background: #f8fafc;
-      padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 10px;
-    }
-    .member-check-chip {
-      display: flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 700;
-      background: #ffffff; padding: 4px 6px; border-radius: 6px; border: 1px solid #cbd5e1; cursor: pointer;
-    }
-
-    .class-preset-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-height: 220px; overflow-y: auto; margin-bottom: 12px;
-    }
-    .class-preset-cell {
-      padding: 6px 3px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; cursor: pointer; transition: all 0.12s;
-    }
-    .class-preset-cell:hover, .class-preset-cell.active { border-color: #0284c7; background: #e0f2fe; }
-    .class-icon-big { font-size: 1.2rem; line-height: 1; }
-    .class-title-small { font-size: 0.65rem; font-weight: 700; color: #334155; }
-
-    /* 토스트 */
-    .kakao-toast-box {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-20px);
-      background: #333333; color: #ffffff; padding: 8px 16px; border-radius: 20px;
-      font-size: 0.78rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      z-index: 99999999; opacity: 0; pointer-events: none; transition: all 0.2s ease;
-      white-space: nowrap; display: flex; align-items: center; gap: 6px;
-    }
-    .kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  </style>
-</head>
-<body>
-
-  <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
-
-  <!-- 1. 햄버거 메뉴 서랍 -->
-  <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
-    <div class="sidebar-header">
-      <div class="sidebar-brand">
-        <i class="fa-solid fa-shield-halved text-primary"></i>
-        <span id="menuGuildNameText">길드 메뉴</span>
-      </div>
-      <button type="button" class="sidebar-close-btn" onclick="toggleMenuDrawer(false)">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <ul class="sidebar-menu-list">
-      <li class="sidebar-menu-item" onclick="openModulePage('PageNotice')">
-        <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleMembersDrawer(true);">
-        <i class="fa-solid fa-users text-primary"></i><span>길드원목록</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageRegister')">
-        <i class="fa-solid fa-crosshairs text-danger"></i><span>보스참여등록</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageRecords')">
-        <i class="fa-solid fa-scroll text-warning"></i><span>보스참여자</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageWish')">
-        <i class="fa-solid fa-gift" style="color: #f472b6;"></i><span>분배희망신청</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageSettle')">
-        <i class="fa-solid fa-coins text-success"></i><span>정산내역</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
-        <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); postBossBriefingToChat();">
-        <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임 (채팅 브리핑)</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
-        <i class="fa-solid fa-skull text-danger"></i><span>원수목록</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
-        <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
-      </li>
-    </ul>
-
-    <div class="sidebar-footer">
-      <div class="user-profile-badge" onclick="openProfileEditModal()">
-        <div class="user-avatar" id="sidebarAvatarIcon">👤</div>
-        <div>
-          <div class="user-name-text" id="sidebarUserNickName">로그인 필요</div>
-          <div class="user-sub-class" id="sidebarUserClassText">직업 설정하기</div>
-        </div>
-      </div>
-      <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size: 0.7rem;" onclick="handleUserLogout()">
-        로그아웃
-      </button>
-    </div>
-  </aside>
-
-  <!-- 2. 길드원 목록 서랍 -->
-  <aside id="membersSidebarDrawer" class="app-members-drawer">
-    <div class="members-drawer-header">
-      <div class="members-drawer-title">
-        <i class="fa-solid fa-users text-primary"></i>
-        <span>길드원 (<span id="drawerMemberCount">0</span>)</span>
-      </div>
-      <div class="members-header-tools">
-        <button type="button" class="btn-tool-icon" title="길드원 추가" onclick="openAddMemberPopup()">
-          <i class="fa-solid fa-user-plus text-primary"></i>
-        </button>
-        <button type="button" class="btn-tool-icon" title="새로고침" onclick="loadGuildMembersData()">
-          <i class="fa-solid fa-arrows-rotate"></i>
-        </button>
-        <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleMembersDrawer(false)">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="members-search-wrap">
-      <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 20px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.75rem;"></i>
-      <input type="text" id="inputDrawerMemberSearch" class="members-search-input" placeholder="길드원 검색..." onkeyup="filterDrawerMembers()">
-    </div>
-
-    <div class="members-list-scroll" id="drawerMembersListArea">
-      <div class="text-secondary small text-center py-4">길드원을 불러오는 중...</div>
-    </div>
-  </aside>
-
-  <!-- 3. 메인 대화방 -->
-  <div class="app-main-layout">
-    <header class="kakao-chat-header">
-      <div class="header-left-area">
-        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleMenuDrawer(true)">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <div class="room-avatar-circle" id="chatRoomAvatar">
-          <i class="fa-solid fa-users"></i>
-        </div>
-        <div class="room-info-box">
-          <div class="room-title-text" id="chatRoomTitle">길드 대화방</div>
-          <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)">
-            <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="header-right-tools">
-        <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
-          <i class="fa-solid fa-download"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="대화 검색" onclick="focusChatInput()">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="보스타임 브리핑" onclick="postBossBriefingToChat()">
-          <i class="fa-regular fa-clock"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
-          <i class="fa-solid fa-user-group"></i>
-        </button>
-      </div>
-    </header>
-
-    <!-- 공지 배너 -->
-    <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
-      <div class="d-flex align-items-center" style="min-width: 0; flex: 1;">
-        <i class="fa-solid fa-bullhorn notice-icon-part"></i>
-        <div class="notice-text-content" id="kakaoTopNoticeText">공지사항을 불러오는 중...</div>
-      </div>
-      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.72rem;"></i>
-    </div>
-
-    <!-- 대화 메시지 영역 -->
-    <div class="chat-messages-container" id="chatMessagesView">
-      <div class="text-center my-1">
-        <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
-      </div>
-    </div>
-
-    <!-- @ 멘션 자동완성 -->
-    <div id="mentionPopupBox" class="mention-popup-container"></div>
-
-    <!-- 하단 메시지 입력창 -->
-    <footer class="kakao-input-area">
-      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !참여 보스명 닉네임)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
-      
-      <div class="input-bottom-tools">
-        <div class="input-tool-icons">
-          <i class="fa-regular fa-face-smile" title="내 직업/프로필 설정" onclick="openProfileEditModal()"></i>
-          <i class="fa-solid fa-paperclip" title="보스 토벌 스샷 등록" onclick="openModulePage('PageRegister')"></i>
-        </div>
-        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
-          전송
-        </button>
-      </div>
-    </footer>
-
-    <!-- 모듈 오버레이 -->
-    <div id="moduleOverlay" class="module-display-overlay">
-      <div class="module-nav-header">
-        <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" onclick="closeModuleOverlay()">
-          <i class="fa-solid fa-arrow-left me-1"></i>채팅방으로 복귀
-        </button>
-        <span class="fw-bold text-dark small" id="overlayNavTitle">기능 화면</span>
-        <div style="width: 50px;"></div>
-      </div>
-      <div class="module-scroll-body" id="overlayBodyContent"></div>
-    </div>
-  </div>
-
-  <!-- 토스트 알림창 -->
-  <div id="kakaoToastBox" class="kakao-toast-box">
-    <span id="kakaoToastIcon">💬</span>
-    <span id="kakaoToastMsg">알림 메시지</span>
-  </div>
-
-  <!-- 🎯 [신규] 참여자 명단 다중 선택 모달 -->
-  <div id="modalSelectRaidMembers" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" id="raidSelectModalTitle" style="font-size: 0.95rem;">참여자 명단 선택</h6>
-      <p class="text-secondary small mb-2" style="font-size: 0.72rem;">참여한 길드원을 체크하세요.</p>
-      
-      <input type="hidden" id="targetRaidParticipationId">
-      <div class="members-check-grid" id="raidMembersCheckContainer"></div>
-
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closeRaidSelectModal()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="saveSelectedRaidMembers()">저장</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 직업 선택 모달 -->
-  <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">프로필과 대화창에 표기될 직업을 선택하세요.</p>
-      
-      <div class="class-preset-grid">
-        <div class="class-preset-cell" onclick="selectClassProfile('🏹', '궁수')">
-          <span class="class-icon-big">🏹</span><span class="class-title-small">궁수</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🌿', '힐러')">
-          <span class="class-icon-big">🌿</span><span class="class-title-small">힐러</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('⚔️', '전사')">
-          <span class="class-icon-big">⚔️</span><span class="class-title-small">전사</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🛡️', '탱커')">
-          <span class="class-icon-big">🛡️</span><span class="class-title-small">탱커</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🪄', '마법사')">
-          <span class="class-icon-big">🪄</span><span class="class-title-small">마법사</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('👊', '무투사')">
-          <span class="class-icon-big">👊</span><span class="class-title-small">무투사</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🥷', '암살자')">
-          <span class="class-icon-big">🥷</span><span class="class-title-small">암살자</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('👑', '길드장')">
-          <span class="class-icon-big">👑</span><span class="class-title-small">길드장</span>
-        </div>
-      </div>
-
-      <button type="button" class="btn btn-light btn-sm w-100 py-1" style="font-size:0.78rem;" onclick="closeProfileEditModal()">닫기</button>
-    </div>
-  </div>
-
-  <!-- 컷 / 예약 수동 입력 모달 -->
-  <div id="modalBossActionDialog" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" id="bossActionDialogTitle" style="font-size: 0.95rem;">보스 처리</h6>
-      <p class="text-secondary small mb-3" id="bossActionDialogDesc" style="font-size: 0.72rem;">시간을 입력하세요.</p>
-      
-      <input type="hidden" id="targetBossActionType">
-      <input type="hidden" id="targetBossActionName">
-      <input type="text" id="targetBossActionTimeInput" class="text-center" placeholder="예: 1100 또는 11:00" maxlength="5" style="font-size:1rem; font-weight:700;">
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" style="font-size:0.78rem;" onclick="closeBossActionDialog()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none; font-size:0.78rem;" onclick="confirmBossActionDialog()">실행</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 모달: 신규 길드원 등록 -->
-  <div id="modalAddMemberPopup" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>신규 길드원 등록</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임과 직급을 설정하세요.</p>
-      
-      <input type="text" id="newMemberNickInput" placeholder="길드원 닉네임 입력" autocomplete="off">
-      <select id="newMemberRoleSelect">
-        <option value="일반" selected>일반</option>
-        <option value="정예">정예</option>
-        <option value="부길드장">부길드장</option>
-        <option value="길드장">길드장</option>
-      </select>
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closeAddMemberPopup()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitAddMemberAction()">등록하기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 모달: 길드원 정보 수정 -->
-  <div id="modalEditMemberPopup" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-pen text-info me-1"></i>길드원 정보 수정</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임 변경 시 과거 토벌 기록도 자동 동기화됩니다.</p>
-      
-      <input type="hidden" id="editMemberId">
-      <input type="hidden" id="editOldName">
-      <input type="text" id="editNewName" placeholder="새 닉네임">
-      <select id="editRoleSelect">
-        <option value="일반">일반</option>
-        <option value="정예">정예</option>
-        <option value="부길드장">부길드장</option>
-        <option value="길드장">길드장</option>
-      </select>
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closeEditMemberPopup()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitEditMemberAction()">저장</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 모달: 비밀번호 변경 -->
-  <div id="modalPinChangePopup" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
-      <p class="text-secondary small mb-3" id="pinChangeNoticeText" style="font-size: 0.72rem;">기존 비밀번호와 새 비밀번호를 입력하세요.</p>
-      
-      <input type="password" id="inputOldPin" class="text-center" placeholder="기존 비밀번호 (초기값 0000)" maxlength="16" inputmode="numeric">
-      <input type="password" id="inputNewPin" class="text-center" placeholder="새 비밀번호 (숫자 6자리 이상)" maxlength="16" inputmode="numeric">
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closePinChangePopup()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitPinChangeAction()">변경 완료</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 로그인 모달 -->
-  <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
-        <i class="fa-solid fa-comment text-dark"></i>
-      </div>
-      <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 닉네임과 개인 비밀번호를 입력하세요.</p>
-      
-      <select id="loginMemberSelect" style="height: 36px;">
-        <option value="">닉네임을 선택하세요...</option>
-      </select>
-      <input type="password" id="loginPinInput" class="text-center" placeholder="••••" maxlength="16" inputmode="numeric" style="height: 38px; font-size: 1rem; letter-spacing: 4px;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
-
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; font-size: 0.85rem;" onclick="executeGuildLogin()">
-        로그인
-      </button>
-      <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 길드원 목록에서 가능합니다.</div>
-    </div>
-  </div>
-
-  <script>
-    var supabaseClient = null;
-    var cachedMemberList = [];
-    var cachedBossList = [];
-    var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
-    var myCurrentPin = localStorage.getItem("guild_my_pin") || "";
-    var myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-    var myCurrentClass = localStorage.getItem("guild_my_class") || "미설정";
-    var bossWatcherInterval = null;
-    var notifiedBossSpawnMap = new Set();
-    var deferredPrompt = null;
-    var kakaoToastTimer = null;
-    var targetPinMember = null;
-    var currentActiveRaidRecord = null;
-
-    var processedCutMessageIds = new Set(JSON.parse(localStorage.getItem("processed_cut_msg_ids") || "[]"));
-
-    function saveProcessedCutId(msgId) {
-      if (!msgId) return;
-      processedCutMessageIds.add(String(msgId));
-      localStorage.setItem("processed_cut_msg_ids", JSON.stringify(Array.from(processedCutMessageIds)));
-    }
-
-    function showKakaoToast(msg, icon = "💬") {
-      const box = document.getElementById("kakaoToastBox");
-      const m = document.getElementById("kakaoToastMsg");
-      const ic = document.getElementById("kakaoToastIcon");
-      if (!box) return;
-
-      m.innerText = msg;
-      ic.innerText = icon;
-      box.classList.add("show");
-
-      if (kakaoToastTimer) clearTimeout(kakaoToastTimer);
-      kakaoToastTimer = setTimeout(() => box.classList.remove("show"), 2300);
-    }
-
-    function formatKSTChatTime(isoString) {
-      if (!isoString) isoString = new Date().toISOString();
-      const d = new Date(isoString);
-      if (isNaN(d.getTime())) return "";
-
-      const formatter = new Intl.DateTimeFormat('ko-KR', {
-        timeZone: 'Asia/Seoul',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      return formatter.format(d);
-    }
-
-    function formatTimeKorean(dateObj) {
-      if (!dateObj) return "";
-      const formatter = new Intl.DateTimeFormat('ko-KR', {
-        timeZone: 'Asia/Seoul',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      return formatter.format(dateObj);
-    }
-
-    async function initApp() {
-      if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
-        supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
-      }
-
-      await loadGuildMetadata();
-      await loadTopNoticeHeader();
-      await loadGuildMembersData();
-      await loadBossTimersList();
-
-      if (!myCurrentNick || !myCurrentPin) {
-        showGuildLoginModal();
-      } else {
-        const isValid = await verifyStoredSession(myCurrentNick, myCurrentPin);
-        if (isValid) {
-          updateProfileUI(myCurrentNick);
-        } else {
-          showGuildLoginModal();
-        }
-      }
-
-      await loadPastChatMessages();
-      listenRealtimeChatMessages();
-      startBossWatchTimer();
-
-      bindMentionInputEvents();
-      setupPwaInstallation();
-    }
-
-    async function loadGuildMetadata() {
-      try {
-        const res = await apiRequest("guild_settings?key=eq.guild_name");
-        if (res && res.length > 0 && res[0].value) {
-          const gName = res[0].value;
-          document.getElementById("menuGuildNameText").innerText = `${gName} 관리`;
-          document.getElementById("chatRoomTitle").innerText = gName;
-          document.getElementById("loginGuildTitle").innerText = `${gName} 길드 로그인`;
-          document.title = gName;
-        }
-      } catch (e) {}
-    }
-
-    async function loadTopNoticeHeader() {
-      try {
-        const notices = await apiRequest("guild_notices?select=title,content&order=id.desc&limit=1");
-        if (notices && notices.length > 0) {
-          const item = notices[0];
-          document.getElementById("kakaoTopNoticeText").innerText = `${item.title} -${item.content}`;
-        } else {
-          document.getElementById("kakaoTopNoticeText").innerText = "등록된 공지사항이 없습니다.";
-        }
-      } catch (e) {}
-    }
-
-    async function loadBossTimersList() {
-      try {
-        const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
-        cachedBossList = bosses || [];
-      } catch (e) {}
-    }
-
-    window.loadGuildMembersData = async function() {
-      try {
-        const members = await apiRequest("guild_members?select=*&order=name.asc");
-        cachedMemberList = members || [];
-
-        cachedMemberList.sort((a, b) => {
-          const pA = getRolePriority(a.role);
-          const pB = getRolePriority(b.role);
-          if (pA !== pB) return pA - pB;
-          return a.name.localeCompare(b.name, 'ko');
-        });
-
-        document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
-        document.getElementById("drawerMemberCount").innerText = cachedMemberList.length;
-
-        const select = document.getElementById("loginMemberSelect");
-        if (select) {
-          select.innerHTML = '<option value="">닉네임을 선택하세요...</option>' + 
-            cachedMemberList.map(m => `<option value="${m.name}" ${m.name === myCurrentNick ? 'selected' : ''}>${m.name} (${m.role || '일반'})</option>`).join('');
-        }
-
-        renderDrawerMemberList(cachedMemberList);
-      } catch (e) {
-        document.getElementById("drawerMembersListArea").innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${e.message}</div>`;
-      }
-    };
-
-    function getRolePriority(role) {
-      const r = String(role || '').trim();
-      if (r === '길드장' || r === '길마') return 1;
-      if (r === '부길드장' || r === '부길마') return 2;
-      if (r === '정예') return 3;
-      return 4;
-    }
-
-    function renderDrawerMemberList(list) {
-      const container = document.getElementById("drawerMembersListArea");
-      if (!list || list.length === 0) {
-        container.innerHTML = '<div class="text-secondary small text-center py-4">등록된 길드원이 없습니다.</div>';
-        return;
-      }
-
-      container.innerHTML = list.map(m => {
-        const roleStr = String(m.role || '일반').trim();
-        let roleTagClass = "role-tag-normal";
-        let avatarClass = "";
-
-        if (roleStr === "길드장" || roleStr === "길마") {
-          roleTagClass = "role-tag-master";
-          avatarClass = "master";
-        } else if (roleStr === "부길드장" || roleStr === "부길마") {
-          roleTagClass = "role-tag-sub";
-          avatarClass = "sub";
-        } else if (roleStr === "정예") {
-          roleTagClass = "role-tag-elite";
-        }
-
-        const isMe = (m.name === myCurrentNick);
-        const displayAvatar = isMe ? myCurrentAvatar : (m.avatar || m.name.charAt(0));
-        const displayClass = isMe ? myCurrentClass : (m.job_class || '직업 미지정');
-
-        return `
-          <div class="kakao-member-row">
-            <div class="member-row-left" onclick="openPinChangePopup(${m.id})">
-              <div class="avatar-wrapper-relative">
-                <div class="member-avatar-round ${avatarClass}">${displayAvatar}</div>${isMe ? '<div class="mini-badge-me-tag">나</div>' : ''}
-              </div>
-              <div class="member-info-col">
-                <div class="member-name-text">
-                  <span>${m.name}</span>
-                  <span class="role-badge-tag ${roleTagClass}">${roleStr}</span>
-                </div>
-                <div class="member-class-desc">
-                  <span>${displayClass}</span>
-                </div>
-              </div>
-            </div>
-            <div class="member-row-actions">
-              <button type="button" class="btn-action-pill" onclick="openEditMemberPopup(${m.id}, '${m.name}', '${roleStr}')">수정</button>
-              <button type="button" class="btn-action-pill text-danger" onclick="deleteMemberAction(${m.id}, '${m.name}')">삭제</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function filterDrawerMembers() {
-      const q = document.getElementById("inputDrawerMemberSearch").value.trim().toLowerCase();
-      const filtered = cachedMemberList.filter(m => m.name.toLowerCase().includes(q) || (m.role || "").toLowerCase().includes(q));
-      renderDrawerMemberList(filtered);
-    }
-
-    function toggleMenuDrawer(isOpen) {
-      const drawer = document.getElementById("menuSidebarDrawer");
-      const backdrop = document.getElementById("commonDrawerBackdrop");
-      if (isOpen) {
-        toggleMembersDrawer(false);
-        backdrop.classList.add("show");
-        drawer.classList.add("open");
-      } else {
-        drawer.classList.remove("open");
-        checkBackdropState();
-      }
-    }
-
-    function toggleMembersDrawer(isOpen) {
-      const drawer = document.getElementById("membersSidebarDrawer");
-      const backdrop = document.getElementById("commonDrawerBackdrop");
-      if (isOpen) {
-        toggleMenuDrawer(false);
-        backdrop.classList.add("show");
-        drawer.classList.add("open");
-      } else {
-        drawer.classList.remove("open");
-        checkBackdropState();
-      }
-    }
-
-    function closeAllDrawers() {
-      toggleMenuDrawer(false);
-      toggleMembersDrawer(false);
-    }
-
-    function checkBackdropState() {
-      const isMenuOpen = document.getElementById("menuSidebarDrawer").classList.contains("open");
-      const isMembersOpen = document.getElementById("membersSidebarDrawer").classList.contains("open");
-      if (!isMenuOpen && !isMembersOpen) {
-        document.getElementById("commonDrawerBackdrop").classList.remove("show");
-      }
-    }
-
-    function openProfileEditModal() {
-      document.getElementById("modalProfileEdit").style.display = "flex";
-    }
-    function closeProfileEditModal() {
-      document.getElementById("modalProfileEdit").style.display = "none";
-    }
-
-    function selectClassProfile(icon, className) {
-      myCurrentAvatar = icon;
-      myCurrentClass = `${icon}${className}`;
-      
-      localStorage.setItem("guild_my_avatar", icon);
-      localStorage.setItem("guild_my_class", myCurrentClass);
-
-      document.getElementById("sidebarAvatarIcon").innerText = icon;
-      document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
-
-      showKakaoToast(`내 직업이 [${myCurrentClass}]로 설정되었습니다!`, "🎉");
-      closeProfileEditModal();
-      renderDrawerMemberList(cachedMemberList);
-    }
-
-    function openAddMemberPopup() {
-      document.getElementById("newMemberNickInput").value = "";
-      document.getElementById("newMemberRoleSelect").value = "일반";
-      document.getElementById("modalAddMemberPopup").style.display = "flex";
-      setTimeout(() => document.getElementById("newMemberNickInput").focus(), 100);
-    }
-    function closeAddMemberPopup() {
-      document.getElementById("modalAddMemberPopup").style.display = "none";
-    }
-
-    async function submitAddMemberAction() {
-      const name = document.getElementById("newMemberNickInput").value.trim();
-      const role = document.getElementById("newMemberRoleSelect").value;
-
-      if (!name) return showKakaoToast("길드원 닉네임을 입력해주세요!", "⚠️");
-      if (cachedMemberList.some(m => m.name === name)) {
-        return showKakaoToast("이미 존재하는 닉네임입니다!", "⚠️");
-      }
-
-      try {
-        await apiRequest("guild_members", "POST", [{ name, role, pin: "0000" }]);
-        showKakaoToast(`[${name}] 길드원 등록 완료!`, "🎉");
-        closeAddMemberPopup();
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("등록 실패: " + err.message, "❌");
-      }
-    }
-
-    function openEditMemberPopup(id, name, role) {
-      document.getElementById("editMemberId").value = id;
-      document.getElementById("editOldName").value = name;
-      document.getElementById("editNewName").value = name;
-      document.getElementById("editRoleSelect").value = role;
-      document.getElementById("modalEditMemberPopup").style.display = "flex";
-    }
-    function closeEditMemberPopup() {
-      document.getElementById("modalEditMemberPopup").style.display = "none";
-    }
-
-    async function submitEditMemberAction() {
-      const id = document.getElementById("editMemberId").value;
-      const oldName = document.getElementById("editOldName").value.trim();
-      const newName = document.getElementById("editNewName").value.trim();
-      const role = document.getElementById("editRoleSelect").value;
-
-      if (!newName) return showKakaoToast("닉네임을 입력하세요!", "⚠️");
-
-      try {
-        if (oldName !== newName) {
-          await apiRequest("rpc/update_member_nickname", "POST", { old_name: oldName, new_name: newName });
-        }
-        await apiRequest(`guild_members?id=eq.${id}`, "PATCH", { role, name: newName });
-
-        showKakaoToast(`[${newName}] 정보가 수정되었습니다!`, "✅");
-        closeEditMemberPopup();
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("수정 실패: " + err.message, "❌");
-      }
-    }
-
-    async function deleteMemberAction(id, name) {
-      if (!confirm(`[${name}] 길드원을 정말 삭제하시겠습니까?`)) return;
-
-      try {
-        await apiRequest(`guild_members?id=eq.${id}`, "DELETE");
-        showKakaoToast(`[${name}] 길드원이 삭제되었습니다.`, "🗑️");
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("삭제 실패: " + err.message, "❌");
-      }
-    }
-
-    function openPinChangePopup(memberId) {
-      const target = cachedMemberList.find(m => m.id === memberId);
-      if (!target) return;
-
-      targetPinMember = target;
-      const isDefault = (!target.pin || target.pin === "0000");
-      document.getElementById("pinChangeNoticeText").innerText = isDefault
-        ? `[${target.name}] 초기 상태입니다. 기존 비번에 0000을 입력하세요.`
-        : `[${target.name}] 현재 비밀번호와 새 비밀번호를 입력하세요.`;
-
-      document.getElementById("inputOldPin").value = "";
-      document.getElementById("inputNewPin").value = "";
-      document.getElementById("modalPinChangePopup").style.display = "flex";
-    }
-    function closePinChangePopup() {
-      document.getElementById("modalPinChangePopup").style.display = "none";
-      targetPinMember = null;
-    }
-
-    async function submitPinChangeAction() {
-      if (!targetPinMember) return;
-
-      const oldPin = document.getElementById("inputOldPin").value.trim();
-      const newPin = document.getElementById("inputNewPin").value.trim();
-      const currentPin = (targetPinMember.pin || "0000").trim();
-
-      if (oldPin !== currentPin) {
-        return showKakaoToast("기존 비밀번호가 일치하지 않습니다! (기본값: 0000)", "❌");
-      }
-      if (!/^\d+$/.test(newPin) || newPin.length < 6) {
-        return showKakaoToast("새 비밀번호는 숫자 6자리 이상이어야 합니다.", "⚠️");
-      }
-      if (/(\d)\1\1/.test(newPin)) {
-        return showKakaoToast("동일한 숫자를 3회 이상 연속 사용할 수 없습니다 (예: 000)", "⚠️");
-      }
-
-      try {
-        await apiRequest(`guild_members?id=eq.${targetPinMember.id}`, "PATCH", { pin: newPin });
-        showKakaoToast(`[${targetPinMember.name}] 비밀번호 변경 완료!`, "🎉");
-        closePinChangePopup();
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("변경 실패: " + err.message, "❌");
-      }
-    }
-
-    async function verifyStoredSession(nick, pin) {
-      try {
-        const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(nick)}&select=name,pin,role`);
-        if (res && res.length > 0) {
-          const dbPin = String(res[0].pin || '0000').trim();
-          if (dbPin === String(pin).trim()) {
-            return true;
-          }
-        }
-      } catch (e) {}
-      return false;
-    }
-
-    function showGuildLoginModal() {
-      document.getElementById("guildLoginModal").style.display = "flex";
-      document.getElementById("loginPinInput").value = "";
-    }
-
-    async function executeGuildLogin() {
-      const selectedName = document.getElementById("loginMemberSelect").value;
-      const inputPin = document.getElementById("loginPinInput").value.trim();
-
-      if (!selectedName) return showKakaoToast("본인 닉네임을 선택해주세요!", "⚠️");
-      if (!inputPin) return showKakaoToast("개인 비밀번호를 입력해주세요!", "⚠️");
-
-      const targetMember = cachedMemberList.find(m => m.name === selectedName);
-      let expectedPin = "0000";
-
-      if (targetMember && targetMember.pin) {
-        expectedPin = String(targetMember.pin).trim();
-      } else {
-        try {
-          const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(selectedName)}&select=pin,role`);
-          if (res && res.length > 0 && res[0].pin) {
-            expectedPin = String(res[0].pin).trim();
-          }
-        } catch (e) {}
-      }
-
-      if (inputPin !== expectedPin) {
-        document.getElementById("loginPinInput").value = "";
-        document.getElementById("loginPinInput").focus();
-        return showKakaoToast("비밀번호가 올바르지 않습니다! (초기값: 0000)", "❌");
-      }
-
-      myCurrentNick = selectedName;
-      myCurrentPin = inputPin;
-      localStorage.setItem("guild_my_nickname", selectedName);
-      localStorage.setItem("guild_my_pin", inputPin);
-
-      updateProfileUI(selectedName);
-      document.getElementById("guildLoginModal").style.display = "none";
-      showKakaoToast(`[${selectedName}] 님 반갑습니다!`, "🎉");
-      renderDrawerMemberList(cachedMemberList);
-    }
-
-    function handleUserLogout() {
-      if (!confirm("정말로 로그아웃하시겠습니까?")) return;
-      localStorage.removeItem("guild_my_nickname");
-      localStorage.removeItem("guild_my_pin");
-      myCurrentNick = "";
-      myCurrentPin = "";
-      toggleMenuDrawer(false);
-      showGuildLoginModal();
-    }
-
-    function updateProfileUI(nick) {
-      document.getElementById("sidebarUserNickName").innerText = nick;
-      document.getElementById("sidebarAvatarIcon").innerText = myCurrentAvatar;
-      document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
-    }
-
-    async function loadPastChatMessages() {
-      try {
-        const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=50");
-        if (list && list.length > 0) {
-          list.reverse().forEach(c => renderKakaoChatBubble(c, false));
-          scrollChatBottom();
-        }
-      } catch (e) {}
-    }
-
-    function listenRealtimeChatMessages() {
-      if (!supabaseClient) return;
-
-      supabaseClient
-        .channel("public:guild_chats")
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
-          renderKakaoChatBubble(payload.new, true);
-        })
-        .subscribe();
-    }
-
-    // 🎯 [핵심] 카카오톡 1:1 디테일 말풍선 렌더링
-    function renderKakaoChatBubble(msg, isRealtime = true) {
-      const container = document.getElementById("chatMessagesView");
-      const isMe = (msg.sender_name === myCurrentNick);
-      const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
-      
-      const timeStr = formatKSTChatTime(msg.created_at);
-      const totalMembers = cachedMemberList.length || 52;
-      const unreadCount = Math.max(1, totalMembers - 14);
-
-      let html = "";
-      const cleanMessageText = (msg.message || '').trim();
-
-      // 1) 보스 토벌 참여자 등록 대화형 카드
-      if (msg.msg_type === "boss_participation_prompt") {
-        let raidData = {};
-        try { raidData = JSON.parse(cleanMessageText); } catch(e) {}
-
-        const raidId = raidData.raid_id || 0;
-        const bossName = raidData.boss_name || '보스';
-        const members = raidData.members || [];
-        const memberCount = members.length;
-        const membersText = members.length > 0 ? members.join(', ') : '아직 등록된 참여자가 없습니다.';
-
-        html = `
-          <div class="chat-item-row other">
-            <div class="chat-sender-avatar bot">⚔️</div>
-            <div class="chat-msg-body">
-              <div class="chat-sender-name">보스알리미</div>
-              <div class="chat-bubble-flex">
-                <div class="chat-bubble raid-participation-card">
-                  <div class="raid-card-header">
-                    <span>👥 [${escapeHtmlText(bossName)}] 참여자 등록</span>
-                    <span class="badge bg-primary bg-opacity-10 text-primary" id="raidCountBadge_${raidId}">${memberCount}명</span>
-                  </div>
-                  <div class="raid-members-preview" id="raidMembersText_${raidId}">
-                    ${escapeHtmlText(membersText)}
-                  </div>
-                  <div class="raid-btn-group">
-                    <button type="button" class="btn-raid-action btn-raid-join" onclick="quickJoinRaidAction(${raidId}, '${escapeHtmlText(bossName)}')">
-                      🙋‍♂️ 나도 참여!
-                    </button>
-                    <button type="button" class="btn-raid-action btn-raid-select" onclick="openRaidSelectModal(${raidId}, '${escapeHtmlText(bossName)}')">
-                      📋 명단 선택
-                    </button>
-                  </div>
-                </div>
-                <div class="chat-meta-box">
-                  <span class="chat-unread-count">${unreadCount}</span>
-                  <span class="chat-timestamp">${timeStr}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-      // 2) 보스알리미 리젠 브리핑 카드
-      else if (msg.msg_type === "boss_briefing") {
-        html = `
-          <div class="chat-item-row other">
-            <div class="chat-sender-avatar bot">⏰</div>
-            <div class="chat-msg-body">
-              <div class="chat-sender-name">보스알리미</div>
-              <div class="chat-bubble-flex">
-                <div class="chat-bubble boss-brief-bubble">
-                  ${cleanMessageText}
-                </div>
-                <div class="chat-meta-box">
-                  <span class="chat-unread-count">${unreadCount}</span>
-                  <span class="chat-timestamp">${timeStr}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-      // 3) 보스 알림 카드 (7분/3분/젠완료)
-      else if (msg.msg_type === "boss_alert") {
-        let cardTypeClass = "alert-3m";
-        let hasCutBtn = false;
-        let cutTargetBoss = "";
-
-        if (cleanMessageText.includes("7분 전")) cardTypeClass = "alert-7m";
-        else if (cleanMessageText.includes("컷 완료") || cleanMessageText.includes("컷 확인")) cardTypeClass = "alert-cut";
-        else if (cleanMessageText.includes("젠 완료") || cleanMessageText.includes("출현")) {
-          cardTypeClass = "alert-spawn";
-          hasCutBtn = true;
-          const match = cleanMessageText.match(/\[([^\]]+)\]/);
-          if (match) cutTargetBoss = match[1];
-        }
-
-        const msgTime = msg.created_at ? new Date(msg.created_at).getTime() : Date.now();
-        const msgAgeMinutes = (Date.now() - msgTime) / (1000 * 60);
-        const isExpired = (msgAgeMinutes > 20);
-        const isAlreadyCut = processedCutMessageIds.has(String(msg.id));
-
-        let cutButtonHtml = "";
-        if (hasCutBtn && cutTargetBoss) {
-          const btnId = `btnCut_${msg.id || Date.now()}`;
-          if (isAlreadyCut) {
-            cutButtonHtml = `<button type="button" class="btn-boss-alert-cut disabled" disabled>완료</button>`;
-          } else if (isExpired) {
-            cutButtonHtml = `<button type="button" class="btn-boss-alert-cut disabled" disabled title="20분 경과로 만료됨">만료</button>`;
-          } else {
-            cutButtonHtml = `<button type="button" id="${btnId}" class="btn-boss-alert-cut" onclick="triggerQuickCutAction('${cutTargetBoss}', '${btnId}', '${msg.id}')">컷</button>`;
-          }
-        }
-
-        html = `
-          <div class="chat-item-row other">
-            <div class="chat-sender-avatar bot">📢</div>
-            <div class="chat-msg-body">
-              <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
-              <div class="chat-bubble-flex">
-                <div class="boss-alert-mini-card ${cardTypeClass}">
-                  <span>${escapeHtmlText(cleanMessageText)}</span>${cutButtonHtml}
-                </div>
-                <div class="chat-meta-box">
-                  <span class="chat-unread-count">${unreadCount}</span>
-                  <span class="chat-timestamp">${timeStr}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-      // 4) 내가 보낸 메시지
-      else if (isMe) {
-        html = `
-          <div class="chat-item-row me">
-            <div class="chat-msg-body">
-              <div class="chat-bubble-flex">
-                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
-                <div class="chat-meta-box">
-                  <span class="chat-unread-count">1</span>
-                  <span class="chat-timestamp">${timeStr}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-      // 5) 상대방 길드원 메시지
-      else {
-        const initial = (msg.sender_name || '?').charAt(0);
-        html = `
-          <div class="chat-item-row other">
-            <div class="chat-sender-avatar">${initial}</div>
-            <div class="chat-msg-body">
-              <div class="chat-sender-name">
-                <span>${escapeHtmlText(msg.sender_name)}</span>
-              </div>
-              <div class="chat-bubble-flex">
-                <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''대화창 안에서 다른 복잡한 메뉴로 나가지 않고, 컷을 치자마자 즉시 참여자를 등록할 수 있는 흐름을 설계했습니다.
-
----
-
-### 1. 카카오톡 대화방 기반 참여자 등록 워크플로우
-
-1. **컷 완료 시 자동 질문 말풍선 생성**:
-   * 대화창에서 보스가 젠되어 **`[컷]`** 버튼을 누르거나 `!컷 [보스명]`을 입력하면[cite: 25], 봇이 컷 보고와 함께 아래 버튼이 달린 메시지를 즉시 올립니다:
-     > ⚔️ **[보스알리미]** [테스트보스] 컷 처리 완료!  
-     > 👉 토벌에 참여한 인원을 등록해주세요!  
-     > **`[👥 참여자 등록하기]`**
-2. **원클릭 카카오톡 스타일 체크 팝업**:
-   * **`[👥 참여자 등록하기]`** 버튼을 누르면 화면 전체가 바뀌는 게 아니라, 카톡 팝업처럼 길드원 전체 닉네임 그리드(터치식 토글)가 뜹니다[cite: 10].
-   * 직전에 참여했던 인원이나 컷을 누른 본인은 기본 체크되어 있고, 참여한 인원을 가볍게 터치(토글)한 뒤 **`[등록 완료]`**를 누르면 끝납니다.
-3. **간편 텍스트 명령어 지원 (`!참여`)**:
-   * 팝업을 열지 않고 대화창에 바로 입력하고 싶을 때:
-     * `!참여 [보스명] @닉네임1 @닉네임2 @닉네임3`
-     * 예: `!참여 레마넌트 @용이 @정예원` -> 해당 보스 토벌 명단에 즉시 등록
-
----
-
-### 2. 새 Supabase DB 테이블 생성 (SQL)
-
-보스 토벌 참여 이력을 기록하는 `boss_participations` 테이블을 생성해야 합니다[cite: 9, 10]. Supabase 대시보드의 **SQL Editor**에서 아래 쿼리를 실행해 주세요.
-
-```sql
--- ========================================================
--- 1. 보스 토벌 참여 기록 테이블 (boss_participations) 생성
--- ========================================================
-CREATE TABLE IF NOT EXISTS public.boss_participations (
-    id BIGSERIAL PRIMARY KEY,
-    boss_name TEXT NOT NULL,                     -- 보스명
-    raid_time TIMESTAMPTZ DEFAULT now(),         -- 토벌 일시 (기본 현재 시각)
-    war_type TEXT DEFAULT '일반',                -- 일반, 내전, 인터 등
-    extra_score INT DEFAULT 0,                   -- 추가 가산점
-    members TEXT[] DEFAULT '{}',                 -- 참여 길드원 닉네임 배열
-    member_count INT DEFAULT 0,                  -- 참여 인원수
-    drop_items TEXT DEFAULT '',                  -- 드랍 아이템 (선택)
-    created_at TIMESTAMPTZ DEFAULT now()
-);
-
--- RLS 전체 허용
-ALTER TABLE public.boss_participations ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "보스참여 전체 허용" ON public.boss_participations;
-CREATE POLICY "보스참여 전체 허용" 
-ON public.boss_participations FOR ALL 
-USING (true) 
-WITH CHECK (true);
-
--- Realtime 연동 활성화
-ALTER PUBLICATION supabase_realtime ADD TABLE public.boss_participations;
-ALTER TABLE public.boss_participations REPLICA IDENTITY FULL;
+      background: none; border: none; color: #3b4b59;
+      font-size: 0.95rem; cursor: pointer
