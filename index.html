@@ -154,7 +154,6 @@
       min-width: 0;
       cursor: pointer;
     }
-    
     .user-avatar {
       width: 34px; height: 34px;
       border-radius: 12px;
@@ -164,13 +163,6 @@
       align-items: center; justify-content: center;
       color: #0f172a; font-size: 1.1rem; font-weight: 800;
       flex-shrink: 0;
-      position: relative;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      transition: all 0.15s ease;
-    }
-    .user-avatar:hover {
-      background: #e2e8f0;
-      border-color: #94a3b8;
     }
     .user-name-text {
       font-size: 0.82rem; font-weight: 700; color: #191919;
@@ -193,7 +185,6 @@
       transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
       display: flex;
       flex-direction: column;
-      box-shadow: none;
       visibility: hidden;
     }
     .app-members-drawer.open {
@@ -230,16 +221,8 @@
       color: #475569; font-size: 0.95rem;
       padding: 5px; cursor: pointer;
       border-radius: 5px;
-      transition: transform 0.25s ease;
     }
     .btn-tool-icon:hover { background: #e2e8f0; color: #1e293b; }
-    .btn-tool-icon.rotating i {
-      animation: spinAnim 0.6s ease-in-out;
-    }
-    @keyframes spinAnim {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
 
     .members-search-wrap {
       padding: 6px 10px;
@@ -256,99 +239,32 @@
       font-size: 0.78rem;
       outline: none;
     }
-
     .members-list-scroll {
       flex: 1;
       overflow-y: auto;
       padding: 2px 0;
     }
-    .members-list-scroll::-webkit-scrollbar { width: 4px; }
-    .members-list-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 
-    .kakao-member-row {
+    /* 🎯 4. 보스타임 전용 서랍 (260px) - 동적 로드용 컨테이너 */
+    .app-boss-drawer {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--drawer-width) !important;
+      height: 100vh;
+      background: #ffffff;
+      border-right: 1px solid #dcdcdc;
+      z-index: 99999;
+      transform: translateX(-100%);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 12px;
-      cursor: pointer;
-      transition: background 0.12s;
+      flex-direction: column;
+      visibility: hidden;
     }
-    .kakao-member-row:hover { background: #f8fafc; }
-
-    .member-row-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      flex: 1;
+    .app-boss-drawer.open {
+      transform: translateX(0);
+      visibility: visible;
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
     }
-
-    .avatar-wrapper-relative {
-      position: relative;
-      flex-shrink: 0;
-    }
-    .member-avatar-round {
-      width: 34px; height: 34px;
-      border-radius: 12px;
-      background: #e2e8f0;
-      border: 1px solid #cbd5e1;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1rem; color: #3b82f6;
-    }
-    .member-avatar-round.master { background: #fef08a; border-color: #eab308; color: #854d0e; }
-    .member-avatar-round.sub { background: #f3e8ff; border-color: #c084fc; color: #6b21a8; }
-
-    .mini-badge-me-tag {
-      position: absolute;
-      top: -3px;
-      left: -4px;
-      background: #f59e0b;
-      color: #ffffff;
-      font-size: 0.55rem;
-      font-weight: 900;
-      padding: 1px 3px;
-      border-radius: 7px;
-      border: 1px solid #ffffff;
-      line-height: 1;
-      pointer-events: none;
-    }
-
-    .member-info-col {
-      display: flex; flex-direction: column; min-width: 0;
-    }
-    .member-name-text {
-      font-size: 0.82rem; font-weight: 700; color: #191919;
-      display: flex; align-items: center; gap: 4px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .member-class-desc {
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: #0284c7;
-      margin-top: 1px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .role-badge-tag {
-      font-size: 0.62rem; font-weight: 700; padding: 1px 3px;
-      border-radius: 3px; white-space: nowrap;
-    }
-    .role-tag-master { background: #fef08a; color: #854d0e; }
-    .role-tag-sub { background: #f3e8ff; color: #6b21a8; }
-    .role-tag-elite { background: #e0f2fe; color: #0369a1; }
-    .role-tag-normal { background: #f1f5f9; color: #64748b; }
-
-    .member-row-actions {
-      display: flex; align-items: center; gap: 3px; flex-shrink: 0;
-    }
-    .btn-action-pill {
-      background: none; border: 1px solid #e2e8f0;
-      color: #64748b; font-size: 0.65rem; padding: 1px 5px;
-      border-radius: 5px; cursor: pointer;
-    }
-    .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
     /* 3. 메인 대화방 */
     .app-main-layout {
@@ -370,8 +286,6 @@
       background: var(--kakao-header-bg);
       flex-shrink: 0;
       z-index: 10;
-      min-width: 0 !important;
-      overflow: hidden;
     }
     .header-left-area {
       display: flex; align-items: center; gap: 4px; min-width: 0 !important; flex: 1; overflow: hidden;
@@ -410,14 +324,11 @@
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
       cursor: pointer;
       flex-shrink: 0;
-      min-width: 0 !important;
-      overflow: hidden;
     }
     .notice-icon-part { color: #1e88e5; font-size: 0.78rem; margin-right: 4px; flex-shrink: 0; }
     .notice-text-content {
       flex: 1; font-size: 0.72rem; font-weight: 600; color: #222;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      min-width: 0 !important;
     }
 
     .chat-messages-container {
@@ -425,14 +336,9 @@
       padding: 4px 6px;
       display: flex; flex-direction: column;
       gap: 3px;
-      min-width: 0 !important;
     }
-    .chat-messages-container::-webkit-scrollbar { width: 4px; }
-    .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
-
     .chat-item-row {
-      display: flex; width: 100%; margin-bottom: 2px; min-width: 0 !important;
-      align-items: flex-start !important;
+      display: flex; width: 100%; margin-bottom: 2px; align-items: flex-start !important;
     }
     .chat-item-row.other { align-items: flex-start !important; gap: 5px; }
     .chat-item-row.me { justify-content: flex-end; }
@@ -449,366 +355,112 @@
     }
 
     .chat-msg-body {
-      display: flex;
-      flex-direction: column;
-      max-width: 90%;
-      width: fit-content !important;
-      align-items: flex-start !important;
-      min-width: 0 !important;
-      height: auto !important;
+      display: flex; flex-direction: column; max-width: 90%; width: fit-content !important;
     }
-    .chat-item-row.me .chat-msg-body {
-      align-items: flex-end !important;
-    }
-    
     .chat-sender-name {
       font-size: 0.7rem; color: #333; margin-bottom: 2px; font-weight: 600;
-      display: flex; align-items: center; gap: 3px;
     }
     .chat-bubble-flex {
-      display: flex;
-      align-items: flex-end !important;
-      gap: 4px;
-      width: fit-content !important;
-      height: auto !important;
-      min-width: 0 !important;
+      display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important;
     }
     .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
     .chat-bubble {
-      display: inline-block;
-      width: fit-content;
-      max-width: 100%;
-      padding: 5px 8px;
-      border-radius: 5px; 
-      font-size: 0.78rem;
-      line-height: 1.35;
-      word-break: break-all;
-      box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
-      white-space: pre-wrap;
+      display: inline-block; width: fit-content; max-width: 100%;
+      padding: 5px 8px; border-radius: 5px; font-size: 0.78rem; line-height: 1.35;
+      word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06); white-space: pre-wrap;
     }
     .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other); color: var(--kakao-text-black); }
     .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me); color: var(--kakao-text-black); }
 
     .chat-meta-box {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      flex-shrink: 0;
-      margin-bottom: 1px;
+      display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-bottom: 1px;
     }
-    .chat-item-row.other .chat-meta-box {
-      align-items: flex-start;
-    }
-    .chat-unread-count {
-      color: var(--kakao-unread-yellow);
-      font-size: 0.6rem;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-    .chat-timestamp {
-      font-size: 0.58rem;
-      color: var(--kakao-time-gray);
-      white-space: nowrap;
-      line-height: 1;
-    }
+    .chat-unread-count { color: var(--kakao-unread-yellow); font-size: 0.6rem; font-weight: 800; margin-bottom: 2px; }
+    .chat-timestamp { font-size: 0.58rem; color: var(--kakao-time-gray); white-space: nowrap; }
 
     .boss-brief-bubble {
-      background: #ffffff !important;
-      border-radius: 6px !important;
-      padding: 4px 8px 3px 8px !important;
-      margin: 0 !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
-      width: fit-content !important;
-      height: auto !important;
-      min-height: 0 !important;
-      max-height: fit-content !important;
-      max-width: 100% !important;
-      display: block !important;
-      align-self: flex-start !important;
+      background: #ffffff !important; border-radius: 6px !important; padding: 4px 8px 3px 8px !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important; width: fit-content !important;
     }
     .boss-brief-title {
-      font-size: 0.74rem !important;
-      font-weight: 800 !important;
-      color: #191919 !important;
-      margin: 0 0 3px 0 !important;
-      padding: 0 0 2px 0 !important;
-      border-bottom: 1px dashed #cbd5e1 !important;
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      line-height: 1.2 !important;
+      font-size: 0.74rem !important; font-weight: 800 !important; color: #191919 !important;
+      border-bottom: 1px dashed #cbd5e1 !important; display: flex !important; justify-content: space-between !important;
     }
     .boss-brief-line {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      gap: 12px !important;
-      padding: 1.5px 0 !important;
-      margin: 0 !important;
-      font-size: 0.73rem !important;
-      line-height: 1.25 !important;
+      display: flex !important; justify-content: space-between !important; gap: 12px !important;
+      padding: 1.5px 0 !important; font-size: 0.73rem !important;
     }
-    .boss-brief-line.spawned {
-      color: #dc2626 !important;
-      font-weight: 700 !important;
-    }
+    .boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
 
     .boss-alert-mini-card {
-      background: #ffffff !important;
-      border-radius: 5px !important;
-      padding: 5px 8px !important;
-      font-size: 0.75rem !important;
-      line-height: 1.35 !important;
-      width: fit-content !important;
-      max-width: 100% !important;
-      display: inline-block !important;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
+      background: #ffffff !important; border-radius: 5px !important; padding: 5px 8px !important;
+      font-size: 0.75rem !important; box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
     }
     .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
     .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
-    .boss-alert-mini-card.alert-spawn {
-      border-left: 4px solid #ef4444 !important;
-      background: #fff8f8 !important;
-    }
-    .boss-alert-mini-card.alert-cut {
-      border-left: 4px solid #38bdf8 !important;
-    }
+    .boss-alert-mini-card.alert-spawn { border-left: 4px solid #ef4444 !important; background: #fff8f8 !important; }
+    .boss-alert-mini-card.alert-cut { border-left: 4px solid #38bdf8 !important; }
 
-    .spawn-card-wrapper {
-      display: flex;
-      flex-direction: column;
-      width: fit-content;
-      max-width: 100%;
-    }
-    .spawn-msg-action-row {
-      display: flex;
-      justify-content: flex-end;
-      width: 100%;
-      margin-top: 3px;
-    }
+    .spawn-card-wrapper { display: flex; flex-direction: column; width: fit-content; max-width: 100%; }
+    .spawn-msg-action-row { display: flex; justify-content: flex-end; width: 100%; margin-top: 3px; }
     .btn-msg-sub-cut {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: #ffffff;
-      border: 1px solid #b91c1c;
-      font-size: 0.68rem;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 5px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25);
-      transition: all 0.14s ease-in-out;
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff;
+      border: 1px solid #b91c1c; font-size: 0.68rem; font-weight: 800; padding: 3px 8px; border-radius: 5px; cursor: pointer;
     }
-    .btn-msg-sub-cut:hover {
-      background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
-    }
-    .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled {
-      background: #94a3b8 !important;
-      border-color: #64748b !important;
-      cursor: not-allowed !important;
-      box-shadow: none !important;
-      transform: none !important;
-      color: #ffffff !important;
-    }
-
-    .quick-time-chips-group {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      margin-bottom: 8px;
-    }
-    .btn-time-chip {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      color: #334155;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 3px 7px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.12s ease;
-      white-space: nowrap;
-    }
-    .btn-time-chip:hover {
-      background: #e2e8f0;
-      border-color: #94a3b8;
-      color: #0f172a;
-    }
-
-    .time-picker-trigger-btn {
-      position: relative;
-      width: 40px;
-      height: 38px;
-      border-radius: 8px;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #334155;
-      font-size: 1.05rem;
-      transition: all 0.15s ease;
-      flex-shrink: 0;
-    }
-    .time-picker-trigger-btn:hover {
-      background: #e2e8f0;
-      border-color: #94a3b8;
-      color: #0284c7;
-    }
-    .hidden-native-time-input {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      opacity: 0;
-      cursor: pointer;
-    }
+    .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled { background: #94a3b8 !important; border-color: #64748b !important; cursor: not-allowed !important; }
 
     .kakao-input-area {
-      background: #ffffff;
-      border-top: 1px solid #d4d4d4;
-      padding: 6px 10px 7px 10px;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-      position: relative;
-      min-width: 0 !important;
+      background: #ffffff; border-top: 1px solid #d4d4d4; padding: 6px 10px 7px 10px; display: flex; flex-direction: column; flex-shrink: 0;
     }
     .input-textarea-custom {
-      width: 100%;
-      height: 38px;
-      border: none;
-      outline: none;
-      resize: none;
-      font-size: 0.8rem;
-      color: #191919;
-      background: transparent;
-      padding: 2px 0;
-      font-family: inherit;
+      width: 100%; height: 38px; border: none; outline: none; resize: none; font-size: 0.8rem; color: #191919; background: transparent;
     }
-    .input-textarea-custom::placeholder { color: #999999; }
-
-    .input-bottom-tools {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 4px;
-    }
-    .input-tool-icons {
-      display: flex;
-      gap: 10px;
-      color: #64748b;
-      font-size: 1rem;
-    }
-    .input-tool-icons i {
-      cursor: pointer;
-      transition: color 0.15s ease;
-    }
-    .input-tool-icons i:hover {
-      color: #1e293b;
-    }
+    .input-bottom-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .input-tool-icons { display: flex; gap: 10px; color: #64748b; font-size: 1rem; cursor: pointer; }
     .btn-kakao-send {
-      background: #e2e8f0;
-      border: none;
-      color: #94a3b8;
-      font-size: 0.76rem;
-      font-weight: 700;
-      padding: 4px 14px;
-      margin-left: 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.15s ease;
-      flex-shrink: 0;
+      background: #e2e8f0; border: none; color: #94a3b8; font-size: 0.76rem; font-weight: 700; padding: 4px 14px; border-radius: 4px; cursor: pointer;
     }
-    .btn-kakao-send.active {
-      background: var(--kakao-yellow);
-      color: #191919;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
+    .btn-kakao-send.active { background: var(--kakao-yellow); color: #191919; }
 
     .mention-popup-container {
-      position: absolute; bottom: 78px; left: 8px; max-width: 220px;
-      background: #ffffff; border: 1px solid #ccc; border-radius: 6px;
-      max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      display: none; z-index: 100;
+      position: absolute; bottom: 78px; left: 8px; max-width: 220px; background: #ffffff; border: 1px solid #ccc; border-radius: 6px;
+      max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 100;
     }
     .mention-item-row {
-      padding: 5px 8px; font-size: 0.75rem; font-weight: 600;
-      color: #333; cursor: pointer; display: flex; align-items: center; gap: 5px;
-      border-bottom: 1px solid #f4f4f4;
+      padding: 5px 8px; font-size: 0.75rem; font-weight: 600; color: #333; cursor: pointer; border-bottom: 1px solid #f4f4f4;
     }
-    .mention-item-row:hover { background: #f7f7f7; color: #1e88e5; }
 
     .module-display-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: #060a14; z-index: 200; display: none; flex-direction: column;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #060a14; z-index: 200; display: none; flex-direction: column;
     }
     .module-nav-header {
-      height: 48px; padding: 0 14px; background: #080d1a;
-      border-bottom: 1px solid #1a2742; display: flex; align-items: center;
-      justify-content: space-between; flex-shrink: 0;
+      height: 48px; padding: 0 14px; background: #080d1a; border-bottom: 1px solid #1a2742; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
     }
-    .module-scroll-body {
-      flex: 1; overflow-y: auto; padding: 10px; max-width: 600px; width: 100%; margin: 0 auto;
-    }
+    .module-scroll-body { flex: 1; overflow-y: auto; padding: 10px; max-width: 600px; width: 100%; margin: 0 auto; }
 
     .kakao-modal-backdrop {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.45); z-index: 9999999;
-      display: flex; align-items: center; justify-content: center;
-      padding: 16px;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.45); z-index: 9999999;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
     }
     .kakao-modal-card {
-      background: #ffffff; border-radius: 12px;
-      width: 100%; max-width: 320px; padding: 18px 16px;
-      text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+      background: #ffffff; border-radius: 12px; width: 100%; max-width: 320px; padding: 18px 16px; text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,0.2);
     }
     .kakao-modal-card input, .kakao-modal-card select {
-      width: 100%; background: #f7f7f7; border: 1px solid #e2e8f0;
-      border-radius: 7px; padding: 7px 10px; font-size: 0.82rem;
-      outline: none; margin-bottom: 8px;
+      width: 100%; background: #f7f7f7; border: 1px solid #e2e8f0; border-radius: 7px; padding: 7px 10px; font-size: 0.82rem; outline: none; margin-bottom: 8px;
     }
 
-    .class-preset-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 5px;
-      max-height: 220px;
-      overflow-y: auto;
-      margin-bottom: 12px;
-    }
+    .class-preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
     .class-preset-cell {
-      padding: 6px 3px;
-      border-radius: 8px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 2px;
-      cursor: pointer;
-      transition: all 0.12s;
-    }
-    .class-preset-cell:hover, .class-preset-cell.active {
-      border-color: #0284c7;
-      background: #e0f2fe;
+      padding: 6px 3px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
     }
     .class-icon-big { font-size: 1.2rem; line-height: 1; }
     .class-title-small { font-size: 0.65rem; font-weight: 700; color: #334155; }
 
     .kakao-toast-box {
       position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-20px);
-      background: #333333; color: #ffffff; padding: 8px 16px; border-radius: 20px;
-      font-size: 0.78rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-      z-index: 99999999; opacity: 0; pointer-events: none; transition: all 0.2s ease;
-      white-space: nowrap; display: flex; align-items: center; gap: 6px;
+      background: #333333; color: #ffffff; padding: 8px 16px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;
+      z-index: 99999999; opacity: 0; pointer-events: none; transition: all 0.2s ease; white-space: nowrap; display: flex; align-items: center; gap: 6px;
     }
     .kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
@@ -852,8 +504,8 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
         <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
       </li>
-      <!-- 🎯 보스타임 메뉴 클릭 시 PageTimer.html 모듈을 오버레이로 호출 -->
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); openModulePage('PageTimer')">
+      <!-- 🎯 햄버거 메뉴에서 보스타임 서랍 열기 연동 -->
+      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
@@ -908,6 +560,27 @@
     </div>
   </aside>
 
+  <!-- 🎯 4. 보스타임 전용 서랍 (260px) - PageTimer.html을 비동기로 로드하여 삽입 -->
+  <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
+    <div class="boss-drawer-header">
+      <div class="boss-drawer-title">
+        <i class="fa-regular fa-clock text-warning"></i>
+        <span>보스타임 현황</span>
+      </div>
+      <div class="members-header-tools">
+        <button type="button" class="btn-tool-icon" title="새로고침" onclick="loadDrawerPageTimer()">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleBossDrawer(false)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <div id="drawerBossListArea" style="flex: 1; overflow-y: auto;">
+      <div class="text-secondary small text-center py-4">보스타임을 불러오는 중...</div>
+    </div>
+  </aside>
+
   <!-- 3. 메인 대화방 -->
   <div class="app-main-layout">
     <header class="kakao-chat-header">
@@ -936,8 +609,8 @@
         <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
           <i class="fa-regular fa-clock"></i>
         </button>
-        <!-- 상단 시계 아이콘 클릭 시 PageTimer 모듈 오픈 -->
-        <button type="button" class="btn-kakao-head" title="보스타임 화면 열기" onclick="openModulePage('PageTimer')">
+        <!-- 상단 시계 아이콘 클릭 시 보스 서랍 오픈 -->
+        <button type="button" class="btn-kakao-head" title="보스타임 서랍 열기" onclick="toggleBossDrawer(true)">
           <i class="fa-solid fa-hourglass-half"></i>
         </button>
         <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
@@ -1044,94 +717,6 @@
     </div>
   </div>
 
-  <!-- 컷 / 예약 모달 -->
-  <div id="modalBossActionDialog" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" id="bossActionDialogTitle" style="font-size: 0.95rem;">보스 처리</h6>
-      <p class="text-secondary small mb-2" id="bossActionDialogDesc" style="font-size: 0.72rem;">시간을 입력하거나 아래 버튼을 선택하세요.</p>
-      
-      <input type="hidden" id="targetBossActionType">
-      <input type="hidden" id="targetBossActionName">
-
-      <div id="modalQuickTimeChips" class="quick-time-chips-group justify-content-center"></div>
-
-      <div class="d-flex gap-1 align-items-center mb-1">
-        <input type="text" id="targetBossActionTimeInput" class="text-center m-0 flex-fill" placeholder="예: 1100, 2000" maxlength="5" style="font-size:1.05rem; font-weight:800; letter-spacing: 2px;">
-        
-        <div class="time-picker-trigger-btn" title="시간 선택기 열기">
-          <i class="fa-regular fa-clock"></i>
-          <input type="time" id="targetNativeTimePicker" class="hidden-native-time-input" onchange="handleNativeTimePickerChange(this.value)">
-        </div>
-      </div>
-      <div class="text-secondary text-end mb-2" style="font-size: 0.65rem;">* 4자리 숫자(24시간) 또는 우측 시계로 선택</div>
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" style="font-size:0.78rem;" onclick="closeBossActionDialog()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none; font-size:0.78rem;" onclick="confirmBossActionDialog()">확인</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 모달: 신규 길드원 등록 -->
-  <div id="modalAddMemberPopup" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>신규 길드원 등록</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임과 직급을 설정하세요.</p>
-      
-      <input type="text" id="newMemberNickInput" placeholder="길드원 닉네임 입력" autocomplete="off">
-      <select id="newMemberRoleSelect">
-        <option value="일반" selected>일반</option>
-        <option value="정예">정예</option>
-        <option value="부길드장">부길드장</option>
-        <option value="길드장">길드장</option>
-      </select>
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closeAddMemberPopup()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitAddMemberAction()">등록하기</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 모달: 길드원 정보 수정 -->
-  <div id="modalEditMemberPopup" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-pen text-info me-1"></i>길드원 정보 수정</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임 변경 시 과거 토벌 기록도 자동 동기화됩니다.</p>
-      
-      <input type="hidden" id="editMemberId">
-      <input type="hidden" id="editOldName">
-      <input type="text" id="editNewName" placeholder="새 닉네임">
-      <select id="editRoleSelect">
-        <option value="일반">일반</option>
-        <option value="정예">정예</option>
-        <option value="부길드장">부길드장</option>
-        <option value="길드장">길드장</option>
-      </select>
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closeEditMemberPopup()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitEditMemberAction()">저장</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 모달: 비밀번호 변경 -->
-  <div id="modalPinChangePopup" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
-      <p class="text-secondary small mb-3" id="pinChangeNoticeText" style="font-size: 0.72rem;">기존 비밀번호와 새 비밀번호를 입력하세요.</p>
-      
-      <input type="password" id="inputOldPin" class="text-center" placeholder="기존 비밀번호 (초기값 0000)" maxlength="16" inputmode="numeric">
-      <input type="password" id="inputNewPin" class="text-center" placeholder="새 비밀번호 (숫자 6자리 이상)" maxlength="16" inputmode="numeric">
-
-      <div class="d-flex gap-2 mt-2">
-        <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="closePinChangePopup()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="submitPinChangeAction()">변경 완료</button>
-      </div>
-    </div>
-  </div>
-
   <!-- 로그인 모달 -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
@@ -1164,7 +749,7 @@
     var bossWatcherInterval = null;
     var deferredPrompt = null;
     var kakaoToastTimer = null;
-    var targetPinMember = null;
+    var isDrawerPageTimerLoaded = false;
 
     var notifiedBossSpawnMap = new Set(JSON.parse(localStorage.getItem("boss_spawn_notified_keys") || "[]"));
 
@@ -1377,25 +962,16 @@
         const displayClass = isMe ? myCurrentClass : (m.job_class || '직업 미지정');
 
         return `
-          <div class="kakao-member-row">
-            <div class="member-row-left" onclick="openPinChangePopup(${m.id})">
-              <div class="avatar-wrapper-relative">
-                <div class="member-avatar-round ${avatarClass}">${displayAvatar}</div>
-                ${isMe ? '<div class="mini-badge-me-tag">나</div>' : ''}
+          <div class="kakao-member-row" style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; cursor:pointer;">
+            <div class="member-row-left" style="display:flex; align-items:center; gap:8px; min-width:0; flex:1;">
+              <div class="avatar-wrapper-relative" style="position:relative; flex-shrink:0;">
+                <div class="member-avatar-round ${avatarClass}" style="width:34px; height:34px; border-radius:12px; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1rem;">${displayAvatar}</div>
+                ${isMe ? '<div class="mini-badge-me-tag" style="position:absolute; top:-3px; left:-4px; background:#f59e0b; color:#fff; font-size:0.55rem; padding:1px 3px; border-radius:7px;">나</div>' : ''}
               </div>
-              <div class="member-info-col">
-                <div class="member-name-text">
-                  <span>${m.name}</span>
-                  <span class="role-badge-tag ${roleTagClass}">${roleStr}</span>
-                </div>
-                <div class="member-class-desc">
-                  <span>${displayClass}</span>
-                </div>
+              <div class="member-info-col" style="display:flex; flex-direction:column; min-width:0;">
+                <div class="member-name-text" style="font-size:0.82rem; font-weight:700; color:#191919; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.name}</div>
+                <div class="member-class-desc" style="font-size:0.65rem; color:#0284c7; font-weight:600;">${displayClass}</div>
               </div>
-            </div>
-            <div class="member-row-actions">
-              <button type="button" class="btn-action-pill" onclick="openEditMemberPopup(${m.id}, '${m.name}', '${roleStr}')">수정</button>
-              <button type="button" class="btn-action-pill text-danger" onclick="deleteMemberAction(${m.id}, '${m.name}')">삭제</button>
             </div>
           </div>
         `;
@@ -1413,6 +989,7 @@
       const backdrop = document.getElementById("commonDrawerBackdrop");
       if (isOpen) {
         toggleMembersDrawer(false);
+        toggleBossDrawer(false);
         backdrop.classList.add("show");
         drawer.classList.add("open");
       } else {
@@ -1426,6 +1003,7 @@
       const backdrop = document.getElementById("commonDrawerBackdrop");
       if (isOpen) {
         toggleMenuDrawer(false);
+        toggleBossDrawer(false);
         backdrop.classList.add("show");
         drawer.classList.add("open");
       } else {
@@ -1434,15 +1012,57 @@
       }
     }
 
+    async function toggleBossDrawer(isOpen) {
+      const drawer = document.getElementById("bossTimerSidebarDrawer");
+      const backdrop = document.getElementById("commonDrawerBackdrop");
+      if (isOpen) {
+        toggleMenuDrawer(false);
+        toggleMembersDrawer(false);
+        backdrop.classList.add("show");
+        drawer.classList.add("open");
+        await loadDrawerPageTimer();
+      } else {
+        drawer.classList.remove("open");
+        checkBackdropState();
+        if (typeof window.__currentModuleCleanup === 'function') {
+          window.__currentModuleCleanup();
+        }
+      }
+    }
+
+    async function loadDrawerPageTimer() {
+      const area = document.getElementById("drawerBossListArea");
+      area.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>불러오는 중...</div>`;
+      try {
+        const res = await fetch(`pages/PageTimer.html?_t=${Date.now()}`);
+        if (!res.ok) throw new Error("로드 실패");
+        const html = await res.text();
+        area.innerHTML = html;
+
+        document.querySelectorAll(".drawer-dynamic-script").forEach(s => s.remove());
+        area.querySelectorAll("script").forEach(s => {
+          const sc = document.createElement("script");
+          sc.className = "drawer-dynamic-script";
+          if (s.src) sc.src = s.src;
+          else sc.textContent = s.textContent;
+          document.body.appendChild(sc);
+        });
+      } catch (e) {
+        area.innerHTML = `<div class="text-danger small text-center py-4">로드 실패: ${e.message}</div>`;
+      }
+    }
+
     function closeAllDrawers() {
       toggleMenuDrawer(false);
       toggleMembersDrawer(false);
+      toggleBossDrawer(false);
     }
 
     function checkBackdropState() {
       const isMenuOpen = document.getElementById("menuSidebarDrawer").classList.contains("open");
       const isMembersOpen = document.getElementById("membersSidebarDrawer").classList.contains("open");
-      if (!isMenuOpen && !isMembersOpen) {
+      const isBossOpen = document.getElementById("bossTimerSidebarDrawer").classList.contains("open");
+      if (!isMenuOpen && !isMembersOpen && !isBossOpen) {
         document.getElementById("commonDrawerBackdrop").classList.remove("show");
       }
     }
@@ -1475,126 +1095,6 @@
       showKakaoToast(`내 직업이 [${myCurrentClass}]로 설정되었습니다!`, "🎉");
       closeProfileEditModal();
       await loadGuildMembersData();
-    }
-
-    function openAddMemberPopup() {
-      document.getElementById("newMemberNickInput").value = "";
-      document.getElementById("newMemberRoleSelect").value = "일반";
-      document.getElementById("modalAddMemberPopup").style.display = "flex";
-      setTimeout(() => document.getElementById("newMemberNickInput").focus(), 100);
-    }
-    function closeAddMemberPopup() {
-      document.getElementById("modalAddMemberPopup").style.display = "none";
-    }
-
-    async function submitAddMemberAction() {
-      const name = document.getElementById("newMemberNickInput").value.trim();
-      const role = document.getElementById("newMemberRoleSelect").value;
-
-      if (!name) return showKakaoToast("길드원 닉네임을 입력해주세요!", "⚠️");
-      if (cachedMemberList.some(m => m.name === name)) {
-        return showKakaoToast("이미 존재하는 닉네임입니다!", "⚠️");
-      }
-
-      try {
-        await apiRequest("guild_members", "POST", [{ name, role, pin: "0000" }]);
-        showKakaoToast(`[${name}] 길드원 등록 완료!`, "🎉");
-        closeAddMemberPopup();
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("등록 실패: " + err.message, "❌");
-      }
-    }
-
-    function openEditMemberPopup(id, name, role) {
-      document.getElementById("editMemberId").value = id;
-      document.getElementById("editOldName").value = name;
-      document.getElementById("editNewName").value = name;
-      document.getElementById("editRoleSelect").value = role;
-      document.getElementById("modalEditMemberPopup").style.display = "flex";
-    }
-    function closeEditMemberPopup() {
-      document.getElementById("modalEditMemberPopup").style.display = "none";
-    }
-
-    async function submitEditMemberAction() {
-      const id = document.getElementById("editMemberId").value;
-      const oldName = document.getElementById("editOldName").value.trim();
-      const newName = document.getElementById("editNewName").value.trim();
-      const role = document.getElementById("editRoleSelect").value;
-
-      if (!newName) return showKakaoToast("닉네임을 입력하세요!", "⚠️");
-
-      try {
-        if (oldName !== newName) {
-          await apiRequest("rpc/update_member_nickname", "POST", { old_name: oldName, new_name: newName });
-        }
-        await apiRequest(`guild_members?id=eq.${id}`, "PATCH", { role, name: newName });
-
-        showKakaoToast(`[${newName}] 정보가 수정되었습니다!`, "✅");
-        closeEditMemberPopup();
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("수정 실패: " + err.message, "❌");
-      }
-    }
-
-    async function deleteMemberAction(id, name) {
-      if (!confirm(`[${name}] 길드원을 정말 삭제하시겠습니까?`)) return;
-
-      try {
-        await apiRequest(`guild_members?id=eq.${id}`, "DELETE");
-        showKakaoToast(`[${name}] 길드원이 삭제되었습니다.`, "🗑️");
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("삭제 실패: " + err.message, "❌");
-      }
-    }
-
-    function openPinChangePopup(memberId) {
-      const target = cachedMemberList.find(m => m.id === memberId);
-      if (!target) return;
-
-      targetPinMember = target;
-      const isDefault = (!target.pin || target.pin === "0000");
-      document.getElementById("pinChangeNoticeText").innerText = isDefault
-        ? `[${target.name}] 초기 상태입니다. 기존 비번에 0000을 입력하세요.`
-        : `[${target.name}] 현재 비밀번호와 새 비밀번호를 입력하세요.`;
-
-      document.getElementById("inputOldPin").value = "";
-      document.getElementById("inputNewPin").value = "";
-      document.getElementById("modalPinChangePopup").style.display = "flex";
-    }
-    function closePinChangePopup() {
-      document.getElementById("modalPinChangePopup").style.display = "none";
-      targetPinMember = null;
-    }
-
-    async function submitPinChangeAction() {
-      if (!targetPinMember) return;
-
-      const oldPin = document.getElementById("inputOldPin").value.trim();
-      const newPin = document.getElementById("inputNewPin").value.trim();
-      const currentPin = (targetPinMember.pin || "0000").trim();
-
-      if (oldPin !== currentPin) {
-        return showKakaoToast("기존 비밀번호가 일치하지 않습니다! (기본값: 0000)", "❌");
-      }
-      if (!/^\d+$/.test(newPin) || newPin.length < 6) {
-        return showKakaoToast("새 비밀번호는 숫자 6자리 이상이어야 합니다.", "⚠️");
-      }
-      if (/(\d)\1\1/.test(newPin)) {
-        return showKakaoToast("동일한 숫자를 3회 이상 연속 사용할 수 없습니다 (예: 000)", "⚠️");
-      }
-
-      try {
-        await apiRequest(`guild_members?id=eq.${targetPinMember.id}`, "PATCH", { pin: newPin });
-        showKakaoToast(`[${targetPinMember.name}] 비밀번호 변경 완료!`, "🎉");
-        closePinChangePopup();
-        await loadGuildMembersData();
-      } catch (err) {
-        showKakaoToast("변경 실패: " + err.message, "❌");
-      }
     }
 
     async function verifyStoredSession(nick, pin) {
@@ -1998,123 +1498,6 @@
       }
     };
 
-    window.openBossActionModal = function(type, bossName) {
-      document.getElementById("targetBossActionType").value = type;
-      document.getElementById("targetBossActionName").value = bossName;
-      document.getElementById("targetBossActionTimeInput").value = "";
-      document.getElementById("targetNativeTimePicker").value = "";
-
-      const titleElem = document.getElementById("bossActionDialogTitle");
-      const descElem = document.getElementById("bossActionDialogDesc");
-      const chipsContainer = document.getElementById("modalQuickTimeChips");
-
-      if (type === 'cut') {
-        titleElem.innerHTML = `<span class="text-danger">[${bossName}]</span> 컷 시간 설정`;
-        descElem.innerText = "잡힌 시간을 선택하거나 4자리로 직접 입력하세요.";
-
-        chipsContainer.innerHTML = `
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(0)">지금 시각</button>
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(-5)">5분 전</button>
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(-10)">10분 전</button>
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(-15)">15분 전</button>
-        `;
-      } else {
-        titleElem.innerHTML = `<span class="text-primary">[${bossName}]</span> 젠 예약 시간 설정`;
-        descElem.innerText = "예정 시간을 선택하거나 4자리로 직접 입력하세요.";
-
-        chipsContainer.innerHTML = `
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(10)">10분 뒤</button>
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(30)">30분 뒤</button>
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(60)">1시간 뒤</button>
-          <button type="button" class="btn-time-chip" onclick="applyQuickOffsetMinutes(120)">2시간 뒤</button>
-        `;
-      }
-
-      document.getElementById("modalBossActionDialog").style.display = "flex";
-      setTimeout(() => document.getElementById("targetBossActionTimeInput").focus(), 100);
-    };
-
-    window.applyQuickOffsetMinutes = function(offsetMin) {
-      const targetDate = new Date(Date.now() + (offsetMin * 60 * 1000));
-      const hh = String(targetDate.getHours()).padStart(2, '0');
-      const mm = String(targetDate.getMinutes()).padStart(2, '0');
-      document.getElementById("targetBossActionTimeInput").value = `${hh}${mm}`;
-      document.getElementById("targetNativeTimePicker").value = `${hh}:${mm}`;
-    };
-
-    window.handleNativeTimePickerChange = function(timeVal) {
-      if (!timeVal) return;
-      const clean = timeVal.replace(':', '');
-      document.getElementById("targetBossActionTimeInput").value = clean;
-    };
-
-    window.closeBossActionDialog = function() {
-      document.getElementById("modalBossActionDialog").style.display = "none";
-    };
-
-    window.confirmBossActionDialog = async function() {
-      const type = document.getElementById("targetBossActionType").value;
-      const bossName = document.getElementById("targetBossActionName").value;
-      const timeInput = document.getElementById("targetBossActionTimeInput").value.trim();
-
-      const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
-      if (!boss) return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
-
-      closeBossActionDialog();
-
-      if (type === 'cut') {
-        let cutDate = new Date();
-        if (timeInput) {
-          const parsed = parseCustomTimeString(timeInput);
-          if (!parsed) return showKakaoToast("시간 형식이 올바르지 않습니다 (예: 1100, 2000)", "⚠️");
-          cutDate = parsed;
-        }
-
-        const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
-        try {
-          await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
-            last_cut_time: cutDate.toISOString(),
-            next_spawn_time: nextSpawn.toISOString()
-          });
-
-          const alertMessage = buildBossCutAlertHtml(boss.boss_name, cutDate, nextSpawn);
-
-          await apiRequest("guild_chats", "POST", [{
-            sender_name: "보스알리미",
-            message: alertMessage,
-            msg_type: "boss_alert",
-            mentions: []
-          }]);
-          showKakaoToast(`[${boss.boss_name}] 컷 처리 완료!`, "🎉");
-          syncAllChatCutButtons();
-        } catch (e) {
-          showKakaoToast("처리 실패: " + e.message, "❌");
-        }
-      } else {
-        if (!timeInput) return showKakaoToast("예약 시간을 선택하거나 입력해주세요 (예: 2200)", "⚠️");
-        const spawnDate = parseCustomTimeString(timeInput);
-        if (!spawnDate) return showKakaoToast("시간 형식이 올바르지 않습니다 (예: 2200)", "⚠️");
-
-        try {
-          await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
-            next_spawn_time: spawnDate.toISOString()
-          });
-
-          const spawnTimeStr = formatTime24HourWithDate(spawnDate);
-          await apiRequest("guild_chats", "POST", [{
-            sender_name: "보스알리미",
-            message: `[${escapeHtmlText(boss.boss_name)}] 젠 예약 완료!<br>• 예정 시각: ${spawnTimeStr}`,
-            msg_type: "boss_alert",
-            mentions: []
-          }]);
-          showKakaoToast(`[${boss.boss_name}] 예약 완료!`, "🎉");
-          syncAllChatCutButtons();
-        } catch (e) {
-          showKakaoToast("예약 실패: " + e.message, "❌");
-        }
-      }
-    };
-
     window.triggerQuickCutAction = async function(bossName, btnId) {
       const btn = document.getElementById(btnId);
       
@@ -2297,44 +1680,6 @@
       }
     }
 
-    function bindMentionInputEvents() {
-      const textarea = document.getElementById("inputChatMessage");
-      const popup = document.getElementById("mentionPopupBox");
-
-      textarea.addEventListener("input", () => {
-        const val = textarea.value;
-        const lastAt = val.lastIndexOf("@");
-        if (lastAt !== -1) {
-          const q = val.slice(lastAt + 1).toLowerCase();
-          const matched = cachedMemberList.filter(m => m.name.toLowerCase().includes(q));
-          if (matched.length > 0) {
-            popup.innerHTML = matched.slice(0, 5).map(m => `
-              <div class="mention-item-row" onclick="applyMentionNick('${m.name}')">
-                <i class="fa-solid fa-at text-primary"></i> ${m.name}
-              </div>
-            `).join('');
-            popup.style.display = "block";
-            return;
-          }
-        }
-        popup.style.display = "none";
-      });
-    }
-
-    function applyMentionNick(name) {
-      const textarea = document.getElementById("inputChatMessage");
-      const val = textarea.value;
-      const lastAt = val.lastIndexOf("@");
-      textarea.value = val.slice(0, lastAt) + `@${name} `;
-      closeMentionPopup();
-      textarea.focus();
-      handleInputState(textarea);
-    }
-
-    function closeMentionPopup() {
-      document.getElementById("mentionPopupBox").style.display = "none";
-    }
-
     window.openModulePage = async function(pageName) {
       closeAllDrawers();
 
@@ -2349,7 +1694,6 @@
         "PageWish": "분배희망신청",
         "PageSettle": "정산내역",
         "PageFinance": "길드비용현황",
-        "PageTimer": "보스타임 현황판",
         "PageEnemies": "원수목록",
         "PageSettings": "설정"
       };
