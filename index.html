@@ -223,8 +223,16 @@
       color: #475569; font-size: 0.95rem;
       padding: 5px; cursor: pointer;
       border-radius: 5px;
+      transition: transform 0.25s ease;
     }
     .btn-tool-icon:hover { background: #e2e8f0; color: #1e293b; }
+    .btn-tool-icon.rotating i {
+      animation: spinAnim 0.6s ease-in-out;
+    }
+    @keyframes spinAnim {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 
     .members-search-wrap {
       padding: 6px 10px;
@@ -336,15 +344,15 @@
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
     /* ========================================================
-       4. 보스타이머 전용 서랍 (260px)
+       4. 보스타이머 서랍 (260px)
        ======================================================== */
     .app-boss-drawer {
       position: fixed;
       top: 0; left: 0;
       width: var(--drawer-width) !important;
       height: 100vh;
-      background: #ffffff;
-      border-right: 1px solid #dcdcdc;
+      background: #f8fafc;
+      border-right: 1px solid #e2e8f0;
       z-index: 99999;
       transform: translateX(-100%);
       transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
@@ -364,8 +372,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #ececec;
-      background: #f7f7f7;
+      border-bottom: 1px solid #e2e8f0;
+      background: #ffffff;
       flex-shrink: 0;
     }
     .boss-drawer-title {
@@ -379,37 +387,129 @@
     .boss-drawer-list {
       flex: 1;
       overflow-y: auto;
-      padding: 6px 8px;
-    }
-    .boss-drawer-list::-webkit-scrollbar { width: 4px; }
-    .boss-drawer-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
-
-    .boss-drawer-item {
-      padding: 6px 8px;
-      border-radius: 8px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      margin-bottom: 5px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 6px;
+    }
+    .boss-drawer-list::-webkit-scrollbar { width: 4px; }
+    .boss-drawer-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    .boss-drawer-item {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .boss-drawer-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.06);
     }
     .boss-drawer-item.spawned {
-      background: #fff5f5;
-      border-color: #fecaca;
+      background: #fff8f8;
+      border-color: #fca5a5;
+    }
+    .boss-drawer-item.imminent {
+      background: #fffdf5;
+      border-color: #fde68a;
     }
     .boss-drawer-row-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.76rem;
+    }
+    .boss-drawer-name {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: #1e293b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .boss-drawer-row-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       color: #64748b;
+    }
+
+    .badge-boss-state {
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 5px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .badge-boss-state.state-wait {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+    .badge-boss-state.state-spawn {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      animation: pulseBlink 1.4s infinite;
+    }
+    .badge-boss-state.state-imminent {
+      background: #fef3c7;
+      color: #d97706;
+      border: 1px solid #fde68a;
+    }
+    .badge-boss-state.state-normal {
+      background: #e0f2fe;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+    }
+    @keyframes pulseBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .btn-drawer-cut {
+      background: #ef4444;
+      color: #ffffff;
+      border: none;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      box-shadow: 0 1px 2px rgba(239, 68, 68, 0.25);
+    }
+    .btn-drawer-cut:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+    .btn-drawer-cut:active {
+      transform: translateY(0);
+    }
+
+    .btn-drawer-reserve {
+      background: #ffffff;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .btn-drawer-reserve:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+      border-color: #94a3b8;
     }
 
     /* ========================================================
@@ -644,7 +744,7 @@
       border-left: 4px solid #38bdf8 !important;
     }
 
-    /* 🎯 [스크린샷 위치 반영] 대화 말풍선 바로 아래 우측 [컷 처리] 버튼 */
+    /* 말풍선 바로 아래 우측 [컷 처리] 버튼 */
     .spawn-msg-action-row {
       display: flex;
       justify-content: flex-end;
@@ -893,7 +993,7 @@
         <span>보스타임 현황</span>
       </div>
       <div class="members-header-tools">
-        <button type="button" class="btn-tool-icon" title="새로고침" onclick="loadBossTimersList(); renderBossDrawerList();">
+        <button type="button" class="btn-tool-icon" id="btnRefreshBossDrawer" title="새로고침" onclick="handleBossDrawerRefresh()">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
         <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleBossDrawer(false)">
@@ -1150,16 +1250,8 @@
     var kakaoToastTimer = null;
     var targetPinMember = null;
 
-    // 🎯 중복 알림 방지용 로컬스토리지 영구 Set 관리
-    var notifiedBossSpawnMap = new Set(JSON.parse(localStorage.getItem("boss_spawn_notified_keys") || "[]"));
-
-    function saveNotifiedBossKey(key) {
-      if (!key) return;
-      notifiedBossSpawnMap.add(key);
-      const arr = Array.from(notifiedBossSpawnMap);
-      if (arr.length > 200) arr.splice(0, arr.length - 200);
-      localStorage.setItem("boss_spawn_notified_keys", JSON.stringify(arr));
-    }
+    // 🎯 젠타임 중복 방지 세트 (최근 발송한 알림 관리)
+    var notifiedBossSpawnMap = new Set();
 
     function showKakaoToast(msg, icon = "💬") {
       const box = document.getElementById("kakaoToastBox");
@@ -1438,6 +1530,19 @@
       }
     }
 
+    window.handleBossDrawerRefresh = async function() {
+      const btn = document.getElementById("btnRefreshBossDrawer");
+      if (btn) btn.classList.add("rotating");
+
+      await loadBossTimersList();
+      renderBossDrawerList();
+
+      setTimeout(() => {
+        if (btn) btn.classList.remove("rotating");
+        showKakaoToast("보스타임 현황이 갱신되었습니다.", "⏰");
+      }, 400);
+    };
+
     function renderBossDrawerList() {
       const container = document.getElementById("drawerBossListArea");
       if (!container) return;
@@ -1455,38 +1560,42 @@
       });
 
       container.innerHTML = sorted.map(b => {
-        let statusBadge = "";
-        let isSpawned = false;
+        let badgeHtml = "";
+        let itemClass = "";
 
         if (!b.next_spawn_time) {
-          statusBadge = `<span class="badge bg-secondary" style="font-size:0.62rem;">컷 대기</span>`;
+          badgeHtml = `<span class="badge-boss-state state-wait">컷 대기</span>`;
         } else {
           const nextDate = new Date(b.next_spawn_time);
           const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
           if (diffSec <= 0) {
-            isSpawned = true;
+            itemClass = "spawned";
             const passM = Math.floor(Math.abs(diffSec) / 60);
-            statusBadge = `<span class="badge bg-danger" style="font-size:0.62rem;">🚨 젠 완료 (+${passM}분)</span>`;
+            badgeHtml = `<span class="badge-boss-state state-spawn">🚨 젠 완료 (+${passM}분)</span>`;
+          } else if (diffSec <= 3600) {
+            itemClass = "imminent";
+            const m = Math.floor(diffSec / 60);
+            badgeHtml = `<span class="badge-boss-state state-imminent">⏳ ${m}분 남음</span>`;
           } else {
             const h = Math.floor(diffSec / 3600);
             const m = Math.floor((diffSec % 3600) / 60);
-            statusBadge = `<span class="badge bg-warning text-dark" style="font-size:0.62rem;">⏳ ${h > 0 ? h + '시간 ' : ''}${m}분</span>`;
+            badgeHtml = `<span class="badge-boss-state state-normal">💤 ${h}시간 ${m}분</span>`;
           }
         }
 
         const nextTimeStr = b.next_spawn_time ? formatTime24Hour(new Date(b.next_spawn_time)) : "-";
 
         return `
-          <div class="boss-drawer-item ${isSpawned ? 'spawned' : ''}">
+          <div class="boss-drawer-item ${itemClass}">
             <div class="boss-drawer-row-top">
-              <strong class="text-dark">${escapeHtmlText(b.boss_name)}</strong>
-              ${statusBadge}
+              <span class="boss-drawer-name">${escapeHtmlText(b.boss_name)}</span>
+              ${badgeHtml}
             </div>
             <div class="boss-drawer-row-bottom">
-              <span>젠 예정: <strong>${nextTimeStr}</strong></span>
+              <span>젠 예정: <strong style="color:#0284c7;">${nextTimeStr}</strong></span>
               <div class="d-flex gap-1">
-                <button type="button" class="btn btn-danger btn-xs py-0 px-2 fw-bold" style="font-size:0.65rem;" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
-                <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-1" style="font-size:0.65rem;" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
+                <button type="button" class="btn-drawer-cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
+                <button type="button" class="btn-drawer-reserve" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
               </div>
             </div>
           </div>
@@ -1773,6 +1882,15 @@
         .subscribe();
     }
 
+    // 🎯 젠 완료 알림 텍스트에서 보스 이름 정확히 추출하는 헬퍼 함수
+    function extractBossNameFromMessage(text) {
+      if (!text) return "";
+      // [보스명] 추출
+      const match = text.match(/\[([^\]]+)\]/);
+      if (match && match[1]) return match[1].trim();
+      return "";
+    }
+
     function renderKakaoChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isMe = (msg.sender_name === myCurrentNick);
@@ -1809,29 +1927,24 @@
       else if (msg.msg_type === "boss_alert") {
         let cardTypeClass = "alert-3m";
         let isSpawnMsg = false;
-        let spawnedBossName = "";
 
         if (cleanMessageText.includes("7분 전")) cardTypeClass = "alert-7m";
         else if (cleanMessageText.includes("컷 완료")) cardTypeClass = "alert-cut";
         else if (cleanMessageText.includes("젠 완료") || cleanMessageText.includes("출현")) {
           cardTypeClass = "alert-spawn";
           isSpawnMsg = true;
-          const match = cleanMessageText.match(/\[([^\]]+)\]/);
-          if (match) spawnedBossName = match[1];
         }
 
-        // 🎯 [스크린샷 위치 반영]: 젠 완료 알림일 경우 말풍선 바로 밑 우측에 [컷 처리] 버튼 생성
+        const spawnedBossName = extractBossNameFromMessage(cleanMessageText);
+
+        // 🎯 [완벽 수정] 젠 완료 메시지일 때 말풍선 바로 아래 우측에 [컷 처리] 버튼 100% 렌더링
         let subCutButtonHtml = "";
         if (isSpawnMsg && spawnedBossName) {
-          const btnId = `btnSubCut_${msg.id || Date.now()}`;
-          const isCutAlready = processedCutMessageIds.has(String(msg.id));
-
+          const btnId = `btnSubCut_${msg.id || Math.floor(Math.random()*100000)}`;
           subCutButtonHtml = `
             <div class="spawn-msg-action-row">
-              <button type="button" id="${btnId}" class="btn-msg-sub-cut ${isCutAlready ? 'disabled' : ''}" 
-                      ${isCutAlready ? 'disabled' : ''} 
-                      onclick="triggerQuickCutAction('${spawnedBossName}', '${btnId}', '${msg.id}')">
-                <i class="fa-solid fa-skull"></i> ${isCutAlready ? '컷 완료' : '컷 처리'}
+              <button type="button" id="${btnId}" class="btn-msg-sub-cut" onclick="triggerQuickCutAction('${escapeHtmlText(spawnedBossName)}', '${btnId}')">
+                <i class="fa-solid fa-skull"></i> 컷 처리
               </button>
             </div>
           `;
@@ -2087,12 +2200,12 @@
       }
     };
 
-    // 🎯 젠 알림 말풍선 바로 아래 [컷 처리] 버튼 클릭 핸들러
-    window.triggerQuickCutAction = async function(bossName, btnId, msgId) {
+    // 🎯 젠 알림 말풍선 바로 아래 [컷 처리] 버튼
+    window.triggerQuickCutAction = async function(bossName, btnId) {
       const btn = document.getElementById(btnId);
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = `<i class="fa-solid fa-check"></i> 컷 완료`;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> 완료`;
         btn.classList.add("disabled");
       }
 
@@ -2110,10 +2223,6 @@
           last_cut_time: cutDate.toISOString(),
           next_spawn_time: nextSpawn.toISOString()
         });
-
-        if (msgId) {
-          saveProcessedCutId(msgId);
-        }
 
         const alertMessage = buildBossCutAlertHtml(boss.boss_name, cutDate, nextSpawn);
 
@@ -2344,34 +2453,35 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 🎯 젠타임 중복 전송 방지 및 단 1회 전송 보장
+    // 🎯 [완벽 수정] 젠 완료 알림 범위 완화 및 단 1회 발송 보장
     function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
       bossWatcherInterval = setInterval(() => {
         const now = Date.now();
+
         (cachedBossList || []).forEach(b => {
           if (!b.next_spawn_time) return;
           const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
 
-          // 7분 전 알림
+          // 7분 전 알림 (420초 ~ 360초)
           const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
           if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
-            saveNotifiedBossKey(key7Min);
+            notifiedBossSpawnMap.add(key7Min);
             sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`);
           }
 
-          // 3분 전 알림
+          // 3분 전 알림 (180초 ~ 120초)
           const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
           if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
-            saveNotifiedBossKey(key3Min);
+            notifiedBossSpawnMap.add(key3Min);
             sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`);
           }
 
-          // 젠 완료 알림 (1회만 발송되도록 영구 키 보관)
+          // 젠 완료 알림 (0초 이하, 최대 10분 전까지 안전 감지 및 1회 발송)
           const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
-          if (diffSec <= 0 && diffSec > -120 && !notifiedBossSpawnMap.has(keySpawned)) {
-            saveNotifiedBossKey(keySpawned);
+          if (diffSec <= 0 && diffSec > -600 && !notifiedBossSpawnMap.has(keySpawned)) {
+            notifiedBossSpawnMap.add(keySpawned);
             sendBossAlertBroadcast(`🔥 [${b.boss_name}] 젠 완료! 출현했습니다! 즉시 처치 바랍니다!`);
           }
         });
