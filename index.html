@@ -37,6 +37,7 @@
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      min-width: 0; /* 브라우저가 자식 요소 너비 때문에 창 축소를 막는 현상 원천 차단 */
     }
 
     html, body {
@@ -49,8 +50,8 @@
       overflow: hidden;
       display: flex;
       position: relative;
-      /* PC 창 크기를 기존 대비 최대 30%까지 드래그 축소 가능하도록 min-width 최적화 */
-      min-width: 240px;
+      /* PC 창 크기를 기존 대비 30% 이상 드래그로 극단적 축소 가능하도록 보장 */
+      min-width: 200px !important;
       width: 100%;
     }
 
@@ -386,14 +387,14 @@
     .boss-drawer-list::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
 
     .boss-drawer-item {
-      padding: 7px 8px;
+      padding: 6px 8px;
       border-radius: 8px;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
     }
     .boss-drawer-item.spawned {
       background: #fff5f5;
@@ -403,7 +404,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 0.78rem;
+      font-size: 0.76rem;
     }
     .boss-drawer-row-bottom {
       display: flex;
@@ -414,7 +415,7 @@
     }
 
     /* ========================================================
-       3. 메인 대화창 (카카오톡 PC 1:1 글씨 크기 & 밀착 여백)
+       3. 메인 대화창 레이아웃
        ======================================================== */
     .app-main-layout {
       flex: 1;
@@ -485,7 +486,7 @@
       flex: 1; overflow-y: auto;
       padding: 6px 8px;
       display: flex; flex-direction: column;
-      gap: 4px;
+      gap: 3px;
     }
     .chat-messages-container::-webkit-scrollbar { width: 4px; }
     .chat-messages-container::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
@@ -507,7 +508,7 @@
     .chat-msg-body {
       display: flex;
       flex-direction: column;
-      max-width: 90%;
+      max-width: 92%;
       width: fit-content;
       align-items: flex-start;
       min-width: 0;
@@ -568,69 +569,82 @@
       line-height: 1;
     }
 
-    /* 🎯 보스 리젠 브리핑 카드 (여백 대폭 축소) */
-    .boss-brief-bubble {
+    /* ========================================================
+       🎯 [핵심 수정] 보스 리젠 브리핑 카드 - 초밀착 극단적 여백 제거
+       과거 DB에 저장된 메시지든 새 메시지든 전부 강제 압축 적용
+       ======================================================== */
+    .boss-brief-bubble,
+    .chat-bubble.boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
-      padding: 5px 8px !important;
+      padding: 4px 6px !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
       width: fit-content !important;
-      min-width: 180px;
+      max-width: 100% !important;
+      min-width: 160px;
+      line-height: 1.15 !important;
+    }
+    .boss-brief-bubble div,
+    .boss-brief-bubble p,
+    .boss-brief-bubble span {
+      margin: 0 !important;
+      padding: 0 !important;
+      line-height: 1.2 !important;
     }
     .boss-brief-title {
-      font-size: 0.76rem;
-      font-weight: 800;
-      color: #191919;
-      margin-bottom: 3px;
-      padding-bottom: 2px;
-      border-bottom: 1px dashed #e2e8f0;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      font-size: 0.74rem !important;
+      font-weight: 800 !important;
+      color: #191919 !important;
+      margin-bottom: 3px !important;
+      padding-bottom: 2px !important;
+      border-bottom: 1px dashed #cbd5e1 !important;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
     }
     .boss-brief-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 5px;
-      padding: 1px 0;
-      margin: 0;
-      font-size: 0.73rem;
-      line-height: 1.25;
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      gap: 4px !important;
+      padding: 1px 0 !important;
+      margin: 1px 0 !important;
+      font-size: 0.72rem !important;
+      line-height: 1.2 !important;
     }
     .boss-brief-line.spawned {
-      color: #dc2626;
-      font-weight: 700;
+      color: #dc2626 !important;
+      font-weight: 700 !important;
     }
     .boss-inline-actions {
-      display: flex;
-      gap: 2px;
-      flex-shrink: 0;
+      display: flex !important;
+      gap: 2px !important;
+      flex-shrink: 0 !important;
     }
     .btn-boss-inline {
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
-      color: #334155;
-      font-size: 0.62rem;
-      font-weight: 700;
-      padding: 0 4px;
-      line-height: 1.5;
-      border-radius: 3px;
-      cursor: pointer;
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+      color: #334155 !important;
+      font-size: 0.6rem !important;
+      font-weight: 700 !important;
+      padding: 0 4px !important;
+      line-height: 1.4 !important;
+      border-radius: 3px !important;
+      cursor: pointer !important;
     }
     .btn-boss-inline.cut {
-      background: #fee2e2;
-      border-color: #fca5a5;
-      color: #b91c1c;
+      background: #fee2e2 !important;
+      border-color: #fca5a5 !important;
+      color: #b91c1c !important;
     }
 
     /* 보스 알림 콤팩트 카드 */
     .boss-alert-mini-card {
       background: #ffffff !important;
       border-radius: 5px !important;
-      padding: 5px 8px !important;
-      font-size: 0.76rem !important;
-      line-height: 1.3 !important;
+      padding: 4px 6px !important;
+      font-size: 0.74rem !important;
+      line-height: 1.25 !important;
       width: fit-content !important;
       max-width: 100% !important;
       display: inline-flex !important;
@@ -652,9 +666,10 @@
       background: #ef4444;
       color: #ffffff;
       border: none;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       font-weight: 800;
-      padding: 2px 5px;
+      padding: 1px 4px;
+      line-height: 1.4;
       border-radius: 4px;
       cursor: pointer;
       white-space: nowrap;
@@ -817,7 +832,7 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
         <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
       </li>
-      <!-- 4번 반영: 햄버거 메뉴에서 보스타임 누를 시 햄버거와 동일 위치/크기의 서랍으로 열림 -->
+      <!-- 햄버거 메뉴에서 보스타임 누를 시 햄버거와 동일 위치/크기의 서랍으로 열림 -->
       <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임 (현황 서랍)</span>
       </li>
@@ -873,7 +888,7 @@
     </div>
   </aside>
 
-  <!-- 4. [신규 추가] 보스타임 전용 서랍 (260px - 햄버거 메뉴와 동일 규격) -->
+  <!-- 4. 보스타임 전용 서랍 (260px - 햄버거 메뉴와 동일 규격) -->
   <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header">
       <div class="boss-drawer-title">
@@ -920,7 +935,7 @@
         <button type="button" class="btn-kakao-head" title="대화 검색" onclick="focusChatInput()">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
-        <!-- 2번 반영: 우측 상단 시계 아이콘 클릭 시에만 채팅창에 브리핑 전송 -->
+        <!-- 우측 상단 시계 아이콘 클릭 시에만 채팅창에 브리핑 전송 -->
         <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
           <i class="fa-regular fa-clock"></i>
         </button>
@@ -1162,7 +1177,6 @@
       kakaoToastTimer = setTimeout(() => box.classList.remove("show"), 2300);
     }
 
-    // 한국 표준시 포맷팅
     function formatKSTChatTime(dateInput) {
       if (!dateInput) return "";
       let d;
@@ -1357,7 +1371,6 @@
       renderDrawerMemberList(filtered);
     }
 
-    /* 서랍 여닫기 제어 */
     function toggleMenuDrawer(isOpen) {
       const drawer = document.getElementById("menuSidebarDrawer");
       const backdrop = document.getElementById("commonDrawerBackdrop");
@@ -1386,7 +1399,6 @@
       }
     }
 
-    // 4번 반영: 보스타임 전용 서랍 여닫기 (좌측 260px)
     function toggleBossDrawer(isOpen) {
       const drawer = document.getElementById("bossTimerSidebarDrawer");
       const backdrop = document.getElementById("commonDrawerBackdrop");
@@ -1721,7 +1733,7 @@
       let html = "";
       const cleanMessageText = (msg.message || '').trim();
 
-      // 1) 보스알리미 리젠 브리핑 카드 (여백 대폭 축소)
+      // 1) 보스알리미 리젠 브리핑 카드
       if (msg.msg_type === "boss_briefing") {
         html = `
           <div class="chat-item-row other">
@@ -1880,7 +1892,7 @@
       return target;
     }
 
-    // 2번 & 3번 반영: 상단 시계 아이콘 클릭 시 전송되는 보스타임 브리핑 (간격 초밀착)
+    // 보스타임 브리핑 생성 함수 (극단적 초밀착 여백 적용)
     window.postBossBriefingToChat = async function() {
       await loadBossTimersList();
       if (cachedBossList.length === 0) {
@@ -1895,19 +1907,11 @@
       });
 
       const currentKstFormatted = formatKSTChatTime(new Date().toISOString());
-      let briefingHtml = `<div class="boss-brief-title"><span>[보스 리젠 현황]</span><span style="font-size:0.62rem; color:#64748b;">${currentKstFormatted} 기준</span></div>`;
+      let briefingHtml = `<div class="boss-brief-title"><span>[보스 리젠 현황]</span><span style="font-size:0.62rem; color:#64748b;">${currentKstFormatted}</span></div>`;
 
       cachedBossList.forEach(b => {
         if (!b.next_spawn_time) {
-          briefingHtml += `
-            <div class="boss-brief-line">
-              <span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span>
-              <div class="boss-inline-actions">
-                <button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
-                <button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
-              </div>
-            </div>
-          `;
+          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span><div class="boss-inline-actions"><button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button><button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button></div></div>`;
           return;
         }
 
@@ -1917,28 +1921,12 @@
 
         if (diffSec <= 0) {
           const passM = Math.floor(Math.abs(diffSec) / 60);
-          briefingHtml += `
-            <div class="boss-brief-line spawned">
-              <span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨! (+${passM}분)</span>
-              <div class="boss-inline-actions">
-                <button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
-                <button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
-              </div>
-            </div>
-          `;
+          briefingHtml += `<div class="boss-brief-line spawned"><span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨! (+${passM}분)</span><div class="boss-inline-actions"><button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button><button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button></div></div>`;
         } else {
           const h = Math.floor(diffSec / 3600);
           const m = Math.floor((diffSec % 3600) / 60);
-          const remainText = `${h > 0 ? h + '시간 ' : ''}${m}분 남음`;
-          briefingHtml += `
-            <div class="boss-brief-line">
-              <span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay} (${remainText})</span>
-              <div class="boss-inline-actions">
-                <button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button>
-                <button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
-              </div>
-            </div>
-          `;
+          const remainText = `${h > 0 ? h + '시간 ' : ''}${m}분`;
+          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay} (${remainText})</span><div class="boss-inline-actions"><button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button><button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button></div></div>`;
         }
       });
 
@@ -2304,7 +2292,6 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 실시간 워처 (7분, 3분, 젠 완료 알림)
     function startBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
