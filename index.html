@@ -259,9 +259,7 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* ========================================================
-       3. 메인 대화방 (상단 헤더 간격 및 버튼 크기 최적화)
-       ======================================================== */
+    /* 3. 메인 대화방 */
     .app-main-layout {
       flex: 1;
       width: 100%;
@@ -287,18 +285,17 @@
     .header-left-area {
       display: flex;
       align-items: center;
-      gap: 10px; /* 🎯 햄버거 메뉴와 아이콘 사이 여백 확보 */
+      gap: 10px;
       min-width: 0 !important;
       flex: 1;
       overflow: hidden;
     }
 
-    /* 🎯 햄버거 메뉴 버튼 살짝 확대 및 여백 개선 */
     .btn-kakao-menu {
       background: none;
       border: none;
       color: #2b3945;
-      font-size: 1.05rem; /* 살짝 키움 */
+      font-size: 1.05rem;
       cursor: pointer;
       padding: 6px 4px;
       border-radius: 6px;
@@ -421,10 +418,7 @@
     }
 
     .chat-msg-body {
-      display: flex;
-      flex-direction: column;
-      max-width: 90%;
-      width: fit-content !important;
+      display: flex; flex-direction: column; max-width: 90%; width: fit-content !important;
     }
     .chat-sender-name {
       font-size: 0.7rem; color: #333; margin-bottom: 2px; font-weight: 600;
@@ -526,7 +520,6 @@
     .class-icon-big { font-size: 1.2rem; line-height: 1; }
     .class-title-small { font-size: 0.65rem; font-weight: 700; color: #334155; }
 
-    /* 토스트 알림 */
     .kakao-toast-box {
       position: fixed; top: 22px; left: 50%; transform: translateX(-50%) translateY(-20px);
       background: rgba(30, 30, 30, 0.95); color: #ffffff; padding: 9px 20px; border-radius: 24px;
@@ -583,6 +576,7 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
         <i class="fa-solid fa-skull text-danger"></i><span>원수목록</span>
       </li>
+      <!-- 설정 페이지 연동 -->
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
@@ -634,7 +628,6 @@
   <div class="app-main-layout">
     <header class="kakao-chat-header">
       <div class="header-left-area">
-        <!-- 🎯 햄버거 메뉴 버튼 (사이즈 & 간격 최적화) -->
         <button type="button" class="btn-kakao-menu" title="메뉴 열기" onclick="toggleMenuDrawer(true)">
           <i class="fa-solid fa-bars"></i>
         </button>
@@ -1168,6 +1161,21 @@
       localStorage.setItem("guild_my_nickname", selectedName);
       localStorage.setItem("guild_my_pin", inputPin);
 
+      // 🎯 직급 및 권한 세션 동기화
+      const userRole = (targetMember && targetMember.role) ? targetMember.role : "일반";
+      localStorage.setItem("guild_my_role", userRole);
+
+      if (userRole === "길드장" || userRole === "길마") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "super");
+      } else if (userRole === "부길드장" || userRole === "부길마") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "admin");
+      } else {
+        sessionStorage.removeItem("admin_auth");
+        sessionStorage.removeItem("admin_role");
+      }
+
       updateProfileUI(selectedName);
       document.getElementById("guildLoginModal").style.display = "none";
       showKakaoToast(`[${selectedName}] 님 반갑습니다!`, "🎉");
@@ -1177,6 +1185,9 @@
       if (!confirm("정말로 로그아웃하시겠습니까?")) return;
       localStorage.removeItem("guild_my_nickname");
       localStorage.removeItem("guild_my_pin");
+      localStorage.removeItem("guild_my_role");
+      sessionStorage.removeItem("admin_auth");
+      sessionStorage.removeItem("admin_role");
       myCurrentNick = "";
       myCurrentPin = "";
       toggleMenuDrawer(false);
@@ -1732,8 +1743,22 @@
       document.getElementById("mentionPopupBox").style.display = "none";
     }
 
+    /* 🎯 [권한 가드 적용된 모듈 오픈 함수] */
     window.openModulePage = async function(pageName) {
       closeAllDrawers();
+
+      // 로그인한 유저의 직급/권한 확인
+      const myRole = localStorage.getItem("guild_my_role") || "일반";
+      const isSuper = (sessionStorage.getItem("admin_role") === "super") || (myRole === "길드장" || myRole === "길마");
+      const isAdmin = isSuper || (myRole === "부길드장" || myRole === "부길마" || myRole === "정예");
+
+      // 관리자 전용 페이지 접근 가드
+      if (pageName === 'PageSettings' && !isAdmin) {
+        return showKakaoToast("설정 페이지는 관리자만 접근할 수 있습니다.", "⚠️");
+      }
+      if (pageName === 'PageFinance' && !isAdmin) {
+        return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
+      }
 
       const overlay = document.getElementById("moduleOverlay");
       const body = document.getElementById("overlayBodyContent");
@@ -1747,7 +1772,7 @@
         "PageSettle": "정산내역",
         "PageFinance": "길드비용현황",
         "PageEnemies": "원수목록",
-        "PageSettings": "설정"
+        "PageSettings": "시스템 설정"
       };
 
       navTitle.innerText = titleMap[pageName] || "기능 화면";
