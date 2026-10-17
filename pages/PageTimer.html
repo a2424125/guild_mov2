@@ -43,6 +43,7 @@
     font-size: 0.74rem;
     font-weight: 700;
     padding: 5px 12px;
+    border-rows: 20px;
     border-radius: 20px;
     cursor: pointer;
     white-space: nowrap;
@@ -165,13 +166,13 @@
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div class="d-flex align-items-center gap-2">
       <span style="font-size: 1.25rem;">⏰</span>
-      <h6 class="fw-bold mb-0 text-dark">보스타임 현황판</h6>
+      <h6 class="fw-bold mb-0 text-dark">보스타임 & 리젠 현황</h6>
     </div>
     <div class="d-flex gap-1">
       <button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size: 0.74rem; white-space: nowrap;" onclick="copyTimersForKakao()">
         <i class="fa-solid fa-share-nodes me-1"></i>카톡 복사
       </button>
-      <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" style="font-size: 0.72rem;" onclick="loadBossTimersView()">
+      <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" style="font-size: 0.72rem;" onclick="loadBossTimersModuleView()">
         <i class="fa-solid fa-arrows-rotate"></i> 새로고침
       </button>
     </div>
@@ -181,80 +182,80 @@
   <div class="timer-stat-grid">
     <div class="timer-stat-box" style="border-color: #fecaca; background: #fff5f5;">
       <div class="small text-danger fw-bold" style="font-size: 0.68rem;">🚨 젠 완료</div>
-      <div class="timer-stat-val text-danger" id="statSpawnedCount">0</div>
+      <div class="timer-stat-val text-danger" id="modStatSpawnedCount">0</div>
     </div>
     <div class="timer-stat-box" style="border-color: #fef08a; background: #fffdf5;">
       <div class="small text-warning fw-bold" style="font-size: 0.68rem; color: #b45309 !important;">⏳ 1시간 이내</div>
-      <div class="timer-stat-val" style="color: #d97706;" id="statImminentCount">0</div>
+      <div class="timer-stat-val" style="color: #d97706;" id="modStatImminentCount">0</div>
     </div>
     <div class="timer-stat-box">
       <div class="small text-secondary fw-bold" style="font-size: 0.68rem;">💤 여유/대기</div>
-      <div class="timer-stat-val text-secondary" id="statNormalCount">0</div>
+      <div class="timer-stat-val text-secondary" id="modStatNormalCount">0</div>
     </div>
   </div>
 
   <!-- 필터 탭 -->
   <div class="timer-filter-bar">
-    <button type="button" class="btn-timer-filter active" id="fBtnAll" onclick="setTimerFilterTab('all')">전체보기</button>
-    <button type="button" class="btn-timer-filter" id="fBtnImminent" onclick="setTimerFilterTab('imminent')">🚨 젠/임박 보스만</button>
+    <button type="button" class="btn-timer-filter active" id="modFBtnAll" onclick="setModuleTimerFilterTab('all')">전체보기</button>
+    <button type="button" class="btn-timer-filter" id="modFBtnImminent" onclick="setModuleTimerFilterTab('imminent')">🚨 젠/임박 보스만</button>
   </div>
 
   <!-- 보스 타이머 카드 리스트 -->
-  <div id="bossTimerListContainer" style="max-height: 480px; overflow-y: auto;">
+  <div id="modBossTimerListContainer" style="max-height: 500px; overflow-y: auto;">
     <div class="text-secondary small text-center py-4">보스타임을 불러오는 중...</div>
   </div>
 </div>
 
 <!-- 컷 예약 팝업 모달 -->
-<div id="modalReserveCutBox" class="modal-reserve-backdrop" style="display: none;">
+<div id="modModalReserveCutBox" class="modal-reserve-backdrop" style="display: none;">
   <div class="modal-reserve-card">
     <h6 class="fw-bold mb-1" style="font-size: 1rem;"><i class="fa-solid fa-clock-rotate-left text-primary me-1"></i>보스 컷 시간 수동 입력</h6>
     <p class="text-secondary small mb-3" style="font-size: 0.74rem;">잡힌 시간을 입력하면 다음 젠이 자동 계산됩니다.</p>
     
     <div class="p-2 rounded mb-3" style="background:#f8fafc; border:1px solid #e2e8f0; font-size:0.82rem;">
-      <strong class="text-dark" id="reserveBossNameText">보스명</strong>
-      <span class="text-secondary ms-1" id="reserveBossCycleText">(8시간 주기)</span>
+      <strong class="text-dark" id="modReserveBossNameText">보스명</strong>
+      <span class="text-secondary ms-1" id="modReserveBossCycleText">(8시간 주기)</span>
     </div>
 
     <label class="small text-secondary mb-1" style="font-size: 0.72rem;">컷 시간 (예: 1100 또는 11:00)</label>
-    <input type="text" id="reserveCustomTimeInput" class="form-control form-control-sm text-center mb-3" placeholder="예: 1100" maxlength="5" style="font-size: 1rem; font-weight:700;">
+    <input type="text" id="modReserveCustomTimeInput" class="form-control form-control-sm text-center mb-3" placeholder="예: 1100" maxlength="5" style="font-size: 1rem; font-weight:700;">
 
     <div class="d-flex gap-2">
-      <button type="button" class="btn btn-light btn-sm flex-fill py-2" onclick="closeReserveModal()">취소</button>
-      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none;" onclick="confirmReserveModalAction()">저장</button>
+      <button type="button" class="btn btn-light btn-sm flex-fill py-2" onclick="closeModuleReserveModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none;" onclick="confirmModuleReserveModalAction()">저장</button>
     </div>
   </div>
 </div>
 
 <script>
-  var timerPageBossList = [];
-  var timerPageInterval = null;
-  var currentTimerTabFilter = 'all';
-  var reservingBossObject = null;
+  var modTimerBossList = [];
+  var modTimerInterval = null;
+  var modCurrentTabFilter = 'all';
+  var modReservingBossObj = null;
 
   window.__currentModuleCleanup = function() {
-    if (timerPageInterval) {
-      clearInterval(timerPageInterval);
-      timerPageInterval = null;
+    if (modTimerInterval) {
+      clearInterval(modTimerInterval);
+      modTimerInterval = null;
     }
   };
 
-  async function loadBossTimersView() {
-    const container = document.getElementById('bossTimerListContainer');
+  async function loadBossTimersModuleView() {
+    const container = document.getElementById('modBossTimerListContainer');
     try {
       const data = await apiRequest("boss_timers?select=*&order=id.asc");
-      timerPageBossList = data || [];
-      renderBossTimerCards();
+      modTimerBossList = data || [];
+      renderModuleBossTimerCards();
     } catch (err) {
       container.innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${err.message}</div>`;
     }
   }
 
-  function renderBossTimerCards() {
-    const container = document.getElementById('bossTimerListContainer');
+  function renderModuleBossTimerCards() {
+    const container = document.getElementById('modBossTimerListContainer');
     if (!container) return;
 
-    if (timerPageBossList.length === 0) {
+    if (modTimerBossList.length === 0) {
       container.innerHTML = '<div class="text-secondary small text-center py-4">등록된 보스가 없습니다.</div>';
       return;
     }
@@ -264,7 +265,7 @@
     let countImminent = 0;
     let countNormal = 0;
 
-    timerPageBossList.forEach(b => {
+    modTimerBossList.forEach(b => {
       if (!b.next_spawn_time) {
         countNormal++;
         return;
@@ -275,18 +276,18 @@
       else countNormal++;
     });
 
-    document.getElementById('statSpawnedCount').innerText = countSpawned;
-    document.getElementById('statImminentCount').innerText = countImminent;
-    document.getElementById('statNormalCount').innerText = countNormal;
+    document.getElementById('modStatSpawnedCount').innerText = countSpawned;
+    document.getElementById('modStatImminentCount').innerText = countImminent;
+    document.getElementById('modStatNormalCount').innerText = countNormal;
 
-    timerPageBossList.sort((a, b) => {
+    modTimerBossList.sort((a, b) => {
       const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
       const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
       return tA - tB;
     });
 
-    const filtered = timerPageBossList.filter(b => {
-      if (currentTimerTabFilter === 'imminent') {
+    const filtered = modTimerBossList.filter(b => {
+      if (modCurrentTabFilter === 'imminent') {
         if (!b.next_spawn_time) return false;
         const diff = (new Date(b.next_spawn_time).getTime() - now) / 1000;
         return diff <= 3600;
@@ -309,8 +310,8 @@
       const cycleMins = b.cycle_min % 60;
       const cycleStr = (cycleHours > 0 ? cycleHours + '시간 ' : '') + (cycleMins > 0 ? cycleMins + '분' : '');
 
-      const lastCutStr = b.last_cut_time ? formatTimeDisplay(b.last_cut_time) : '기록 없음';
-      const nextSpawnStr = b.next_spawn_time ? formatTimeDisplay(b.next_spawn_time) : '미정 (컷 필요)';
+      const lastCutStr = b.last_cut_time ? formatModTimeDisplay(b.last_cut_time) : '기록 없음';
+      const nextSpawnStr = b.next_spawn_time ? formatModTimeDisplay(b.next_spawn_time) : '미정 (컷 필요)';
 
       return `
         <div class="boss-timer-item ${cardExtra}">
@@ -320,10 +321,10 @@
               <span class="badge bg-light text-secondary border" style="font-size:0.68rem;">주기 ${cycleStr}</span>
             </div>
             <div class="d-flex gap-1">
-              <button type="button" class="btn-cut-now" onclick="recordCutFromView(${b.id}, '${b.boss_name}', ${b.cycle_min})">
+              <button type="button" class="btn-cut-now" onclick="recordModCutNow(${b.id}, '${b.boss_name}', ${b.cycle_min})">
                 지금 컷
               </button>
-              <button type="button" class="btn-cut-reserve" onclick="openReserveModal(${b.id}, '${b.boss_name}', ${b.cycle_min})">
+              <button type="button" class="btn-cut-reserve" onclick="openModuleReserveModal(${b.id}, '${b.boss_name}', ${b.cycle_min})">
                 시간 입력
               </button>
             </div>
@@ -334,7 +335,7 @@
               <div>최근 컷: ${lastCutStr}</div>
               <div>다음 젠: <strong class="text-primary">${nextSpawnStr}</strong></div>
             </div>
-            <div id="view-cd-${b.id}">
+            <div id="mod-cd-${b.id}">
               <span class="badge-waiting">대기 중</span>
             </div>
           </div>
@@ -342,10 +343,10 @@
       `;
     }).join('');
 
-    updateViewCountdowns();
+    updateModuleCountdowns();
   }
 
-  function formatTimeDisplay(isoStr) {
+  function formatModTimeDisplay(isoStr) {
     if (!isoStr) return '-';
     const d = new Date(isoStr);
     const h = d.getHours();
@@ -355,10 +356,10 @@
     return `${d.getMonth() + 1}/${d.getDate()} ${ampm} ${hour12}:${m}`;
   }
 
-  function updateViewCountdowns() {
+  function updateModuleCountdowns() {
     const now = Date.now();
-    timerPageBossList.forEach(b => {
-      const elem = document.getElementById(`view-cd-${b.id}`);
+    modTimerBossList.forEach(b => {
+      const elem = document.getElementById(`mod-cd-${b.id}`);
       if (!elem) return;
 
       if (!b.next_spawn_time) {
@@ -379,7 +380,7 @@
     });
   }
 
-  async function recordCutFromView(id, bossName, cycleMin) {
+  async function recordModCutNow(id, bossName, cycleMin) {
     const cutDate = new Date();
     const nextSpawn = new Date(cutDate.getTime() + (cycleMin * 60 * 1000));
 
@@ -391,7 +392,7 @@
 
       await apiRequest("guild_chats", "POST", [{
         sender_name: "보스알리미",
-        message: `⚔️ [${bossName}] 현황판에서 지금 컷 처리되었습니다! (다음 젠: ${formatTimeDisplay(nextSpawn)})`,
+        message: `⚔️ [${bossName}] 현황판에서 지금 컷 처리되었습니다! (다음 젠: ${formatModTimeDisplay(nextSpawn)})`,
         msg_type: "boss_alert",
         mentions: []
       }]);
@@ -399,28 +400,28 @@
       if (typeof showKakaoToast === 'function') {
         showKakaoToast(`[${bossName}] 컷 처리 완료!`, "🎉");
       }
-      await loadBossTimersView();
+      await loadBossTimersModuleView();
     } catch (e) {
       alert("컷 처리 실패: " + e.message);
     }
   }
 
-  function openReserveModal(id, bossName, cycleMin) {
-    reservingBossObject = { id, bossName, cycleMin };
-    document.getElementById("reserveBossNameText").innerText = bossName;
-    document.getElementById("reserveBossCycleText").innerText = `(${cycleMin / 60}시간 주기)`;
-    document.getElementById("reserveCustomTimeInput").value = "";
-    document.getElementById("modalReserveCutBox").style.display = "flex";
+  function openModuleReserveModal(id, bossName, cycleMin) {
+    modReservingBossObj = { id, bossName, cycleMin };
+    document.getElementById("modReserveBossNameText").innerText = bossName;
+    document.getElementById("modReserveBossCycleText").innerText = `(${cycleMin / 60}시간 주기)`;
+    document.getElementById("modReserveCustomTimeInput").value = "";
+    document.getElementById("modModalReserveCutBox").style.display = "flex";
   }
 
-  function closeReserveModal() {
-    document.getElementById("modalReserveCutBox").style.display = "none";
-    reservingBossObject = null;
+  function closeModuleReserveModal() {
+    document.getElementById("modModalReserveCutBox").style.display = "none";
+    modReservingBossObj = null;
   }
 
-  async function confirmReserveModalAction() {
-    if (!reservingBossObject) return;
-    const timeVal = document.getElementById("reserveCustomTimeInput").value.trim();
+  async function confirmModuleReserveModalAction() {
+    if (!modReservingBossObj) return;
+    const timeVal = document.getElementById("modReserveCustomTimeInput").value.trim();
     const clean = timeVal.replace(/[^0-9]/g, '');
 
     if (clean.length !== 4 && clean.length !== 3) {
@@ -434,34 +435,76 @@
     const cutDate = new Date();
     cutDate.setHours(h, m, 0, 0);
 
-    const nextSpawn = new Date(cutDate.getTime() + (reservingBossObject.cycleMin * 60 * 1000));
+    const nextSpawn = new Date(cutDate.getTime() + (modReservingBossObj.cycleMin * 60 * 1000));
 
     try {
-      await apiRequest(`boss_timers?id=eq.${reservingBossObject.id}`, "PATCH", {
+      await apiRequest(`boss_timers?id=eq.${modReservingBossObj.id}`, "PATCH", {
         last_cut_time: cutDate.toISOString(),
         next_spawn_time: nextSpawn.toISOString()
       });
 
-      closeReserveModal();
+      closeModuleReserveModal();
       if (typeof showKakaoToast === 'function') {
-        showKakaoToast(`[${reservingBossObject.bossName}] 컷 시간 저장 완료!`, "✅");
+        showKakaoToast(`[${modReservingBossObj.bossName}] 컷 시간 저장 완료!`, "✅");
       }
-      await loadBossTimersView();
+      await loadBossTimersModuleView();
     } catch (e) {
       alert("저장 실패: " + e.message);
     }
   }
 
-  function setTimerFilterTab(tab) {
-    currentTimerTabFilter = tab;
-    document.getElementById('fBtnAll').classList.toggle('active', tab === 'all');
-    document.getElementById('fBtnImminent').classList.toggle('active', tab === 'imminent');
-    renderBossTimerCards();
+  function setModuleTimerFilterTab(tab) {
+    modCurrentTabFilter = tab;
+    document.getElementById('modFBtnAll').classList.toggle('active', tab === 'all');
+    document.getElementById('modFBtnImminent').classList.toggle('active', tab === 'imminent');
+    renderModuleBossTimerCards();
   }
 
-  (function initTimerPage() {
-    loadBossTimersView();
-    if (timerPageInterval) clearInterval(timerPageInterval);
-    timerPageInterval = setInterval(updateViewCountdowns, 1000);
+  window.copyTimersForKakao = function() {
+    if (modTimerBossList.length === 0) {
+      if (typeof showKakaoToast === 'function') showKakaoToast("공유할 보스타임 데이터가 없습니다.", "⚠️");
+      return;
+    }
+
+    const now = Date.now();
+    const gName = (typeof activeGuildName !== 'undefined') ? activeGuildName : "길드";
+
+    const lines = modTimerBossList.map(b => {
+      if (!b.next_spawn_time) {
+        return `• ${b.boss_name}: 컷 대기`;
+      }
+
+      const d = new Date(b.next_spawn_time);
+      const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+      const pad = n => (n < 10 ? '0' + n : n);
+      const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}(${dayNames[d.getDay()]})`;
+      const diffSec = Math.floor((d.getTime() - now) / 1000);
+
+      let status = '';
+      if (diffSec <= 0) {
+        const passedMin = Math.floor(Math.abs(diffSec) / 60);
+        status = `[🚨 젠 됨 (+${passedMin}분)]`;
+      } else {
+        const h = Math.floor(diffSec / 3600);
+        const m = Math.floor((diffSec % 3600) / 60);
+        status = `[⏳ ${h > 0 ? h + '시간 ' : ''}${m}분 남음]`;
+      }
+
+      return `• ${b.boss_name} (${timeStr})${status}`;
+    });
+
+    const shareText = `[⏰ ${gName} 보스타임 & 리젠 현황]\n────────────────────\n${lines.join('\n')}\n────────────────────\n※ 길드 메신저 실시간 연동 중`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareText).then(() => {
+        if (typeof showKakaoToast === 'function') showKakaoToast("보스타임 현황이 클립보드에 복사되었습니다!", "📋");
+      });
+    }
+  };
+
+  (function initModuleTimerPage() {
+    loadBossTimersModuleView();
+    if (modTimerInterval) clearInterval(modTimerInterval);
+    modTimerInterval = setInterval(updateModuleCountdowns, 1000);
   })();
 </script>
