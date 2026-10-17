@@ -1,65 +1,76 @@
 <!-- ==========================================
-     [길드 메신저] 길드원 관리 모듈
+     [길드 메신저] 길드원 친구 서랍 모듈 (원본 스타일 100% 일치)
      경로: pages/PageMembers.html
      ========================================== -->
 <style>
   .members-drawer-container {
     background: #ffffff;
-    height: 100%;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     color: #191919;
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
-    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   }
 
-  /* 서랍 상단 헤더 바 */
+  /* 상단 헤더 바 (높이 50px, 수평 일자 정렬) */
   .members-top-bar {
-    height: 52px;
-    padding: 0 16px;
+    height: 50px;
+    padding: 0 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #f0f0f0;
-    background: #f7f7f7;
+    border-bottom: 1px solid #ececec;
+    background: #ffffff;
     flex-shrink: 0;
   }
   .members-title-area {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.98rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: #191919;
+  }
+  .members-title-area i {
+    color: #2563eb;
+    font-size: 1rem;
   }
   .members-top-tools {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 2px;
   }
   .btn-member-tool-icon {
     background: none;
     border: none;
-    color: #475569;
+    color: #2563eb;
     font-size: 0.95rem;
-    padding: 6px;
+    padding: 5px;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 5px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.15s, color 0.15s;
+    transition: background 0.15s ease;
   }
   .btn-member-tool-icon:hover {
-    background: #e2e8f0;
-    color: #0f172a;
+    background: #f1f5f9;
+  }
+  .btn-member-tool-icon.btn-gray-icon {
+    color: #475569;
+  }
+  .btn-member-tool-icon.rotating i {
+    animation: spinMemberAnim 0.6s ease-in-out;
+  }
+  @keyframes spinMemberAnim {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
   /* 검색 입력창 */
   .members-search-box {
-    padding: 8px 14px;
+    padding: 6px 12px;
     background: #ffffff;
     border-bottom: 1px solid #f0f0f0;
     flex-shrink: 0;
@@ -69,35 +80,34 @@
     width: 100%;
     background: #f4f5f7;
     border: none;
-    border-radius: 16px;
-    padding: 7px 12px 7px 32px;
-    font-size: 0.8rem;
-    color: #191919;
+    border-radius: 14px;
+    padding: 6px 12px 6px 30px;
+    font-size: 0.78rem;
     outline: none;
+    color: #191919;
   }
   .members-search-input::placeholder {
     color: #94a3b8;
   }
 
-  /* 친구 리스트 스크롤 영역 */
+  /* 길드원 목록 스크롤 영역 */
   .members-scroll-area {
     flex: 1;
     overflow-y: auto;
-    padding: 8px 0;
+    padding: 4px 0;
     background: #ffffff;
-    max-height: 540px;
   }
   .members-scroll-area::-webkit-scrollbar { width: 4px; }
   .members-scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-  /* 카카오톡 프로필 행 아이템 */
+  /* 길드원 프로필 행 */
   .member-profile-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 14px;
+    padding: 8px 12px;
     cursor: pointer;
-    transition: background 0.12s ease;
+    transition: background 0.12s;
   }
   .member-profile-row:hover {
     background: #f8fafc;
@@ -110,30 +120,43 @@
     min-width: 0;
     flex: 1;
   }
+
+  .avatar-wrapper-relative {
+    position: relative;
+    flex-shrink: 0;
+  }
   .member-avatar-round {
-    width: 38px;
-    height: 38px;
-    border-radius: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 13px;
     background: #f1f5f9;
-    border: 1px solid #cbd5e1;
+    border: 1.5px solid #cbd5e1;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     color: #3b82f6;
-    flex-shrink: 0;
-    position: relative;
   }
-  .member-avatar-round.master {
-    background: #fef08a;
-    border-color: #eab308;
-    color: #854d0e;
-  }
-  .member-avatar-round.sub {
-    background: #f3e8ff;
-    border-color: #c084fc;
-    color: #6b21a8;
+  /* 스크린샷과 정확히 일치하는 직급별 아바타 테두리 */
+  .member-avatar-round.master { background: #fffbeb; border-color: #f59e0b; color: #b45309; }
+  .member-avatar-round.sub { background: #faf5ff; border-color: #c084fc; color: #7e22ce; }
+  .member-avatar-round.elite { background: #f0f9ff; border-color: #38bdf8; color: #0284c7; }
+  .member-avatar-round.normal { background: #f8fafc; border-color: #cbd5e1; color: #475569; }
+
+  .mini-badge-me-tag {
+    position: absolute;
+    top: -3px;
+    left: -4px;
+    background: #f59e0b;
+    color: #ffffff;
+    font-size: 0.55rem;
+    font-weight: 900;
+    padding: 1px 3.5px;
+    border-radius: 7px;
+    border: 1px solid #ffffff;
+    line-height: 1;
+    pointer-events: none;
   }
 
   .member-meta-text {
@@ -142,28 +165,16 @@
     min-width: 0;
   }
   .member-name-line {
-    font-size: 0.86rem;
+    font-size: 0.84rem;
     font-weight: 700;
     color: #191919;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  .badge-member-role {
-    font-size: 0.62rem;
-    font-weight: 700;
-    padding: 1px 5px;
-    border-radius: 4px;
-    white-space: nowrap;
-  }
-  .role-tag-master { background: #fef08a; color: #854d0e; }
-  .role-tag-sub { background: #f3e8ff; color: #6b21a8; }
-  .role-tag-elite { background: #e0f2fe; color: #0369a1; }
-  .role-tag-normal { background: #f1f5f9; color: #64748b; }
-
   .member-class-desc {
     font-size: 0.68rem;
     font-weight: 600;
@@ -174,31 +185,43 @@
     text-overflow: ellipsis;
   }
 
+  /* 직급 뱃지 */
+  .role-badge-tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 1px 4px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .role-tag-master { background: #fef3c7; color: #b45309; }
+  .role-tag-sub { background: #f3e8ff; color: #7e22ce; }
+  .role-tag-elite { background: #e0f2fe; color: #0284c7; }
+  .role-tag-normal { background: #f1f5f9; color: #64748b; }
+
+  /* 우측 수정 / 삭제 버튼 */
   .member-action-tools {
     display: flex;
     align-items: center;
     gap: 4px;
     flex-shrink: 0;
   }
-  .btn-mini-member-tool {
+  .btn-action-pill {
     background: #ffffff;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #e2e8f0;
     color: #475569;
     font-size: 0.68rem;
-    padding: 3px 7px;
-    border-radius: 6px;
+    padding: 2px 6px;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: 600;
-    transition: all 0.12s ease;
+    transition: all 0.12s;
   }
-  .btn-mini-member-tool:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-    border-color: #94a3b8;
-  }
+  .btn-action-pill:hover { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
+  .btn-action-pill.btn-pill-del { color: #f43f5e; border-color: #fecdd3; }
+  .btn-action-pill.btn-pill-del:hover { background: #fff1f2; border-color: #fda4af; }
 
-  /* 카카오톡 스타일 커스텀 모달 다이얼로그 */
-  .member-custom-modal-backdrop {
+  /* 모달 다이얼로그 */
+  .pm-modal-backdrop {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0, 0, 0, 0.45);
@@ -206,155 +229,123 @@
     display: flex; align-items: center; justify-content: center;
     padding: 16px;
   }
-  .member-custom-modal-card {
+  .pm-modal-card {
     background: #ffffff;
-    border-radius: 14px;
+    border-radius: 12px;
     width: 100%; max-width: 310px;
-    padding: 20px 18px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    color: #191919;
+    padding: 18px 16px;
     text-align: center;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.2);
   }
-  .member-modal-title {
-    font-weight: 800;
-    font-size: 0.96rem;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .member-modal-sub {
-    font-size: 0.73rem;
-    color: #64748b;
-    margin-bottom: 12px;
-    line-height: 1.4;
-  }
-  .member-input-text {
+  .pm-modal-card input, .pm-modal-card select {
     width: 100%;
     background: #f7f7f7;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 0.84rem;
-    color: #191919;
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-size: 0.82rem;
     outline: none;
     margin-bottom: 8px;
-  }
-  .member-input-text:focus {
-    border-color: #fee500;
-    background: #ffffff;
   }
 </style>
 
 <div class="members-drawer-container">
-  <!-- 1. 서랍 상단 헤더 바 -->
+  <!-- 상단 헤더: 타이틀, 등록(+), 새로고침, 닫기(X) -->
   <div class="members-top-bar">
     <div class="members-title-area">
-      <i class="fa-solid fa-users text-primary"></i>
-      <span>길드원 목록 (<span id="membersCountText">0</span>)</span>
+      <i class="fa-solid fa-users"></i>
+      <span>길드원 (<span id="pmMemberCountText">0</span>)</span>
     </div>
     <div class="members-top-tools">
-      <button type="button" class="btn-member-tool-icon" title="길드원 등록" onclick="openAddMemberModalView()">
-        <i class="fa-solid fa-user-plus text-primary"></i>
+      <button type="button" class="btn-member-tool-icon" title="길드원 추가" onclick="pmOpenAddMemberModal()">
+        <i class="fa-solid fa-user-plus"></i>
       </button>
-      <button type="button" class="btn-member-tool-icon" title="새로고침" onclick="loadGuildMembersPageView()">
+      <button type="button" class="btn-member-tool-icon btn-gray-icon" id="pmBtnRefresh" title="새로고침" onclick="pmHandleRefresh()">
         <i class="fa-solid fa-arrows-rotate"></i>
+      </button>
+      <button type="button" class="btn-member-tool-icon btn-gray-icon" title="닫기" onclick="if(typeof toggleMembersDrawer==='function') toggleMembersDrawer(false);">
+        <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
   </div>
 
-  <!-- 2. 실시간 닉네임 / 직급 검색창 -->
+  <!-- 검색창 -->
   <div class="members-search-box">
-    <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 24px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.78rem;"></i>
-    <input type="text" id="inputSearchMemberPage" class="members-search-input" placeholder="길드원 닉네임 검색..." onkeyup="filterMemberPageView()">
+    <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 22px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.75rem;"></i>
+    <input type="text" id="pmSearchInput" class="members-search-input" placeholder="길드원 검색..." onkeyup="pmFilterMemberList()">
   </div>
 
-  <!-- 3. 길드원 목록 스크롤 영역 -->
-  <div class="members-scroll-area" id="membersListScrollContainer">
-    <div class="text-secondary small text-center py-5">길드원 목록을 동기화하는 중...</div>
+  <!-- 리스트 스크롤 영역 -->
+  <div class="members-scroll-area" id="pmMemberListArea">
+    <div class="text-secondary small text-center py-4">길드원을 불러오는 중...</div>
   </div>
 </div>
 
-<!-- 모달 1: 신규 길드원 등록 -->
-<div id="modalPageAddMember" class="member-custom-modal-backdrop" style="display: none;">
-  <div class="member-custom-modal-card">
-    <div class="member-modal-title">
-      <i class="fa-solid fa-user-plus text-primary"></i>
-      <span>신규 길드원 등록</span>
-    </div>
-    <div class="member-modal-sub">등록 즉시 로그인 및 채팅 명단에 반영됩니다.</div>
-
-    <input type="text" id="newMemberNickInputPage" class="member-input-text" placeholder="길드원 닉네임 입력" autocomplete="off">
+<!-- 모달 1: 신규 등록 -->
+<div id="pmModalAdd" class="pm-modal-backdrop" style="display: none;">
+  <div class="pm-modal-card">
+    <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>신규 길드원 등록</h6>
+    <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임과 직급을 설정하세요.</p>
     
-    <select id="newMemberRoleSelectPage" class="member-input-text mb-3">
+    <input type="text" id="pmNewNick" placeholder="길드원 닉네임 입력" autocomplete="off">
+    <select id="pmNewRole">
       <option value="일반" selected>일반</option>
       <option value="정예">정예</option>
       <option value="부길드장">부길드장</option>
       <option value="길드장">길드장</option>
     </select>
 
-    <div class="d-flex gap-2">
-      <button type="button" class="btn btn-light btn-sm flex-fill py-2" style="border: 1px solid #cbd5e1; font-weight: 700;" onclick="closeAddMemberModalView()">취소</button>
-      <button type="button" class="btn btn-warning btn-sm flex-fill py-2" style="background:#fee500; border:none; font-weight: 800; color:#191919;" onclick="submitAddMemberModalView()">등록하기</button>
+    <div class="d-flex gap-2 mt-2">
+      <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="pmCloseAddModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="pmSubmitAddMember()">등록하기</button>
     </div>
   </div>
 </div>
 
-<!-- 모달 2: 정보 수정 (직급/닉네임) -->
-<div id="modalPageEditMember" class="member-custom-modal-backdrop" style="display: none;">
-  <div class="member-custom-modal-card">
-    <div class="member-modal-title">
-      <i class="fa-solid fa-user-pen text-info"></i>
-      <span>길드원 정보 수정</span>
-    </div>
-    <div class="member-modal-sub">닉네임 변경 시 기존 모든 토벌 참여 이력도 함께 동기화됩니다.</div>
-
-    <input type="hidden" id="editPageMemberId">
-    <input type="hidden" id="editPageMemberOldNick">
-
-    <label class="small text-secondary mb-1 w-100 text-start" style="font-size: 0.72rem;">닉네임</label>
-    <input type="text" id="editPageMemberNewNick" class="member-input-text">
-
-    <label class="small text-secondary mb-1 w-100 text-start" style="font-size: 0.72rem;">직급</label>
-    <select id="editPageMemberRole" class="member-input-text mb-3">
+<!-- 모달 2: 정보 수정 -->
+<div id="pmModalEdit" class="pm-modal-backdrop" style="display: none;">
+  <div class="pm-modal-card">
+    <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-pen text-info me-1"></i>길드원 정보 수정</h6>
+    <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임 변경 시 과거 토벌 기록도 자동 동기화됩니다.</p>
+    
+    <input type="hidden" id="pmEditId">
+    <input type="hidden" id="pmEditOldName">
+    <input type="text" id="pmEditNewName" placeholder="새 닉네임">
+    <select id="pmEditRole">
       <option value="일반">일반</option>
       <option value="정예">정예</option>
       <option value="부길드장">부길드장</option>
       <option value="길드장">길드장</option>
     </select>
 
-    <div class="d-flex gap-2">
-      <button type="button" class="btn btn-light btn-sm flex-fill py-2" style="border: 1px solid #cbd5e1; font-weight: 700;" onclick="closeEditMemberModalView()">취소</button>
-      <button type="button" class="btn btn-warning btn-sm flex-fill py-2" style="background:#fee500; border:none; font-weight: 800; color:#191919;" onclick="submitEditMemberModalView()">저장</button>
+    <div class="d-flex gap-2 mt-2">
+      <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="pmCloseEditModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="pmSubmitEditMember()">저장</button>
     </div>
   </div>
 </div>
 
-<!-- 모달 3: 개인 비밀번호(PIN) 변경 -->
-<div id="modalPagePinChange" class="member-custom-modal-backdrop" style="display: none;">
-  <div class="member-custom-modal-card">
-    <div class="member-modal-title">
-      <i class="fa-solid fa-key text-warning"></i>
-      <span id="pinTargetNickTextPage">비밀번호 변경</span>
-    </div>
-    <div class="member-modal-sub" id="oldPinHintMessagePage">기존 비밀번호와 새 비밀번호를 입력하세요.</div>
+<!-- 모달 3: 비밀번호 변경 -->
+<div id="pmModalPin" class="pm-modal-backdrop" style="display: none;">
+  <div class="pm-modal-card">
+    <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
+    <p class="text-secondary small mb-3" id="pmPinNotice" style="font-size: 0.72rem;">기존 비밀번호와 새 비밀번호를 입력하세요.</p>
+    
+    <input type="password" id="pmOldPin" class="text-center" placeholder="기존 비밀번호 (초기값 0000)" maxlength="16" inputmode="numeric">
+    <input type="password" id="pmNewPin" class="text-center" placeholder="새 비밀번호 (숫자 6자리 이상)" maxlength="16" inputmode="numeric">
 
-    <input type="password" id="inputOldPinPage" class="member-input-text text-center" placeholder="기존 비밀번호 (초기값 0000)" maxlength="16" inputmode="numeric">
-    <input type="password" id="inputNewPinPage" class="member-input-text text-center mb-3" placeholder="새 비밀번호 (숫자 6자리 이상)" maxlength="16" inputmode="numeric">
-
-    <div class="d-flex gap-2">
-      <button type="button" class="btn btn-light btn-sm flex-fill py-2" style="border: 1px solid #cbd5e1; font-weight: 700;" onclick="closePinChangeModalView()">취소</button>
-      <button type="button" class="btn btn-warning btn-sm flex-fill py-2" style="background:#fee500; border:none; font-weight: 800; color:#191919;" onclick="submitPinChangeModalView()">변경 완료</button>
+    <div class="d-flex gap-2 mt-2">
+      <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="pmClosePinModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="pmSubmitPinChange()">변경 완료</button>
     </div>
   </div>
 </div>
 
 <script>
-  var pageMembersDataList = [];
-  var pagePinTargetMember = null;
+  var pmMemberListData = [];
+  var pmTargetPinMember = null;
 
-  function getMemberSortPriority(role) {
+  function pmGetRolePriority(role) {
     const r = String(role || '').trim();
     if (r === '길드장' || r === '길마') return 1;
     if (r === '부길드장' || r === '부길마') return 2;
@@ -362,48 +353,51 @@
     return 4;
   }
 
-  async function loadGuildMembersPageView() {
-    const container = document.getElementById("membersListScrollContainer");
+  async function pmLoadMemberList() {
+    const container = document.getElementById("pmMemberListArea");
     if (!container) return;
 
-    container.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>목록 불러오는 중...</div>`;
-
     try {
-      const members = await apiRequest("guild_members?select=*");
-      pageMembersDataList = members || [];
+      const data = await apiRequest("guild_members?select=*");
+      pmMemberListData = data || [];
 
-      pageMembersDataList.sort((a, b) => {
-        const pA = getMemberSortPriority(a.role);
-        const pB = getMemberSortPriority(b.role);
+      pmMemberListData.sort((a, b) => {
+        const pA = pmGetRolePriority(a.role);
+        const pB = pmGetRolePriority(b.role);
         if (pA !== pB) return pA - pB;
-        return a.name.localeCompare(b.name, 'ko', { numeric: true, sensitivity: 'base' });
+        return a.name.localeCompare(b.name, 'ko');
       });
 
-      document.getElementById("membersCountText").innerText = pageMembersDataList.length;
-      renderMemberCardsPageView(pageMembersDataList);
+      const countElem = document.getElementById("pmMemberCountText");
+      if (countElem) countElem.innerText = pmMemberListData.length;
 
+      // index.html 상단 카운트도 함께 동기화
+      const topCount = document.getElementById("roomMemberCountText");
+      if (topCount) topCount.innerText = pmMemberListData.length;
+
+      pmRenderMemberList(pmMemberListData);
     } catch (err) {
-      container.innerHTML = `<div class="text-danger small text-center py-5">조회 실패: ${err.message}</div>`;
+      container.innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${err.message}</div>`;
     }
   }
 
-  function renderMemberCardsPageView(list) {
-    const container = document.getElementById("membersListScrollContainer");
+  function pmRenderMemberList(list) {
+    const container = document.getElementById("pmMemberListArea");
     if (!container) return;
 
     if (!list || list.length === 0) {
-      container.innerHTML = '<div class="text-secondary small text-center py-5">등록된 길드원이 없습니다.</div>';
+      container.innerHTML = '<div class="text-secondary small text-center py-4">등록된 길드원이 없습니다.</div>';
       return;
     }
 
     const myNick = localStorage.getItem("guild_my_nickname") || "";
     const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-    const myClass = localStorage.getItem("guild_my_class") || "직업 미설정";
+    const myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
 
     container.innerHTML = list.map(m => {
       const roleStr = String(m.role || '일반').trim();
       let roleTagClass = "role-tag-normal";
-      let avatarClass = "";
+      let avatarClass = "normal";
 
       if (roleStr === "길드장" || roleStr === "길마") {
         roleTagClass = "role-tag-master";
@@ -413,23 +407,24 @@
         avatarClass = "sub";
       } else if (roleStr === "정예") {
         roleTagClass = "role-tag-elite";
+        avatarClass = "elite";
       }
 
       const isMe = (m.name === myNick);
       const displayAvatar = isMe ? myAvatar : (m.avatar || m.name.charAt(0));
-      const displayClass = isMe ? myClass : (m.job_class || '직업 미설정');
+      const displayClass = isMe ? myClass : (m.job_class || '직업 미지정');
 
       return `
         <div class="member-profile-row">
-          <div class="member-left-info" onclick="openPinChangeModalView(${m.id})">
-            <div class="member-avatar-round ${avatarClass}">
-              ${displayAvatar}
-              ${isMe ? '<div style="position:absolute; top:-3px; left:-4px; background:#f59e0b; color:#ffffff; font-size:0.55rem; font-weight:900; padding:1px 3px; border-radius:7px; border:1px solid #ffffff; line-height:1;">나</div>' : ''}
+          <div class="member-left-info" onclick="pmOpenPinModal(${m.id})">
+            <div class="avatar-wrapper-relative">
+              <div class="member-avatar-round ${avatarClass}">${displayAvatar}</div>
+              ${isMe ? '<div class="mini-badge-me-tag">나</div>' : ''}
             </div>
             <div class="member-meta-text">
               <div class="member-name-line">
                 <span>${m.name}</span>
-                <span class="badge-member-role ${roleTagClass}">${roleStr}</span>
+                <span class="role-badge-tag ${roleTagClass}">${roleStr}</span>
               </div>
               <div class="member-class-desc">
                 <span>${displayClass}</span>
@@ -437,71 +432,78 @@
             </div>
           </div>
           <div class="member-action-tools">
-            <button type="button" class="btn-mini-member-tool" onclick="openEditMemberModalView(${m.id}, '${m.name}', '${roleStr}')">수정</button>
-            <button type="button" class="btn-mini-member-tool text-danger" onclick="deleteMemberActionView(${m.id}, '${m.name}')">삭제</button>
+            <button type="button" class="btn-action-pill" onclick="pmOpenEditModal(${m.id}, '${m.name}', '${roleStr}')">수정</button>
+            <button type="button" class="btn-action-pill btn-pill-del" onclick="pmDeleteMember(${m.id}, '${m.name}')">삭제</button>
           </div>
         </div>
       `;
     }).join('');
   }
 
-  function filterMemberPageView() {
-    const q = document.getElementById("inputSearchMemberPage").value.trim().toLowerCase();
-    const filtered = pageMembersDataList.filter(m => m.name.toLowerCase().includes(q) || (m.role || "").toLowerCase().includes(q));
-    renderMemberCardsPageView(filtered);
+  function pmFilterMemberList() {
+    const q = document.getElementById("pmSearchInput").value.trim().toLowerCase();
+    const filtered = pmMemberListData.filter(m => m.name.toLowerCase().includes(q) || (m.role || "").toLowerCase().includes(q));
+    pmRenderMemberList(filtered);
   }
 
-  function openAddMemberModalView() {
-    document.getElementById("newMemberNickInputPage").value = "";
-    document.getElementById("newMemberRoleSelectPage").value = "일반";
-    document.getElementById("modalPageAddMember").style.display = "flex";
-    setTimeout(() => document.getElementById("newMemberNickInputPage").focus(), 100);
+  async function pmHandleRefresh() {
+    const btn = document.getElementById("pmBtnRefresh");
+    if (btn) btn.classList.add("rotating");
+
+    await pmLoadMemberList();
+
+    setTimeout(() => {
+      if (btn) btn.classList.remove("rotating");
+      if (typeof showKakaoToast === 'function') showKakaoToast("길드원 목록이 갱신되었습니다.", "👥");
+    }, 400);
   }
 
-  function closeAddMemberModalView() {
-    document.getElementById("modalPageAddMember").style.display = "none";
+  function pmOpenAddMemberModal() {
+    document.getElementById("pmNewNick").value = "";
+    document.getElementById("pmNewRole").value = "일반";
+    document.getElementById("pmModalAdd").style.display = "flex";
+    setTimeout(() => document.getElementById("pmNewNick").focus(), 100);
+  }
+  function pmCloseAddModal() {
+    document.getElementById("pmModalAdd").style.display = "none";
   }
 
-  async function submitAddMemberModalView() {
-    const name = document.getElementById("newMemberNickInputPage").value.trim();
-    const role = document.getElementById("newMemberRoleSelectPage").value;
+  async function pmSubmitAddMember() {
+    const name = document.getElementById("pmNewNick").value.trim();
+    const role = document.getElementById("pmNewRole").value;
 
-    if (!name) return (typeof showKakaoToast === 'function') ? showKakaoToast("길드원 닉네임을 입력해주세요!", "⚠️") : alert("닉네임을 입력해주세요.");
-    if (pageMembersDataList.some(m => m.name === name)) {
-      return (typeof showKakaoToast === 'function') ? showKakaoToast("이미 존재하는 닉네임입니다!", "⚠️") : alert("이미 존재하는 닉네임입니다.");
+    if (!name) return (typeof showKakaoToast === 'function') ? showKakaoToast("닉네임을 입력하세요!", "⚠️") : alert("닉네임 입력 필요");
+    if (pmMemberListData.some(m => m.name === name)) {
+      return (typeof showKakaoToast === 'function') ? showKakaoToast("이미 존재하는 닉네임입니다!", "⚠️") : alert("이미 존재하는 닉네임");
     }
 
     try {
       await apiRequest("guild_members", "POST", [{ name, role, pin: "0000" }]);
       if (typeof showKakaoToast === 'function') showKakaoToast(`[${name}] 길드원 등록 완료!`, "🎉");
-      closeAddMemberModalView();
-      await loadGuildMembersPageView();
-
-      if (typeof window.loadGuildMembersData === "function") {
-        await window.loadGuildMembersData();
-      }
-    } catch (err) {
-      alert("등록 실패: " + err.message);
+      pmCloseAddModal();
+      await pmLoadMemberList();
+    } catch (e) {
+      alert("등록 실패: " + e.message);
     }
   }
 
-  function openEditMemberModalView(id, name, role) {
-    document.getElementById("editPageMemberId").value = id;
-    document.getElementById("editPageMemberOldNick").value = name;
-    document.getElementById("editPageMemberNewNick").value = name;
-    document.getElementById("editPageMemberRole").value = role;
-    document.getElementById("modalPageEditMember").style.display = "flex";
+  function pmOpenEditModal(id, name, role) {
+    document.getElementById("pmEditId").value = id;
+    document.getElementById("pmEditOldName").value = name;
+    document.getElementById("pmEditNewName").value = name;
+    document.getElementById("pmEditRole").value = role;
+    document.getElementById("pmModalEdit").style.display = "flex";
+    setTimeout(() => document.getElementById("pmEditNewName").focus(), 100);
+  }
+  function pmCloseEditModal() {
+    document.getElementById("pmModalEdit").style.display = "none";
   }
 
-  function closeEditMemberModalView() {
-    document.getElementById("modalPageEditMember").style.display = "none";
-  }
-
-  async function submitEditMemberModalView() {
-    const id = document.getElementById("editPageMemberId").value;
-    const oldName = document.getElementById("editPageMemberOldNick").value.trim();
-    const newName = document.getElementById("editPageMemberNewNick").value.trim();
-    const role = document.getElementById("editPageMemberRole").value;
+  async function pmSubmitEditMember() {
+    const id = document.getElementById("pmEditId").value;
+    const oldName = document.getElementById("pmEditOldName").value.trim();
+    const newName = document.getElementById("pmEditNewName").value.trim();
+    const role = document.getElementById("pmEditRole").value;
 
     if (!newName) return alert("닉네임을 입력하세요!");
 
@@ -511,87 +513,74 @@
       }
       await apiRequest(`guild_members?id=eq.${id}`, "PATCH", { role, name: newName });
 
-      if (typeof showKakaoToast === 'function') showKakaoToast(`[${newName}] 정보가 수정되었습니다!`, "✅");
-      closeEditMemberModalView();
-      await loadGuildMembersPageView();
-
-      if (typeof window.loadGuildMembersData === "function") {
-        await window.loadGuildMembersData();
-      }
-    } catch (err) {
-      alert("수정 실패: " + err.message);
+      if (typeof showKakaoToast === 'function') showKakaoToast(`[${newName}] 정보 수정 완료!`, "✅");
+      pmCloseEditModal();
+      await pmLoadMemberList();
+    } catch (e) {
+      alert("수정 실패: " + e.message);
     }
   }
 
-  async function deleteMemberActionView(id, name) {
+  async function pmDeleteMember(id, name) {
     if (!confirm(`[${name}] 길드원을 정말 삭제하시겠습니까?`)) return;
 
     try {
       await apiRequest(`guild_members?id=eq.${id}`, "DELETE");
       if (typeof showKakaoToast === 'function') showKakaoToast(`[${name}] 길드원이 삭제되었습니다.`, "🗑️");
-      await loadGuildMembersPageView();
-
-      if (typeof window.loadGuildMembersData === "function") {
-        await window.loadGuildMembersData();
-      }
-    } catch (err) {
-      alert("삭제 실패: " + err.message);
+      await pmLoadMemberList();
+    } catch (e) {
+      alert("삭제 실패: " + e.message);
     }
   }
 
-  function openPinChangeModalView(memberId) {
-    const target = pageMembersDataList.find(m => m.id === memberId);
+  function pmOpenPinModal(memberId) {
+    const target = pmMemberListData.find(m => m.id === memberId);
     if (!target) return;
 
-    pagePinTargetMember = target;
-    document.getElementById("pinTargetNickTextPage").innerText = `[${target.name}] 비밀번호 변경`;
+    pmTargetPinMember = target;
+    const isDefault = (!target.pin || target.pin === "0000");
+    document.getElementById("pmPinNotice").innerText = isDefault
+      ? `[${target.name}] 초기 상태입니다. 기존 비번에 0000을 입력하세요.`
+      : `[${target.name}] 현재 비밀번호와 새 비밀번호를 입력하세요.`;
 
-    const existingPin = (target.pin || "").trim();
-    const hint = document.getElementById("oldPinHintMessagePage");
-    if (!existingPin || existingPin === "0000") {
-      hint.innerText = "초기 상태입니다. 기존 비밀번호에 0000을 입력하세요.";
-    } else {
-      hint.innerText = "현재 사용 중인 비밀번호를 입력해주세요.";
-    }
-
-    document.getElementById("inputOldPinPage").value = "";
-    document.getElementById("inputNewPinPage").value = "";
-    document.getElementById("modalPagePinChange").style.display = "flex";
+    document.getElementById("pmOldPin").value = "";
+    document.getElementById("pmNewPin").value = "";
+    document.getElementById("pmModalPin").style.display = "flex";
+    setTimeout(() => document.getElementById("pmOldPin").focus(), 100);
+  }
+  function pmClosePinModal() {
+    document.getElementById("pmModalPin").style.display = "none";
+    pmTargetPinMember = null;
   }
 
-  function closePinChangeModalView() {
-    document.getElementById("modalPagePinChange").style.display = "none";
-    pagePinTargetMember = null;
-  }
+  async function pmSubmitPinChange() {
+    if (!pmTargetPinMember) return;
 
-  async function submitPinChangeModalView() {
-    if (!pagePinTargetMember) return;
-
-    const oldPin = document.getElementById("inputOldPinPage").value.trim();
-    const newPin = document.getElementById("inputNewPinPage").value.trim();
-    const currentPin = (pagePinTargetMember.pin || "0000").trim();
+    const oldPin = document.getElementById("pmOldPin").value.trim();
+    const newPin = document.getElementById("pmNewPin").value.trim();
+    const currentPin = (pmTargetPinMember.pin || "0000").trim();
 
     if (oldPin !== currentPin) {
-      return (typeof showKakaoToast === 'function') ? showKakaoToast("기존 비밀번호가 일치하지 않습니다! (기본값: 0000)", "❌") : alert("기존 비밀번호 불일치");
+      return (typeof showKakaoToast === 'function') ? showKakaoToast("기존 비밀번호 불일치 (기본값: 0000)", "❌") : alert("비밀번호 불일치");
     }
     if (!/^\d+$/.test(newPin) || newPin.length < 6) {
-      return (typeof showKakaoToast === 'function') ? showKakaoToast("새 비밀번호는 숫자 6자리 이상이어야 합니다.", "⚠️") : alert("숫자 6자리 이상 입력");
+      return (typeof showKakaoToast === 'function') ? showKakaoToast("숫자 6자리 이상 입력하세요.", "⚠️") : alert("6자리 이상 숫자");
     }
     if (/(\d)\1\1/.test(newPin)) {
-      return (typeof showKakaoToast === 'function') ? showKakaoToast("동일한 숫자를 3회 이상 연속 사용할 수 없습니다.", "⚠️") : alert("동일 숫자 3연속 금지");
+      return (typeof showKakaoToast === 'function') ? showKakaoToast("동일한 숫자를 3회 이상 연속 사용할 수 없습니다.", "⚠️") : alert("연속 숫자 금지");
     }
 
     try {
-      await apiRequest(`guild_members?id=eq.${pagePinTargetMember.id}`, "PATCH", { pin: newPin });
-      if (typeof showKakaoToast === 'function') showKakaoToast(`[${pagePinTargetMember.name}] 비밀번호 변경 완료!`, "🎉");
-      closePinChangeModalView();
-      await loadGuildMembersPageView();
-    } catch (err) {
-      alert("변경 실패: " + err.message);
+      await apiRequest(`guild_members?id=eq.${pmTargetPinMember.id}`, "PATCH", { pin: newPin });
+      if (typeof showKakaoToast === 'function') showKakaoToast(`[${pmTargetPinMember.name}] 비밀번호 변경 완료!`, "🎉");
+      pmClosePinModal();
+      await pmLoadMemberList();
+    } catch (e) {
+      alert("변경 실패: " + e.message);
     }
   }
 
-  (function initMembersPageModule() {
-    loadGuildMembersPageView();
+  (function pmInit() {
+    pmLoadMemberList();
   })();
 </script>
