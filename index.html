@@ -154,6 +154,7 @@
       min-width: 0;
       cursor: pointer;
     }
+    
     .user-avatar {
       width: 34px; height: 34px;
       border-radius: 12px;
@@ -350,7 +351,7 @@
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
     /* ========================================================
-       4. 보스타이머 서랍 (260px)
+       4. 🎯 보스타이머 서랍 (260px) - 깜빡임 없는 안정적인 마우스오버
        ======================================================== */
     .app-boss-drawer {
       position: fixed;
@@ -401,7 +402,7 @@
     .boss-drawer-list::-webkit-scrollbar { width: 4px; }
     .boss-drawer-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-    /* 보스 카드 아이템 */
+    /* 🎯 보스 카드 아이템 - 위치 떨림(transform) 제거하여 마우스오버 깜빡임 완벽 차단 */
     .boss-drawer-item {
       padding: 8px 10px;
       border-radius: 10px;
@@ -411,14 +412,13 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
-      transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+      transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
       cursor: default;
     }
     .boss-drawer-item:hover {
       border-color: #38bdf8 !important;
       background-color: #f0f9ff !important;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 8px rgba(56, 189, 248, 0.16) !important;
+      box-shadow: 0 2px 6px rgba(56, 189, 248, 0.2) !important;
     }
     .boss-drawer-item.spawned {
       background: #fff8f8;
@@ -427,7 +427,7 @@
     .boss-drawer-item.spawned:hover {
       border-color: #ef4444 !important;
       background-color: #fef2f2 !important;
-      box-shadow: 0 3px 8px rgba(239, 68, 68, 0.18) !important;
+      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2) !important;
     }
     .boss-drawer-item.imminent {
       background: #fffdf5;
@@ -436,7 +436,7 @@
     .boss-drawer-item.imminent:hover {
       border-color: #f59e0b !important;
       background-color: #fffbeb !important;
-      box-shadow: 0 3px 8px rgba(245, 158, 11, 0.18) !important;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2) !important;
     }
 
     .boss-drawer-row-top {
@@ -511,11 +511,10 @@
     .btn-drawer-cut:hover {
       background: #dc2626;
       border-color: #b91c1c;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.35);
+      box-shadow: 0 2px 5px rgba(220, 38, 38, 0.35);
     }
     .btn-drawer-cut:active {
-      transform: translateY(0);
+      transform: translateY(1px);
     }
 
     .btn-drawer-reserve {
@@ -533,11 +532,10 @@
       background: #e2e8f0;
       color: #0f172a;
       border-color: #94a3b8;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     }
     .btn-drawer-reserve:active {
-      transform: translateY(0);
+      transform: translateY(1px);
     }
 
     /* ========================================================
@@ -708,7 +706,7 @@
       line-height: 1;
     }
 
-    /* 보스 리젠 브리핑 카드 */
+    /* 보스 리젠 브리핑 카드 (여백 제로) */
     .boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
@@ -772,7 +770,7 @@
       border-left: 4px solid #38bdf8 !important;
     }
 
-    /* 🎯 말풍선 끝선과 1픽셀 오차 없이 일치시키는 컷 버튼 래퍼 */
+    /* 🎯 말풍선 끝선과 1픽셀 오차 없이 일치시키는 컷 버튼 래퍼[cite: 31] */
     .spawn-card-wrapper {
       display: flex;
       flex-direction: column;
@@ -845,7 +843,7 @@
       transform: scale(0.96);
     }
 
-    /* 🎯 [완벽 수정] 시계 아이콘 전용 커스텀 버튼 (글자 '오' 깨짐 원천 차단) */
+    /* 시계 아이콘 전용 커스텀 버튼 ('오' 글자 짤림 방지)[cite: 36] */
     .time-picker-trigger-btn {
       position: relative;
       width: 40px;
@@ -1270,7 +1268,7 @@
     </div>
   </div>
 
-  <!-- 🎯 [완벽 수정] 컷 / 예약 모달: 찌그러진 '오' 제거 및 깔끔한 시계 아이콘 버튼 배치 -->
+  <!-- 컷 / 예약 모달 -->
   <div id="modalBossActionDialog" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" id="bossActionDialogTitle" style="font-size: 0.95rem;">보스 처리</h6>
@@ -1279,14 +1277,11 @@
       <input type="hidden" id="targetBossActionType">
       <input type="hidden" id="targetBossActionName">
 
-      <!-- 원클릭 빠른 시간 선택 칩 그룹 -->
       <div id="modalQuickTimeChips" class="quick-time-chips-group justify-content-center"></div>
 
-      <!-- 4자리 직접 입력창 + 순수 시계 아이콘 트리거 버튼 (오전/오후 글자 짤림 원천 차단) -->
       <div class="d-flex gap-1 align-items-center mb-1">
         <input type="text" id="targetBossActionTimeInput" class="text-center m-0 flex-fill" placeholder="예: 1100, 2000" maxlength="5" style="font-size:1.05rem; font-weight:800; letter-spacing: 2px;">
         
-        <!-- 커스텀 시계 아이콘 버튼 -->
         <div class="time-picker-trigger-btn" title="시간 선택기 열기">
           <i class="fa-regular fa-clock"></i>
           <input type="time" id="targetNativeTimePicker" class="hidden-native-time-input" onchange="handleNativeTimePickerChange(this.value)">
@@ -1395,7 +1390,6 @@
     var kakaoToastTimer = null;
     var targetPinMember = null;
 
-    // 🎯 젠타임 중복 방지 세트 (localStorage 연동 영구 보관)
     var notifiedBossSpawnMap = new Set(JSON.parse(localStorage.getItem("boss_spawn_notified_keys") || "[]"));
 
     function saveNotifiedBossKey(key) {
@@ -1541,7 +1535,7 @@
       try {
         const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
         cachedBossList = bosses || [];
-        syncAllChatCutButtons(); // 보스 상태에 맞춰 대화창 컷 버튼 즉시 동기화
+        syncAllChatCutButtons();
       } catch (e) {}
     }
 
@@ -1698,6 +1692,7 @@
       openBossActionModal('cut', bossName);
     };
 
+    // 🎯 [완벽 해결] 서랍을 열거나 새로고침 시에만 전체 틀 렌더링
     function renderBossDrawerList() {
       const container = document.getElementById("drawerBossListArea");
       if (!container) return;
@@ -1720,7 +1715,7 @@
         let isSpawned = false;
 
         if (!b.next_spawn_time) {
-          badgeHtml = `<span class="badge-boss-state state-wait">컷 대기</span>`;
+          badgeHtml = `<span class="badge-boss-state state-wait" id="drawerBadge_${b.id}">컷 대기</span>`;
         } else {
           const nextDate = new Date(b.next_spawn_time);
           const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
@@ -1728,15 +1723,15 @@
             isSpawned = true;
             itemClass = "spawned";
             const passM = Math.floor(Math.abs(diffSec) / 60);
-            badgeHtml = `<span class="badge-boss-state state-spawn">🚨 젠 완료 (+${passM}분)</span>`;
+            badgeHtml = `<span class="badge-boss-state state-spawn" id="drawerBadge_${b.id}">🚨 젠 완료 (+${passM}분)</span>`;
           } else if (diffSec <= 3600) {
             itemClass = "imminent";
             const m = Math.floor(diffSec / 60);
-            badgeHtml = `<span class="badge-boss-state state-imminent">⏳ ${m}분 남음</span>`;
+            badgeHtml = `<span class="badge-boss-state state-imminent" id="drawerBadge_${b.id}">⏳ ${m}분 남음</span>`;
           } else {
             const h = Math.floor(diffSec / 3600);
             const m = Math.floor((diffSec % 3600) / 60);
-            badgeHtml = `<span class="badge-boss-state state-normal">💤 ${h}시간 ${m}분</span>`;
+            badgeHtml = `<span class="badge-boss-state state-normal" id="drawerBadge_${b.id}">💤 ${h}시간 ${m}분</span>`;
           }
         }
 
@@ -1744,13 +1739,13 @@
         const cutBtnTitle = isSpawned ? "지금 컷 처리" : "컷 시각 조절/입력";
 
         return `
-          <div class="boss-drawer-item ${itemClass}">
+          <div class="boss-drawer-item ${itemClass}" id="drawerItemCard_${b.id}">
             <div class="boss-drawer-row-top">
               <span class="boss-drawer-name">${escapeHtmlText(b.boss_name)}</span>
               ${badgeHtml}
             </div>
             <div class="boss-drawer-row-bottom">
-              <span>젠 예정: <strong style="color:#0284c7;">${nextTimeStr}</strong></span>
+              <span>젠 예정: <strong id="drawerTimeText_${b.id}" style="color:#0284c7;">${nextTimeStr}</strong></span>
               <div class="d-flex gap-1">
                 <button type="button" class="btn-drawer-cut" title="${cutBtnTitle}" onclick="handleDrawerCutClick('${escapeHtmlText(b.boss_name)}', ${isSpawned})">컷</button>
                 <button type="button" class="btn-drawer-reserve" title="젠 예약 시간 변경" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
@@ -1759,6 +1754,47 @@
           </div>
         `;
       }).join('');
+    }
+
+    // 🎯 [깜빡임 0%] DOM 재생성 없이 텍스트/뱃지만 조용히 업데이트하는 초경량 함수
+    function updateBossDrawerTimesOnly() {
+      const now = Date.now();
+      (cachedBossList || []).forEach(b => {
+        const badgeElem = document.getElementById(`drawerBadge_${b.id}`);
+        const cardElem = document.getElementById(`drawerItemCard_${b.id}`);
+        const timeElem = document.getElementById(`drawerTimeText_${b.id}`);
+        if (!badgeElem || !cardElem) return;
+
+        if (!b.next_spawn_time) {
+          badgeElem.className = "badge-boss-state state-wait";
+          badgeElem.innerText = "컷 대기";
+          cardElem.classList.remove("spawned", "imminent");
+          if (timeElem) timeElem.innerText = "-";
+        } else {
+          const nextDate = new Date(b.next_spawn_time);
+          const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
+          if (diffSec <= 0) {
+            const passM = Math.floor(Math.abs(diffSec) / 60);
+            badgeElem.className = "badge-boss-state state-spawn";
+            badgeElem.innerText = `🚨 젠 완료 (+${passM}분)`;
+            cardElem.classList.add("spawned");
+            cardElem.classList.remove("imminent");
+          } else if (diffSec <= 3600) {
+            const m = Math.floor(diffSec / 60);
+            badgeElem.className = "badge-boss-state state-imminent";
+            badgeElem.innerText = `⏳ ${m}분 남음`;
+            cardElem.classList.add("imminent");
+            cardElem.classList.remove("spawned");
+          } else {
+            const h = Math.floor(diffSec / 3600);
+            const m = Math.floor((diffSec % 3600) / 60);
+            badgeElem.className = "badge-boss-state state-normal";
+            badgeElem.innerText = `💤 ${h}시간 ${m}분`;
+            cardElem.classList.remove("spawned", "imminent");
+          }
+          if (timeElem) timeElem.innerText = formatTime24Hour(nextDate);
+        }
+      });
     }
 
     function closeAllDrawers() {
@@ -2010,7 +2046,7 @@
         if (list && list.length > 0) {
           list.reverse().forEach(c => renderKakaoChatBubble(c, false));
           scrollChatBottom();
-          syncAllChatCutButtons(); // 과거 대화창 컷 버튼들의 완료 여부 일괄 점검
+          syncAllChatCutButtons();
         }
       } catch (e) {}
     }
@@ -2043,8 +2079,8 @@
             const idx = cachedBossList.findIndex(b => b.id === payload.new.id);
             if (idx !== -1) cachedBossList[idx] = payload.new;
             else cachedBossList.push(payload.new);
-            renderBossDrawerList();
-            syncAllChatCutButtons(); // 컷 변경 시 대화창 버튼들 즉시 실시간 동기화
+            updateBossDrawerTimesOnly();
+            syncAllChatCutButtons();
           } else if (payload.eventType === "INSERT") {
             cachedBossList.push(payload.new);
             renderBossDrawerList();
@@ -2058,7 +2094,6 @@
         .subscribe();
     }
 
-    // 🎯 [핵심] 대화창 내의 모든 컷 버튼을 현재 보스 젠 상태와 완벽 동기화 (이미 컷된 보스는 무조건 [✔ 완료] 비활성화)
     function syncAllChatCutButtons() {
       const now = Date.now();
       const allCutButtons = document.querySelectorAll('.btn-msg-sub-cut');
@@ -2072,13 +2107,11 @@
 
         const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - now) / 1000);
 
-        // 다음 젠 시각이 미래(0초 이상)라면 이미 컷 처리가 완료된 상태이므로 무조건 비활성화
         if (diffSec > 0) {
           btn.disabled = true;
           btn.innerHTML = `<i class="fa-solid fa-check"></i> 완료`;
           btn.classList.add("disabled");
         } else {
-          // 아직 젠 상태인데 완료 처리되어 있지 않은 경우만 활성화
           if (!btn.classList.contains("disabled")) {
             btn.disabled = false;
             btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`;
@@ -2149,12 +2182,10 @@
 
         const spawnedBossName = extractBossNameFromMessage(cleanMessageText);
 
-        // 🎯 [완벽 정렬 및 컷 상태 동기화]
         let subCutButtonHtml = "";
         if (isSpawnMsg && spawnedBossName) {
           const btnId = `btnSubCut_${msg.id || Math.floor(Math.random()*100000)}`;
 
-          // 현재 보스가 이미 컷 된 상태인지 검사
           const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === spawnedBossName.toLowerCase());
           let isAlreadyCut = false;
           if (boss && boss.next_spawn_time) {
@@ -2339,7 +2370,6 @@
       }
     };
 
-    // 🎯 [업그레이드] 컷 / 예약 모달창 제어 (직접입력 + 빠른 선택 칩 + 시간 피커)
     window.openBossActionModal = function(type, bossName) {
       document.getElementById("targetBossActionType").value = type;
       document.getElementById("targetBossActionName").value = bossName;
@@ -2428,7 +2458,7 @@
             mentions: []
           }]);
           showKakaoToast(`[${boss.boss_name}] 컷 처리 완료!`, "🎉");
-          syncAllChatCutButtons(); // 즉시 대화창 버튼들 일괄 완료 처리
+          syncAllChatCutButtons();
         } catch (e) {
           showKakaoToast("처리 실패: " + e.message, "❌");
         }
@@ -2457,7 +2487,6 @@
       }
     };
 
-    // 🎯 [완벽 방어] 젠 알림 말풍선 아래 [컷 처리] 버튼 클릭 핸들러 (중복 컷 원천 방지)
     window.triggerQuickCutAction = async function(bossName, btnId) {
       const btn = document.getElementById(btnId);
       
@@ -2466,7 +2495,6 @@
         return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
       }
 
-      // 이미 컷 된 보스인지 즉시 검증
       if (boss.next_spawn_time) {
         const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - Date.now()) / 1000);
         if (diffSec > 0) {
@@ -2503,7 +2531,7 @@
           mentions: []
         }]);
         showKakaoToast(`[${boss.boss_name}] 컷 완료!`, "🎉");
-        syncAllChatCutButtons(); // 화면 내 해당 보스 모든 컷 버튼 일괄 완료 전환
+        syncAllChatCutButtons();
       } catch (err) {
         if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`; btn.classList.remove("disabled"); }
         showKakaoToast("컷 처리 실패: " + err.message, "❌");
@@ -2726,16 +2754,17 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 🎯 [완벽 수정] 젠 완료 알림 서버 중복 체크 및 다중 기기 도배 100% 방지
+    // 🎯 1초 주기 로컬 보스 감시 및 경량 업데이트
     function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
       bossWatcherInterval = setInterval(async () => {
         const now = Date.now();
 
+        // 보스타임 서랍이 열려 있다면 DOM 재생성 없이 텍스트/뱃지만 갱신 (깜빡임 0%)
         const isBossDrawerOpen = document.getElementById("bossTimerSidebarDrawer")?.classList.contains("open");
         if (isBossDrawerOpen) {
-          renderBossDrawerList();
+          updateBossDrawerTimesOnly();
         }
 
         for (const b of (cachedBossList || [])) {
@@ -2756,7 +2785,7 @@
             await sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`, key3Min);
           }
 
-          // 젠 완료 알림 (0초 이하 ~ 최대 10분 경과까지 안전 감지 & 중복 발송 원천 차단)
+          // 젠 완료 알림
           const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
           if (diffSec <= 0 && diffSec > -600 && !notifiedBossSpawnMap.has(keySpawned)) {
             saveNotifiedBossKey(keySpawned);
@@ -2766,7 +2795,6 @@
       }, 1000);
     }
 
-    // 🎯 다른 기기/탭이 이미 발송했는지 DB 확인 후 단 1회만 안전하게 발송
     async function sendBossAlertBroadcast(msgText, uniqueKey = "") {
       try {
         const match = msgText.match(/\[([^\]]+)\]/);
