@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [길드 메신저] 보스타임 & 리젠 현황 상세 모듈
+     [길드 메신저] 독립된 보스타임 & 리젠 현황 모듈
      경로: pages/PageTimer.html
      ========================================== -->
 <style>
@@ -144,7 +144,6 @@
     background: #e2e8f0;
   }
 
-  /* 컷 예약 팝업 */
   .modal-reserve-backdrop {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
@@ -169,6 +168,9 @@
       <h6 class="fw-bold mb-0 text-dark">보스타임 현황판</h6>
     </div>
     <div class="d-flex gap-1">
+      <button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size: 0.74rem; white-space: nowrap;" onclick="copyTimersForKakao()">
+        <i class="fa-solid fa-share-nodes me-1"></i>카톡 복사
+      </button>
       <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" style="font-size: 0.72rem;" onclick="loadBossTimersView()">
         <i class="fa-solid fa-arrows-rotate"></i> 새로고침
       </button>
@@ -229,6 +231,13 @@
   var timerPageInterval = null;
   var currentTimerTabFilter = 'all';
   var reservingBossObject = null;
+
+  window.__currentModuleCleanup = function() {
+    if (timerPageInterval) {
+      clearInterval(timerPageInterval);
+      timerPageInterval = null;
+    }
+  };
 
   async function loadBossTimersView() {
     const container = document.getElementById('bossTimerListContainer');
@@ -380,9 +389,8 @@
         next_spawn_time: nextSpawn.toISOString()
       });
 
-      // 채팅방에도 자동 보고
       await apiRequest("guild_chats", "POST", [{
-        sender_name: "보스타이머",
+        sender_name: "보스알리미",
         message: `⚔️ [${bossName}] 현황판에서 지금 컷 처리되었습니다! (다음 젠: ${formatTimeDisplay(nextSpawn)})`,
         msg_type: "boss_alert",
         mentions: []
