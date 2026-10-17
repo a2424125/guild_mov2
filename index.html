@@ -245,7 +245,7 @@
       padding: 2px 0;
     }
 
-    /* 🎯 4. 보스타임 전용 서랍 (260px) - 동적 로드용 컨테이너 */
+    /* 4. 보스타임 전용 서랍 (260px) */
     .app-boss-drawer {
       position: fixed;
       top: 0; left: 0;
@@ -504,7 +504,6 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
         <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
       </li>
-      <!-- 🎯 햄버거 메뉴에서 보스타임 서랍 열기 연동 -->
       <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
@@ -560,7 +559,7 @@
     </div>
   </aside>
 
-  <!-- 🎯 4. 보스타임 전용 서랍 (260px) - PageTimer.html을 비동기로 로드하여 삽입 -->
+  <!-- 4. 보스타임 전용 서랍 (260px) -->
   <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header">
       <div class="boss-drawer-title">
@@ -609,10 +608,7 @@
         <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
           <i class="fa-regular fa-clock"></i>
         </button>
-        <!-- 상단 시계 아이콘 클릭 시 보스 서랍 오픈 -->
-        <button type="button" class="btn-kakao-head" title="보스타임 서랍 열기" onclick="toggleBossDrawer(true)">
-          <i class="fa-solid fa-hourglass-half"></i>
-        </button>
+        <!-- 🎯 상단 헤더의 모래시계 아이콘 제거 완료, 길드원 목록 아이콘만 유지 -->
         <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
           <i class="fa-solid fa-user-group"></i>
         </button>
