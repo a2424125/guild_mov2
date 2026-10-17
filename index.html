@@ -37,7 +37,7 @@
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
-      min-width: 0; /* 브라우저가 자식 요소 너비 때문에 창 축소를 막는 현상 원천 차단 */
+      min-width: 0;
     }
 
     html, body {
@@ -50,7 +50,6 @@
       overflow: hidden;
       display: flex;
       position: relative;
-      /* PC 창 크기를 기존 대비 30% 이상 드래그로 극단적 축소 가능하도록 보장 */
       min-width: 200px !important;
       width: 100%;
     }
@@ -529,7 +528,7 @@
     }
     .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
-    /* 말풍선 여백 밀착 */
+    /* 말풍선 여백 */
     .chat-bubble {
       display: inline-block;
       width: fit-content;
@@ -570,33 +569,28 @@
     }
 
     /* ========================================================
-       🎯 [핵심 수정] 보스 리젠 브리핑 카드 - 초밀착 극단적 여백 제거
-       과거 DB에 저장된 메시지든 새 메시지든 전부 강제 압축 적용
+       🎯 [완벽 수정] 보스 리젠 브리핑 카드
+       - 최상단/최하단 불필요한 여백 제거
+       - 보스 행 간격 아주 살짝 여유를 주어 가독성 극대화 (padding: 2.5px 0)
+       - 버튼 제거 후 순수 텍스트 리스트 형태로 전환
        ======================================================== */
     .boss-brief-bubble,
     .chat-bubble.boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
-      padding: 4px 6px !important;
+      padding: 5px 8px !important; /* 상하 여백 최소화 */
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
       width: fit-content !important;
       max-width: 100% !important;
       min-width: 160px;
-      line-height: 1.15 !important;
-    }
-    .boss-brief-bubble div,
-    .boss-brief-bubble p,
-    .boss-brief-bubble span {
-      margin: 0 !important;
-      padding: 0 !important;
-      line-height: 1.2 !important;
+      line-height: 1.25 !important;
     }
     .boss-brief-title {
-      font-size: 0.74rem !important;
+      font-size: 0.76rem !important;
       font-weight: 800 !important;
       color: #191919 !important;
-      margin-bottom: 3px !important;
-      padding-bottom: 2px !important;
+      margin: 0 0 4px 0 !important;
+      padding: 0 0 3px 0 !important;
       border-bottom: 1px dashed #cbd5e1 !important;
       display: flex !important;
       justify-content: space-between !important;
@@ -606,39 +600,18 @@
       display: flex !important;
       justify-content: space-between !important;
       align-items: center !important;
-      gap: 4px !important;
-      padding: 1px 0 !important;
-      margin: 1px 0 !important;
-      font-size: 0.72rem !important;
-      line-height: 1.2 !important;
+      gap: 6px !important;
+      padding: 2.5px 0 !important; /* 가독성을 위한 적절한 여백 */
+      margin: 0 !important;
+      font-size: 0.74rem !important;
+      line-height: 1.3 !important;
     }
     .boss-brief-line.spawned {
       color: #dc2626 !important;
       font-weight: 700 !important;
     }
-    .boss-inline-actions {
-      display: flex !important;
-      gap: 2px !important;
-      flex-shrink: 0 !important;
-    }
-    .btn-boss-inline {
-      background: #f1f5f9 !important;
-      border: 1px solid #cbd5e1 !important;
-      color: #334155 !important;
-      font-size: 0.6rem !important;
-      font-weight: 700 !important;
-      padding: 0 4px !important;
-      line-height: 1.4 !important;
-      border-radius: 3px !important;
-      cursor: pointer !important;
-    }
-    .btn-boss-inline.cut {
-      background: #fee2e2 !important;
-      border-color: #fca5a5 !important;
-      color: #b91c1c !important;
-    }
 
-    /* 보스 알림 콤팩트 카드 */
+    /* 젠 알림 카드 */
     .boss-alert-mini-card {
       background: #ffffff !important;
       border-radius: 5px !important;
@@ -1225,7 +1198,7 @@
       await loadGuildMetadata();
       await loadTopNoticeHeader();
       await loadGuildMembersData();
-      await loadBossTimersList();
+      await loadBossTimersList(); // 1회 로드 후 메모리 관리
 
       if (!myCurrentNick || !myCurrentPin) {
         showGuildLoginModal();
@@ -1240,7 +1213,9 @@
 
       await loadPastChatMessages();
       listenRealtimeChatMessages();
-      startBossWatchTimer();
+      listenRealtimeBossTimers(); // 보스 타이머 실시간 동기화
+      startLocalBossWatchTimer(); // 4초 DB 폴링 제거 -> 100% 로컬 타이머 계산
+      cleanupOldChatsBackground(); // 7일 지난 채팅 자동 삭제
 
       bindMentionInputEvents();
       setupPwaInstallation();
@@ -1701,11 +1676,19 @@
 
     async function loadPastChatMessages() {
       try {
-        const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=50");
+        const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=100");
         if (list && list.length > 0) {
           list.reverse().forEach(c => renderKakaoChatBubble(c, false));
           scrollChatBottom();
         }
+      } catch (e) {}
+    }
+
+    // 🎯 7일 이상 지난 오래된 채팅 백그라운드 자동 정리
+    async function cleanupOldChatsBackground() {
+      try {
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+        await apiRequest(`guild_chats?created_at=lt.${sevenDaysAgo}`, "DELETE");
       } catch (e) {}
     }
 
@@ -1716,6 +1699,29 @@
         .channel("public:guild_chats")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
           renderKakaoChatBubble(payload.new, true);
+        })
+        .subscribe();
+    }
+
+    // 🎯 보스타이머 실시간 이벤트 수신 (누군가 컷/예약 시 즉시 반영되어 DB 조회 불필요)
+    function listenRealtimeBossTimers() {
+      if (!supabaseClient) return;
+
+      supabaseClient
+        .channel("public:boss_timers")
+        .on("postgres_changes", { event: "*", schema: "public", table: "boss_timers" }, (payload) => {
+          if (payload.eventType === "UPDATE") {
+            const idx = cachedBossList.findIndex(b => b.id === payload.new.id);
+            if (idx !== -1) cachedBossList[idx] = payload.new;
+            else cachedBossList.push(payload.new);
+            renderBossDrawerList();
+          } else if (payload.eventType === "INSERT") {
+            cachedBossList.push(payload.new);
+            renderBossDrawerList();
+          } else if (payload.eventType === "DELETE") {
+            cachedBossList = cachedBossList.filter(b => b.id !== payload.old.id);
+            renderBossDrawerList();
+          }
         })
         .subscribe();
     }
@@ -1842,6 +1848,12 @@
       }
 
       container.insertAdjacentHTML('beforeend', html);
+
+      // 클라이언트 메모리 렉 방지: 화면 말풍선 120개 초과 시 오래된 요소 제거
+      while (container.children.length > 120) {
+        container.removeChild(container.firstChild);
+      }
+
       scrollChatBottom();
 
       if (isRealtime && !isMe) {
@@ -1892,15 +1904,17 @@
       return target;
     }
 
-    // 보스타임 브리핑 생성 함수 (극단적 초밀착 여백 적용)
+    // 🎯 [완벽 수정] 컷/예약 버튼 제거, 읽기 편한 여백, 슬림한 패딩
     window.postBossBriefingToChat = async function() {
-      await loadBossTimersList();
+      if (cachedBossList.length === 0) {
+        await loadBossTimersList();
+      }
       if (cachedBossList.length === 0) {
         return showKakaoToast("등록된 보스 타이머가 없습니다.", "⚠️");
       }
 
       const now = Date.now();
-      cachedBossList.sort((a,b) => {
+      const sorted = [...cachedBossList].sort((a,b) => {
         const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
         const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
         return tA - tB;
@@ -1909,9 +1923,9 @@
       const currentKstFormatted = formatKSTChatTime(new Date().toISOString());
       let briefingHtml = `<div class="boss-brief-title"><span>[보스 리젠 현황]</span><span style="font-size:0.62rem; color:#64748b;">${currentKstFormatted}</span></div>`;
 
-      cachedBossList.forEach(b => {
+      sorted.forEach(b => {
         if (!b.next_spawn_time) {
-          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span><div class="boss-inline-actions"><button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button><button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button></div></div>`;
+          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span><span style="font-size:0.68rem; color:#64748b;">대기</span></div>`;
           return;
         }
 
@@ -1921,12 +1935,12 @@
 
         if (diffSec <= 0) {
           const passM = Math.floor(Math.abs(diffSec) / 60);
-          briefingHtml += `<div class="boss-brief-line spawned"><span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨! (+${passM}분)</span><div class="boss-inline-actions"><button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button><button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button></div></div>`;
+          briefingHtml += `<div class="boss-brief-line spawned"><span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨!</span><span>(+${passM}분)</span></div>`;
         } else {
           const h = Math.floor(diffSec / 3600);
           const m = Math.floor((diffSec % 3600) / 60);
           const remainText = `${h > 0 ? h + '시간 ' : ''}${m}분`;
-          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay} (${remainText})</span><div class="boss-inline-actions"><button type="button" class="btn-boss-inline cut" onclick="openBossActionModal('cut', '${escapeHtmlText(b.boss_name)}')">컷</button><button type="button" class="btn-boss-inline" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button></div></div>`;
+          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay}</span><span style="font-size:0.68rem; color:#0284c7; font-weight:700;">(${remainText})</span></div>`;
         }
       });
 
@@ -1972,7 +1986,6 @@
       const bossName = document.getElementById("targetBossActionName").value;
       const timeInput = document.getElementById("targetBossActionTimeInput").value.trim();
 
-      await loadBossTimersList();
       const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
       if (!boss) return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
 
@@ -2000,8 +2013,6 @@
             mentions: []
           }]);
           showKakaoToast(`[${boss.boss_name}] 컷 처리 완료!`, "🎉");
-          await loadBossTimersList();
-          renderBossDrawerList();
         } catch (e) {
           showKakaoToast("처리 실패: " + e.message, "❌");
         }
@@ -2022,8 +2033,6 @@
             mentions: []
           }]);
           showKakaoToast(`[${boss.boss_name}] 예약 완료!`, "🎉");
-          await loadBossTimersList();
-          renderBossDrawerList();
         } catch (e) {
           showKakaoToast("예약 실패: " + e.message, "❌");
         }
@@ -2038,7 +2047,6 @@
         btn.classList.add("disabled");
       }
 
-      await loadBossTimersList();
       const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
       if (!boss) {
         if (btn) { btn.disabled = false; btn.innerText = "컷"; btn.classList.remove("disabled"); }
@@ -2067,8 +2075,6 @@
           mentions: []
         }]);
         showKakaoToast(`[${boss.boss_name}] 컷 완료!`, "🎉");
-        await loadBossTimersList();
-        renderBossDrawerList();
       } catch (err) {
         if (btn) { btn.disabled = false; btn.innerText = "컷"; btn.classList.remove("disabled"); }
         showKakaoToast("컷 처리 실패: " + err.message, "❌");
@@ -2093,7 +2099,6 @@
         const bossName = parts[1];
         const timeInput = parts[2];
 
-        await loadBossTimersList();
         const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
         if (!boss) {
           showKakaoToast(`[${bossName}] 보스를 찾을 수 없습니다.`, "❌");
@@ -2122,8 +2127,6 @@
           msg_type: "boss_alert",
           mentions: []
         }]);
-        await loadBossTimersList();
-        renderBossDrawerList();
         return true;
       }
 
@@ -2137,7 +2140,6 @@
         const bossName = parts[1];
         const timeInput = parts[2];
 
-        await loadBossTimersList();
         const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
         if (!boss) {
           showKakaoToast(`[${bossName}] 보스를 찾을 수 없습니다.`, "❌");
@@ -2160,8 +2162,6 @@
           msg_type: "boss_alert",
           mentions: []
         }]);
-        await loadBossTimersList();
-        renderBossDrawerList();
         return true;
       }
 
@@ -2292,42 +2292,38 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    function startBossWatchTimer() {
+    // 🎯 [DB 부하 0%] 4초마다 DB 조회하던 방식을 제거하고 메모리 기반 로컬 초 단위 계산으로 전환
+    function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
-      bossWatcherInterval = setInterval(async () => {
-        try {
-          const now = Date.now();
-          const timers = await apiRequest("boss_timers?select=*");
-          cachedBossList = timers || [];
-          
-          (timers || []).forEach(b => {
-            if (!b.next_spawn_time) return;
-            const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
+      bossWatcherInterval = setInterval(() => {
+        const now = Date.now();
+        (cachedBossList || []).forEach(b => {
+          if (!b.next_spawn_time) return;
+          const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
 
-            // 7분 전 알림
-            const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
-            if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
-              notifiedBossSpawnMap.add(key7Min);
-              sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`);
-            }
+          // 7분 전 알림
+          const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
+          if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
+            notifiedBossSpawnMap.add(key7Min);
+            sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`);
+          }
 
-            // 3분 전 알림
-            const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
-            if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
-              notifiedBossSpawnMap.add(key3Min);
-              sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`);
-            }
+          // 3분 전 알림
+          const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
+          if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
+            notifiedBossSpawnMap.add(key3Min);
+            sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`);
+          }
 
-            // 젠 완료 알림
-            const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
-            if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
-              notifiedBossSpawnMap.add(keySpawned);
-              sendBossAlertBroadcast(`🔥 [${b.boss_name}] 젠 완료! 출현했습니다! 즉시 처치 바랍니다!`);
-            }
-          });
-        } catch (e) {}
-      }, 4000);
+          // 젠 완료 알림
+          const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
+          if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
+            notifiedBossSpawnMap.add(keySpawned);
+            sendBossAlertBroadcast(`🔥 [${b.boss_name}] 젠 완료! 출현했습니다! 즉시 처치 바랍니다!`);
+          }
+        });
+      }, 1000);
     }
 
     async function sendBossAlertBroadcast(msgText) {
