@@ -1,0 +1,1236 @@
+<!-- ==========================================
+     [길드 메신저] 시스템 설정 제어판 모듈 (카카오톡 라이트/다크 듀얼 테마)
+     경로: pages/PageSettings.html
+     ========================================== -->
+<style>
+  /* 카카오톡 스타일 테마 변수 (라이트 기본 / 다크 전환) */
+  .kakao-settings-theme {
+    --kt-bg: #f5f6f8;
+    --kt-card-bg: #ffffff;
+    --kt-card-border: #eef0f3;
+    --kt-inner-box: #f9fafb;
+    --kt-inner-border: #e5e7eb;
+    --kt-text-main: #191919;
+    --kt-text-sub: #6b7280;
+    --kt-text-muted: #9ca3af;
+    --kt-input-bg: #ffffff;
+    --kt-input-border: #d1d5db;
+    --kt-input-focus: #fee500;
+    --kt-yellow-btn: #fee500;
+    --kt-yellow-btn-hover: #fdd835;
+    --kt-yellow-text: #191919;
+    --kt-nav-bg: #eceef1;
+    --kt-nav-active: #ffffff;
+    --kt-nav-active-text: #191919;
+    --kt-badge-bg: #f3f4f6;
+    --kt-badge-text: #4b5563;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+    color: var(--kt-text-main);
+    padding: 4px;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  /* 🌙 카카오톡 다크 모드 스타일 */
+  .kakao-settings-theme.dark-mode {
+    --kt-bg: #1e1e1e;
+    --kt-card-bg: #2a2a2a;
+    --kt-card-border: #383838;
+    --kt-inner-box: #222222;
+    --kt-inner-border: #383838;
+    --kt-text-main: #f3f4f6;
+    --kt-text-sub: #9ca3af;
+    --kt-text-muted: #6b7280;
+    --kt-input-bg: #1c1c1c;
+    --kt-input-border: #444444;
+    --kt-input-focus: #eab308;
+    --kt-yellow-btn: #facc15;
+    --kt-yellow-btn-hover: #eab308;
+    --kt-yellow-text: #191919;
+    --kt-nav-bg: #1e1e1e;
+    --kt-nav-active: #383838;
+    --kt-nav-active-text: #ffffff;
+    --kt-badge-bg: #333333;
+    --kt-badge-text: #d1d5db;
+  }
+
+  .kt-settings-card {
+    background: var(--kt-card-bg);
+    border: 1px solid var(--kt-card-border);
+    border-radius: 16px;
+    padding: 18px 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+
+  /* 헤더 및 테마 토글 버튼 */
+  .kt-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .kt-title-text {
+    font-size: 1.05rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-theme-toggle {
+    background: var(--kt-nav-bg);
+    border: 1px solid var(--kt-inner-border);
+    color: var(--kt-text-main);
+    font-size: 0.76rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s;
+  }
+  .btn-theme-toggle:hover {
+    background: var(--kt-card-border);
+  }
+
+  /* 카카오톡 스타일 4단 탭 네비게이션 */
+  .kt-nav-container {
+    display: flex;
+    gap: 4px;
+    background: var(--kt-nav-bg);
+    padding: 4px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .kt-nav-container::-webkit-scrollbar { display: none; }
+  .kt-nav-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--kt-text-sub);
+    padding: 8px 4px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+  }
+  .kt-nav-btn.active {
+    background: var(--kt-nav-active);
+    color: var(--kt-nav-active-text);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+  .kt-nav-btn.super-btn.active {
+    background: #7c3aed;
+    color: #ffffff;
+  }
+
+  /* 설정 섹션 컨테이너 박스 */
+  .kt-section-box {
+    background: var(--kt-inner-box);
+    border: 1px solid var(--kt-inner-border);
+    border-radius: 12px;
+    padding: 14px 12px;
+    margin-bottom: 12px;
+  }
+  .kt-section-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* 입력창 공통 규격 */
+  .kt-input {
+    background-color: var(--kt-input-bg) !important;
+    border: 1px solid var(--kt-input-border) !important;
+    color: var(--kt-text-main) !important;
+    border-radius: 9px !important;
+    padding: 8px 11px !important;
+    font-size: 0.84rem !important;
+    outline: none !important;
+    height: 38px;
+    transition: border-color 0.15s;
+  }
+  .kt-input:focus {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
+  }
+  .kt-input::placeholder {
+    color: var(--kt-text-muted) !important;
+  }
+
+  /* 배점 조절 박스 */
+  .kt-score-row {
+    background: var(--kt-card-bg);
+    border: 1px solid var(--kt-card-border);
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin-bottom: 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .kt-stepper {
+    display: flex;
+    align-items: center;
+    background: var(--kt-inner-box);
+    border: 1px solid var(--kt-inner-border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .btn-kt-step {
+    background: transparent;
+    border: none;
+    color: var(--kt-text-main);
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-kt-step:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  .kt-step-val {
+    width: 38px;
+    text-align: center;
+    background: transparent;
+    border: none;
+    color: #d97706;
+    font-weight: 800;
+    font-size: 0.95rem;
+    outline: none;
+  }
+
+  /* 카카오톡 옐로우 버튼 / 슈퍼 액션 버튼 */
+  .btn-kt-submit {
+    background: var(--kt-yellow-btn);
+    color: var(--kt-yellow-text);
+    border: none;
+    font-weight: 800;
+    font-size: 0.88rem;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    transition: all 0.15s;
+    width: 100%;
+  }
+  .btn-kt-submit:hover {
+    background: var(--kt-yellow-btn-hover);
+    transform: translateY(-1px);
+  }
+  .btn-kt-super {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    color: #ffffff;
+    border: none;
+    font-weight: 800;
+    font-size: 0.88rem;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+    box-shadow: 0 3px 8px rgba(124, 58, 237, 0.25);
+  }
+
+  /* 권한 토글 스위치 행 */
+  .kt-perm-row {
+    background: var(--kt-card-bg);
+    border: 1px solid var(--kt-card-border);
+    border-radius: 10px;
+    padding: 9px 12px;
+    margin-bottom: 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-switch .form-check-input {
+    width: 2.7em;
+    height: 1.45em;
+    cursor: pointer;
+    background-color: #cbd5e1;
+    border-color: #94a3b8;
+  }
+  .form-switch .form-check-input:checked {
+    background-color: #f59e0b;
+    border-color: #d97706;
+  }
+
+  /* 보스 및 사냥터 칩 그리드 */
+  .kt-chips-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    max-height: 220px;
+    overflow-y: auto;
+    margin-top: 8px;
+  }
+  @media (max-width: 480px) {
+    .kt-chips-grid { grid-template-columns: repeat(1, 1fr); }
+  }
+  .kt-item-chip {
+    background: var(--kt-card-bg);
+    border: 1px solid var(--kt-card-border);
+    border-radius: 8px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  }
+  .kt-chip-del {
+    color: #9ca3af;
+    cursor: pointer;
+    margin-left: 6px;
+    transition: color 0.12s;
+  }
+  .kt-chip-del:hover { color: #ef4444; }
+
+  /* 사냥터 지역 필터 바 */
+  .kt-region-bar {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+    scrollbar-width: none;
+  }
+  .kt-region-bar::-webkit-scrollbar { display: none; }
+  .btn-region-pill {
+    white-space: nowrap;
+    background: var(--kt-inner-box);
+    border: 1px solid var(--kt-inner-border);
+    color: var(--kt-text-sub);
+    padding: 3px 9px;
+    border-radius: 14px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .btn-region-pill.active {
+    background: #10b981;
+    border-color: #059669;
+    color: #ffffff;
+  }
+
+  /* 카카오톡 커스텀 플로팅 토스트 */
+  .kt-settings-toast {
+    position: fixed;
+    top: 22px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(30, 30, 30, 0.95);
+    color: #ffffff;
+    padding: 9px 20px;
+    border-radius: 24px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    z-index: 99999999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kt-settings-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="kakao-settings-theme" id="settingsThemeWrapper">
+  <div class="kt-settings-card">
+    <!-- 헤더 바: 타이틀 & 라이트/다크 모드 토글 -->
+    <div class="kt-header-bar">
+      <div class="kt-title-text">
+        <span>⚙️ 시스템 설정 제어판</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge" id="badgeSettingsRoleStatus" style="background:var(--kt-badge-bg); color:var(--kt-badge-text); border:1px solid var(--kt-inner-border); font-size:0.68rem; padding:4px 7px;">
+          권한 확인 중
+        </span>
+        <button type="button" class="btn-theme-toggle" id="btnThemeToggleAction" onclick="toggleThemeMode()">
+          <span id="themeToggleIcon">🌙</span>
+          <span id="themeToggleText">다크모드</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 4대 네비게이션 탭 -->
+    <div class="kt-nav-container">
+      <button type="button" class="kt-nav-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
+        🏢 기본
+      </button>
+      <button type="button" class="kt-nav-btn" id="btnNavAuth" onclick="switchSettingsTab('auth')">
+        🔐 보안
+      </button>
+      <button type="button" class="kt-nav-btn super-btn" id="btnNavPermissions" onclick="switchSettingsTab('permissions')">
+        👑 관리자 권한
+      </button>
+      <button type="button" class="kt-nav-btn" id="btnNavBossGround" onclick="switchSettingsTab('bossGround')">
+        ⚔️ 보스/사냥터
+      </button>
+    </div>
+
+    <!-- [탭 1] 기본 탭: 토벌 & 전쟁 배점 + PIN 초기화 도구 -->
+    <div id="tabSettingsGeneral">
+      <div class="kt-section-box">
+        <div class="kt-section-title" style="color: #d97706;">
+          <i class="fa-solid fa-star"></i> 토벌 & 전쟁 배점 규정 (신규 등록 건부터 적용)
+        </div>
+        
+        <div class="kt-score-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.82rem;">기본 보스 배점</div>
+            <div style="font-size: 0.7rem; color: var(--kt-text-sub);">일반 보스 토벌 시 기본 점수</div>
+          </div>
+          <div class="kt-stepper">
+            <button type="button" class="btn-kt-step" onclick="stepScore('cfgScoreBase', -1, 1)">-</button>
+            <input type="text" id="cfgScoreBase" class="kt-step-val" value="1" readonly>
+            <button type="button" class="btn-kt-step" onclick="stepScore('cfgScoreBase', 1, 1)">+</button>
+          </div>
+        </div>
+
+        <div class="kt-score-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.82rem;">내전 추가점</div>
+            <div style="font-size: 0.7rem; color: var(--kt-text-sub);">내전 체크 시 가산되는 점수</div>
+          </div>
+          <div class="kt-stepper">
+            <button type="button" class="btn-kt-step" onclick="stepScore('cfgScoreInternal', -1, 0)">-</button>
+            <input type="text" id="cfgScoreInternal" class="kt-step-val" value="1" readonly>
+            <button type="button" class="btn-kt-step" onclick="stepScore('cfgScoreInternal', 1, 0)">+</button>
+          </div>
+        </div>
+
+        <div class="kt-score-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.82rem;">인터 추가점</div>
+            <div style="font-size: 0.7rem; color: var(--kt-text-sub);">인터쟁 체크 시 가산되는 점수</div>
+          </div>
+          <div class="kt-stepper">
+            <button type="button" class="btn-kt-step" onclick="stepScore('cfgScoreInter', -1, 0)">-</button>
+            <input type="text" id="cfgScoreInter" class="kt-step-val" value="2" readonly>
+            <button type="button" class="btn-kt-step" onclick="stepScore('cfgScoreInter', 1, 0)">+</button>
+          </div>
+        </div>
+
+        <button type="button" class="btn-kt-submit mt-2" onclick="saveScoreSettings()">
+          <i class="fa-solid fa-check me-1"></i> 배점 규정 저장하기
+        </button>
+      </div>
+
+      <div class="kt-section-box">
+        <div class="kt-section-title" style="color: #0284c7;">
+          <i class="fa-solid fa-key"></i> 길드원별 비밀번호 초기화 도구
+        </div>
+        <div class="row g-2 align-items-center">
+          <div class="col-8">
+            <select id="resetMemberPinSelect" class="form-select kt-input" style="font-size: 0.8rem;">
+              <option value="">길드원 선택...</option>
+            </select>
+          </div>
+          <div class="col-4">
+            <button type="button" id="btnExecuteResetMemberPin" class="btn btn-outline-warning btn-sm w-100 fw-bold h-100" style="white-space: nowrap; height:38px; border-radius:9px;" onclick="executeMemberPinReset()">
+              <i class="fa-solid fa-rotate-left me-1"></i>초기화
+            </button>
+          </div>
+        </div>
+        <div class="mt-2" style="font-size: 0.68rem; color: var(--kt-text-sub); line-height: 1.4;">
+          * 초기화 시 비밀번호가 <code>0000</code>으로 설정되며, 해당 길드원은 기존 비번에 <code>0000</code>을 입력하고 새 비밀번호로 변경할 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- [탭 2] 보안 탭: 길드 기본 정보 / 추가링크 토글 / 비밀번호 관리 / Gemini API 키 -->
+    <div id="tabSettingsAuth" style="display: none;">
+      <div class="kt-section-box">
+        <div class="kt-section-title" style="color: #0284c7;">
+          <i class="fa-solid fa-flag"></i> 길드 기본 정보
+        </div>
+        <div class="mb-1">
+          <label class="small mb-1" style="font-size: 0.72rem; color: var(--kt-text-sub);">길드명</label>
+          <input type="text" id="cfgGuildName" class="form-control kt-input" placeholder="예: 불편한사람들, ECLIPSE">
+        </div>
+        <div class="mt-1" style="font-size: 0.68rem; color: var(--kt-text-muted);">* 저장 즉시 상단 타이틀 및 탭 이름에 반영됩니다.</div>
+      </div>
+
+      <div class="kt-section-box">
+        <div class="d-flex justify-content-between align-items-center gap-2">
+          <div style="flex:1;">
+            <div class="fw-bold" style="font-size: 0.8rem; color: #d97706;">
+              <i class="fa-solid fa-link me-1"></i> 개인별 추가등록 링크 발송 활성화
+            </div>
+            <div style="font-size: 0.7rem; color: var(--kt-text-sub); line-height: 1.4;">
+              활성화 시 토벌 완료 보고서에 <strong>3분 자가 추가 링크</strong>가 포함됩니다.
+            </div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="cfgUseSelfCheckin" role="switch">
+          </div>
+        </div>
+      </div>
+
+      <div class="kt-section-box" style="border-color: #fca5a5;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold text-danger" style="font-size: 0.82rem;"><i class="fa-solid fa-user-shield me-1"></i> 관리자 비밀번호 보안</span>
+          <span class="badge bg-danger bg-opacity-10 text-danger" style="font-size: 0.65rem;">슈퍼관리자 전용</span>
+        </div>
+        <p style="font-size: 0.7rem; color: var(--kt-text-sub); line-height: 1.4; margin-bottom: 8px;">
+          관리자 PIN 및 슈퍼 마스터키는 슈퍼관리자만 변경할 수 있으며 데이터베이스 내부에서 안전하게 암호화 검증됩니다.
+        </p>
+
+        <div class="mb-2">
+          <label class="small text-danger mb-1" style="font-size: 0.7rem;">현재 슈퍼 마스터키 확인 (필수)</label>
+          <input type="password" id="inputCurrentSuperPin" class="form-control kt-input" placeholder="슈퍼관리자 마스터 비밀번호">
+        </div>
+        <div class="mb-2">
+          <label class="small mb-1" style="font-size: 0.7rem; color: var(--kt-text-sub);">새 일반 관리자 PIN (4자리 이상)</label>
+          <input type="password" id="inputNewAdminPin" class="form-control kt-input" placeholder="변경할 일반 PIN (미입력시 유지)">
+        </div>
+        <div class="mb-3">
+          <label class="small mb-1" style="font-size: 0.7rem; color: var(--kt-text-sub);">새 슈퍼 마스터키 (6자리 이상)</label>
+          <input type="password" id="inputNewSuperPin" class="form-control kt-input" placeholder="변경할 슈퍼 비밀번호 (미입력시 유지)">
+        </div>
+
+        <button type="button" class="btn btn-outline-danger btn-sm w-100 fw-bold py-2" style="border-radius:9px;" onclick="submitPasswordChange()">
+          <i class="fa-solid fa-key me-1"></i> 비밀번호 암호화 변경 저장
+        </button>
+      </div>
+
+      <div class="kt-section-box">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold text-info" style="font-size: 0.82rem;"><i class="fa-solid fa-wand-magic-sparkles me-1 text-warning"></i> Gemini AI OCR API 키</span>
+          <span id="geminiKeyStatusBadge" class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size: 0.65rem;">확인 중</span>
+        </div>
+        <div class="row g-2 align-items-center mb-1">
+          <div class="col-8">
+            <input type="password" id="cfgGeminiKeyInput" class="form-control kt-input" placeholder="새 API 키 입력 시에만 작성" autocomplete="new-password">
+          </div>
+          <div class="col-4">
+            <button type="button" class="btn btn-warning btn-sm w-100 fw-bold h-100" style="background:var(--kt-yellow-btn); border:none; height:38px; border-radius:9px; color:var(--kt-yellow-text);" onclick="registerNewGeminiApiKey()">
+              등록 / 갱신
+            </button>
+          </div>
+        </div>
+        <div style="font-size: 0.67rem; color: var(--kt-text-muted); line-height: 1.4;">
+          * 보안을 위해 기존 API 키 원문은 클라이언트로 전송되지 않습니다.
+        </div>
+      </div>
+
+      <button type="button" class="btn-kt-submit" onclick="saveSecuritySettings()">
+        <i class="fa-solid fa-check me-1"></i> 기본 보안 및 길드 설정 저장
+      </button>
+    </div>
+
+    <!-- [탭 3] 관리자 권한 탭: 9종 세부 권한 제어 (슈퍼관리자 전용) -->
+    <div id="tabSettingsPermissions" style="display: none;">
+      <div class="kt-section-box" style="border-color: #fde68a;">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold" style="font-size: 0.84rem; color:#b45309;"><i class="fa-solid fa-crown me-1 text-warning"></i> 일반 관리자 세부 권한 제어</span>
+          <span class="badge bg-warning bg-opacity-25 text-dark" style="font-size: 0.65rem;">슈퍼관리자 제어판</span>
+        </div>
+        <p style="font-size: 0.72rem; color: var(--kt-text-sub); line-height: 1.4; margin-bottom: 10px;">
+          일반 관리자 직급에 허용할 기능 권한을 설정합니다. 비활성화된 기능은 일반 관리자 계정으로 실행할 수 없습니다.
+        </p>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;"><i class="fa-solid fa-lock text-danger me-1"></i>설정창 보안 탭 접근 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">길드명, 자가등록 링크, 비밀번호, API 키 관리 탭 진입 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permSettingsSecurity" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;"><i class="fa-solid fa-skull text-info me-1"></i>설정창 보스/사냥터 탭 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">보스 스케줄 및 원수 사냥터 추가/삭제 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permSettingsBossGround" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;">보스참여등록 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">보스 토벌 스샷 분석 및 결과 등록 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permBossRegister" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;">보스참여자 기록 및 닉네임 수정/제거 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">토벌 기록 수정/삭제 및 참여자 제외 권한</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permBossRecordsEdit" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;">길드원 비밀번호 관리/초기화 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">일반 관리자의 길드원 비밀번호 0000 초기화 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permMemberPinReset" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;">분배희망신청 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">드랍 아이템 낙찰 등록 및 N/1 분배금 계산 집행 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permWishDistribute" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;">정산내역 길드자금분배 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">주간 정산 차등 배당 및 금고 출금 정산 집행 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permSettleFundDist" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;">길드비용현황 입출금 입력 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">금고 수익 입금 및 길드 경비 출금 등록 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permFinanceInput" role="switch">
+          </div>
+        </div>
+
+        <div class="kt-perm-row">
+          <div>
+            <div class="fw-bold" style="font-size: 0.8rem;"><i class="fa-solid fa-bullhorn text-info me-1"></i>공지사항 작성 권한</div>
+            <div style="font-size: 0.68rem; color: var(--kt-text-sub);">일반 관리자의 공지사항 작성 및 등록/수정 허용</div>
+          </div>
+          <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+            <input class="form-check-input ms-0" type="checkbox" id="permNoticeWrite" role="switch">
+          </div>
+        </div>
+
+        <button type="button" class="btn-kt-super mt-2" onclick="saveAdminPermissionsSettings()">
+          <i class="fa-solid fa-shield-halved me-1"></i> 관리자 권한 정책 저장
+        </button>
+      </div>
+    </div>
+
+    <!-- [탭 4] 보스/사냥터 관리: 보스 목록 관리 & 원수 주요 사냥터 -->
+    <div id="tabSettingsBossGround" style="display: none;">
+      <div class="kt-section-box">
+        <div class="kt-section-title" style="color: #ef4444;">
+          <i class="fa-solid fa-skull"></i> 보스 목록 관리
+        </div>
+        <div class="row g-2 mb-2 align-items-center">
+          <div class="col-4">
+            <input type="text" id="newBossName" class="form-control kt-input" placeholder="보스명">
+          </div>
+          <div class="col-3">
+            <select id="newBossType" class="form-select kt-input" onchange="toggleBossInputType()">
+              <option value="cool">쿨타임</option>
+              <option value="fixed">고정젠</option>
+            </select>
+          </div>
+          <div class="col-3">
+            <input type="number" id="newBossCycle" class="form-control kt-input" placeholder="분" value="480">
+            <input type="text" id="newBossFixed" class="form-control kt-input" placeholder="예: 금 18:30" style="display: none;">
+          </div>
+          <div class="col-2">
+            <button type="button" class="btn btn-warning btn-sm w-100 h-100 fw-bold" style="background:var(--kt-yellow-btn); border:none; border-radius:9px; font-size:0.75rem; color:var(--kt-yellow-text);" onclick="addNewBossItem()">
+              추가
+            </button>
+          </div>
+        </div>
+        <div id="bossChipsContainer" class="kt-chips-grid"></div>
+      </div>
+
+      <div class="kt-section-box">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold" style="font-size: 0.82rem; color: #10b981;"><i class="fa-solid fa-map-location-dot me-1"></i> 원수 주요 사냥터 관리</span>
+          <span style="font-size: 0.68rem; color: var(--kt-text-muted);" id="groundCountText">총 0개 등록됨</span>
+        </div>
+
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <input type="text" id="newGroundRegionInput" class="form-control kt-input" placeholder="대분류 (예: 바리탄)">
+          </div>
+          <div class="col-6">
+            <input type="text" id="newHuntingGroundName" class="form-control kt-input" placeholder="소분류 (예: 평야)" onkeypress="if(event.keyCode===13){ addNewHuntingGround(); }">
+          </div>
+          <div class="col-12">
+            <button type="button" class="btn btn-success btn-sm w-100 py-2 fw-bold" style="border-radius:9px; font-size:0.8rem;" onclick="addNewHuntingGround()">
+              <i class="fa-solid fa-plus me-1"></i> 사냥터 추가
+            </button>
+          </div>
+        </div>
+
+        <div class="kt-region-bar" id="groundRegionFilterBar"></div>
+        <div id="groundChipsContainer" class="kt-chips-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 플로팅 토스트 -->
+<div id="settingsToastBox" class="kt-settings-toast">
+  <span id="settingsToastIcon">✅</span>
+  <span id="settingsToastMsg">알림</span>
+</div>
+
+<script>
+  window.currentSettingsMap = window.currentSettingsMap || {};
+  window.cachedBosses = window.cachedBosses || [];
+  window.cachedGrounds = window.cachedGrounds || [];
+  window.cachedGuildMembersForReset = window.cachedGuildMembersForReset || [];
+  window.selectedRegionFilter = '전체';
+  window.settingsToastTimer = null;
+
+  // 🌓 라이트/다크 모드 상태 로드 및 전환
+  function initThemeMode() {
+    const isDark = localStorage.getItem("guild_settings_dark_mode") === "true";
+    applyThemeMode(isDark);
+  }
+
+  function toggleThemeMode() {
+    const wrapper = document.getElementById("settingsThemeWrapper");
+    const isCurrentlyDark = wrapper.classList.contains("dark-mode");
+    const newDarkMode = !isCurrentlyDark;
+    applyThemeMode(newDarkMode);
+    localStorage.setItem("guild_settings_dark_mode", String(newDarkMode));
+  }
+
+  function applyThemeMode(isDark) {
+    const wrapper = document.getElementById("settingsThemeWrapper");
+    const icon = document.getElementById("themeToggleIcon");
+    const text = document.getElementById("themeToggleText");
+    if (!wrapper) return;
+
+    if (isDark) {
+      wrapper.classList.add("dark-mode");
+      if (icon) icon.innerText = "☀️";
+      if (text) text.innerText = "라이트";
+    } else {
+      wrapper.classList.remove("dark-mode");
+      if (icon) icon.innerText = "🌙";
+      if (text) text.innerText = "다크모드";
+    }
+  }
+
+  function showSettingsToast(message, icon = "✅") {
+    const toast = document.getElementById("settingsToastBox");
+    const msgElem = document.getElementById("settingsToastMsg");
+    const iconElem = document.getElementById("settingsToastIcon");
+    if (!toast) return;
+
+    msgElem.innerText = message;
+    iconElem.innerText = icon;
+    toast.classList.add("show");
+
+    if (window.settingsToastTimer) clearTimeout(window.settingsToastTimer);
+    window.settingsToastTimer = setTimeout(() => {
+      toast.classList.remove("show");
+    }, 2200);
+  }
+
+  function switchSettingsTab(tab) {
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+
+    if (tab === 'permissions' && !isSuper) {
+      alert("⚠️ [관리자 권한] 제어판은 슈퍼관리자(Master)만 진입할 수 있습니다.");
+      return;
+    }
+
+    if (tab === 'auth' && !isSuper) {
+      const allowSecurity = window.currentSettingsMap['perm_settings_security'] !== 'false';
+      if (!allowSecurity) {
+        alert("⚠️ 일반 관리자에게는 보안 탭 접근 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
+        return;
+      }
+    }
+
+    if (tab === 'bossGround' && !isSuper) {
+      const allowBossGround = window.currentSettingsMap['perm_settings_boss_ground'] !== 'false';
+      if (!allowBossGround) {
+        alert("⚠️ 일반 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
+        return;
+      }
+    }
+
+    const tabs = ['general', 'auth', 'permissions', 'bossGround'];
+    tabs.forEach(t => {
+      const panel = document.getElementById('tabSettings' + t.charAt(0).toUpperCase() + t.slice(1));
+      const btn = document.getElementById('btnNav' + t.charAt(0).toUpperCase() + t.slice(1));
+      if (panel) panel.style.display = (t === tab) ? 'block' : 'none';
+      if (btn) btn.classList.toggle('active', t === tab);
+    });
+  }
+
+  function stepScore(elemId, step, minVal) {
+    const el = document.getElementById(elemId);
+    let cur = parseInt(el.value, 10) || 0;
+    cur += step;
+    if (cur < minVal) cur = minVal;
+    el.value = cur;
+  }
+
+  function updateRoleBadge() {
+    const badge = document.getElementById("badgeSettingsRoleStatus");
+    if (!badge) return;
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+
+    if (isAuth && isSuper) {
+      badge.style.background = "#fef3c7";
+      badge.style.color = "#b45309";
+      badge.innerHTML = `<i class="fa-solid fa-crown me-1 text-warning"></i>슈퍼관리자`;
+    } else if (isAuth) {
+      badge.style.background = "#e0f2fe";
+      badge.style.color = "#0284c7";
+      badge.innerHTML = `<i class="fa-solid fa-shield-halved me-1 text-primary"></i>관리자`;
+    } else {
+      badge.style.background = "var(--kt-badge-bg)";
+      badge.style.color = "var(--kt-badge-text)";
+      badge.innerHTML = `<i class="fa-solid fa-lock me-1"></i>로그인 필요`;
+    }
+  }
+
+  async function loadCurrentSettingsToForm() {
+    try {
+      const data = await apiRequest("rpc/get_safe_guild_settings", "POST");
+      window.currentSettingsMap = {};
+      (data || []).forEach(item => window.currentSettingsMap[item.key] = item.value);
+
+      document.getElementById('cfgScoreBase').value = window.currentSettingsMap['score_base'] || '1';
+      document.getElementById('cfgScoreInternal').value = window.currentSettingsMap['score_war_internal'] || '1';
+      document.getElementById('cfgScoreInter').value = window.currentSettingsMap['score_war_inter'] || '2';
+
+      document.getElementById('cfgGuildName').value = window.currentSettingsMap['guild_name'] || '불편한사람들';
+      const useSelf = window.currentSettingsMap['use_self_checkin'];
+      document.getElementById('cfgUseSelfCheckin').checked = (useSelf !== 'false');
+
+      updateGeminiKeyStatusUI();
+
+      const parseBool = (k) => window.currentSettingsMap[k] !== 'false';
+      document.getElementById('permSettingsSecurity').checked = parseBool('perm_settings_security');
+      document.getElementById('permSettingsBossGround').checked = parseBool('perm_settings_boss_ground');
+      document.getElementById('permBossRegister').checked = parseBool('perm_boss_register');
+      document.getElementById('permBossRecordsEdit').checked = parseBool('perm_boss_records_edit');
+      document.getElementById('permMemberPinReset').checked = parseBool('perm_member_pin_reset');
+      document.getElementById('permWishDistribute').checked = parseBool('perm_wish_distribute');
+      document.getElementById('permSettleFundDist').checked = parseBool('perm_settle_fund_dist');
+      document.getElementById('permFinanceInput').checked = parseBool('perm_finance_input');
+
+      const permNoticeElem = document.getElementById('permNoticeWrite');
+      if (permNoticeElem) permNoticeElem.checked = parseBool('perm_notice_write');
+
+      applyMemberPinResetUI();
+    } catch (e) {}
+  }
+
+  function updateGeminiKeyStatusUI() {
+    const badge = document.getElementById("geminiKeyStatusBadge");
+    const input = document.getElementById("cfgGeminiKeyInput");
+    const statusVal = (window.currentSettingsMap['gemini_api_key'] || "").trim();
+
+    if (!badge || !input) return;
+
+    if (statusVal === 'registered') {
+      badge.className = "badge bg-success bg-opacity-25 text-success";
+      badge.innerHTML = `<i class="fa-solid fa-check me-1"></i>등록됨`;
+      input.placeholder = "•••••••••••••••• (API 키 안전하게 보관됨)";
+    } else {
+      badge.className = "badge bg-danger bg-opacity-25 text-danger";
+      badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation me-1"></i>미등록`;
+      input.placeholder = "새 Gemini API 키를 입력하세요";
+    }
+    input.value = "";
+  }
+
+  function applyMemberPinResetUI() {
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    const allowReset = isSuper || (isAuth && window.currentSettingsMap['perm_member_pin_reset'] !== 'false');
+
+    const select = document.getElementById("resetMemberPinSelect");
+    const btn = document.getElementById("btnExecuteResetMemberPin");
+
+    if (select && btn) {
+      select.disabled = !allowReset;
+      btn.disabled = !allowReset;
+      btn.title = allowReset ? "" : "일반 관리자에게는 비밀번호 초기화 권한이 비활성화되어 있습니다.";
+    }
+  }
+
+  async function saveScoreSettings() {
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    if (!isAuth) return showSettingsToast("관리자 권한이 필요합니다.", "⚠️");
+
+    const score_base = document.getElementById('cfgScoreBase').value.trim() || '1';
+    const score_war_internal = document.getElementById('cfgScoreInternal').value.trim() || '1';
+    const score_war_inter = document.getElementById('cfgScoreInter').value.trim() || '2';
+
+    try {
+      await apiRequest("guild_settings?key=eq.score_base", "PATCH", { value: score_base });
+      await apiRequest("guild_settings?key=eq.score_war_internal", "PATCH", { value: score_war_internal });
+      await apiRequest("guild_settings?key=eq.score_war_inter", "PATCH", { value: score_war_inter });
+      showSettingsToast("배점 규정이 성공적으로 저장되었습니다!");
+    } catch (err) {
+      showSettingsToast("배점 저장 실패: " + err.message, "❌");
+    }
+  }
+
+  async function saveSecuritySettings() {
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    if (!isAuth) return showSettingsToast("관리자 권한이 필요합니다.", "⚠️");
+
+    const guild_name = document.getElementById('cfgGuildName').value.trim();
+    const use_self_checkin = document.getElementById('cfgUseSelfCheckin').checked ? 'true' : 'false';
+
+    if (!guild_name) return showSettingsToast("길드명을 입력하세요!", "⚠️");
+
+    try {
+      await apiRequest("guild_settings?key=eq.guild_name", "PATCH", { value: guild_name });
+
+      const checkKey = await apiRequest("guild_settings?key=eq.use_self_checkin");
+      if (checkKey && checkKey.length > 0) {
+        await apiRequest("guild_settings?key=eq.use_self_checkin", "PATCH", { value: use_self_checkin });
+      } else {
+        await apiRequest("guild_settings", "POST", [{ key: "use_self_checkin", value: use_self_checkin }]);
+      }
+
+      sessionStorage.setItem("guild_name", guild_name);
+      const topTitle = document.getElementById("chatRoomTitle");
+      if (topTitle) topTitle.innerText = guild_name;
+      document.title = guild_name;
+
+      showSettingsToast("보안 및 길드 설정이 저장되었습니다!");
+    } catch (err) {
+      showSettingsToast("보안 설정 저장 실패: " + err.message, "❌");
+    }
+  }
+
+  async function registerNewGeminiApiKey() {
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    if (!isAuth) return showSettingsToast("관리자 권한이 필요합니다.", "⚠️");
+
+    const inputKey = document.getElementById("cfgGeminiKeyInput").value.trim();
+    if (!inputKey) return showSettingsToast("등록할 새 API 키를 입력해주세요!", "⚠️");
+
+    try {
+      const checkRow = await apiRequest("guild_settings?key=eq.gemini_api_key");
+      if (checkRow && checkRow.length > 0) {
+        await apiRequest("guild_settings?key=eq.gemini_api_key", "PATCH", { value: inputKey });
+      } else {
+        await apiRequest("guild_settings", "POST", [{ key: "gemini_api_key", value: inputKey }]);
+      }
+
+      window.currentSettingsMap['gemini_api_key'] = 'registered';
+      updateGeminiKeyStatusUI();
+      showSettingsToast("Gemini API 키 등록 완료! 🎉");
+    } catch (err) {
+      showSettingsToast("API 키 등록 실패: " + err.message, "❌");
+    }
+  }
+
+  async function saveAdminPermissionsSettings() {
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    if (!isSuper) return showSettingsToast("슈퍼관리자만 권한 정책을 저장할 수 있습니다.", "⚠️");
+
+    const permissions = {
+      perm_settings_security: document.getElementById('permSettingsSecurity').checked ? 'true' : 'false',
+      perm_settings_boss_ground: document.getElementById('permSettingsBossGround').checked ? 'true' : 'false',
+      perm_boss_register: document.getElementById('permBossRegister').checked ? 'true' : 'false',
+      perm_boss_records_edit: document.getElementById('permBossRecordsEdit').checked ? 'true' : 'false',
+      perm_member_pin_reset: document.getElementById('permMemberPinReset').checked ? 'true' : 'false',
+      perm_wish_distribute: document.getElementById('permWishDistribute').checked ? 'true' : 'false',
+      perm_settle_fund_dist: document.getElementById('permSettleFundDist').checked ? 'true' : 'false',
+      perm_finance_input: document.getElementById('permFinanceInput').checked ? 'true' : 'false',
+      perm_notice_write: document.getElementById('permNoticeWrite').checked ? 'true' : 'false'
+    };
+
+    try {
+      for (let [k, v] of Object.entries(permissions)) {
+        const row = await apiRequest(`guild_settings?key=eq.${k}`);
+        if (row && row.length > 0) {
+          await apiRequest(`guild_settings?key=eq.${k}`, "PATCH", { value: v });
+        } else {
+          await apiRequest("guild_settings", "POST", [{ key: k, value: v }]);
+        }
+        window.currentSettingsMap[k] = v;
+      }
+      applyMemberPinResetUI();
+      showSettingsToast("👑 관리자 권한 정책이 반영되었습니다!");
+    } catch (err) {
+      showSettingsToast("권한 정책 저장 실패: " + err.message, "❌");
+    }
+  }
+
+  async function executeMemberPinReset() {
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+
+    if (!isAuth) return showSettingsToast("관리자 로그인이 필요합니다.", "⚠️");
+
+    if (!isSuper && window.currentSettingsMap['perm_member_pin_reset'] === 'false') {
+      return alert("⚠️ 일반 관리자에게는 비밀번호 초기화 권한이 비활성화되어 있습니다.");
+    }
+
+    const select = document.getElementById("resetMemberPinSelect");
+    const memberId = select.value;
+    const memberName = select.options[select.selectedIndex]?.text;
+
+    if (!memberId) return showSettingsToast("초기화할 길드원을 선택하세요!", "⚠️");
+    if (!confirm(`[${memberName}] 길드원의 비밀번호를 초기화하시겠습니까?\n초기 비밀번호는 [ 0000 ] 으로 설정됩니다.`)) return;
+
+    try {
+      await apiRequest(`guild_members?id=eq.${memberId}`, "PATCH", { pin: "0000" });
+      alert(`✅ [${memberName}] 님의 비밀번호가 [ 0000 ] 으로 초기화되었습니다.`);
+      select.value = "";
+    } catch (err) {
+      showSettingsToast("비밀번호 초기화 실패: " + err.message, "❌");
+    }
+  }
+
+  async function loadGuildMembersForPinResetDropdown() {
+    const select = document.getElementById("resetMemberPinSelect");
+    if (!select) return;
+    try {
+      const data = await apiRequest("guild_members?select=id,name&order=name.asc");
+      window.cachedGuildMembersForReset = data || [];
+      select.innerHTML = '<option value="">길드원 선택...</option>' +
+        window.cachedGuildMembersForReset.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+    } catch (e) {}
+  }
+
+  async function submitPasswordChange() {
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    if (!isSuper) return showSettingsToast("슈퍼관리자만 변경할 수 있습니다.", "⚠️");
+
+    const currentSuperInput = document.getElementById("inputCurrentSuperPin").value.trim();
+    const newAdminPin = document.getElementById("inputNewAdminPin").value.trim();
+    const newSuperPin = document.getElementById("inputNewSuperPin").value.trim();
+
+    if (!currentSuperInput) return showSettingsToast("현재 슈퍼 마스터키를 입력하세요.", "⚠️");
+    if (!newAdminPin && !newSuperPin) return showSettingsToast("변경할 비밀번호를 입력하세요.", "⚠️");
+
+    try {
+      const res = await apiRequest("rpc/update_admin_pins", "POST", {
+        current_super_pin: currentSuperInput,
+        new_admin_pin: newAdminPin || null,
+        new_super_pin: newSuperPin || null
+      });
+
+      if (res && res.success) {
+        alert("🎉 비밀번호가 암호화되어 안전하게 변경되었습니다!\n다시 로그인해주세요.");
+        sessionStorage.removeItem("admin_auth");
+        sessionStorage.removeItem("admin_role");
+        location.reload();
+      } else {
+        showSettingsToast(res?.message || "현재 슈퍼 마스터키가 올바르지 않습니다.", "❌");
+      }
+    } catch (err) {
+      showSettingsToast("변경 실패: " + err.message, "❌");
+    }
+  }
+
+  function toggleBossInputType() {
+    const type = document.getElementById('newBossType').value;
+    document.getElementById('newBossCycle').style.display = (type === 'cool') ? 'block' : 'none';
+    document.getElementById('newBossFixed').style.display = (type === 'fixed') ? 'block' : 'none';
+  }
+
+  function checkBossGroundPermission() {
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    if (!isSuper && window.currentSettingsMap['perm_settings_boss_ground'] === 'false') {
+      alert("⚠️ 일반 관리자에게는 보스/사냥터 수정 권한이 없습니다.");
+      return false;
+    }
+    return true;
+  }
+
+  async function addNewBossItem() {
+    if (!checkBossGroundPermission()) return;
+
+    const boss_name = document.getElementById('newBossName').value.trim();
+    const type = document.getElementById('newBossType').value;
+    const cycle_min = parseInt(document.getElementById('newBossCycle').value, 10) || 0;
+    const fixed_schedule = document.getElementById('newBossFixed').value.trim();
+
+    if (!boss_name) return showSettingsToast("보스명을 입력하세요!", "⚠️");
+
+    try {
+      await apiRequest("boss_timers", "POST", [{
+        boss_name,
+        is_fixed: (type === 'fixed'),
+        cycle_min: (type === 'cool' ? cycle_min : 0),
+        fixed_schedule: (type === 'fixed' ? fixed_schedule : '')
+      }]);
+      document.getElementById('newBossName').value = '';
+      await loadBossAndGroundData();
+      showSettingsToast(`[${boss_name}] 보스 추가 완료`);
+    } catch (err) {
+      showSettingsToast("추가 실패: " + err.message, "❌");
+    }
+  }
+
+  async function deleteBossItem(id, name) {
+    if (!checkBossGroundPermission()) return;
+    if (!confirm(`[${name}] 보스를 삭제하시겠습니까?`)) return;
+
+    try {
+      await apiRequest(`boss_timers?id=eq.${id}`, "DELETE");
+      await loadBossAndGroundData();
+      showSettingsToast(`[${name}] 삭제 완료`, "🗑️");
+    } catch (err) {
+      showSettingsToast("삭제 실패: " + err.message, "❌");
+    }
+  }
+
+  async function addNewHuntingGround() {
+    if (!checkBossGroundPermission()) return;
+
+    const region = document.getElementById('newGroundRegionInput').value.trim();
+    const name = document.getElementById('newHuntingGroundName').value.trim();
+
+    if (!region || !name) return showSettingsToast("대분류와 소분류를 모두 입력하세요!", "⚠️");
+
+    try {
+      await apiRequest("hunting_grounds", "POST", [{ name, region }]);
+      document.getElementById('newHuntingGroundName').value = '';
+      await loadBossAndGroundData();
+      showSettingsToast(`[${region} > ${name}] 사냥터 추가 완료`);
+    } catch (err) {
+      showSettingsToast("추가 실패: " + err.message, "❌");
+    }
+  }
+
+  async function deleteHuntingGround(id, name) {
+    if (!checkBossGroundPermission()) return;
+    if (!confirm(`[${name}] 사냥터를 삭제하시겠습니까?`)) return;
+
+    try {
+      await apiRequest(`hunting_grounds?id=eq.${id}`, "DELETE");
+      await loadBossAndGroundData();
+      showSettingsToast(`[${name}] 사냥터 삭제 완료`, "🗑️");
+    } catch (err) {
+      showSettingsToast("삭제 실패: " + err.message, "❌");
+    }
+  }
+
+  function setRegionFilter(regionName) {
+    window.selectedRegionFilter = regionName;
+    renderGroundRegionFilters();
+    renderGroundList();
+  }
+
+  function renderGroundRegionFilters() {
+    const bar = document.getElementById('groundRegionFilterBar');
+    if (!bar) return;
+    const regions = new Set();
+    window.cachedGrounds.forEach(g => { if (g.region) regions.add(g.region); });
+
+    let html = `<span class="btn-region-pill ${window.selectedRegionFilter === '전체' ? 'active' : ''}" onclick="setRegionFilter('전체')">전체 (${window.cachedGrounds.length})</span>`;
+    regions.forEach(r => {
+      const count = window.cachedGrounds.filter(g => g.region === r).length;
+      html += `<span class="btn-region-pill ${window.selectedRegionFilter === r ? 'active' : ''}" onclick="setRegionFilter('${r}')">${r} (${count})</span>`;
+    });
+    bar.innerHTML = html;
+    document.getElementById('groundCountText').innerText = `총 ${window.cachedGrounds.length}개 등록됨`;
+  }
+
+  function renderGroundList() {
+    const container = document.getElementById('groundChipsContainer');
+    if (!container) return;
+    const filtered = (window.selectedRegionFilter === '전체') 
+      ? window.cachedGrounds 
+      : window.cachedGrounds.filter(g => g.region === window.selectedRegionFilter);
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-3 w-100" style="grid-column: 1 / -1;">등록된 사냥터가 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(g => `
+      <div class="kt-item-chip">
+        <span class="text-truncate" title="[${g.region || '기타'}] ${g.name}">
+          <strong class="text-success me-1">[${g.region || '기타'}]</strong>${g.name}
+        </span>
+        <i class="fa-solid fa-xmark kt-chip-del" onclick="deleteHuntingGround(${g.id}, '${g.name}')"></i>
+      </div>
+    `).join('');
+  }
+
+  function renderBossChips() {
+    const container = document.getElementById('bossChipsContainer');
+    if (!container) return;
+    if (window.cachedBosses.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-3 w-100" style="grid-column: 1 / -1;">등록된 보스가 없습니다.</div>';
+      return;
+    }
+    container.innerHTML = window.cachedBosses.map(b => {
+      const sub = b.is_fixed ? (b.fixed_schedule || '고정젠') : (b.cycle_min + '분');
+      return `
+        <div class="kt-item-chip">
+          <div class="text-truncate">
+            <span class="fw-bold">${b.boss_name}</span>
+            <span class="text-primary ms-1" style="font-size:0.72rem;">(${sub})</span>
+          </div>
+          <i class="fa-solid fa-xmark kt-chip-del" onclick="deleteBossItem(${b.id}, '${b.boss_name}')"></i>
+        </div>
+      `;
+    }).join('');
+  }
+
+  async function loadBossAndGroundData() {
+    try {
+      const [bosses, grounds] = await Promise.all([
+        apiRequest("boss_timers?select=*&order=id.asc"),
+        apiRequest("hunting_grounds?select=*&order=id.asc")
+      ]);
+      window.cachedBosses = bosses || [];
+      window.cachedGrounds = grounds || [];
+      renderBossChips();
+      renderGroundRegionFilters();
+      renderGroundList();
+    } catch (e) {}
+  }
+
+  (async function initSettingsPageModule() {
+    initThemeMode();
+    updateRoleBadge();
+    await loadCurrentSettingsToForm();
+    await loadBossAndGroundData();
+    await loadGuildMembersForPinResetDropdown();
+  })();
+</script>
