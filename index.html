@@ -350,197 +350,7 @@
     }
     .btn-action-pill:hover { background: #f1f5f9; color: #111; }
 
-    /* ========================================================
-       4. 🎯 보스타이머 서랍 (260px) - 깜빡임 없는 안정적인 마우스오버
-       ======================================================== */
-    .app-boss-drawer {
-      position: fixed;
-      top: 0; left: 0;
-      width: var(--drawer-width) !important;
-      height: 100vh;
-      background: #f8fafc;
-      border-right: 1px solid #e2e8f0;
-      z-index: 99999;
-      transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
-      display: flex;
-      flex-direction: column;
-      box-shadow: none;
-      visibility: hidden;
-    }
-    .app-boss-drawer.open {
-      transform: translateX(0);
-      visibility: visible;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
-    }
-    .boss-drawer-header {
-      height: 50px;
-      padding: 0 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #e2e8f0;
-      background: #ffffff;
-      flex-shrink: 0;
-    }
-    .boss-drawer-title {
-      font-weight: 800;
-      font-size: 0.92rem;
-      color: #191919;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .boss-drawer-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .boss-drawer-list::-webkit-scrollbar { width: 4px; }
-    .boss-drawer-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-
-    /* 🎯 보스 카드 아이템 - 위치 떨림(transform) 제거하여 마우스오버 깜빡임 완벽 차단 */
-    .boss-drawer-item {
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-      cursor: default;
-    }
-    .boss-drawer-item:hover {
-      border-color: #38bdf8 !important;
-      background-color: #f0f9ff !important;
-      box-shadow: 0 2px 6px rgba(56, 189, 248, 0.2) !important;
-    }
-    .boss-drawer-item.spawned {
-      background: #fff8f8;
-      border-color: #fca5a5;
-    }
-    .boss-drawer-item.spawned:hover {
-      border-color: #ef4444 !important;
-      background-color: #fef2f2 !important;
-      box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2) !important;
-    }
-    .boss-drawer-item.imminent {
-      background: #fffdf5;
-      border-color: #fde68a;
-    }
-    .boss-drawer-item.imminent:hover {
-      border-color: #f59e0b !important;
-      background-color: #fffbeb !important;
-      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.2) !important;
-    }
-
-    .boss-drawer-row-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .boss-drawer-name {
-      font-size: 0.82rem;
-      font-weight: 800;
-      color: #1e293b;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .boss-drawer-row-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.7rem;
-      color: #64748b;
-    }
-
-    .badge-boss-state {
-      font-size: 0.65rem;
-      font-weight: 800;
-      padding: 2px 6px;
-      border-radius: 5px;
-      white-space: nowrap;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-    .badge-boss-state.state-wait {
-      background: #f1f5f9;
-      color: #64748b;
-      border: 1px solid #e2e8f0;
-    }
-    .badge-boss-state.state-spawn {
-      background: #fee2e2;
-      color: #dc2626;
-      border: 1px solid #fca5a5;
-      animation: pulseBlink 1.4s infinite;
-    }
-    .badge-boss-state.state-imminent {
-      background: #fef3c7;
-      color: #d97706;
-      border: 1px solid #fde68a;
-    }
-    .badge-boss-state.state-normal {
-      background: #e0f2fe;
-      color: #0284c7;
-      border: 1px solid #bae6fd;
-    }
-    @keyframes pulseBlink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
-    .btn-drawer-cut {
-      background: #ef4444;
-      color: #ffffff;
-      border: 1px solid #dc2626;
-      font-size: 0.68rem;
-      font-weight: 800;
-      padding: 2px 8px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.14s ease;
-      box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
-    }
-    .btn-drawer-cut:hover {
-      background: #dc2626;
-      border-color: #b91c1c;
-      box-shadow: 0 2px 5px rgba(220, 38, 38, 0.35);
-    }
-    .btn-drawer-cut:active {
-      transform: translateY(1px);
-    }
-
-    .btn-drawer-reserve {
-      background: #ffffff;
-      color: #334155;
-      border: 1px solid #cbd5e1;
-      font-size: 0.68rem;
-      font-weight: 700;
-      padding: 2px 7px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.14s ease;
-    }
-    .btn-drawer-reserve:hover {
-      background: #e2e8f0;
-      color: #0f172a;
-      border-color: #94a3b8;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-    }
-    .btn-drawer-reserve:active {
-      transform: translateY(1px);
-    }
-
-    /* ========================================================
-       3. 메인 대화창 레이아웃
-       ======================================================== */
+    /* 3. 메인 대화방 레이아웃 */
     .app-main-layout {
       flex: 1;
       width: 100%;
@@ -706,7 +516,7 @@
       line-height: 1;
     }
 
-    /* 보스 리젠 브리핑 카드 (여백 제로) */
+    /* 보스 리젠 브리핑 카드 */
     .boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
@@ -770,7 +580,6 @@
       border-left: 4px solid #38bdf8 !important;
     }
 
-    /* 🎯 말풍선 끝선과 1픽셀 오차 없이 일치시키는 컷 버튼 래퍼[cite: 31] */
     .spawn-card-wrapper {
       display: flex;
       flex-direction: column;
@@ -802,9 +611,6 @@
       background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
       transform: translateY(-1px);
       box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
-    }
-    .btn-msg-sub-cut:active {
-      transform: translateY(0);
     }
     .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled {
       background: #94a3b8 !important;
@@ -839,11 +645,7 @@
       border-color: #94a3b8;
       color: #0f172a;
     }
-    .btn-time-chip:active {
-      transform: scale(0.96);
-    }
 
-    /* 시계 아이콘 전용 커스텀 버튼 ('오' 글자 짤림 방지)[cite: 36] */
     .time-picker-trigger-btn {
       position: relative;
       width: 40px;
@@ -1059,7 +861,8 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
         <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
       </li>
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
+      <!-- 🎯 독립된 PageTimer.html 모듈을 오버레이로 호출 -->
+      <li class="sidebar-menu-item" onclick="openModulePage('PageTimer')">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
@@ -1114,28 +917,6 @@
     </div>
   </aside>
 
-  <!-- 4. 보스타임 전용 서랍 (260px) -->
-  <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
-    <div class="boss-drawer-header">
-      <div class="boss-drawer-title">
-        <i class="fa-regular fa-clock text-warning"></i>
-        <span>보스타임 현황</span>
-      </div>
-      <div class="members-header-tools">
-        <button type="button" class="btn-tool-icon" id="btnRefreshBossDrawer" title="새로고침" onclick="handleBossDrawerRefresh()">
-          <i class="fa-solid fa-arrows-rotate"></i>
-        </button>
-        <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleBossDrawer(false)">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="boss-drawer-list" id="drawerBossListArea">
-      <div class="text-secondary small text-center py-4">보스타임을 불러오는 중...</div>
-    </div>
-  </aside>
-
   <!-- 3. 메인 대화방 -->
   <div class="app-main-layout">
     <header class="kakao-chat-header">
@@ -1163,6 +944,9 @@
         </button>
         <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
           <i class="fa-regular fa-clock"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="보스타임 화면 열기" onclick="openModulePage('PageTimer')">
+          <i class="fa-solid fa-hourglass-half"></i>
         </button>
         <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
           <i class="fa-solid fa-user-group"></i>
@@ -1637,7 +1421,6 @@
       const backdrop = document.getElementById("commonDrawerBackdrop");
       if (isOpen) {
         toggleMembersDrawer(false);
-        toggleBossDrawer(false);
         backdrop.classList.add("show");
         drawer.classList.add("open");
       } else {
@@ -1651,163 +1434,23 @@
       const backdrop = document.getElementById("commonDrawerBackdrop");
       if (isOpen) {
         toggleMenuDrawer(false);
-        toggleBossDrawer(false);
         backdrop.classList.add("show");
         drawer.classList.add("open");
       } else {
         drawer.classList.remove("open");
         checkBackdropState();
       }
-    }
-
-    function toggleBossDrawer(isOpen) {
-      const drawer = document.getElementById("bossTimerSidebarDrawer");
-      const backdrop = document.getElementById("commonDrawerBackdrop");
-      if (isOpen) {
-        toggleMenuDrawer(false);
-        toggleMembersDrawer(false);
-        backdrop.classList.add("show");
-        drawer.classList.add("open");
-        renderBossDrawerList();
-      } else {
-        drawer.classList.remove("open");
-        checkBackdropState();
-      }
-    }
-
-    window.handleBossDrawerRefresh = async function() {
-      const btn = document.getElementById("btnRefreshBossDrawer");
-      if (btn) btn.classList.add("rotating");
-
-      await loadBossTimersList();
-      renderBossDrawerList();
-
-      setTimeout(() => {
-        if (btn) btn.classList.remove("rotating");
-        showKakaoToast("보스타임 현황이 갱신되었습니다.", "⏰");
-      }, 400);
-    };
-
-    window.handleDrawerCutClick = function(bossName, isSpawned) {
-      openBossActionModal('cut', bossName);
-    };
-
-    // 🎯 [완벽 해결] 서랍을 열거나 새로고침 시에만 전체 틀 렌더링
-    function renderBossDrawerList() {
-      const container = document.getElementById("drawerBossListArea");
-      if (!container) return;
-
-      if (cachedBossList.length === 0) {
-        container.innerHTML = '<div class="text-secondary small text-center py-4">등록된 보스가 없습니다.</div>';
-        return;
-      }
-
-      const now = Date.now();
-      const sorted = [...cachedBossList].sort((a, b) => {
-        const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
-        const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
-        return tA - tB;
-      });
-
-      container.innerHTML = sorted.map(b => {
-        let badgeHtml = "";
-        let itemClass = "";
-        let isSpawned = false;
-
-        if (!b.next_spawn_time) {
-          badgeHtml = `<span class="badge-boss-state state-wait" id="drawerBadge_${b.id}">컷 대기</span>`;
-        } else {
-          const nextDate = new Date(b.next_spawn_time);
-          const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
-          if (diffSec <= 0) {
-            isSpawned = true;
-            itemClass = "spawned";
-            const passM = Math.floor(Math.abs(diffSec) / 60);
-            badgeHtml = `<span class="badge-boss-state state-spawn" id="drawerBadge_${b.id}">🚨 젠 완료 (+${passM}분)</span>`;
-          } else if (diffSec <= 3600) {
-            itemClass = "imminent";
-            const m = Math.floor(diffSec / 60);
-            badgeHtml = `<span class="badge-boss-state state-imminent" id="drawerBadge_${b.id}">⏳ ${m}분 남음</span>`;
-          } else {
-            const h = Math.floor(diffSec / 3600);
-            const m = Math.floor((diffSec % 3600) / 60);
-            badgeHtml = `<span class="badge-boss-state state-normal" id="drawerBadge_${b.id}">💤 ${h}시간 ${m}분</span>`;
-          }
-        }
-
-        const nextTimeStr = b.next_spawn_time ? formatTime24Hour(new Date(b.next_spawn_time)) : "-";
-        const cutBtnTitle = isSpawned ? "지금 컷 처리" : "컷 시각 조절/입력";
-
-        return `
-          <div class="boss-drawer-item ${itemClass}" id="drawerItemCard_${b.id}">
-            <div class="boss-drawer-row-top">
-              <span class="boss-drawer-name">${escapeHtmlText(b.boss_name)}</span>
-              ${badgeHtml}
-            </div>
-            <div class="boss-drawer-row-bottom">
-              <span>젠 예정: <strong id="drawerTimeText_${b.id}" style="color:#0284c7;">${nextTimeStr}</strong></span>
-              <div class="d-flex gap-1">
-                <button type="button" class="btn-drawer-cut" title="${cutBtnTitle}" onclick="handleDrawerCutClick('${escapeHtmlText(b.boss_name)}', ${isSpawned})">컷</button>
-                <button type="button" class="btn-drawer-reserve" title="젠 예약 시간 변경" onclick="openBossActionModal('reserve', '${escapeHtmlText(b.boss_name)}')">예약</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // 🎯 [깜빡임 0%] DOM 재생성 없이 텍스트/뱃지만 조용히 업데이트하는 초경량 함수
-    function updateBossDrawerTimesOnly() {
-      const now = Date.now();
-      (cachedBossList || []).forEach(b => {
-        const badgeElem = document.getElementById(`drawerBadge_${b.id}`);
-        const cardElem = document.getElementById(`drawerItemCard_${b.id}`);
-        const timeElem = document.getElementById(`drawerTimeText_${b.id}`);
-        if (!badgeElem || !cardElem) return;
-
-        if (!b.next_spawn_time) {
-          badgeElem.className = "badge-boss-state state-wait";
-          badgeElem.innerText = "컷 대기";
-          cardElem.classList.remove("spawned", "imminent");
-          if (timeElem) timeElem.innerText = "-";
-        } else {
-          const nextDate = new Date(b.next_spawn_time);
-          const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
-          if (diffSec <= 0) {
-            const passM = Math.floor(Math.abs(diffSec) / 60);
-            badgeElem.className = "badge-boss-state state-spawn";
-            badgeElem.innerText = `🚨 젠 완료 (+${passM}분)`;
-            cardElem.classList.add("spawned");
-            cardElem.classList.remove("imminent");
-          } else if (diffSec <= 3600) {
-            const m = Math.floor(diffSec / 60);
-            badgeElem.className = "badge-boss-state state-imminent";
-            badgeElem.innerText = `⏳ ${m}분 남음`;
-            cardElem.classList.add("imminent");
-            cardElem.classList.remove("spawned");
-          } else {
-            const h = Math.floor(diffSec / 3600);
-            const m = Math.floor((diffSec % 3600) / 60);
-            badgeElem.className = "badge-boss-state state-normal";
-            badgeElem.innerText = `💤 ${h}시간 ${m}분`;
-            cardElem.classList.remove("spawned", "imminent");
-          }
-          if (timeElem) timeElem.innerText = formatTime24Hour(nextDate);
-        }
-      });
     }
 
     function closeAllDrawers() {
       toggleMenuDrawer(false);
       toggleMembersDrawer(false);
-      toggleBossDrawer(false);
     }
 
     function checkBackdropState() {
       const isMenuOpen = document.getElementById("menuSidebarDrawer").classList.contains("open");
       const isMembersOpen = document.getElementById("membersSidebarDrawer").classList.contains("open");
-      const isBossOpen = document.getElementById("bossTimerSidebarDrawer").classList.contains("open");
-      if (!isMenuOpen && !isMembersOpen && !isBossOpen) {
+      if (!isMenuOpen && !isMembersOpen) {
         document.getElementById("commonDrawerBackdrop").classList.remove("show");
       }
     }
@@ -2079,15 +1722,12 @@
             const idx = cachedBossList.findIndex(b => b.id === payload.new.id);
             if (idx !== -1) cachedBossList[idx] = payload.new;
             else cachedBossList.push(payload.new);
-            updateBossDrawerTimesOnly();
             syncAllChatCutButtons();
           } else if (payload.eventType === "INSERT") {
             cachedBossList.push(payload.new);
-            renderBossDrawerList();
             syncAllChatCutButtons();
           } else if (payload.eventType === "DELETE") {
             cachedBossList = cachedBossList.filter(b => b.id !== payload.old.id);
-            renderBossDrawerList();
             syncAllChatCutButtons();
           }
         })
@@ -2721,6 +2361,7 @@
         "PageWish": "분배희망신청",
         "PageSettle": "정산내역",
         "PageFinance": "길드비용현황",
+        "PageTimer": "보스타임 현황",
         "PageEnemies": "원수목록",
         "PageSettings": "설정"
       };
@@ -2754,38 +2395,29 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 🎯 1초 주기 로컬 보스 감시 및 경량 업데이트
+    // 1초 주기 로컬 보스 백그라운드 감시 (알림 전송 전용)
     function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
       bossWatcherInterval = setInterval(async () => {
         const now = Date.now();
 
-        // 보스타임 서랍이 열려 있다면 DOM 재생성 없이 텍스트/뱃지만 갱신 (깜빡임 0%)
-        const isBossDrawerOpen = document.getElementById("bossTimerSidebarDrawer")?.classList.contains("open");
-        if (isBossDrawerOpen) {
-          updateBossDrawerTimesOnly();
-        }
-
         for (const b of (cachedBossList || [])) {
           if (!b.next_spawn_time) continue;
           const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
 
-          // 7분 전 알림
           const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
           if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
             saveNotifiedBossKey(key7Min);
             await sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`, key7Min);
           }
 
-          // 3분 전 알림
           const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
           if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
             saveNotifiedBossKey(key3Min);
             await sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`, key3Min);
           }
 
-          // 젠 완료 알림
           const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
           if (diffSec <= 0 && diffSec > -600 && !notifiedBossSpawnMap.has(keySpawned)) {
             saveNotifiedBossKey(keySpawned);
