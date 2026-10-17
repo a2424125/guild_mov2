@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>길드 대화방</title>
 
-  <!-- PWA 앱 설치 설정 -->
+  <!-- PWA 앱 설정 -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#bacee0">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,7 +34,6 @@
       --drawer-width: 260px;
     }
 
-    /* 모든 자식 요소의 최소 너비 강제 해제 (마우스 드래그 30% 축소 완벽 대응) */
     *, *::before, *::after {
       box-sizing: border-box !important;
       -webkit-tap-highlight-color: transparent;
@@ -414,7 +413,7 @@
     }
 
     /* ========================================================
-       3. 메인 대화창 레이아웃 (축소 저항 원천 차단)
+       3. 메인 대화창 레이아웃
        ======================================================== */
     .app-main-layout {
       flex: 1;
@@ -498,8 +497,9 @@
 
     .chat-item-row {
       display: flex; width: 100%; margin-bottom: 1px; min-width: 0 !important;
+      align-items: flex-start !important;
     }
-    .chat-item-row.other { align-items: flex-start; gap: 5px; }
+    .chat-item-row.other { align-items: flex-start !important; gap: 5px; }
     .chat-item-row.me { justify-content: flex-end; }
 
     .chat-sender-avatar {
@@ -507,6 +507,7 @@
       background: #ffffff; border: 1px solid #dcdcdc;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 0.9rem; color: #3b82f6; flex-shrink: 0;
+      margin-top: 1px;
     }
     .chat-sender-avatar.bot {
       background: #fee2e2; border-color: #ef4444; color: #dc2626;
@@ -517,12 +518,12 @@
       flex-direction: column;
       max-width: 92%;
       width: fit-content;
-      align-items: flex-start;
+      align-items: flex-start !important;
       min-width: 0 !important;
-      height: fit-content !important;
+      height: auto !important;
     }
     .chat-item-row.me .chat-msg-body {
-      align-items: flex-end;
+      align-items: flex-end !important;
     }
     
     .chat-sender-name {
@@ -531,10 +532,10 @@
     }
     .chat-bubble-flex {
       display: flex;
-      align-items: flex-end;
+      align-items: flex-end !important;
       gap: 4px;
       width: fit-content;
-      height: fit-content !important;
+      height: auto !important;
       min-width: 0 !important;
     }
     .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
@@ -579,15 +580,12 @@
       line-height: 1;
     }
 
-    /* ========================================================
-       🎯 [완벽 해결] 보스 리젠 브리핑 카드 - 위아래 공백 강제 0px 밀착
-       ======================================================== */
+    /* 보스 리젠 브리핑 카드 */
     .boss-brief-bubble,
     .chat-bubble.boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
-      /* 상단 3px, 하단 3px로 불필요한 위아래 빈 공간을 완벽하게 없앰 */
-      padding: 3px 8px !important;
+      padding: 4px 8px !important;
       margin: 0 !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
       width: fit-content !important;
@@ -598,39 +596,6 @@
       line-height: 1.2 !important;
       display: block !important;
       align-self: flex-start !important;
-    }
-    .boss-brief-title {
-      font-size: 0.74rem !important;
-      font-weight: 800 !important;
-      color: #191919 !important;
-      margin: 0 0 3px 0 !important;
-      padding: 0 0 2px 0 !important;
-      border-bottom: 1px dashed #cbd5e1 !important;
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      line-height: 1.2 !important;
-    }
-    .boss-brief-line {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      gap: 8px !important;
-      padding: 2px 0 !important; /* 보기 편한 보스 간 적절한 여백 */
-      margin: 0 !important;
-      font-size: 0.73rem !important;
-      line-height: 1.25 !important;
-    }
-    .boss-brief-line:first-of-type {
-      margin-top: 1px !important;
-    }
-    .boss-brief-line:last-of-type {
-      padding-bottom: 0 !important;
-      margin-bottom: 0 !important;
-    }
-    .boss-brief-line.spawned {
-      color: #dc2626 !important;
-      font-weight: 700 !important;
     }
 
     /* 젠 알림 카드 */
@@ -1170,6 +1135,33 @@
       kakaoToastTimer = setTimeout(() => box.classList.remove("show"), 2300);
     }
 
+    // 🎯 24시간 형식 포맷터 (HH:mm)
+    function formatTime24Hour(dateInput) {
+      if (!dateInput) return "";
+      let d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+      if (isNaN(d.getTime())) d = new Date();
+
+      const formatter = new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      return formatter.format(d);
+    }
+
+    // 🎯 24시간 형식 + 날짜 (HH:mm (MM/DD))
+    function formatTime24HourWithDate(dateInput) {
+      if (!dateInput) return "";
+      let d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+      if (isNaN(d.getTime())) d = new Date();
+
+      const timeStr = formatTime24Hour(d);
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${timeStr} (${m}/${day})`;
+    }
+
     function formatKSTChatTime(dateInput) {
       if (!dateInput) return "";
       let d;
@@ -1186,9 +1178,7 @@
         d = new Date(dateInput);
       }
 
-      if (isNaN(d.getTime())) {
-        d = new Date();
-      }
+      if (isNaN(d.getTime())) d = new Date();
 
       const formatter = new Intl.DateTimeFormat('ko-KR', {
         timeZone: 'Asia/Seoul',
@@ -1199,15 +1189,14 @@
       return formatter.format(d);
     }
 
-    function formatTimeKorean(dateObj) {
-      if (!dateObj) return "";
-      const formatter = new Intl.DateTimeFormat('ko-KR', {
-        timeZone: 'Asia/Seoul',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      return formatter.format(dateObj);
+    // 🎯 [첫 번째 스크린샷 양식] 컷 완료 알림 메시지 빌더
+    function buildBossCutAlertHtml(bossName, cutDate, spawnDate) {
+      const cutTimeStr = formatTime24Hour(cutDate);
+      const spawnTimeStr = formatTime24HourWithDate(spawnDate);
+
+      return `[${escapeHtmlText(bossName)}] 컷 완료!<br>` +
+             `• 컷 시각: ${cutTimeStr}<br>` +
+             `• 다음 젠: ${spawnTimeStr}`;
     }
 
     async function initApp() {
@@ -1445,7 +1434,7 @@
           }
         }
 
-        const nextTimeStr = b.next_spawn_time ? formatTimeKorean(new Date(b.next_spawn_time)) : "-";
+        const nextTimeStr = b.next_spawn_time ? formatTime24Hour(new Date(b.next_spawn_time)) : "-";
 
         return `
           <div class="boss-drawer-item ${isSpawned ? 'spawned' : ''}">
@@ -1750,7 +1739,6 @@
       const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
       
       const timeStr = formatKSTChatTime(msg.created_at);
-
       const totalMembers = cachedMemberList.length || 52;
       const unreadCount = Math.max(1, totalMembers - 14);
 
@@ -1765,7 +1753,7 @@
             <div class="chat-msg-body">
               <div class="chat-sender-name">보스알리미</div>
               <div class="chat-bubble-flex">
-                <div class="chat-bubble boss-brief-bubble">
+                <div class="chat-bubble boss-brief-bubble" style="padding: 4px 8px !important; margin: 0 !important; height: auto !important; min-height: 0 !important; display: block !important; align-self: flex-start !important;">
                   ${cleanMessageText}
                 </div>
                 <div class="chat-meta-box">
@@ -1777,7 +1765,7 @@
           </div>
         `;
       }
-      // 2) 봇 알림 카드 (7분/3분/젠완료)
+      // 2) 봇 알림 카드 (7분/3분/젠완료/컷완료)
       else if (msg.msg_type === "boss_alert") {
         let cardTypeClass = "alert-3m";
         let hasCutBtn = false;
@@ -1816,7 +1804,7 @@
               <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
               <div class="chat-bubble-flex">
                 <div class="boss-alert-mini-card ${cardTypeClass}">
-                  <span>${escapeHtmlText(cleanMessageText)}</span>${cutButtonHtml}
+                  <span>${cleanMessageText}</span>${cutButtonHtml}
                 </div>
                 <div class="chat-meta-box">
                   <span class="chat-unread-count">${unreadCount}</span>
@@ -1921,7 +1909,6 @@
       return target;
     }
 
-    // 🎯 [완벽 수정] 여백 제로 밀착형 보스 브리핑 생성
     window.postBossBriefingToChat = async function() {
       if (cachedBossList.length === 0) {
         await loadBossTimersList();
@@ -1937,27 +1924,30 @@
         return tA - tB;
       });
 
-      const currentKstFormatted = formatKSTChatTime(new Date().toISOString());
-      let briefingHtml = `<div class="boss-brief-title"><span>[보스 리젠 현황]</span><span style="font-size:0.62rem; color:#64748b;">${currentKstFormatted}</span></div>`;
+      const currentKstFormatted = formatTime24Hour(new Date());
+      let briefingHtml = `<div style="font-size:0.74rem; font-weight:800; color:#191919; margin:0 0 3px 0; padding:0 0 2px 0; border-bottom:1px dashed #cbd5e1; display:flex; justify-content:space-between; align-items:center; line-height:1.2;"><span>[보스 리젠 현황]</span><span style="font-size:0.62rem; color:#64748b;">${currentKstFormatted}</span></div>`;
 
-      sorted.forEach((b) => {
+      sorted.forEach((b, idx) => {
+        const isLast = (idx === sorted.length - 1);
+        const paddingBottom = isLast ? 'padding: 1.5px 0 0 0;' : 'padding: 1.5px 0;';
+
         if (!b.next_spawn_time) {
-          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span><span style="font-size:0.68rem; color:#64748b;">대기</span></div>`;
+          briefingHtml += `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin:0; font-size:0.73rem; line-height:1.25; ${paddingBottom}"><span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span><span style="font-size:0.68rem; color:#64748b;">대기</span></div>`;
           return;
         }
 
         const nextDate = new Date(b.next_spawn_time);
         const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
-        const timeDisplay = formatTimeKorean(nextDate);
+        const timeDisplay = formatTime24Hour(nextDate);
 
         if (diffSec <= 0) {
           const passM = Math.floor(Math.abs(diffSec) / 60);
-          briefingHtml += `<div class="boss-brief-line spawned"><span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨!</span><span>(+${passM}분)</span></div>`;
+          briefingHtml += `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin:0; font-size:0.73rem; line-height:1.25; color:#dc2626; font-weight:700; ${paddingBottom}"><span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨!</span><span>(+${passM}분)</span></div>`;
         } else {
           const h = Math.floor(diffSec / 3600);
           const m = Math.floor((diffSec % 3600) / 60);
           const remainText = `${h > 0 ? h + '시간 ' : ''}${m}분`;
-          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay}</span><span style="font-size:0.68rem; color:#0284c7; font-weight:700;">(${remainText})</span></div>`;
+          briefingHtml += `<div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin:0; font-size:0.73rem; line-height:1.25; ${paddingBottom}"><span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay}</span><span style="font-size:0.68rem; color:#0284c7; font-weight:700;">(${remainText})</span></div>`;
         }
       });
 
@@ -1998,6 +1988,7 @@
       document.getElementById("modalBossActionDialog").style.display = "none";
     };
 
+    // 🎯 수동 컷 / 예약 실행 핸들러 (24시간 기준 및 카드 형식 메시지 적용)
     window.confirmBossActionDialog = async function() {
       const type = document.getElementById("targetBossActionType").value;
       const bossName = document.getElementById("targetBossActionName").value;
@@ -2023,9 +2014,12 @@
             next_spawn_time: nextSpawn.toISOString()
           });
 
+          // 24시간 형식 안내 카드 전송
+          const alertMessage = buildBossCutAlertHtml(boss.boss_name, cutDate, nextSpawn);
+
           await apiRequest("guild_chats", "POST", [{
             sender_name: "보스알리미",
-            message: `⚔️ [${boss.boss_name}] ${formatTimeKorean(cutDate)} 컷 완료!\n👉 다음 젠 예정: ${formatTimeKorean(nextSpawn)} (${boss.cycle_min / 60}시간 후)`,
+            message: alertMessage,
             msg_type: "boss_alert",
             mentions: []
           }]);
@@ -2043,9 +2037,10 @@
             next_spawn_time: spawnDate.toISOString()
           });
 
+          const spawnTimeStr = formatTime24HourWithDate(spawnDate);
           await apiRequest("guild_chats", "POST", [{
             sender_name: "보스알리미",
-            message: `🕒 [${boss.boss_name}] 젠 시간 예약 완료!\n👉 예정 시각: ${formatTimeKorean(spawnDate)}`,
+            message: `[${escapeHtmlText(boss.boss_name)}] 젠 예약 완료!<br>• 예정 시각: ${spawnTimeStr}`,
             msg_type: "boss_alert",
             mentions: []
           }]);
@@ -2056,6 +2051,7 @@
       }
     };
 
+    // 🎯 젠 알림 말풍선 내 [컷] 원클릭 실행 (24시간 기준 및 카드 형식 메시지 적용)
     window.triggerQuickCutAction = async function(bossName, btnId, msgId) {
       const btn = document.getElementById(btnId);
       if (btn) {
@@ -2083,11 +2079,12 @@
           saveProcessedCutId(msgId);
         }
 
-        const cutStr = formatTimeKorean(cutDate);
-        const spawnStr = formatTimeKorean(nextSpawn);
+        // 24시간 형식 안내 카드 전송
+        const alertMessage = buildBossCutAlertHtml(boss.boss_name, cutDate, nextSpawn);
+
         await apiRequest("guild_chats", "POST", [{
           sender_name: "보스알리미",
-          message: `⚔️ [${boss.boss_name}] ${cutStr} 컷 처리 완료!\n👉 다음 젠 예정: ${spawnStr} (${boss.cycle_min / 60}시간 후)`,
+          message: alertMessage,
           msg_type: "boss_alert",
           mentions: []
         }]);
@@ -2098,6 +2095,7 @@
       }
     };
 
+    // 🎯 채팅 명령어 (!컷, !예약) 처리 (24시간 기준 및 카드 형식 메시지 적용)
     async function handleBossChatCommands(rawText) {
       const trimmed = rawText.trim();
 
@@ -2138,9 +2136,11 @@
           next_spawn_time: nextSpawn.toISOString()
         });
 
+        const alertMessage = buildBossCutAlertHtml(boss.boss_name, cutDate, nextSpawn);
+
         await apiRequest("guild_chats", "POST", [{
           sender_name: "보스알리미",
-          message: `⚔️ [${boss.boss_name}] ${formatTimeKorean(cutDate)} 컷 확인!\n👉 다음 젠 예정: ${formatTimeKorean(nextSpawn)} (${boss.cycle_min / 60}시간 후)`,
+          message: alertMessage,
           msg_type: "boss_alert",
           mentions: []
         }]);
@@ -2173,9 +2173,10 @@
           next_spawn_time: spawnDate.toISOString()
         });
 
+        const spawnTimeStr = formatTime24HourWithDate(spawnDate);
         await apiRequest("guild_chats", "POST", [{
           sender_name: "보스알리미",
-          message: `🕒 [${boss.boss_name}] 젠 시간 예약 완료!\n👉 예정 시각: ${formatTimeKorean(spawnDate)}`,
+          message: `[${escapeHtmlText(boss.boss_name)}] 젠 예약 완료!<br>• 예정 시각: ${spawnTimeStr}`,
           msg_type: "boss_alert",
           mentions: []
         }]);
@@ -2318,21 +2319,18 @@
           if (!b.next_spawn_time) return;
           const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
 
-          // 7분 전 알림
           const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
           if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
             notifiedBossSpawnMap.add(key7Min);
             sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`);
           }
 
-          // 3분 전 알림
           const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
           if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
             notifiedBossSpawnMap.add(key3Min);
             sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`);
           }
 
-          // 젠 완료 알림
           const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
           if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
             notifiedBossSpawnMap.add(keySpawned);
