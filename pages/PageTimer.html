@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [길드 메신저] 보스타임 좌측 서랍 전용 모듈 (완벽 정렬 수정본)
+     [길드 메신저] 보스타임 좌측 서랍 전용 모듈 (원본 1:1 일치)
      경로: pages/PageTimer.html
      ========================================== -->
 <style>
@@ -11,20 +11,21 @@
     background: #ffffff;
     height: 100%;
     overflow-y: auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
   }
   .drawer-boss-list-wrap::-webkit-scrollbar { width: 4px; }
   .drawer-boss-list-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
+  /* 🎯 왼쪽 원본 스크린샷과 100% 동일한 카드 스타일 규격 */
   .drawer-boss-card {
-    padding: 10px 12px;
+    padding: 8px 10px;
     border-radius: 10px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
     box-shadow: 0 1px 2px rgba(0,0,0,0.03);
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
     transition: all 0.15s ease;
   }
   .drawer-boss-card:hover {
@@ -42,15 +43,18 @@
     align-items: center;
   }
   .drawer-boss-name {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 800;
     color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .drawer-card-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     color: #64748b;
   }
 
@@ -60,6 +64,9 @@
     padding: 2px 6px;
     border-radius: 5px;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
   }
   .badge-boss-state.state-wait { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
   .badge-boss-state.state-spawn { background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; animation: pulseBlink 1.4s infinite; }
@@ -72,15 +79,16 @@
   }
 
   .btn-drawer-cut {
-    background: #ef4444; color: #ffffff; border: none; font-size: 0.7rem; font-weight: 800; padding: 3px 8px; border-radius: 5px; cursor: pointer;
+    background: #ef4444; color: #ffffff; border: 1px solid #dc2626; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 5px; cursor: pointer;
   }
   .btn-drawer-cut:hover { background: #dc2626; }
 
   .btn-drawer-reserve {
-    background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 3px 7px; border-radius: 5px; cursor: pointer;
+    background: #ffffff; color: #334155; border: 1px solid #cbd5e1; font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 5px; cursor: pointer;
   }
   .btn-drawer-reserve:hover { background: #e2e8f0; color: #0f172a; }
 
+  /* 컷 예약 모달 */
   .drawer-modal-backdrop {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.45); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 16px;
   }
