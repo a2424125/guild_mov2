@@ -1,9 +1,9 @@
 <!-- ==========================================
-     [길드 메신저] 보스타임 좌측 서랍 전용 모듈
+     [길드 메신저] 보스타임 좌측 서랍 전용 모듈 (원본 스타일 복원)
      경로: pages/PageTimer.html
      ========================================== -->
 <style>
-  .boss-drawer-list-inner {
+  .drawer-boss-list-wrap {
     padding: 8px 10px;
     display: flex;
     flex-direction: column;
@@ -11,12 +11,13 @@
     background: #ffffff;
     height: 100%;
     overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   }
-  .boss-drawer-list-inner::-webkit-scrollbar { width: 4px; }
-  .boss-drawer-list-inner::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  .drawer-boss-list-wrap::-webkit-scrollbar { width: 4px; }
+  .drawer-boss-list-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
-  .boss-drawer-item {
-    padding: 9px 11px;
+  .drawer-boss-card {
+    padding: 10px 12px;
     border-radius: 10px;
     background: #ffffff;
     border: 1px solid #e2e8f0;
@@ -26,26 +27,26 @@
     gap: 5px;
     transition: all 0.15s ease;
   }
-  .boss-drawer-item:hover {
+  .drawer-boss-card:hover {
     border-color: #38bdf8;
     background-color: #f0f9ff;
   }
-  .boss-drawer-item.spawned {
+  .drawer-boss-card.spawned {
     background: #fff8f8;
     border-color: #fca5a5;
   }
 
-  .boss-drawer-row-top {
+  .drawer-card-top {
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .boss-drawer-name {
-    font-size: 0.84rem;
+  .drawer-boss-name {
+    font-size: 0.85rem;
     font-weight: 800;
     color: #1e293b;
   }
-  .boss-drawer-row-bottom {
+  .drawer-card-bottom {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -80,7 +81,6 @@
   }
   .btn-drawer-reserve:hover { background: #e2e8f0; color: #0f172a; }
 
-  /* 컷 예약 모달 */
   .drawer-modal-backdrop {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.45); z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 16px;
   }
@@ -89,7 +89,7 @@
   }
 </style>
 
-<div class="boss-drawer-list-inner" id="drawerBossListInner">
+<div class="drawer-boss-list-wrap" id="drawerBossListInner">
   <div class="text-secondary small text-center py-4">보스타임을 불러오는 중...</div>
 </div>
 
@@ -179,12 +179,12 @@
       const nextTimeStr = b.next_spawn_time ? formatTime24Hour(new Date(b.next_spawn_time)) : "-";
 
       return `
-        <div class="boss-drawer-item ${itemClass}" id="dCard_${b.id}">
-          <div class="boss-drawer-row-top">
-            <span class="boss-drawer-name">${escapeHtmlText(b.boss_name)}</span>
+        <div class="drawer-boss-card ${itemClass}" id="dCard_${b.id}">
+          <div class="drawer-card-top">
+            <span class="drawer-boss-name">${escapeHtmlText(b.boss_name)}</span>
             ${badgeHtml}
           </div>
-          <div class="boss-drawer-row-bottom">
+          <div class="drawer-card-bottom">
             <span>젠 예정: <strong id="dTime_${b.id}" style="color:#0284c7;">${nextTimeStr}</strong></span>
             <div class="d-flex gap-1">
               <button type="button" class="btn-drawer-cut" onclick="recordDrawerCutNow(${b.id}, '${escapeHtmlText(b.boss_name)}', ${b.cycle_min})">컷</button>
