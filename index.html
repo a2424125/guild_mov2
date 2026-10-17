@@ -511,6 +511,7 @@
       width: fit-content;
       align-items: flex-start;
       min-width: 0;
+      height: fit-content !important;
     }
     .chat-item-row.me .chat-msg-body {
       align-items: flex-end;
@@ -525,6 +526,7 @@
       align-items: flex-end;
       gap: 4px;
       width: fit-content;
+      height: fit-content !important;
     }
     .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
@@ -570,20 +572,23 @@
 
     /* ========================================================
        🎯 [완벽 수정] 보스 리젠 브리핑 카드
-       - 최상단/최하단 불필요한 여백 제거
-       - 보스 행 간격 아주 살짝 여유를 주어 가독성 극대화 (padding: 2.5px 0)
-       - 버튼 제거 후 순수 텍스트 리스트 형태로 전환
+       - 상하 불필요한 공백을 완전히 0으로 압축
+       - height: fit-content 및 패딩/마진 강제 초기화로 딱 맞춤
        ======================================================== */
     .boss-brief-bubble,
     .chat-bubble.boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
-      padding: 5px 8px !important; /* 상하 여백 최소화 */
+      padding: 6px 9px 5px 9px !important; /* 상단 6px, 하단 5px로 초밀착 */
+      margin: 0 !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
       width: fit-content !important;
+      height: fit-content !important;
+      min-height: 0 !important;
       max-width: 100% !important;
-      min-width: 160px;
+      min-width: 165px;
       line-height: 1.25 !important;
+      display: block !important;
     }
     .boss-brief-title {
       font-size: 0.76rem !important;
@@ -595,16 +600,21 @@
       display: flex !important;
       justify-content: space-between !important;
       align-items: center !important;
+      line-height: 1.2 !important;
     }
     .boss-brief-line {
       display: flex !important;
       justify-content: space-between !important;
       align-items: center !important;
-      gap: 6px !important;
-      padding: 2.5px 0 !important; /* 가독성을 위한 적절한 여백 */
+      gap: 8px !important;
+      padding: 2.5px 0 !important; /* 보스 간 적절한 줄간격 */
       margin: 0 !important;
       font-size: 0.74rem !important;
-      line-height: 1.3 !important;
+      line-height: 1.25 !important;
+    }
+    .boss-brief-line:last-child {
+      padding-bottom: 0 !important;
+      margin-bottom: 0 !important;
     }
     .boss-brief-line.spawned {
       color: #dc2626 !important;
@@ -1198,7 +1208,7 @@
       await loadGuildMetadata();
       await loadTopNoticeHeader();
       await loadGuildMembersData();
-      await loadBossTimersList(); // 1회 로드 후 메모리 관리
+      await loadBossTimersList();
 
       if (!myCurrentNick || !myCurrentPin) {
         showGuildLoginModal();
@@ -1213,9 +1223,9 @@
 
       await loadPastChatMessages();
       listenRealtimeChatMessages();
-      listenRealtimeBossTimers(); // 보스 타이머 실시간 동기화
-      startLocalBossWatchTimer(); // 4초 DB 폴링 제거 -> 100% 로컬 타이머 계산
-      cleanupOldChatsBackground(); // 7일 지난 채팅 자동 삭제
+      listenRealtimeBossTimers();
+      startLocalBossWatchTimer();
+      cleanupOldChatsBackground();
 
       bindMentionInputEvents();
       setupPwaInstallation();
@@ -1684,7 +1694,6 @@
       } catch (e) {}
     }
 
-    // 🎯 7일 이상 지난 오래된 채팅 백그라운드 자동 정리
     async function cleanupOldChatsBackground() {
       try {
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -1703,7 +1712,6 @@
         .subscribe();
     }
 
-    // 🎯 보스타이머 실시간 이벤트 수신 (누군가 컷/예약 시 즉시 반영되어 DB 조회 불필요)
     function listenRealtimeBossTimers() {
       if (!supabaseClient) return;
 
@@ -1849,7 +1857,6 @@
 
       container.insertAdjacentHTML('beforeend', html);
 
-      // 클라이언트 메모리 렉 방지: 화면 말풍선 120개 초과 시 오래된 요소 제거
       while (container.children.length > 120) {
         container.removeChild(container.firstChild);
       }
@@ -1904,7 +1911,7 @@
       return target;
     }
 
-    // 🎯 [완벽 수정] 컷/예약 버튼 제거, 읽기 편한 여백, 슬림한 패딩
+    // 🎯 브리핑 생성 함수
     window.postBossBriefingToChat = async function() {
       if (cachedBossList.length === 0) {
         await loadBossTimersList();
@@ -1923,9 +1930,12 @@
       const currentKstFormatted = formatKSTChatTime(new Date().toISOString());
       let briefingHtml = `<div class="boss-brief-title"><span>[보스 리젠 현황]</span><span style="font-size:0.62rem; color:#64748b;">${currentKstFormatted}</span></div>`;
 
-      sorted.forEach(b => {
+      sorted.forEach((b, idx) => {
+        const isLast = (idx === sorted.length - 1);
+        const lastStyle = isLast ? 'style="padding-bottom:0 !important; margin-bottom:0 !important;"' : '';
+
         if (!b.next_spawn_time) {
-          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span><span style="font-size:0.68rem; color:#64748b;">대기</span></div>`;
+          briefingHtml += `<div class="boss-brief-line" ${lastStyle}><span>• ${escapeHtmlText(b.boss_name)}: 컷 대기</span><span style="font-size:0.68rem; color:#64748b;">대기</span></div>`;
           return;
         }
 
@@ -1935,12 +1945,12 @@
 
         if (diffSec <= 0) {
           const passM = Math.floor(Math.abs(diffSec) / 60);
-          briefingHtml += `<div class="boss-brief-line spawned"><span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨!</span><span>(+${passM}분)</span></div>`;
+          briefingHtml += `<div class="boss-brief-line spawned" ${lastStyle}><span>• 🚨 ${escapeHtmlText(b.boss_name)}: 젠 됨!</span><span>(+${passM}분)</span></div>`;
         } else {
           const h = Math.floor(diffSec / 3600);
           const m = Math.floor((diffSec % 3600) / 60);
           const remainText = `${h > 0 ? h + '시간 ' : ''}${m}분`;
-          briefingHtml += `<div class="boss-brief-line"><span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay}</span><span style="font-size:0.68rem; color:#0284c7; font-weight:700;">(${remainText})</span></div>`;
+          briefingHtml += `<div class="boss-brief-line" ${lastStyle}><span>• ${escapeHtmlText(b.boss_name)}: ${timeDisplay}</span><span style="font-size:0.68rem; color:#0284c7; font-weight:700;">(${remainText})</span></div>`;
         }
       });
 
@@ -2292,7 +2302,6 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 🎯 [DB 부하 0%] 4초마다 DB 조회하던 방식을 제거하고 메모리 기반 로컬 초 단위 계산으로 전환
     function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
