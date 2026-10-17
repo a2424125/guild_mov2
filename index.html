@@ -154,8 +154,6 @@
       min-width: 0;
       cursor: pointer;
     }
-    
-    /* 🎯 거슬리던 노란색 배경을 은은하고 고급스러운 슬레이트 그레이 톤으로 교체 */
     .user-avatar {
       width: 34px; height: 34px;
       border-radius: 12px;
@@ -403,6 +401,7 @@
     .boss-drawer-list::-webkit-scrollbar { width: 4px; }
     .boss-drawer-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
+    /* 보스 카드 아이템 */
     .boss-drawer-item {
       padding: 8px 10px;
       border-radius: 10px;
@@ -631,7 +630,6 @@
     .chat-item-row.other { align-items: flex-start !important; gap: 5px; }
     .chat-item-row.me { justify-content: flex-end; }
 
-    /* 🎯 대화창 프로필 아바타 (설정된 직업 이모지가 선명하게 나오도록 스타일 보강) */
     .chat-sender-avatar {
       width: 32px; height: 32px; border-radius: 12px;
       background: #ffffff; border: 1px solid #dcdcdc;
@@ -774,7 +772,7 @@
       border-left: 4px solid #38bdf8 !important;
     }
 
-    /* 🎯 [완벽 정렬] 말풍선 너비에 일치하는 래퍼 + [컷 처리] 버튼 */
+    /* 🎯 말풍선 끝선과 1픽셀 오차 없이 일치시키는 컷 버튼 래퍼 */
     .spawn-card-wrapper {
       display: flex;
       flex-direction: column;
@@ -816,6 +814,7 @@
       cursor: not-allowed !important;
       box-shadow: none !important;
       transform: none !important;
+      color: #ffffff !important;
     }
 
     /* 시간 선택 프리셋 칩 버튼 그룹 */
@@ -846,7 +845,37 @@
       transform: scale(0.96);
     }
 
-    /* 🎯 [개선] 하단 메시지 입력창 & 전송 버튼 간격 자연스럽게 정돈 */
+    /* 🎯 [완벽 수정] 시계 아이콘 전용 커스텀 버튼 (글자 '오' 깨짐 원천 차단) */
+    .time-picker-trigger-btn {
+      position: relative;
+      width: 40px;
+      height: 38px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #334155;
+      font-size: 1.05rem;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .time-picker-trigger-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+      color: #0284c7;
+    }
+    .hidden-native-time-input {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* 하단 메시지 입력창 */
     .kakao-input-area {
       background: #ffffff;
       border-top: 1px solid #d4d4d4;
@@ -1045,7 +1074,6 @@
 
     <div class="sidebar-footer">
       <div class="user-profile-badge" onclick="openProfileEditModal()">
-        <!-- 🎯 거슬리던 노란색 배경 제거 및 은은한 프로필 박스로 전환 -->
         <div class="user-avatar" id="sidebarAvatarIcon">👤</div>
         <div>
           <div class="user-name-text" id="sidebarUserNickName">로그인 필요</div>
@@ -1242,7 +1270,7 @@
     </div>
   </div>
 
-  <!-- 컷 / 예약 수동 입력 + 빠른 선택 칩 + 시간 피커 모달 -->
+  <!-- 🎯 [완벽 수정] 컷 / 예약 모달: 찌그러진 '오' 제거 및 깔끔한 시계 아이콘 버튼 배치 -->
   <div id="modalBossActionDialog" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" id="bossActionDialogTitle" style="font-size: 0.95rem;">보스 처리</h6>
@@ -1251,14 +1279,18 @@
       <input type="hidden" id="targetBossActionType">
       <input type="hidden" id="targetBossActionName">
 
-      <!-- 1. 원클릭 빠른 시간 선택 칩 그룹 -->
-      <div id="modalQuickTimeChips" class="quick-time-chips-group justify-content-center">
-      </div>
+      <!-- 원클릭 빠른 시간 선택 칩 그룹 -->
+      <div id="modalQuickTimeChips" class="quick-time-chips-group justify-content-center"></div>
 
-      <!-- 2. 직접 4자리 입력 또는 시간 선택 피커 -->
+      <!-- 4자리 직접 입력창 + 순수 시계 아이콘 트리거 버튼 (오전/오후 글자 짤림 원천 차단) -->
       <div class="d-flex gap-1 align-items-center mb-1">
         <input type="text" id="targetBossActionTimeInput" class="text-center m-0 flex-fill" placeholder="예: 1100, 2000" maxlength="5" style="font-size:1.05rem; font-weight:800; letter-spacing: 2px;">
-        <input type="time" id="targetNativeTimePicker" style="width: 44px; height: 38px; padding: 0; margin: 0; cursor: pointer; flex-shrink: 0;" onchange="handleNativeTimePickerChange(this.value)">
+        
+        <!-- 커스텀 시계 아이콘 버튼 -->
+        <div class="time-picker-trigger-btn" title="시간 선택기 열기">
+          <i class="fa-regular fa-clock"></i>
+          <input type="time" id="targetNativeTimePicker" class="hidden-native-time-input" onchange="handleNativeTimePickerChange(this.value)">
+        </div>
       </div>
       <div class="text-secondary text-end mb-2" style="font-size: 0.65rem;">* 4자리 숫자(24시간) 또는 우측 시계로 선택</div>
 
@@ -1363,7 +1395,7 @@
     var kakaoToastTimer = null;
     var targetPinMember = null;
 
-    // 🎯 중복 알림 영구 방지 (localStorage 연동)
+    // 🎯 젠타임 중복 방지 세트 (localStorage 연동 영구 보관)
     var notifiedBossSpawnMap = new Set(JSON.parse(localStorage.getItem("boss_spawn_notified_keys") || "[]"));
 
     function saveNotifiedBossKey(key) {
@@ -1509,6 +1541,7 @@
       try {
         const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
         cachedBossList = bosses || [];
+        syncAllChatCutButtons(); // 보스 상태에 맞춰 대화창 컷 버튼 즉시 동기화
       } catch (e) {}
     }
 
@@ -1750,7 +1783,6 @@
       document.getElementById("modalProfileEdit").style.display = "none";
     }
 
-    // 🎯 직업 선택 시 DB 및 로컬 동기화하여 채팅창 아바타까지 즉시 변경
     async function selectClassProfile(icon, className) {
       myCurrentAvatar = icon;
       myCurrentClass = `${icon} ${className}`;
@@ -1761,7 +1793,6 @@
       document.getElementById("sidebarAvatarIcon").innerText = icon;
       document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
 
-      // Supabase DB guild_members에도 아바타 업데이트
       if (myCurrentNick) {
         try {
           await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
@@ -1979,6 +2010,7 @@
         if (list && list.length > 0) {
           list.reverse().forEach(c => renderKakaoChatBubble(c, false));
           scrollChatBottom();
+          syncAllChatCutButtons(); // 과거 대화창 컷 버튼들의 완료 여부 일괄 점검
         }
       } catch (e) {}
     }
@@ -2012,15 +2044,47 @@
             if (idx !== -1) cachedBossList[idx] = payload.new;
             else cachedBossList.push(payload.new);
             renderBossDrawerList();
+            syncAllChatCutButtons(); // 컷 변경 시 대화창 버튼들 즉시 실시간 동기화
           } else if (payload.eventType === "INSERT") {
             cachedBossList.push(payload.new);
             renderBossDrawerList();
+            syncAllChatCutButtons();
           } else if (payload.eventType === "DELETE") {
             cachedBossList = cachedBossList.filter(b => b.id !== payload.old.id);
             renderBossDrawerList();
+            syncAllChatCutButtons();
           }
         })
         .subscribe();
+    }
+
+    // 🎯 [핵심] 대화창 내의 모든 컷 버튼을 현재 보스 젠 상태와 완벽 동기화 (이미 컷된 보스는 무조건 [✔ 완료] 비활성화)
+    function syncAllChatCutButtons() {
+      const now = Date.now();
+      const allCutButtons = document.querySelectorAll('.btn-msg-sub-cut');
+
+      allCutButtons.forEach(btn => {
+        const bossName = btn.getAttribute('data-boss-name');
+        if (!bossName) return;
+
+        const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+        if (!boss || !boss.next_spawn_time) return;
+
+        const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - now) / 1000);
+
+        // 다음 젠 시각이 미래(0초 이상)라면 이미 컷 처리가 완료된 상태이므로 무조건 비활성화
+        if (diffSec > 0) {
+          btn.disabled = true;
+          btn.innerHTML = `<i class="fa-solid fa-check"></i> 완료`;
+          btn.classList.add("disabled");
+        } else {
+          // 아직 젠 상태인데 완료 처리되어 있지 않은 경우만 활성화
+          if (!btn.classList.contains("disabled")) {
+            btn.disabled = false;
+            btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`;
+          }
+        }
+      });
     }
 
     function extractBossNameFromMessage(text) {
@@ -2030,7 +2094,6 @@
       return "";
     }
 
-    // 🎯 [완벽 수정] 프로필 직업 아이콘 반영 및 컷 버튼 정렬
     function renderKakaoChatBubble(msg, isRealtime = true) {
       const container = document.getElementById("chatMessagesView");
       const isMe = (msg.sender_name === myCurrentNick);
@@ -2043,7 +2106,6 @@
       let html = "";
       const cleanMessageText = (msg.message || '').trim();
 
-      // 보낸 사람의 설정된 직업 아바타 찾기 (없으면 닉네임 첫 글자)
       let senderAvatarIcon = (msg.sender_name || '?').charAt(0);
       const matchedSender = cachedMemberList.find(m => m.name === msg.sender_name);
       if (matchedSender && matchedSender.job_class) {
@@ -2087,14 +2149,25 @@
 
         const spawnedBossName = extractBossNameFromMessage(cleanMessageText);
 
-        // 🎯 [완벽 정렬] 말풍선 너비에 일치하는 래퍼 + [컷 처리] 버튼
+        // 🎯 [완벽 정렬 및 컷 상태 동기화]
         let subCutButtonHtml = "";
         if (isSpawnMsg && spawnedBossName) {
           const btnId = `btnSubCut_${msg.id || Math.floor(Math.random()*100000)}`;
+
+          // 현재 보스가 이미 컷 된 상태인지 검사
+          const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === spawnedBossName.toLowerCase());
+          let isAlreadyCut = false;
+          if (boss && boss.next_spawn_time) {
+            const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - Date.now()) / 1000);
+            if (diffSec > 0) isAlreadyCut = true;
+          }
+
           subCutButtonHtml = `
             <div class="spawn-msg-action-row">
-              <button type="button" id="${btnId}" class="btn-msg-sub-cut" onclick="triggerQuickCutAction('${escapeHtmlText(spawnedBossName)}', '${btnId}')">
-                <i class="fa-solid fa-skull"></i> 컷 처리
+              <button type="button" id="${btnId}" data-boss-name="${escapeHtmlText(spawnedBossName)}" class="btn-msg-sub-cut ${isAlreadyCut ? 'disabled' : ''}" 
+                      ${isAlreadyCut ? 'disabled' : ''} 
+                      onclick="triggerQuickCutAction('${escapeHtmlText(spawnedBossName)}', '${btnId}')">
+                <i class="fa-solid fa-${isAlreadyCut ? 'check' : 'skull'}"></i> ${isAlreadyCut ? '완료' : '컷 처리'}
               </button>
             </div>
           `;
@@ -2137,7 +2210,7 @@
           </div>
         `;
       }
-      // 4) 상대방 길드원 메시지 (선택한 프로필 직업 아이콘 출력)
+      // 4) 상대방 길드원 메시지
       else {
         html = `
           <div class="chat-item-row other">
@@ -2266,6 +2339,7 @@
       }
     };
 
+    // 🎯 [업그레이드] 컷 / 예약 모달창 제어 (직접입력 + 빠른 선택 칩 + 시간 피커)
     window.openBossActionModal = function(type, bossName) {
       document.getElementById("targetBossActionType").value = type;
       document.getElementById("targetBossActionName").value = bossName;
@@ -2354,6 +2428,7 @@
             mentions: []
           }]);
           showKakaoToast(`[${boss.boss_name}] 컷 처리 완료!`, "🎉");
+          syncAllChatCutButtons(); // 즉시 대화창 버튼들 일괄 완료 처리
         } catch (e) {
           showKakaoToast("처리 실패: " + e.message, "❌");
         }
@@ -2375,24 +2450,39 @@
             mentions: []
           }]);
           showKakaoToast(`[${boss.boss_name}] 예약 완료!`, "🎉");
+          syncAllChatCutButtons();
         } catch (e) {
           showKakaoToast("예약 실패: " + e.message, "❌");
         }
       }
     };
 
+    // 🎯 [완벽 방어] 젠 알림 말풍선 아래 [컷 처리] 버튼 클릭 핸들러 (중복 컷 원천 방지)
     window.triggerQuickCutAction = async function(bossName, btnId) {
       const btn = document.getElementById(btnId);
+      
+      const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+      if (!boss) {
+        return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
+      }
+
+      // 이미 컷 된 보스인지 즉시 검증
+      if (boss.next_spawn_time) {
+        const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - Date.now()) / 1000);
+        if (diffSec > 0) {
+          if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> 완료`;
+            btn.classList.add("disabled");
+          }
+          return showKakaoToast(`[${bossName}] 이미 컷 완료된 보스입니다!`, "⚠️");
+        }
+      }
+
       if (btn) {
         btn.disabled = true;
         btn.innerHTML = `<i class="fa-solid fa-check"></i> 완료`;
         btn.classList.add("disabled");
-      }
-
-      const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
-      if (!boss) {
-        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`; btn.classList.remove("disabled"); }
-        return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
       }
 
       const cutDate = new Date();
@@ -2413,6 +2503,7 @@
           mentions: []
         }]);
         showKakaoToast(`[${boss.boss_name}] 컷 완료!`, "🎉");
+        syncAllChatCutButtons(); // 화면 내 해당 보스 모든 컷 버튼 일괄 완료 전환
       } catch (err) {
         if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`; btn.classList.remove("disabled"); }
         showKakaoToast("컷 처리 실패: " + err.message, "❌");
@@ -2467,6 +2558,7 @@
           msg_type: "boss_alert",
           mentions: []
         }]);
+        syncAllChatCutButtons();
         return true;
       }
 
@@ -2503,6 +2595,7 @@
           msg_type: "boss_alert",
           mentions: []
         }]);
+        syncAllChatCutButtons();
         return true;
       }
 
@@ -2633,7 +2726,7 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 🎯 [완벽 수정] 다중 기기/탭 동시 접속 시에도 단 1회 발송을 보장하는 서버 동기화 워처
+    // 🎯 [완벽 수정] 젠 완료 알림 서버 중복 체크 및 다중 기기 도배 100% 방지
     function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
@@ -2676,7 +2769,6 @@
     // 🎯 다른 기기/탭이 이미 발송했는지 DB 확인 후 단 1회만 안전하게 발송
     async function sendBossAlertBroadcast(msgText, uniqueKey = "") {
       try {
-        // 이미 DB에 동일한 메시지가 최근 3분 내 등록되어 있다면 발송 생략
         const match = msgText.match(/\[([^\]]+)\]/);
         const bossName = match ? match[1] : "";
         const alertType = msgText.includes("젠 완료") ? "젠 완료" : (msgText.includes("7분 전") ? "7분 전" : "3분 전");
@@ -2685,7 +2777,6 @@
           const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
           const checkRes = await apiRequest(`guild_chats?sender_name=eq.보스알리미&created_at=gte.${threeMinAgo}&message=like.*[${encodeURIComponent(bossName)}]*${encodeURIComponent(alertType)}*&limit=1`);
           if (checkRes && checkRes.length > 0) {
-            // 이미 다른 기기나 창에서 보낸 기록이 있으므로 내 화면에서는 중복 전송하지 않음
             if (uniqueKey) saveNotifiedBossKey(uniqueKey);
             return;
           }
