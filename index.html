@@ -580,9 +580,7 @@
       line-height: 1;
     }
 
-    /* ========================================================
-       🎯 [완벽 수정] 보스 리젠 브리핑 카드 - 위아래 공백 0px 원천 밀착
-       ======================================================== */
+    /* 보스 리젠 브리핑 카드 */
     .boss-brief-bubble {
       background: #ffffff !important;
       border-radius: 6px !important;
@@ -624,7 +622,7 @@
       font-weight: 700 !important;
     }
 
-    /* 젠 알림 카드 (심플 텍스트 전용) */
+    /* 젠 알림 카드 */
     .boss-alert-mini-card {
       background: #ffffff !important;
       border-radius: 5px !important;
@@ -646,61 +644,42 @@
       border-left: 4px solid #38bdf8 !important;
     }
 
-    /* ========================================================
-       🎯 [신규] 하단 고정형 보스 컷 퀵 액션 배너 (대화창 바로 위)
-       마우스오버 효과 및 누르기 편한 위치에 배치
-       ======================================================== */
-    .boss-quick-cut-bar {
-      background: #ffffff;
-      border-top: 1px solid #e2e8f0;
-      border-bottom: 1px solid #e2e8f0;
-      padding: 4px 8px;
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-      box-shadow: 0 -2px 6px rgba(0,0,0,0.04);
-      z-index: 15;
-      animation: slideUpQuickBar 0.2s ease-out;
-    }
-    @keyframes slideUpQuickBar {
-      from { transform: translateY(100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .boss-quick-cut-title {
-      font-size: 0.74rem;
-      font-weight: 700;
-      color: #dc2626;
+    /* 🎯 [스크린샷 위치 반영] 대화 말풍선 바로 아래 우측 [컷 처리] 버튼 */
+    .spawn-msg-action-row {
       display: flex;
-      align-items: center;
-      gap: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      justify-content: flex-end;
+      width: 100%;
+      margin-top: 3px;
+      margin-bottom: 2px;
     }
-    .btn-bottom-quick-cut {
+    .btn-msg-sub-cut {
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
       color: #ffffff;
       border: none;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 6px;
+      padding: 3px 8px;
+      border-radius: 5px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      white-space: nowrap;
+      gap: 3px;
+      box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25);
       transition: all 0.15s ease-in-out;
-      box-shadow: 0 1px 3px rgba(220, 38, 38, 0.3);
     }
-    .btn-bottom-quick-cut:hover {
+    .btn-msg-sub-cut:hover {
       background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
       transform: translateY(-1px);
-      box-shadow: 0 3px 8px rgba(220, 38, 38, 0.45);
+      box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);
     }
-    .btn-bottom-quick-cut:active {
+    .btn-msg-sub-cut:active {
       transform: translateY(0);
+    }
+    .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled {
+      background: #94a3b8 !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+      transform: none !important;
     }
 
     /* 하단 입력창 */
@@ -981,17 +960,6 @@
     <!-- @ 멘션 자동완성 팝업 -->
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 🎯 [신규] 대화창 바로 밑 컷 퀵 액션 배너 -->
-    <div id="bossQuickCutBar" class="boss-quick-cut-bar">
-      <div class="boss-quick-cut-title">
-        <span>🔥</span>
-        <span id="quickCutBossLabel">보스 출현! 즉시 처치 바랍니다.</span>
-      </div>
-      <button type="button" class="btn-bottom-quick-cut" id="btnBottomQuickCutAction" onclick="executeBottomQuickCut()">
-        <i class="fa-solid fa-skull"></i> 컷 처리
-      </button>
-    </div>
-
     <!-- 하단 메시지 입력창 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
@@ -1178,7 +1146,6 @@
     var myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
     var myCurrentClass = localStorage.getItem("guild_my_class") || "미설정";
     var bossWatcherInterval = null;
-    var currentQuickCutBossName = "";
     var deferredPrompt = null;
     var kakaoToastTimer = null;
     var targetPinMember = null;
@@ -1189,7 +1156,6 @@
     function saveNotifiedBossKey(key) {
       if (!key) return;
       notifiedBossSpawnMap.add(key);
-      // 최근 200개까지만 보관
       const arr = Array.from(notifiedBossSpawnMap);
       if (arr.length > 200) arr.splice(0, arr.length - 200);
       localStorage.setItem("boss_spawn_notified_keys", JSON.stringify(arr));
@@ -1796,15 +1762,12 @@
             if (idx !== -1) cachedBossList[idx] = payload.new;
             else cachedBossList.push(payload.new);
             renderBossDrawerList();
-            checkAndSyncQuickCutBar();
           } else if (payload.eventType === "INSERT") {
             cachedBossList.push(payload.new);
             renderBossDrawerList();
-            checkAndSyncQuickCutBar();
           } else if (payload.eventType === "DELETE") {
             cachedBossList = cachedBossList.filter(b => b.id !== payload.old.id);
             renderBossDrawerList();
-            checkAndSyncQuickCutBar();
           }
         })
         .subscribe();
@@ -1822,7 +1785,7 @@
       let html = "";
       const cleanMessageText = (msg.message || '').trim();
 
-      // 1) 보스알리미 리젠 브리핑 카드 (여백 제로 테이블 인라인 구조)
+      // 1) 보스알리미 리젠 브리핑 카드
       if (msg.msg_type === "boss_briefing") {
         html = `
           <div class="chat-item-row other">
@@ -1845,9 +1808,34 @@
       // 2) 봇 알림 카드 (7분/3분/젠완료/컷완료)
       else if (msg.msg_type === "boss_alert") {
         let cardTypeClass = "alert-3m";
+        let isSpawnMsg = false;
+        let spawnedBossName = "";
+
         if (cleanMessageText.includes("7분 전")) cardTypeClass = "alert-7m";
         else if (cleanMessageText.includes("컷 완료")) cardTypeClass = "alert-cut";
-        else if (cleanMessageText.includes("젠 완료") || cleanMessageText.includes("출현")) cardTypeClass = "alert-spawn";
+        else if (cleanMessageText.includes("젠 완료") || cleanMessageText.includes("출현")) {
+          cardTypeClass = "alert-spawn";
+          isSpawnMsg = true;
+          const match = cleanMessageText.match(/\[([^\]]+)\]/);
+          if (match) spawnedBossName = match[1];
+        }
+
+        // 🎯 [스크린샷 위치 반영]: 젠 완료 알림일 경우 말풍선 바로 밑 우측에 [컷 처리] 버튼 생성
+        let subCutButtonHtml = "";
+        if (isSpawnMsg && spawnedBossName) {
+          const btnId = `btnSubCut_${msg.id || Date.now()}`;
+          const isCutAlready = processedCutMessageIds.has(String(msg.id));
+
+          subCutButtonHtml = `
+            <div class="spawn-msg-action-row">
+              <button type="button" id="${btnId}" class="btn-msg-sub-cut ${isCutAlready ? 'disabled' : ''}" 
+                      ${isCutAlready ? 'disabled' : ''} 
+                      onclick="triggerQuickCutAction('${spawnedBossName}', '${btnId}', '${msg.id}')">
+                <i class="fa-solid fa-skull"></i> ${isCutAlready ? '컷 완료' : '컷 처리'}
+              </button>
+            </div>
+          `;
+        }
 
         html = `
           <div class="chat-item-row other">
@@ -1863,6 +1851,7 @@
                   <span class="chat-timestamp">${timeStr}</span>
                 </div>
               </div>
+              ${subCutButtonHtml}
             </div>
           </div>
         `;
@@ -1961,7 +1950,6 @@
       return target;
     }
 
-    // 🎯 브리핑 생성 함수
     window.postBossBriefingToChat = async function() {
       if (cachedBossList.length === 0) {
         await loadBossTimersList();
@@ -2099,13 +2087,20 @@
       }
     };
 
-    // 🎯 [하단 고정 배너 전용] 원클릭 컷 처리
-    window.executeBottomQuickCut = async function() {
-      if (!currentQuickCutBossName) return;
+    // 🎯 젠 알림 말풍선 바로 아래 [컷 처리] 버튼 클릭 핸들러
+    window.triggerQuickCutAction = async function(bossName, btnId, msgId) {
+      const btn = document.getElementById(btnId);
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> 컷 완료`;
+        btn.classList.add("disabled");
+      }
 
-      const bossName = currentQuickCutBossName;
       const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
-      if (!boss) return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
+      if (!boss) {
+        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`; btn.classList.remove("disabled"); }
+        return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
+      }
 
       const cutDate = new Date();
       const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
@@ -2116,6 +2111,10 @@
           next_spawn_time: nextSpawn.toISOString()
         });
 
+        if (msgId) {
+          saveProcessedCutId(msgId);
+        }
+
         const alertMessage = buildBossCutAlertHtml(boss.boss_name, cutDate, nextSpawn);
 
         await apiRequest("guild_chats", "POST", [{
@@ -2124,44 +2123,12 @@
           msg_type: "boss_alert",
           mentions: []
         }]);
-
         showKakaoToast(`[${boss.boss_name}] 컷 완료!`, "🎉");
-        hideQuickCutBar();
       } catch (err) {
+        if (btn) { btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`; btn.classList.remove("disabled"); }
         showKakaoToast("컷 처리 실패: " + err.message, "❌");
       }
     };
-
-    function showQuickCutBar(bossName) {
-      currentQuickCutBossName = bossName;
-      const bar = document.getElementById("bossQuickCutBar");
-      const label = document.getElementById("quickCutBossLabel");
-      if (bar && label) {
-        label.innerText = `[${bossName}] 출현! 즉시 처치 바랍니다.`;
-        bar.style.display = "flex";
-      }
-    }
-
-    function hideQuickCutBar() {
-      currentQuickCutBossName = "";
-      const bar = document.getElementById("bossQuickCutBar");
-      if (bar) bar.style.display = "none";
-    }
-
-    function checkAndSyncQuickCutBar() {
-      const now = Date.now();
-      const spawnedBoss = (cachedBossList || []).find(b => {
-        if (!b.next_spawn_time) return false;
-        const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
-        return diffSec <= 0 && diffSec > -30 * 60; // 30분 이내 젠 된 보스
-      });
-
-      if (spawnedBoss) {
-        showQuickCutBar(spawnedBoss.boss_name);
-      } else {
-        hideQuickCutBar();
-      }
-    }
 
     async function handleBossChatCommands(rawText) {
       const trimmed = rawText.trim();
@@ -2211,7 +2178,6 @@
           msg_type: "boss_alert",
           mentions: []
         }]);
-        hideQuickCutBar();
         return true;
       }
 
@@ -2378,50 +2344,37 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     };
 
-    // 🎯 [완벽 수정] 중복 전송 방지 및 하단 퀵 액션 배너 자동 연동
+    // 🎯 젠타임 중복 전송 방지 및 단 1회 전송 보장
     function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
 
       bossWatcherInterval = setInterval(() => {
         const now = Date.now();
-        let spawnedBossFound = null;
-
         (cachedBossList || []).forEach(b => {
           if (!b.next_spawn_time) return;
           const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
 
-          // 7분 전 알림 (중복 체크)
+          // 7분 전 알림
           const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
           if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
             saveNotifiedBossKey(key7Min);
             sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`);
           }
 
-          // 3분 전 알림 (중복 체크)
+          // 3분 전 알림
           const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
           if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
             saveNotifiedBossKey(key3Min);
             sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`);
           }
 
-          // 젠 완료 알림 (중복 체크 - 도배 방지)
+          // 젠 완료 알림 (1회만 발송되도록 영구 키 보관)
           const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
-          if (diffSec <= 0 && diffSec > -60 && !notifiedBossSpawnMap.has(keySpawned)) {
+          if (diffSec <= 0 && diffSec > -120 && !notifiedBossSpawnMap.has(keySpawned)) {
             saveNotifiedBossKey(keySpawned);
             sendBossAlertBroadcast(`🔥 [${b.boss_name}] 젠 완료! 출현했습니다! 즉시 처치 바랍니다!`);
           }
-
-          // 현재 출현 중인 보스 체크 (하단 퀵 바용)
-          if (diffSec <= 0 && diffSec > -30 * 60) {
-            spawnedBossFound = b.boss_name;
-          }
         });
-
-        if (spawnedBossFound) {
-          showQuickCutBar(spawnedBossFound);
-        } else {
-          hideQuickCutBar();
-        }
       }, 1000);
     }
 
