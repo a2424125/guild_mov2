@@ -1,5 +1,5 @@
 // sw.js - PWA Service Worker
-const CACHE_NAME = 'guild-pwa-v1';
+const CACHE_NAME = 'guild-pwa-v2';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
