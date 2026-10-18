@@ -50,18 +50,18 @@
       --kakao-yellow: #fee500;
       --kakao-unread-yellow: #ffeb3b;
       --kakao-bubble-me: #fee500;
-      --kakao-bubble-me-text: #191919;
+      --kakao-bubble-me-text: #000000;
       --kakao-bubble-other: #ffffff;
-      --kakao-bubble-other-text: #191919;
+      --kakao-bubble-other-text: #000000;
       --kakao-time-gray: #556677;
 
       --kakao-notice-bg: #ffffff;
-      --kakao-notice-text: #222222;
+      --kakao-notice-text: #000000;
       --kakao-notice-border: rgba(0, 0, 0, 0.05);
 
       --kakao-input-bg: #ffffff;
       --kakao-input-border: #d4d4d4;
-      --kakao-input-text: #191919;
+      --kakao-input-text: #000000;
       --kakao-input-placeholder: #94a3b8;
       --kakao-input-icon: #64748b;
 
@@ -111,7 +111,7 @@
       --kakao-yellow: #fee500;
       --kakao-unread-yellow: #facc15;
       --kakao-bubble-me: #fee500;
-      --kakao-bubble-me-text: #191919;
+      --kakao-bubble-me-text: #000000;
       --kakao-bubble-other: #2b323c;
       --kakao-bubble-other-text: #f3f4f6;
       --kakao-time-gray: #9ca3af;
@@ -171,18 +171,18 @@
       --kakao-yellow: #fee500;
       --kakao-unread-yellow: #ffeb3b;
       --kakao-bubble-me: #fee500;
-      --kakao-bubble-me-text: #191919;
+      --kakao-bubble-me-text: #000000;
       --kakao-bubble-other: #ffffff;
-      --kakao-bubble-other-text: #191919;
+      --kakao-bubble-other-text: #000000;
       --kakao-time-gray: #556677;
 
       --kakao-notice-bg: #ffffff;
-      --kakao-notice-text: #222222;
+      --kakao-notice-text: #000000;
       --kakao-notice-border: rgba(0, 0, 0, 0.05);
 
       --kakao-input-bg: #ffffff;
       --kakao-input-border: #d4d4d4;
-      --kakao-input-text: #191919;
+      --kakao-input-text: #000000;
       --kakao-input-placeholder: #94a3b8;
       --kakao-input-icon: #64748b;
 
@@ -260,7 +260,10 @@
       visibility: hidden !important;
     }
     * {
-      font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, sans-serif !important;
+      -webkit-font-smoothing: subpixel-antialiased !important;
+      -moz-osx-font-smoothing: auto !important;
+      text-rendering: auto !important;
       scrollbar-width: thin !important;
       scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
     }
@@ -268,11 +271,11 @@
     html, body {
       background-color: var(--kakao-bg) !important;
       color: var(--kakao-header-text);
-      font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-      letter-spacing: -0.25px;
-      -webkit-font-smoothing: antialiased !important;
-      -moz-osx-font-smoothing: grayscale !important;
-      text-rendering: optimizeLegibility !important;
+      font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+      letter-spacing: 0;
+      -webkit-font-smoothing: subpixel-antialiased !important;
+      -moz-osx-font-smoothing: auto !important;
+      text-rendering: auto !important;
       height: 100vh;
       margin: 0;
       padding: 0;
@@ -638,7 +641,7 @@
     .notice-icon-part { color: #1e88e5; font-size: 0.78rem; margin-right: 6px; flex-shrink: 0; }
     .notice-text-content {
       flex: 1;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 400;
       color: var(--kakao-notice-text) !important;
       white-space: nowrap;
@@ -681,7 +684,7 @@
       display: flex; flex-direction: column; max-width: 90%; width: fit-content !important;
     }
     .chat-sender-name {
-      font-size: 11px; color: var(--kakao-header-subtext) !important; margin-bottom: 2px; font-weight: 400;
+      font-size: 11px; color: #333333 !important; margin-bottom: 2px; font-weight: 500;
     }
     .chat-bubble-flex {
       display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important;
@@ -692,7 +695,7 @@
       display: inline-block; width: fit-content; max-width: 100%;
       padding: 5px 9px; border-radius: 4px; font-size: 12px; line-height: 1.38;
       font-weight: 400; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
-      letter-spacing: -0.2px;
+      letter-spacing: 0;
     }
     .chat-item-row.other .chat-bubble {
       background: var(--kakao-bubble-other) !important;
@@ -722,7 +725,7 @@
     }
     .boss-brief-line {
       display: flex !important; justify-content: space-between !important; gap: 12px !important;
-      padding: 1.5px 0 !important; font-size: 11.5px !important; font-weight: 400 !important;
+      padding: 2px 0 !important; font-size: 12px !important; font-weight: 400 !important;
     }
     .boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
     body.theme-dark .boss-brief-line.spawned { color: #ff6b6b !important; font-weight: 700 !important; }
@@ -733,7 +736,7 @@
       border-radius: 4px !important; padding: 5px 9px !important;
       font-size: 12px !important; font-weight: 400 !important; line-height: 1.38 !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
-      letter-spacing: -0.2px;
+      letter-spacing: 0;
     }
     .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
     .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
@@ -745,7 +748,7 @@
     .spawn-msg-action-row { display: flex; justify-content: flex-end; width: 100%; margin-top: 3px; }
     .btn-msg-sub-cut {
       background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff;
-      border: 1px solid #b91c1c; font-size: 10.5px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;
+      border: 1px solid #b91c1c; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;
     }
     .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled { background: #94a3b8 !important; border-color: #64748b !important; cursor: not-allowed !important; }
 
@@ -757,7 +760,7 @@
     }
     .input-textarea-custom {
       width: 100%; height: 38px; border: none; outline: none; resize: none;
-      font-size: 12.5px; font-weight: 400;
+      font-size: 12px; font-weight: 400; letter-spacing: 0;
       color: var(--kakao-input-text) !important;
       background: transparent !important;
     }
@@ -1035,6 +1038,7 @@
     }
     body.theme-dark .chat-sender-name {
       color: #9ca3af !important;
+      font-weight: 400;
     }
     body.theme-dark .chat-timestamp {
       color: #9ca3af !important;
