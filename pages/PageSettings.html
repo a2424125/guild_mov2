@@ -3,12 +3,14 @@
      경로: pages/PageSettings.html
      ========================================== -->
 <style>
+  /* 기본 폰트 및 모듈 카드 공통 */
   #settingsRootCard {
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
     letter-spacing: -0.2px;
   }
 
   .settings-card {
+    font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif !important;
     background: rgba(18, 26, 45, 0.96);
     backdrop-filter: blur(14px);
     border: 1px solid rgba(56, 189, 248, 0.28);
@@ -18,7 +20,7 @@
     transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   }
 
-  /* 🌙 다크 모드 텍스트 가독성 */
+  /* 🌙 다크 모드 텍스트 가독성 강화 */
   .settings-card:not(.light-mode) {
     color: #f8fafc;
   }
@@ -42,7 +44,7 @@
     border: 1px solid #223250;
   }
 
-  /* ☀️ 라이트 모드 스타일 (카카오톡 감성 밝은 테마) */
+  /* ☀️ 라이트 모드 스타일 오버라이드 */
   .settings-card.light-mode {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
@@ -133,31 +135,39 @@
     box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
   }
 
-  /* 탭 내비게이션 바 */
+  /* 탭 내비게이션 바 (스크롤 없는 3x2 정밀 그리드) */
   .settings-nav-container {
-    display: flex;
-    gap: 5px;
-    background: #080d1a;
-    padding: 5px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    overflow-x: auto;
-    scrollbar-width: thin;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 6px !important;
+    background: #080d1a !important;
+    padding: 6px !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    overflow: hidden !important;
+  }
+  .settings-card.light-mode .settings-nav-container {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
   }
   .settings-nav-btn {
-    flex: 1;
+    width: 100% !important;
     background: transparent;
     border: none;
     color: #94a3b8;
-    padding: 8px 10px;
+    padding: 8px 2px !important;
     font-weight: 700;
-    font-size: 0.76rem;
-    border-radius: 9px;
-    transition: all 0.15s;
+    font-size: 0.76rem !important;
+    border-radius: 8px !important;
+    transition: all 0.15s ease-in-out;
     text-align: center;
     cursor: pointer;
     white-space: nowrap;
-    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-sizing: border-box;
   }
   .settings-nav-btn.active {
     background: #0284c7;
@@ -170,7 +180,7 @@
     box-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
   }
 
-  /* 카카오톡 감성 버튼 */
+  /* 💛 카카오톡 감성 버튼 클래스 */
   .btn-kakao-yellow {
     background-color: #fee500 !important;
     color: #191919 !important;
@@ -196,7 +206,7 @@
     transform: translateY(0);
   }
 
-  /* 카카오톡 스타일 프로필 카드 */
+  /* 💬 카카오톡 스타일 프로필 카드 */
   .kt-profile-card {
     background: linear-gradient(135deg, rgba(254, 229, 0, 0.08) 0%, rgba(13, 21, 39, 0.95) 100%);
     border: 1px solid rgba(254, 229, 0, 0.25);
@@ -286,6 +296,7 @@
     color: #475569;
   }
 
+  /* 프로필 직업 선택 모달 그리드 */
   .profile-class-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -322,45 +333,11 @@
     color: #fee500;
     font-weight: 800;
   }
-  .profile-class-btn .class-icon { font-size: 1.6rem; }
-  .profile-class-btn .class-title { font-size: 0.75rem; }
-
-  .theme-option-box {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 8px;
+  .profile-class-btn .class-icon {
+    font-size: 1.6rem;
   }
-  .theme-card-btn {
-    background: #080d1a;
-    border: 1.5px solid #1e2c47;
-    border-radius: 12px;
-    padding: 12px 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    text-align: center;
-    color: #cbd5e1;
-  }
-  .settings-card.light-mode .theme-card-btn {
-    background: #f8fafc;
-    border-color: #e2e8f0;
-    color: #334155;
-  }
-  .theme-card-btn.active {
-    border-color: #38bdf8;
-    background: rgba(2, 132, 199, 0.2);
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
-    color: #ffffff;
-  }
-  .settings-card.light-mode .theme-card-btn.active {
-    border-color: #0284c7;
-    background: rgba(2, 132, 199, 0.1);
-    color: #0284c7;
-    font-weight: 700;
+  .profile-class-btn .class-title {
+    font-size: 0.75rem;
   }
 
   .score-item-box {
@@ -478,7 +455,13 @@
   .boss-item-del { color: #94a3b8; cursor: pointer; flex-shrink: 0; }
   .boss-item-del:hover { color: #f87171; }
 
-  .ground-region-chips { display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px; scrollbar-width: thin; }
+  .ground-region-chips {
+    display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px;
+    scrollbar-width: none !important; -ms-overflow-style: none !important;
+  }
+  .ground-region-chips::-webkit-scrollbar {
+    display: none !important; width: 0 !important; height: 0 !important;
+  }
   .region-chip-btn {
     white-space: nowrap;
     background: #080d1a;
@@ -504,7 +487,7 @@
     gap: 6px;
   }
 
-  /* 모달 팝업 */
+  /* 모달 팝업 스타일 */
   .custom-modal-backdrop {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
@@ -555,6 +538,25 @@
     .settings-nav-btn { font-size: 0.72rem; padding: 7px 5px; }
     .profile-class-grid { grid-template-columns: repeat(4, 1fr); }
   }
+
+  /* 카카오톡 스타일 초슬림 캡슐 스크롤바 */
+  .boss-grid-container::-webkit-scrollbar,
+  .ground-grid-container::-webkit-scrollbar,
+  .profile-class-grid::-webkit-scrollbar {
+    width: 5px !important;
+    height: 5px !important;
+  }
+  .boss-grid-container::-webkit-scrollbar-thumb,
+  .ground-grid-container::-webkit-scrollbar-thumb,
+  .profile-class-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-radius: 10px !important;
+  }
+  .settings-card.light-mode .boss-grid-container::-webkit-scrollbar-thumb,
+  .settings-card.light-mode .ground-grid-container::-webkit-scrollbar-thumb,
+  .settings-card.light-mode .profile-class-grid::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2) !important;
+  }
 </style>
 
 <div class="settings-card mb-4" id="settingsRootCard">
@@ -569,7 +571,7 @@
     </span>
   </div>
 
-  <!-- 탭 메뉴 (토벌/운영, 길드원보안, 설정보안 분리) -->
+  <!-- 탭 메뉴 (토벌/운영, 길드원보안, 설정보안 분리 및 3x2 무스크롤 배치) -->
   <div class="settings-nav-container mb-3">
     <button type="button" class="settings-nav-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
       🏢 기본
@@ -591,9 +593,7 @@
     </button>
   </div>
 
-  <!-- ========================================================
-       [탭 1] 기본 탭: 소속길드명(단순 텍스트), 카카오톡 스타일 프로필, 테마 모드
-       ======================================================== -->
+  <!-- [탭 1] 기본 탭: 소속길드명(단순 텍스트), 카카오톡 스타일 프로필, 테마 토글 스위치 -->
   <div id="tabSettingsGeneral">
     <!-- 1. 소속 길드명 -->
     <div class="d-flex align-items-center justify-content-between mb-3 px-3 py-2 rounded" style="background: rgba(0, 0, 0, 0.18); border: 1px solid rgba(255, 255, 255, 0.08);">
@@ -608,12 +608,12 @@
       <input type="hidden" id="cfgGuildName" value="">
     </div>
 
-    <!-- 2 & 3. 카카오톡 스타일 프로필 카드 -->
+    <!-- 2 & 3. 카카오톡 스타일 프로필 카드 (클릭 시 통합 모달 오픈, 하단 큰 버튼 제거) -->
     <div class="settings-section-box mb-3">
-      <div class="kt-profile-card">
-        <div class="kt-avatar-wrapper" onclick="openProfileJobModal()" title="클릭하여 직업 변경">
+      <div class="kt-profile-card" onclick="openCombinedProfileModal()" style="cursor: pointer;" title="클릭하여 캐릭터 직업 및 비밀번호 변경">
+        <div class="kt-avatar-wrapper">
           <div class="kt-avatar-circle" id="profileCurrentAvatarDisplay">👤</div>
-          <div class="kt-avatar-badge"><i class="fa-solid fa-camera"></i></div>
+          <div class="kt-avatar-badge"><i class="fa-solid fa-gear"></i></div>
         </div>
         <div class="kt-profile-info">
           <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
@@ -623,53 +623,37 @@
           <div class="kt-profile-class" id="profileCurrentClassDisplay">
             <span class="text-secondary">직업:</span> <strong class="text-warning">미지정</strong>
           </div>
+          <div class="text-secondary mt-1" style="font-size: 0.68rem; opacity: 0.85;">
+            <i class="fa-solid fa-pen-to-square me-1 text-info"></i>클릭하여 프로필 & 비밀번호 변경
+          </div>
         </div>
-      </div>
-
-      <!-- 액션 버튼 2종 -->
-      <div class="d-flex gap-2 mt-3">
-        <button type="button" class="btn btn-kakao-yellow flex-fill" onclick="openProfileJobModal()">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> 직업 / 프로필 변경
-        </button>
-        <button type="button" class="btn btn-outline-light flex-fill" style="border-radius: 10px; font-weight: 700; font-size: 0.82rem; height: 42px;" onclick="openMyPersonalPinModal()">
-          <i class="fa-solid fa-key me-1 text-warning"></i> 비밀번호 변경
-        </button>
+        <div class="text-secondary pe-1" style="font-size: 0.95rem;">
+          <i class="fa-solid fa-chevron-right"></i>
+        </div>
       </div>
     </div>
 
-    <!-- 4. 라이트 / 다크모드 설정 -->
-    <div class="settings-section-box">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <div class="fw-bold text-info small"><i class="fa-solid fa-circle-half-stroke me-1"></i> 라이트 / 다크모드 설정</div>
-        <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50" style="font-size: 0.65rem;" id="currentThemeModeBadge">다크모드 적용중</span>
+    <!-- 4. 라이트 / 다크모드 설정 (원클릭 토글 스위치) -->
+    <div class="settings-section-box d-flex justify-content-between align-items-center py-3 px-3">
+      <div class="d-flex align-items-center gap-3">
+        <div id="themeToggleIconBox" style="width: 40px; height: 40px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; transition: all 0.2s ease;">
+          <span id="themeToggleIcon">🌙</span>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold text-white small" id="themeToggleTitle" style="font-size: 0.88rem;">화면 테마 설정</span>
+            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50" id="currentThemeModeBadge" style="font-size: 0.65rem;">다크모드</span>
+          </div>
+          <div class="text-secondary" id="themeToggleSubtext" style="font-size: 0.72rem; margin-top: 2px;">선명하고 눈이 편안한 다크 테마</div>
+        </div>
       </div>
-      <p class="text-secondary" style="font-size: 0.72rem; line-height: 1.4; margin-bottom: 8px;">
-        선호하는 화면 테마를 선택하세요. 상단 바 및 배경 전체가 즉시 전환됩니다.
-      </p>
-
-      <div class="theme-option-box">
-        <div class="theme-card-btn" id="themeCardDark" onclick="setThemeMode('dark')">
-          <span style="font-size: 1.5rem;">🌙</span>
-          <div>
-            <div class="fw-bold text-white" style="font-size: 0.84rem;">다크 모드</div>
-            <div class="text-secondary" style="font-size: 0.68rem;">선명하고 눈이 편안한 테마</div>
-          </div>
-        </div>
-
-        <div class="theme-card-btn" id="themeCardLight" onclick="setThemeMode('light')">
-          <span style="font-size: 1.5rem;">☀️</span>
-          <div>
-            <div class="fw-bold text-white" style="font-size: 0.84rem;">라이트 모드</div>
-            <div class="text-secondary" style="font-size: 0.68rem;">화사하고 깔끔한 카톡 테마</div>
-          </div>
-        </div>
+      <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+        <input class="form-check-input ms-0 theme-toggle-switch" type="checkbox" id="themeToggleSwitch" role="switch" onchange="onThemeToggleSwitch(this.checked)" style="width: 3.2em; height: 1.65em; cursor: pointer;">
       </div>
     </div>
   </div>
 
-  <!-- ========================================================
-       [탭 2] 토벌설정 탭: 토벌 & 전쟁 배점 규정, 3분 추가등록 링크
-       ======================================================== -->
+  <!-- [탭 2] 토벌설정 탭: 토벌 & 전쟁 배점 규정, 3분 추가등록 링크 -->
   <div id="tabSettingsRaid" style="display: none;">
     <div class="settings-section-box">
       <div class="fw-bold text-warning small mb-2"><i class="fa-solid fa-star me-1"></i> 토벌 & 전쟁 배점 규정 (신규 등록 건부터 적용)</div>
@@ -737,9 +721,7 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       [탭 3] 길드원보안 탭: 길드원별 비밀번호 초기화 도구
-       ======================================================== -->
+  <!-- [탭 3] 길드원보안 탭: 길드원별 비밀번호 초기화 도구 -->
   <div id="tabSettingsMemberAuth" style="display: none;">
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2">
@@ -762,11 +744,9 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       [탭 4 - 신설] 설정보안 탭: Gemini AI OCR API 키 관리 + 관리자 비밀번호 보안
-       ======================================================== -->
+  <!-- [탭 4] 설정보안 탭: Gemini AI OCR API 키 관리 + 관리자 비밀번호 보안 -->
   <div id="tabSettingsSecurity" style="display: none;">
-    <!-- 1. Gemini AI OCR API 키 (중요 시스템 자격증명) -->
+    <!-- 1. Gemini AI OCR API 키 -->
     <div class="settings-section-box border-primary border-opacity-50 mb-3">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
         <div class="d-flex align-items-center gap-2" style="min-width:0; flex:1;">
@@ -793,7 +773,7 @@
       </div>
     </div>
 
-    <!-- 2. 관리자 비밀번호 보안 (마스터키 변경) -->
+    <!-- 2. 관리자 비밀번호 보안 -->
     <div class="settings-section-box border-danger border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
         <div class="d-flex align-items-center gap-2">
@@ -810,9 +790,7 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       [탭 5] 관리자 권한 탭: 세부 기능별 권한 스위치
-       ======================================================== -->
+  <!-- [탭 5] 관리자 권한 탭: 세부 기능별 권한 스위치 -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
@@ -976,98 +954,100 @@
   </div>
 </div>
 
-<!-- [모달 1] 직업 / 프로필 선택 모달 -->
-<div id="modalProfileJobSelect" class="custom-modal-backdrop" style="display: none;">
+<!-- ========================================================
+     [통합 모달] 프로필 직업 & 개인 비밀번호 통합 관리 모달
+     ======================================================== -->
+<div id="modalCombinedProfile" class="custom-modal-backdrop" style="display: none;">
   <div class="custom-modal-card">
     <div class="d-flex justify-content-between align-items-center mb-2">
       <div class="fw-bold text-warning" style="font-size: 1rem;">
-        <i class="fa-solid fa-wand-magic-sparkles me-1 text-warning"></i> 게임 직업 선택
+        <i class="fa-solid fa-user-gear me-1"></i> 프로필 & 비밀번호 관리
       </div>
-      <button type="button" class="btn-close-modal" onclick="closeProfileJobModal()"><i class="fa-solid fa-xmark"></i></button>
+      <button type="button" class="btn-close-modal" onclick="closeCombinedProfileModal()"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <p class="text-secondary mb-3" style="font-size: 0.74rem; line-height: 1.4;">
-      채팅창과 길드 프로필에 표시될 캐릭터 직업을 선택하세요. 클릭 즉시 반영됩니다.
-    </p>
-
-    <div class="profile-class-grid">
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('🏹', '궁수')">
-        <span class="class-icon">🏹</span>
-        <span class="class-title">궁수</span>
-      </div>
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('🌿', '힐러')">
-        <span class="class-icon">🌿</span>
-        <span class="class-title">힐러</span>
-      </div>
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('⚔️', '전사')">
-        <span class="class-icon">⚔️</span>
-        <span class="class-title">전사</span>
-      </div>
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('🛡️', '탱커')">
-        <span class="class-icon">🛡️</span>
-        <span class="class-title">탱커</span>
-      </div>
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('🪄', '마법사')">
-        <span class="class-icon">🪄</span>
-        <span class="class-title">마법사</span>
-      </div>
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('👊', '무투사')">
-        <span class="class-icon">👊</span>
-        <span class="class-title">무투사</span>
-      </div>
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('🥷', '암살자')">
-        <span class="class-icon">🥷</span>
-        <span class="class-title">암살자</span>
-      </div>
-      <div class="profile-class-btn" onclick="selectClassProfileInSettings('👑', '길드장')">
-        <span class="class-icon">👑</span>
-        <span class="class-title">길드장</span>
-      </div>
+    
+    <!-- 모달 내부 탭 -->
+    <div class="d-flex gap-2 p-1 mb-3 rounded" style="background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.08);">
+      <button type="button" class="btn btn-sm flex-fill fw-bold py-1 active" id="btnModalTabJob" onclick="switchModalTab('job')" style="font-size: 0.78rem; border-radius: 7px; background: #0284c7; color: #fff; border: none;">
+        <i class="fa-solid fa-wand-magic-sparkles me-1"></i>캐릭터/직업 선택
+      </button>
+      <button type="button" class="btn btn-sm flex-fill fw-bold py-1" id="btnModalTabPin" onclick="switchModalTab('pin')" style="font-size: 0.78rem; border-radius: 7px; background: transparent; color: #94a3b8; border: none;">
+        <i class="fa-solid fa-key me-1"></i>비밀번호 변경
+      </button>
     </div>
 
-    <button type="button" class="btn btn-secondary btn-sm w-100 fw-bold py-2 mt-3" onclick="closeProfileJobModal()">
+    <!-- 탭 A: 캐릭터/직업 선택 -->
+    <div id="modalSubTabJob">
+      <p class="text-secondary mb-2" style="font-size: 0.74rem; line-height: 1.4;">
+        대화창 및 길드 프로필에 표시될 캐릭터 직업을 선택하세요. 클릭 즉시 반영됩니다.
+      </p>
+      <div class="profile-class-grid">
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🏹', '궁수')">
+          <span class="class-icon">🏹</span>
+          <span class="class-title">궁수</span>
+        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🌿', '힐러')">
+          <span class="class-icon">🌿</span>
+          <span class="class-title">힐러</span>
+        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('⚔️', '전사')">
+          <span class="class-icon">⚔️</span>
+          <span class="class-title">전사</span>
+        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🛡️', '탱커')">
+          <span class="class-icon">🛡️</span>
+          <span class="class-title">탱커</span>
+        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🪄', '마법사')">
+          <span class="class-icon">🪄</span>
+          <span class="class-title">마법사</span>
+        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('👊', '무투사')">
+          <span class="class-icon">👊</span>
+          <span class="class-title">무투사</span>
+        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🥷', '암살자')">
+          <span class="class-icon">🥷</span>
+          <span class="class-title">암살자</span>
+        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('👑', '길드장')">
+          <span class="class-icon">👑</span>
+          <span class="class-title">길드장</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 B: 개인 비밀번호 변경 -->
+    <div id="modalSubTabPin" style="display: none;">
+      <p class="text-secondary mb-3" style="font-size: 0.74rem; line-height: 1.4;">
+        로그인 시 사용하는 본인의 개인 PIN을 안전하게 변경합니다.
+      </p>
+      <div class="mb-2 text-start">
+        <label class="small text-secondary mb-1" style="font-size: 0.74rem;">현재 개인 비밀번호 (초기값: 0000)</label>
+        <input type="password" id="inputMyOldPin" class="form-control input-custom-set" placeholder="현재 비밀번호">
+      </div>
+      <div class="mb-2 text-start">
+        <label class="small text-secondary mb-1" style="font-size: 0.74rem;">새 비밀번호 (4자리 이상 숫자)</label>
+        <input type="password" id="inputMyNewPin" class="form-control input-custom-set" placeholder="새 비밀번호 입력">
+      </div>
+      <div class="mb-3 text-start">
+        <label class="small text-secondary mb-1" style="font-size: 0.74rem;">새 비밀번호 확인</label>
+        <input type="password" id="inputMyNewPinConfirm" class="form-control input-custom-set" placeholder="새 비밀번호 다시 입력">
+      </div>
+      <button type="button" class="btn btn-kakao-yellow btn-sm w-100 fw-bold py-2 mb-2" onclick="submitMyPersonalPinChange()">
+        <i class="fa-solid fa-check me-1"></i> 비밀번호 변경 저장
+      </button>
+    </div>
+
+    <button type="button" class="btn btn-secondary btn-sm w-100 fw-bold py-2 mt-2" onclick="closeCombinedProfileModal()">
       닫기
     </button>
   </div>
 </div>
 
-<!-- [모달 2] 개인 비밀번호 변경 모달 -->
-<div id="modalMyPersonalPinChange" class="custom-modal-backdrop" style="display: none;">
-  <div class="custom-modal-card">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="fw-bold text-white" style="font-size: 1rem;">
-        <i class="fa-solid fa-lock me-1 text-warning"></i> 개인 비밀번호 변경
-      </div>
-      <button type="button" class="btn-close-modal" onclick="closeMyPersonalPinModal()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <p class="text-secondary mb-3" style="font-size: 0.74rem; line-height: 1.4;">
-      로그인 시 사용하는 본인의 개인 PIN을 안전하게 변경합니다.
-    </p>
-
-    <div class="mb-2">
-      <label class="small text-secondary mb-1" style="font-size: 0.74rem;">현재 개인 비밀번호 (초기값: 0000)</label>
-      <input type="password" id="inputMyOldPin" class="form-control input-custom-set" placeholder="현재 비밀번호">
-    </div>
-
-    <div class="mb-2">
-      <label class="small text-secondary mb-1" style="font-size: 0.74rem;">새 비밀번호 (4자리 이상 숫자)</label>
-      <input type="password" id="inputMyNewPin" class="form-control input-custom-set" placeholder="새 비밀번호 입력">
-    </div>
-
-    <div class="mb-3">
-      <label class="small text-secondary mb-1" style="font-size: 0.74rem;">새 비밀번호 확인</label>
-      <input type="password" id="inputMyNewPinConfirm" class="form-control input-custom-set" placeholder="새 비밀번호 다시 입력">
-    </div>
-
-    <div class="d-flex gap-2">
-      <button type="button" class="btn btn-secondary btn-sm w-50 fw-bold py-2" onclick="closeMyPersonalPinModal()">취소</button>
-      <button type="button" class="btn btn-kakao-yellow btn-sm w-50 fw-bold py-2" onclick="submitMyPersonalPinChange()">
-        <i class="fa-solid fa-check me-1"></i> 변경 저장
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- [모달 3] 관리자 비밀번호 변경 모달 -->
+<!-- ========================================================
+     [모달 3] 관리자 비밀번호 변경 모달
+     ======================================================== -->
 <div id="modalAdminPinChange" class="custom-modal-backdrop" style="display: none;">
   <div class="custom-modal-card">
     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1146,7 +1126,7 @@
     if (tab === 'security' && !isSuper) {
       const allowSecurity = window.currentSettingsMap['perm_settings_security'] !== 'false';
       if (!allowSecurity) {
-        alert("⚠️ 일반 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.\\n슈퍼관리자에게 문의하세요.");
+        alert("⚠️ 일반 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
         return;
       }
     }
@@ -1154,7 +1134,7 @@
     if (tab === 'bossGround' && !isSuper) {
       const allowBossGround = window.currentSettingsMap['perm_settings_boss_ground'] !== 'false';
       if (!allowBossGround) {
-        alert("⚠️ 일반 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.\\n슈퍼관리자에게 문의하세요.");
+        alert("⚠️ 일반 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
         return;
       }
     }
@@ -1207,6 +1187,8 @@
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
     const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+    const adminRole = sessionStorage.getItem("admin_role") || "";
+    const isSuper = (adminRole === "super") || (myNick === "슈퍼관리자") || (myRole === "슈퍼관리자");
 
     const nickDisplay = document.getElementById("profileCurrentNickDisplay");
     const classDisplay = document.getElementById("profileCurrentClassDisplay");
@@ -1214,29 +1196,97 @@
     const roleBadge = document.getElementById("profileRoleBadge");
 
     if (nickDisplay) nickDisplay.innerText = myNick ? myNick : "로그인 사용자 없음";
-    if (classDisplay) classDisplay.innerHTML = `<span class="text-secondary">직업:</span> <strong class="text-warning">${myClass}</strong>`;
+    if (classDisplay) classDisplay.innerHTML = '<span class="text-secondary">직업:</span> <strong class="text-warning">' + myClass + '</strong>';
     if (avatarDisplay) avatarDisplay.innerText = myAvatar;
-    if (roleBadge) roleBadge.innerText = myRole;
+    if (roleBadge) {
+      if (isSuper) {
+        roleBadge.innerText = "👑 슈퍼관리자";
+        roleBadge.className = "kt-role-badge badge-super";
+        roleBadge.style = "background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important; color: #ffffff !important; border: none !important; font-weight: 800 !important; font-size: 0.72rem !important; padding: 3px 8px !important; border-radius: 20px !important;";
+      } else {
+        roleBadge.innerText = myRole;
+        roleBadge.className = "kt-role-badge";
+        roleBadge.style = "";
+      }
+    }
+  }
+
+  // ==========================================
+  // [통합 프로필 & 비밀번호 모달]
+  // ==========================================
+  function openCombinedProfileModal(initialTab = 'job') {
+    const modal = document.getElementById("modalCombinedProfile");
+    if (modal) {
+      switchModalTab(initialTab);
+      modal.style.display = "flex";
+      if (initialTab === 'pin') {
+        setTimeout(() => {
+          const el = document.getElementById("inputMyOldPin");
+          if (el) el.focus();
+        }, 100);
+      }
+    }
+  }
+
+  function closeCombinedProfileModal() {
+    const modal = document.getElementById("modalCombinedProfile");
+    if (modal) modal.style.display = "none";
+  }
+
+  function switchModalTab(tab) {
+    const btnJob = document.getElementById("btnModalTabJob");
+    const btnPin = document.getElementById("btnModalTabPin");
+    const tabJob = document.getElementById("modalSubTabJob");
+    const tabPin = document.getElementById("modalSubTabPin");
+
+    if (tab === 'pin') {
+      if (tabJob) tabJob.style.display = "none";
+      if (tabPin) tabPin.style.display = "block";
+      if (btnJob) {
+        btnJob.style.background = "transparent";
+        btnJob.style.color = "#94a3b8";
+      }
+      if (btnPin) {
+        btnPin.style.background = "#0284c7";
+        btnPin.style.color = "#ffffff";
+      }
+    } else {
+      if (tabJob) tabJob.style.display = "block";
+      if (tabPin) tabPin.style.display = "none";
+      if (btnJob) {
+        btnJob.style.background = "#0284c7";
+        btnJob.style.color = "#ffffff";
+      }
+      if (btnPin) {
+        btnPin.style.background = "transparent";
+        btnPin.style.color = "#94a3b8";
+      }
+    }
   }
 
   function openProfileJobModal() {
-    const modal = document.getElementById("modalProfileJobSelect");
-    if (modal) modal.style.display = "flex";
+    openCombinedProfileModal('job');
   }
   function closeProfileJobModal() {
-    const modal = document.getElementById("modalProfileJobSelect");
-    if (modal) modal.style.display = "none";
+    closeCombinedProfileModal();
+  }
+  function openMyPersonalPinModal() {
+    openCombinedProfileModal('pin');
+  }
+  function closeMyPersonalPinModal() {
+    closeCombinedProfileModal();
   }
 
   async function selectClassProfileInSettings(icon, className) {
     const myNick = localStorage.getItem("guild_my_nickname") || "";
-    const fullClass = `${icon} ${className}`;
+    const fullClass = icon + ' ' + className;
 
     localStorage.setItem("guild_my_avatar", icon);
     localStorage.setItem("guild_my_class", fullClass);
 
     loadMyProfileData();
 
+    // 메인 화면 사이드바 엘리먼트와 동기화
     const sidebarAvatar = document.getElementById("sidebarAvatarIcon");
     const sidebarClass = document.getElementById("sidebarUserClassText");
     if (sidebarAvatar) sidebarAvatar.innerText = icon;
@@ -1244,32 +1294,14 @@
 
     if (myNick) {
       try {
-        await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}`, "PATCH", {
+        await apiRequest("guild_members?name=eq." + encodeURIComponent(myNick), "PATCH", {
           job_class: fullClass
         });
       } catch (e) {}
     }
 
-    closeProfileJobModal();
-    showToast(`내 직업이 [${fullClass}] (으)로 변경되었습니다!`, "🎉");
-  }
-
-  function openMyPersonalPinModal() {
-    const myNick = localStorage.getItem("guild_my_nickname") || "";
-    if (!myNick) return showToast("로그인된 사용자가 없습니다. 먼저 로그인하세요.", "⚠️");
-    const modal = document.getElementById("modalMyPersonalPinChange");
-    if (modal) {
-      document.getElementById("inputMyOldPin").value = "";
-      document.getElementById("inputMyNewPin").value = "";
-      document.getElementById("inputMyNewPinConfirm").value = "";
-      modal.style.display = "flex";
-      setTimeout(() => document.getElementById("inputMyOldPin").focus(), 100);
-    }
-  }
-
-  function closeMyPersonalPinModal() {
-    const modal = document.getElementById("modalMyPersonalPinChange");
-    if (modal) modal.style.display = "none";
+    closeCombinedProfileModal();
+    showToast("내 직업이 [" + fullClass + "] (으)로 변경되었습니다!", "🎉");
   }
 
   async function submitMyPersonalPinChange() {
@@ -1283,11 +1315,11 @@
     if (!oldPin) return showToast("현재 개인 비밀번호를 입력해주세요.", "⚠️");
     if (!newPin) return showToast("새 개인 비밀번호를 입력해주세요.", "⚠️");
     if (newPin !== newPinConfirm) return showToast("새 비밀번호 확인이 일치하지 않습니다.", "⚠️");
-    if (!/^\\d{4,8}$/.test(newPin)) return showToast("비밀번호는 숫자 4~8자리로 입력하세요.", "⚠️");
+    if (!/^\d{4,8}$/.test(newPin)) return showToast("비밀번호는 숫자 4~8자리로 입력하세요.", "⚠️");
 
     let currentStoredPin = (localStorage.getItem("guild_my_pin") || "0000").trim();
     try {
-      const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}&select=id,pin`);
+      const res = await apiRequest("guild_members?name=eq." + encodeURIComponent(myNick) + "&select=id,pin");
       if (res && res.length > 0 && res[0].pin) {
         currentStoredPin = String(res[0].pin).trim();
       }
@@ -1298,13 +1330,20 @@
     }
 
     try {
-      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+      await apiRequest("guild_members?name=eq." + encodeURIComponent(myNick), "PATCH", { pin: newPin });
       localStorage.setItem("guild_my_pin", newPin);
-      closeMyPersonalPinModal();
-      showToast(`[${myNick}] 님의 개인 비밀번호가 변경되었습니다!`, "🎉");
+      closeCombinedProfileModal();
+      showToast("[" + myNick + "] 님의 개인 비밀번호가 변경되었습니다!", "🎉");
     } catch (err) {
       showToast("비밀번호 변경 실패: " + err.message, "❌");
     }
+  }
+
+  // ==========================================
+  // [기본 탭] 4. 라이트 / 다크모드 토글 스위치 기능
+  // ==========================================
+  function onThemeToggleSwitch(isChecked) {
+    setThemeMode(isChecked ? 'dark' : 'light');
   }
 
   function initThemeMode() {
@@ -1314,30 +1353,51 @@
 
   function setThemeMode(mode, showNotice = true) {
     const card = document.getElementById("settingsRootCard");
-    const cardDark = document.getElementById("themeCardDark");
-    const cardLight = document.getElementById("themeCardLight");
+    const toggleSwitch = document.getElementById("themeToggleSwitch");
+    const iconBox = document.getElementById("themeToggleIconBox");
+    const icon = document.getElementById("themeToggleIcon");
+    const title = document.getElementById("themeToggleTitle");
+    const subtext = document.getElementById("themeToggleSubtext");
     const badge = document.getElementById("currentThemeModeBadge");
 
+    localStorage.setItem("guild_theme_mode", mode);
+
     if (mode === 'light') {
+      document.documentElement.classList.add("theme-light");
+      document.documentElement.classList.remove("theme-dark");
+      if (document.body) {
+        document.body.classList.add("theme-light");
+        document.body.classList.remove("theme-dark");
+      }
       if (card) card.classList.add("light-mode");
-      if (cardLight) cardLight.classList.add("active");
-      if (cardDark) cardDark.classList.remove("active");
+      if (toggleSwitch) toggleSwitch.checked = false;
+      if (iconBox) iconBox.style.background = "rgba(254, 229, 0, 0.25)";
+      if (icon) icon.innerText = "☀️";
+      if (title) title.innerText = "라이트 모드";
+      if (subtext) subtext.innerText = "밝고 화사한 카카오톡 테마 적용 중";
       if (badge) {
         badge.className = "badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50";
-        badge.innerText = "라이트모드 적용중";
+        badge.innerText = "라이트모드";
       }
-      localStorage.setItem("guild_theme_mode", "light");
       if (typeof window.applyAppTheme === 'function') window.applyAppTheme('light');
       if (showNotice) showToast("☀️ 라이트 모드로 전환되었습니다.");
     } else {
+      document.documentElement.classList.add("theme-dark");
+      document.documentElement.classList.remove("theme-light");
+      if (document.body) {
+        document.body.classList.add("theme-dark");
+        document.body.classList.remove("theme-light");
+      }
       if (card) card.classList.remove("light-mode");
-      if (cardDark) cardDark.classList.add("active");
-      if (cardLight) cardLight.classList.remove("active");
+      if (toggleSwitch) toggleSwitch.checked = true;
+      if (iconBox) iconBox.style.background = "rgba(56, 189, 248, 0.15)";
+      if (icon) icon.innerText = "🌙";
+      if (title) title.innerText = "다크 모드";
+      if (subtext) subtext.innerText = "선명하고 눈이 편안한 다크 테마 적용 중";
       if (badge) {
         badge.className = "badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50";
-        badge.innerText = "다크모드 적용중";
+        badge.innerText = "다크모드";
       }
-      localStorage.setItem("guild_theme_mode", "dark");
       if (typeof window.applyAppTheme === 'function') window.applyAppTheme('dark');
       if (showNotice) showToast("🌙 다크 모드로 전환되었습니다.");
     }
@@ -1537,7 +1597,7 @@
         const permRow = await apiRequest("guild_settings?key=eq.perm_member_pin_reset");
         const permVal = (permRow && permRow.length > 0) ? permRow[0].value : window.currentSettingsMap['perm_member_pin_reset'];
         if (permVal === 'false') {
-          return alert("⚠️ 일반 관리자에게는 비밀번호 초기화 권한이 비활성화되어 있습니다.\\n슈퍼관리자에게 문의하세요.");
+          return alert("⚠️ 일반 관리자에게는 비밀번호 초기화 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
         }
       } catch (e) {
         if (window.currentSettingsMap['perm_member_pin_reset'] === 'false') {
@@ -1552,7 +1612,7 @@
 
     if (!memberId) return showToast("초기화할 길드원을 선택하세요!", "⚠️");
 
-    if (!confirm(`[${memberName}] 길드원의 비밀번호를 초기화하시겠습니까?\\n초기 비밀번호는 [ 0000 ] 으로 설정됩니다.`)) {
+    if (!confirm(`[${memberName}] 길드원의 비밀번호를 초기화하시겠습니까?\n초기 비밀번호는 [ 0000 ] 으로 설정됩니다.`)) {
       return;
     }
 
@@ -1596,7 +1656,7 @@
 
       if (res && res.success) {
         closeAdminPinModal();
-        alert("🎉 비밀번호가 암호화되어 안전하게 변경되었습니다!\\n다시 로그인해주세요.");
+        alert("🎉 비밀번호가 암호화되어 안전하게 변경되었습니다!\n다시 로그인해주세요.");
         sessionStorage.removeItem("admin_auth");
         sessionStorage.removeItem("admin_role");
         sessionStorage.removeItem("admin_auth_expire");
