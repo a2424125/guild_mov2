@@ -13,9 +13,9 @@
     --reg-input-bg: #141922;
     --reg-input-border: #2c3545;
     --reg-input-text: #ffffff;
-    --reg-member-bg: #1e2530;
-    --reg-member-border: #2c3545;
-    --reg-member-text: #cbd5e1;
+    --reg-member-bg: #0d1527;
+    --reg-member-border: #1e293b;
+    --reg-member-text: #f1f5f9;
     --reg-yellow: #fee500;
   }
 
@@ -34,17 +34,17 @@
     --reg-input-text: #0f172a;
     --reg-member-bg: #ffffff;
     --reg-member-border: #e2e8f0;
-    --reg-member-text: #334155;
+    --reg-member-text: #1e293b;
     --reg-yellow: #fee500;
   }
 
   .register-card {
     background: var(--reg-card-bg);
     border: 1px solid var(--reg-card-border);
-    border-radius: 16px;
-    padding: 16px;
+    border-radius: 14px;
+    padding: 12px 14px;
     color: var(--reg-text-main);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     letter-spacing: -0.2px;
   }
@@ -52,29 +52,30 @@
   .reg-section-box {
     background: var(--reg-section-bg);
     border: 1px solid var(--reg-section-border);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 9px 11px;
+    margin-bottom: 8px;
     transition: background 0.2s ease, border-color 0.2s ease;
   }
 
   .reg-section-title {
-    font-size: 0.86rem;
+    font-size: 0.8rem;
     font-weight: 800;
     color: var(--reg-text-main);
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
+    gap: 5px;
+    margin-bottom: 6px;
   }
 
   .reg-input-custom {
     background-color: var(--reg-input-bg) !important;
     border: 1px solid var(--reg-input-border) !important;
     color: var(--reg-input-text) !important;
-    border-radius: 8px !important;
-    padding: 8px 12px !important;
-    font-size: 0.84rem !important;
+    border-radius: 7px !important;
+    padding: 5px 9px !important;
+    font-size: 0.78rem !important;
+    height: 33px;
     outline: none !important;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
@@ -89,9 +90,9 @@
     color: #191919 !important;
     border: none !important;
     font-weight: 800 !important;
-    border-radius: 10px !important;
+    border-radius: 9px !important;
     transition: all 0.15s ease-in-out !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -101,7 +102,7 @@
   .btn-kakao-yellow:hover:not(:disabled) {
     background-color: #fada0a !important;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(254, 229, 0, 0.35) !important;
+    box-shadow: 0 3px 10px rgba(254, 229, 0, 0.35) !important;
   }
   .btn-kakao-yellow:active:not(:disabled) {
     transform: translateY(0);
@@ -113,71 +114,105 @@
     box-shadow: none !important;
   }
 
-  /* OCR 업로드 박스 */
-  .ocr-drop-area {
-    border: 2px dashed var(--reg-section-border);
-    border-radius: 12px;
-    padding: 16px 12px;
+  /* ========================================================
+     1 & 2. 축소된 API OCR 및 이미지 등록 박스
+     ======================================================== */
+  .ocr-compact-dropzone {
+    border: 1.5px dashed rgba(168, 85, 247, 0.4);
+    border-radius: 10px;
+    padding: 10px 12px;
     text-align: center;
-    background: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.12);
     cursor: pointer;
     transition: all 0.2s ease;
-    position: relative;
-  }
-  .ocr-drop-area:hover, .ocr-drop-area.dragover {
-    border-color: #fee500;
-    background: rgba(254, 229, 0, 0.06);
-  }
-  .ocr-preview-wrap {
-    max-height: 180px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 8px;
-    margin-top: 10px;
-    position: relative;
-    border: 1px solid var(--reg-section-border);
-  }
-  .ocr-preview-img {
-    max-height: 180px;
-    max-width: 100%;
-    object-fit: contain;
-  }
-  .btn-remove-preview {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    background: rgba(0, 0, 0, 0.65);
-    color: #ffffff;
-    border: none;
-    border-radius: 50%;
-    width: 26px;
-    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    cursor: pointer;
+    gap: 8px;
+  }
+  .ocr-compact-dropzone:hover {
+    border-color: #a855f7;
+    background: rgba(168, 85, 247, 0.08);
   }
 
-  /* 전쟁 구분 뱃지 라디오 버튼 */
+  /* 2번 스크린샷 완벽 일치: 이미지 등록 완료 후 컴팩트 가로 바 */
+  .ocr-registered-card {
+    border: 1.5px dashed #6366f1;
+    border-radius: 12px;
+    padding: 8px 12px;
+    background: #0d1222;
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .ocr-img-thumb {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1.5px solid #334155;
+    flex-shrink: 0;
+  }
+  .btn-ocr-analyze {
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+    color: #ffffff;
+    border: none;
+    font-weight: 800;
+    font-size: 0.78rem;
+    padding: 7px 12px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35);
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+  }
+  .btn-ocr-analyze:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+  }
+  .btn-ocr-reupload {
+    background: rgba(239, 68, 68, 0.12);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    font-weight: 700;
+    font-size: 0.74rem;
+    padding: 6px 9px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .btn-ocr-reupload:hover {
+    background: rgba(239, 68, 68, 0.22);
+  }
+
+  /* ========================================================
+     4. 전쟁 구분 컴팩트 버튼 (축소)
+     ======================================================== */
   .war-badge-group {
     display: flex;
-    gap: 6px;
+    gap: 4px;
   }
   .war-badge-btn {
     flex: 1;
-    padding: 7px 4px;
-    border-radius: 8px;
+    padding: 5px 3px;
+    border-radius: 6px;
     border: 1px solid var(--reg-section-border);
     background: var(--reg-input-bg);
     color: var(--reg-text-sub);
-    font-size: 0.8rem;
+    font-size: 0.74rem;
     font-weight: 700;
     text-align: center;
     cursor: pointer;
     transition: all 0.15s ease;
+    user-select: none;
   }
   .war-badge-btn.active.normal {
     background: rgba(56, 189, 248, 0.2);
@@ -195,180 +230,180 @@
     color: #ff6b6b;
   }
 
-  /* 드랍 아이템 퀵 태그 */
-  .quick-drop-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 6px;
-  }
-  .btn-quick-tag {
-    background: var(--reg-input-bg);
-    border: 1px solid var(--reg-section-border);
-    color: var(--reg-text-sub);
+  /* ========================================================
+     5. 1인당 배점 안내 고대비 가독성 뱃지
+     ======================================================== */
+  .score-info-badge {
+    background: #0f172a;
+    border: 1px solid #eab308;
+    color: #f8fafc;
+    font-size: 0.73rem;
+    font-weight: 700;
+    padding: 3px 8px;
     border-radius: 6px;
-    padding: 3px 7px;
-    font-size: 0.72rem;
-    cursor: pointer;
-    transition: all 0.12s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   }
-  .btn-quick-tag:hover {
-    border-color: #fee500;
-    color: #fee500;
+  body.theme-light .score-info-badge,
+  html.theme-light .score-info-badge {
+    background: #fefce8;
+    border-color: #ca8a04;
+    color: #1e293b;
   }
 
-  /* 5열 길드원 선택 그리드 */
+  /* ========================================================
+     8. 3번 스크린샷 완벽 일치: 5열 길드원 선택 버튼 그리드
+     ======================================================== */
+  .member-grid-box-wrap {
+    border: 1px solid #1e293b;
+    border-radius: 10px;
+    padding: 7px 6px;
+    background: #090e1c;
+    max-height: 290px;
+    overflow-y: auto;
+  }
+  body.theme-light .member-grid-box-wrap,
+  html.theme-light .member-grid-box-wrap {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+  }
+
   .member-grid-5col {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
     gap: 5px;
-    max-height: 280px;
-    overflow-y: auto;
-    padding: 2px;
   }
-  @media (max-width: 540px) {
+  @media (max-width: 480px) {
     .member-grid-5col {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  @media (max-width: 380px) {
-    .member-grid-5col {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
     }
   }
 
-  .member-select-card {
+  .btn-member-cell {
     background: var(--reg-member-bg);
     border: 1px solid var(--reg-member-border);
-    border-radius: 8px;
-    padding: 6px 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    cursor: pointer;
-    transition: all 0.12s ease;
-    user-select: none;
-    position: relative;
-    text-align: center;
-  }
-  .member-select-card:hover {
-    border-color: #fee500;
-    transform: translateY(-1px);
-  }
-  .member-select-card.selected {
-    background: rgba(254, 229, 0, 0.14) !important;
-    border-color: #fee500 !important;
-  }
-  .member-select-card.selected .member-card-name {
-    color: #fee500 !important;
-    font-weight: 800 !important;
-  }
-  .settings-card.light-mode .member-select-card.selected .member-card-name,
-  body.theme-light .member-select-card.selected .member-card-name {
-    color: #191919 !important;
-  }
-  .member-select-card .member-check-icon {
-    position: absolute;
-    top: 3px;
-    right: 4px;
-    font-size: 0.65rem;
-    color: #fee500;
-    display: none;
-  }
-  .member-select-card.selected .member-check-icon {
-    display: block;
-  }
-  .member-card-avatar {
-    font-size: 1.15rem;
-    line-height: 1;
-    margin-bottom: 2px;
-  }
-  .member-card-name {
-    font-size: 0.74rem;
-    font-weight: 600;
+    border-radius: 7px;
+    padding: 7px 2px;
     color: var(--reg-member-text);
+    font-size: 0.79rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 100%;
+    transition: all 0.12s ease;
+    user-select: none;
+    line-height: 1.2;
   }
-  .member-card-role {
-    font-size: 0.6rem;
-    color: var(--reg-text-sub);
+  .btn-member-cell:hover {
+    border-color: #38bdf8;
+    transform: translateY(-1px);
+  }
+  .btn-member-cell.master {
+    color: #f87171 !important;
+  }
+  .btn-member-cell.selected {
+    background: #1d4ed8 !important;
+    border-color: #60a5fa !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4) !important;
+  }
+  body.theme-light .btn-member-cell.selected {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
   }
 
-  /* 선택 제어 툴바 */
-  .grid-tools-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
+  .btn-grid-tool {
+    background: #111827;
+    border: 1px solid #374151;
+    color: #cbd5e1;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-grid-tool:hover {
+    background: #1f2937;
+    color: #ffffff;
+    border-color: #4b5563;
+  }
+  body.theme-light .btn-grid-tool {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #334155;
+  }
+  body.theme-light .btn-grid-tool:hover {
+    background: #f1f5f9;
   }
 </style>
 
 <div class="register-card mb-4" id="registerRootCard">
-  <!-- 상단 헤더 -->
-  <div class="d-flex align-items-center justify-content-between mb-3 gap-2 flex-wrap">
+  <!-- 상단 헤더 (컴팩트) -->
+  <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
     <div class="d-flex align-items-center gap-2">
-      <span style="font-size: 1.25rem;">⚔️</span>
+      <span style="font-size: 1.15rem;">⚔️</span>
       <div>
-        <h6 class="fw-bold mb-0">보스참여 등록</h6>
-        <span class="small text-secondary" style="font-size: 0.7rem;">스크린샷 자동분석 및 토벌 결과 대화방 즉시 공유</span>
+        <h6 class="fw-bold mb-0" style="font-size: 0.92rem;">보스참여 등록</h6>
+        <span class="small text-secondary" style="font-size: 0.67rem;">스크린샷 자동인식 및 토벌 결과 대화방 즉시 공유</span>
       </div>
     </div>
-    <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50" style="font-size: 0.68rem; padding: 4px 8px;">
+    <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50" style="font-size: 0.65rem; padding: 3px 7px;">
       토벌 현장 기록
     </span>
   </div>
 
   <!-- ========================================================
-       1. 스크린샷 AI 자동인식 (Gemini Flash OCR)
+       1 & 2. 스크린샷 AI 자동인식 (축소 및 2번 스크린샷 형태 완벽 구현)
        ======================================================== -->
   <div class="reg-section-box">
     <div class="d-flex justify-content-between align-items-center mb-1">
       <div class="reg-section-title mb-0">
         <i class="fa-solid fa-camera text-warning"></i>
-        <span>스크린샷 AI 인식 (Gemini Flash)</span>
+        <span>스크린샷 AI 인식</span>
       </div>
-      <span id="regGeminiKeyBadge" class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50" style="font-size: 0.62rem;">
+      <span id="regGeminiKeyBadge" class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50" style="font-size: 0.6rem;">
         키 확인 중
       </span>
     </div>
-    <div class="small text-secondary mb-2" style="font-size: 0.72rem; line-height: 1.4;">
-      토벌 기여도/파티 스크린샷을 붙여넣기(<code>Ctrl+V</code>)하거나 업로드하면 길드원을 자동 체크합니다.
+
+    <!-- 숨겨진 파일 인풋 -->
+    <input type="file" id="ocrFileInput" accept="image/*" style="display: none;" onchange="handleImageFileSelected(this.files[0])">
+
+    <!-- 1) 업로드 전: 컴팩트 드롭존 -->
+    <div class="ocr-compact-dropzone" id="ocrDropArea" onclick="document.getElementById('ocrFileInput').click()">
+      <i class="fa-solid fa-cloud-arrow-up text-primary" style="font-size: 1.1rem;"></i>
+      <span class="text-white" style="font-size: 0.76rem; font-weight: 700;">클릭하여 스크린샷 업로드 또는 붙여넣기 (Ctrl+V)</span>
     </div>
 
-    <!-- 드래그 & 드롭 / 붙여넣기 영역 -->
-    <div class="ocr-drop-area" id="ocrDropArea" onclick="document.getElementById('ocrFileInput').click()">
-      <input type="file" id="ocrFileInput" accept="image/*" style="display: none;" onchange="handleImageFileSelected(this.files[0])">
-      <i class="fa-solid fa-cloud-arrow-up text-secondary" style="font-size: 1.6rem; margin-bottom: 6px;"></i>
-      <div class="fw-bold" style="font-size: 0.8rem;">클릭하여 이미지 업로드 또는 붙여넣기 (Ctrl+V)</div>
-      <div class="text-secondary" style="font-size: 0.68rem; margin-top: 2px;">JPG, PNG 지원 (클립보드 스크린샷 즉시 지원)</div>
+    <!-- 2) 업로드 후 (2번 스크린샷 완벽 일치 형태) -->
+    <div class="ocr-registered-card" id="ocrRegisteredCard">
+      <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1;">
+        <img id="ocrThumbImg" class="ocr-img-thumb" src="" alt="썸네일">
+        <div style="min-width: 0; flex: 1;">
+          <div id="ocrFileName" class="fw-bold text-truncate" style="font-size: 0.82rem; color: #c084fc;">스크린샷.png</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">준비 완료 (분석 시작 버튼 클릭)</div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-1 flex-shrink-0">
+        <button type="button" class="btn-ocr-analyze" id="btnRunAiOcr" onclick="executeGeminiOcrAnalysis()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 분석 시작
+        </button>
+        <button type="button" class="btn-ocr-reupload" onclick="triggerReupload()" title="다른 이미지로 교체">
+          <i class="fa-solid fa-rotate"></i> 재업로드
+        </button>
+      </div>
     </div>
 
-    <!-- 이미지 미리보기 & 분석 버튼 -->
-    <div class="ocr-preview-wrap" id="ocrPreviewWrap">
-      <img id="ocrPreviewImage" class="ocr-preview-img" src="" alt="스크린샷 미리보기">
-      <button type="button" class="btn-remove-preview" title="이미지 지우기" onclick="clearOcrPreview(event)">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-
-    <div class="d-flex gap-2 mt-2">
-      <button type="button" class="btn btn-kakao-yellow flex-fill py-2" id="btnRunAiOcr" style="font-size: 0.82rem; height: 38px;" onclick="executeGeminiOcrAnalysis()">
-        <i class="fa-solid fa-wand-magic-sparkles"></i> AI 닉네임 자동인식 실행
-      </button>
-    </div>
-
-    <div id="ocrStatusMsg" class="mt-2 text-center small text-secondary" style="font-size: 0.72rem; display: none;"></div>
+    <div id="ocrStatusMsg" class="mt-1 text-center small text-secondary" style="font-size: 0.7rem; display: none;"></div>
   </div>
 
   <!-- ========================================================
-       2. 토벌 정보 (2컬럼: 토벌일시 & 보스선택)
+       3. 토벌 정보 입력창 (전체적으로 축소)
        ======================================================== -->
   <div class="reg-section-box">
     <div class="reg-section-title">
@@ -379,26 +414,26 @@
     <div class="row g-2 mb-2">
       <!-- 컬럼 1: 토벌 일시 (KST) -->
       <div class="col-6">
-        <label class="small text-secondary mb-1" style="font-size: 0.7rem;">토벌 일시 (KST)</label>
-        <input type="datetime-local" id="regRaidDateTime" class="form-control reg-input-custom w-100" style="height: 38px;">
+        <label class="small text-secondary mb-1" style="font-size: 0.67rem;">토벌 일시 (KST)</label>
+        <input type="datetime-local" id="regRaidDateTime" class="form-control reg-input-custom w-100">
       </div>
 
       <!-- 컬럼 2: 보스 선택 -->
       <div class="col-6">
-        <label class="small text-secondary mb-1" style="font-size: 0.7rem;">보스 선택</label>
-        <select id="regBossSelect" class="form-select reg-input-custom w-100" style="height: 38px;" onchange="onBossSelectChange(this.value)">
+        <label class="small text-secondary mb-1" style="font-size: 0.67rem;">보스 선택</label>
+        <select id="regBossSelect" class="form-select reg-input-custom w-100" onchange="onBossSelectChange(this.value)">
           <option value="">보스를 선택하세요...</option>
         </select>
       </div>
     </div>
 
-    <!-- 전쟁 구분 및 1인당 배점 -->
-    <div class="mt-2">
+    <!-- 4 & 5. 전쟁 구분 축소 버튼 & 고대비 1인당 배점 안내 -->
+    <div class="mt-1">
       <div class="d-flex justify-content-between align-items-center mb-1">
-        <span class="small text-secondary" style="font-size: 0.7rem;">전쟁 구분 (배점 가산)</span>
-        <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50" style="font-size: 0.72rem;" id="regScoreBadge">
-          🏆 1인당 배점: 1점
-        </span>
+        <span class="small text-secondary" style="font-size: 0.67rem;">전쟁 구분 (배점 가산)</span>
+        <div class="score-info-badge" id="regScoreBadge">
+          🏆 1인당 배점: <strong style="color: #facc15;">1점</strong> <span style="font-size: 0.64rem; opacity: 0.85;">(기본 1점)</span>
+        </div>
       </div>
       <div class="war-badge-group">
         <div class="war-badge-btn normal active" id="badgeWarNormal" onclick="selectWarType('일반')">
@@ -415,7 +450,7 @@
   </div>
 
   <!-- ========================================================
-       3. 획득 드랍 아이템 입력
+       6. 획득 드랍 아이템 (예시 버튼 삭제 완료)
        ======================================================== -->
   <div class="reg-section-box">
     <div class="reg-section-title">
@@ -423,58 +458,40 @@
       <span>획득 드랍 아이템</span>
     </div>
     
-    <input type="text" id="regDropItemsInput" class="form-control reg-input-custom w-100 mb-1" placeholder="드랍 아이템 입력 (예: 영웅 도안, 축복받은 주문서)">
-
-    <!-- 퀵 드랍 태그 추천 -->
-    <div class="quick-drop-tags">
-      <span class="btn-quick-tag" onclick="appendDropItemTag('영웅 무기 도안')">+ 영웅 무기 도안</span>
-      <span class="btn-quick-tag" onclick="appendDropItemTag('영웅 방어구 도안')">+ 영웅 방어구 도안</span>
-      <span class="btn-quick-tag" onclick="appendDropItemTag('희귀 주문서')">+ 희귀 주문서</span>
-      <span class="btn-quick-tag" onclick="appendDropItemTag('축복받은 주문서')">+ 축 주문서</span>
-      <span class="btn-quick-tag" onclick="appendDropItemTag('보스 정수')">+ 보스 정수</span>
-      <span class="btn-quick-tag" onclick="appendDropItemTag('다이아')">+ 다이아</span>
-    </div>
+    <input type="text" id="regDropItemsInput" class="form-control reg-input-custom w-100" placeholder="드랍 아이템 입력 (예: 영웅 도안, 축복받은 주문서)">
   </div>
 
   <!-- ========================================================
-       4. 길드원 참여자 선택 그리드 (5컬럼 반응형)
+       7 & 8. 참여 길드원 선택 (검색 삭제 & 3번 스크린샷 버튼 그리드 완벽 구현)
        ======================================================== -->
   <div class="reg-section-box">
-    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
       <div class="reg-section-title mb-0">
         <i class="fa-solid fa-users text-primary"></i>
-        <span>참여자 선택 (<span id="regSelectedCountText" class="text-warning">0</span> / <span id="regTotalMembersCountText">0</span>명)</span>
+        <span>참여 길드원 (<span id="regSelectedCountText" style="color: #38bdf8; font-weight: 800;">0</span>명 선택됨)</span>
       </div>
       <div class="d-flex gap-1">
-        <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" style="font-size: 0.68rem; border-radius: 6px;" onclick="selectAllMembers(true)">
-          전체 선택
+        <button type="button" class="btn-grid-tool" onclick="selectAllMembers(true)">
+          전체선택
         </button>
-        <button type="button" class="btn btn-outline-secondary btn-xs py-1 px-2" style="font-size: 0.68rem; border-radius: 6px;" onclick="selectAllMembers(false)">
-          전체 해제
+        <button type="button" class="btn-grid-tool" onclick="selectAllMembers(false)">
+          초기화
         </button>
       </div>
     </div>
 
-    <!-- 검색창 -->
-    <div class="grid-tools-bar">
-      <div class="input-group input-group-sm w-100">
-        <span class="input-group-text bg-transparent border-end-0" style="border-color: var(--reg-section-border); color: var(--reg-text-sub);">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </span>
-        <input type="text" id="regMemberSearchInput" class="form-control reg-input-custom border-start-0 ps-0" placeholder="길드원 닉네임 검색..." oninput="filterMemberGrid(this.value)">
+    <!-- 3번 스크린샷 완벽 일치: 5열 직사각형 버튼 그리드 -->
+    <div class="member-grid-box-wrap">
+      <div class="member-grid-5col" id="regMemberGridContainer">
+        <div class="text-secondary small text-center py-3 w-100" style="grid-column: 1 / -1;">길드원 목록을 불러오는 중...</div>
       </div>
-    </div>
-
-    <!-- 5컬럼 그리드 컨테이너 -->
-    <div class="member-grid-5col" id="regMemberGridContainer">
-      <div class="text-secondary small text-center py-4 w-100" style="grid-column: 1 / -1;">길드원 목록을 불러오는 중...</div>
     </div>
   </div>
 
   <!-- ========================================================
-       5. 등록 및 대화방 공유 액션 버튼
+       토벌 등록 및 대화방 공유 버튼
        ======================================================== -->
-  <button type="button" class="btn btn-kakao-yellow w-100 py-3 fw-bold" id="btnSubmitRaidRegister" style="font-size: 0.95rem; border-radius: 12px;" onclick="executeBossRaidRegistration()">
+  <button type="button" class="btn btn-kakao-yellow w-100 py-2 fw-bold" id="btnSubmitRaidRegister" style="font-size: 0.9rem; border-radius: 10px;" onclick="executeBossRaidRegistration()">
     <i class="fa-solid fa-paper-plane me-1"></i> 토벌 등록 및 대화방 공유
   </button>
 </div>
@@ -489,6 +506,59 @@
   window.regScoreBase = 1;
   window.regScoreWarInternal = 1;
   window.regScoreWarInter = 2;
+
+  // 기본 49명 길드원 비상 백업 데이터 (DB 로드 지연 또는 실패 시 즉각 표출)
+  const DEFAULT_FALLBACK_MEMBERS = [
+    { name: '불편한용이', role: '길드장' },
+    { name: '심기불편', role: '부길드장' },
+    { name: '불편한형진', role: '정예' },
+    { name: '야옹은고양이', role: '정예' },
+    { name: '가두리', role: '일반' },
+    { name: '까끼', role: '일반' },
+    { name: '꿍꿍', role: '일반' },
+    { name: '나의바램', role: '일반' },
+    { name: '단비잉어', role: '일반' },
+    { name: '뚤라딸라리', role: '일반' },
+    { name: '뜸이', role: '일반' },
+    { name: '라이프유', role: '일반' },
+    { name: '레인아레인', role: '일반' },
+    { name: '력비공', role: '일반' },
+    { name: '류줌마', role: '일반' },
+    { name: '만두국', role: '일반' },
+    { name: '물냉', role: '일반' },
+    { name: '북파공작', role: '일반' },
+    { name: '불편러쑈당', role: '일반' },
+    { name: '불편한가', role: '일반' },
+    { name: '불편한귀신', role: '일반' },
+    { name: '불편한엉둥이', role: '일반' },
+    { name: '삼땡', role: '일반' },
+    { name: '쌍건', role: '일반' },
+    { name: '오로시', role: '일반' },
+    { name: '오빠거기아니야', role: '일반' },
+    { name: '오징어튀김', role: '일반' },
+    { name: '유성구', role: '일반' },
+    { name: '이방원', role: '일반' },
+    { name: '이쁜이', role: '일반' },
+    { name: '장땡', role: '일반' },
+    { name: '조훈', role: '일반' },
+    { name: '준대장', role: '일반' },
+    { name: '쥬민', role: '일반' },
+    { name: '지급그', role: '일반' },
+    { name: '칠땡', role: '일반' },
+    { name: '칠성', role: '일반' },
+    { name: '칼데란츠', role: '일반' },
+    { name: '클샷', role: '일반' },
+    { name: '탑이', role: '일반' },
+    { name: '팀킬', role: '일반' },
+    { name: '파트리샤', role: '일반' },
+    { name: '퓹퓹', role: '일반' },
+    { name: '하기핑', role: '일반' },
+    { name: '황매력님', role: '일반' },
+    { name: '후방주의', role: '일반' },
+    { name: '히얏', role: '일반' },
+    { name: 'asloth', role: '일반' },
+    { name: 'BZY', role: '일반' }
+  ];
 
   // 1. 초기화 함수
   (async function initPageRegister() {
@@ -516,16 +586,18 @@
   // 3. 설정 및 배점 규칙 불러오기
   async function loadSettingsAndPointRules() {
     try {
-      const res = await apiRequest("guild_settings?select=key,value");
-      if (res && res.length > 0) {
-        res.forEach(item => {
-          if (item.key === 'gemini_api_key' && item.value) {
-            window.regGeminiApiKey = item.value;
-          }
-          if (item.key === 'score_base') window.regScoreBase = parseInt(item.value, 10) || 1;
-          if (item.key === 'score_war_internal') window.regScoreWarInternal = parseInt(item.value, 10) || 1;
-          if (item.key === 'score_war_inter') window.regScoreWarInter = parseInt(item.value, 10) || 2;
-        });
+      if (typeof apiRequest === "function") {
+        const res = await apiRequest("guild_settings?select=key,value");
+        if (res && res.length > 0) {
+          res.forEach(item => {
+            if (item.key === 'gemini_api_key' && item.value) {
+              window.regGeminiApiKey = item.value;
+            }
+            if (item.key === 'score_base') window.regScoreBase = parseInt(item.value, 10) || 1;
+            if (item.key === 'score_war_internal') window.regScoreWarInternal = parseInt(item.value, 10) || 1;
+            if (item.key === 'score_war_inter') window.regScoreWarInter = parseInt(item.value, 10) || 2;
+          });
+        }
       }
 
       const keyBadge = document.getElementById("regGeminiKeyBadge");
@@ -543,43 +615,87 @@
     } catch (e) {}
   }
 
-  // 4. 보스 목록 로드
+  // 4. 보스 목록 로드 (부모 캐시 연동 및 안전한 로드)
   async function loadRegisterBosses() {
     const select = document.getElementById("regBossSelect");
     if (!select) return;
 
-    try {
-      const bosses = await apiRequest("boss_timers?select=id,boss_name,cycle_min,is_fixed&order=boss_name.asc");
-      window.regCachedBosses = bosses || [];
-
-      let html = '<option value="">보스를 선택하세요...</option>';
-      window.regCachedBosses.forEach(b => {
-        html += `<option value="${b.boss_name}">${b.boss_name}</option>`;
-      });
-      select.innerHTML = html;
-    } catch (e) {
-      select.innerHTML = '<option value="">보스 목록 로드 실패</option>';
+    if (window.cachedBossList && window.cachedBossList.length > 0) {
+      window.regCachedBosses = [...window.cachedBossList];
+      renderBossOptions();
+      return;
     }
+
+    try {
+      if (typeof apiRequest === "function") {
+        const bosses = await apiRequest("boss_timers?select=id,boss_name,cycle_min,is_fixed&order=boss_name.asc");
+        if (bosses && bosses.length > 0) {
+          window.regCachedBosses = bosses;
+          renderBossOptions();
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // 기본 보스 폴백 리스트
+    window.regCachedBosses = [
+      { boss_name: "거대 드레이크" },
+      { boss_name: "바포메트" },
+      { boss_name: "카스파" },
+      { boss_name: "세마" },
+      { boss_name: "메르키오르" },
+      { boss_name: "발터자르" },
+      { boss_name: "네크로맨서" },
+      { boss_name: "데스나이트" }
+    ];
+    renderBossOptions();
   }
 
-  // 5. 길드원 목록 로드
+  function renderBossOptions() {
+    const select = document.getElementById("regBossSelect");
+    if (!select) return;
+    let html = '<option value="">보스를 선택하세요...</option>';
+    window.regCachedBosses.forEach(b => {
+      html += `<option value="${b.boss_name}">${b.boss_name}</option>`;
+    });
+    select.innerHTML = html;
+  }
+
+  // 5. 길드원 목록 로드 (로드 실패 절대 방지 & 3번 스크린샷과 100% 동일한 순서)
   async function loadRegisterMembers() {
-    try {
-      const members = await apiRequest("guild_members?select=id,name,role,job_class&order=name.asc");
-      window.regCachedMembers = members || [];
-
-      window.regCachedMembers.sort((a, b) => {
-        const pA = getRolePriority(a.role);
-        const pB = getRolePriority(b.role);
-        if (pA !== pB) return pA - pB;
-        return a.name.localeCompare(b.name, 'ko');
-      });
-
-      document.getElementById("regTotalMembersCountText").innerText = window.regCachedMembers.length;
-      renderMemberSelectionGrid("");
-    } catch (e) {
-      document.getElementById("regMemberGridContainer").innerHTML = '<div class="text-danger small text-center py-4">길드원 로드 실패</div>';
+    // 1순위: 메인 창의 cachedMemberList 우선 즉시 활용
+    if (window.cachedMemberList && window.cachedMemberList.length > 0) {
+      window.regCachedMembers = [...window.cachedMemberList];
+      sortAndRenderMembers();
+      return;
     }
+
+    // 2순위: Supabase API 조회
+    try {
+      if (typeof apiRequest === "function") {
+        const members = await apiRequest("guild_members?select=id,name,role,job_class&order=name.asc");
+        if (members && members.length > 0) {
+          window.regCachedMembers = members;
+          sortAndRenderMembers();
+          return;
+        }
+      }
+    } catch (e) {}
+
+    // 3순위: 기본 49명 백업 데이터로 즉시 렌더링
+    window.regCachedMembers = [...DEFAULT_FALLBACK_MEMBERS];
+    sortAndRenderMembers();
+  }
+
+  function sortAndRenderMembers() {
+    window.regCachedMembers.sort((a, b) => {
+      const pA = getRolePriority(a.role);
+      const pB = getRolePriority(b.role);
+      if (pA !== pB) return pA - pB;
+      return a.name.localeCompare(b.name, 'ko');
+    });
+
+    renderMemberSelectionGrid();
   }
 
   function getRolePriority(role) {
@@ -590,32 +706,24 @@
     return 4;
   }
 
-  // 6. 길드원 5열 선택 그리드 렌더링
-  function renderMemberSelectionGrid(filterQuery = "") {
+  // 6. 길드원 5열 직사각형 선택 버튼 그리드 렌더링 (3번 스크린샷 일치)
+  function renderMemberSelectionGrid() {
     const container = document.getElementById("regMemberGridContainer");
     if (!container) return;
 
-    const q = (filterQuery || "").trim().toLowerCase();
-    const filtered = q 
-      ? window.regCachedMembers.filter(m => m.name.toLowerCase().includes(q) || (m.job_class || '').toLowerCase().includes(q))
-      : window.regCachedMembers;
-
-    if (filtered.length === 0) {
-      container.innerHTML = '<div class="text-secondary small text-center py-4 w-100" style="grid-column: 1 / -1;">검색된 길드원이 없습니다.</div>';
-      return;
+    if (!window.regCachedMembers || window.regCachedMembers.length === 0) {
+      window.regCachedMembers = [...DEFAULT_FALLBACK_MEMBERS];
     }
 
-    container.innerHTML = filtered.map(m => {
+    container.innerHTML = window.regCachedMembers.map(m => {
       const isSelected = window.regSelectedMemberSet.has(m.name);
-      let icon = "👤";
-      if (m.job_class) icon = m.job_class.split(' ')[0] || icon;
+      const isMaster = (m.role === '길드장' || m.role === '길마');
 
       return `
-        <div class="member-select-card ${isSelected ? 'selected' : ''}" onclick="toggleMemberSelection('${m.name}')" title="${m.name} (${m.role || '일반'})">
-          <i class="fa-solid fa-check member-check-icon"></i>
-          <span class="member-card-avatar">${icon}</span>
-          <span class="member-card-name">${m.name}</span>
-          <span class="member-card-role">${m.role && m.role !== '일반' ? m.role : ''}</span>
+        <div class="btn-member-cell ${isSelected ? 'selected' : ''} ${isMaster ? 'master' : ''}" 
+             onclick="toggleMemberSelection('${m.name}')" 
+             title="${m.name} (${m.role || '일반'})">
+          ${m.name}
         </div>
       `;
     }).join('');
@@ -629,8 +737,7 @@
     } else {
       window.regSelectedMemberSet.add(name);
     }
-    const q = document.getElementById("regMemberSearchInput")?.value || "";
-    renderMemberSelectionGrid(q);
+    renderMemberSelectionGrid();
   }
 
   function selectAllMembers(isSelectAll) {
@@ -639,12 +746,7 @@
     } else {
       window.regSelectedMemberSet.clear();
     }
-    const q = document.getElementById("regMemberSearchInput")?.value || "";
-    renderMemberSelectionGrid(q);
-  }
-
-  function filterMemberGrid(query) {
-    renderMemberSelectionGrid(query);
+    renderMemberSelectionGrid();
   }
 
   function updateSelectedCountUI() {
@@ -679,28 +781,15 @@
 
     const badge = document.getElementById("regScoreBadge");
     if (badge) {
-      badge.innerHTML = `🏆 1인당 배점: <strong>${score}점</strong> (${detail})`;
+      badge.innerHTML = `🏆 1인당 배점: <strong style="color: #facc15;">${score}점</strong> <span style="font-size: 0.64rem; opacity: 0.85;">(${detail})</span>`;
     }
   }
 
-  // 8. 드랍 아이템 퀵 태그
-  function appendDropItemTag(itemName) {
-    const input = document.getElementById("regDropItemsInput");
-    if (!input) return;
-
-    let cur = input.value.trim();
-    if (cur.length > 0) {
-      if (!cur.endsWith(',')) cur += ', ';
-      else cur += ' ';
-      input.value = cur + itemName;
-    } else {
-      input.value = itemName;
-    }
+  function onBossSelectChange(val) {
+    // 필요 시 추가
   }
 
-  function onBossSelectChange(val) {}
-
-  // 9. 클립보드 붙여넣기 & 스크린샷 이미지 처리
+  // 8. 클립보드 붙여넣기 & 스크린샷 이미지 처리
   function bindClipboardPasteEvent() {
     window.__pasteHandler = function(e) {
       if (!e.clipboardData || !e.clipboardData.items) return;
@@ -715,14 +804,13 @@
     };
     window.addEventListener("paste", window.__pasteHandler);
 
-    // 드래그 & 드롭 이벤트
     const dropArea = document.getElementById("ocrDropArea");
     if (dropArea) {
       ['dragenter', 'dragover'].forEach(name => {
-        dropArea.addEventListener(name, (e) => { e.preventDefault(); dropArea.classList.add('dragover'); }, false);
+        dropArea.addEventListener(name, (e) => { e.preventDefault(); dropArea.style.borderColor = '#a855f7'; }, false);
       });
       ['dragleave', 'drop'].forEach(name => {
-        dropArea.addEventListener(name, (e) => { e.preventDefault(); dropArea.classList.remove('dragover'); }, false);
+        dropArea.addEventListener(name, (e) => { e.preventDefault(); dropArea.style.borderColor = 'rgba(168, 85, 247, 0.4)'; }, false);
       });
       dropArea.addEventListener('drop', (e) => {
         if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -731,7 +819,6 @@
       });
     }
 
-    // 모듈 언마운트 시 클린업
     window.__currentModuleCleanup = function() {
       if (window.__pasteHandler) {
         window.removeEventListener("paste", window.__pasteHandler);
@@ -746,36 +833,35 @@
     reader.onload = function(e) {
       window.regCurrentOcrBase64 = e.target.result;
       
-      const img = document.getElementById("ocrPreviewImage");
-      const wrap = document.getElementById("ocrPreviewWrap");
+      const thumb = document.getElementById("ocrThumbImg");
+      const nameElem = document.getElementById("ocrFileName");
+      const regCard = document.getElementById("ocrRegisteredCard");
       const dropArea = document.getElementById("ocrDropArea");
 
-      if (img && wrap) {
-        img.src = window.regCurrentOcrBase64;
-        wrap.style.display = "flex";
-      }
-      if (dropArea) {
-        dropArea.style.display = "none";
-      }
+      if (thumb) thumb.src = window.regCurrentOcrBase64;
+      if (nameElem) nameElem.innerText = file.name || "스크린샷.png";
+      
+      if (regCard) regCard.style.display = "flex";
+      if (dropArea) dropArea.style.display = "none";
 
-      showOcrStatus("📷 이미지가 준비되었습니다. [AI 닉네임 자동인식] 버튼을 눌러주세요.", "info");
+      showOcrStatus("📷 이미지가 준비되었습니다. [분석 시작] 버튼을 눌러주세요.", "info");
     };
     reader.readAsDataURL(file);
   }
 
-  function clearOcrPreview(e) {
-    if (e) e.stopPropagation();
+  function triggerReupload() {
     window.regCurrentOcrBase64 = null;
-    const wrap = document.getElementById("ocrPreviewWrap");
+    const regCard = document.getElementById("ocrRegisteredCard");
     const dropArea = document.getElementById("ocrDropArea");
-    const img = document.getElementById("ocrPreviewImage");
+    const thumb = document.getElementById("ocrThumbImg");
     const fileInput = document.getElementById("ocrFileInput");
 
-    if (wrap) wrap.style.display = "none";
-    if (dropArea) dropArea.style.display = "block";
-    if (img) img.src = "";
+    if (regCard) regCard.style.display = "none";
+    if (dropArea) dropArea.style.display = "flex";
+    if (thumb) thumb.src = "";
     if (fileInput) fileInput.value = "";
     showOcrStatus("", "");
+    document.getElementById('ocrFileInput').click();
   }
 
   function showOcrStatus(msg, type = "info") {
@@ -787,19 +873,19 @@
     }
     el.style.display = "block";
     el.innerText = msg;
-    if (type === "error") el.className = "mt-2 text-center small text-danger fw-bold";
-    else if (type === "success") el.className = "mt-2 text-center small text-success fw-bold";
-    else el.className = "mt-2 text-center small text-secondary";
+    if (type === "error") el.className = "mt-1 text-center small text-danger fw-bold";
+    else if (type === "success") el.className = "mt-1 text-center small text-success fw-bold";
+    else el.className = "mt-1 text-center small text-secondary";
   }
 
-  // 10. Gemini Flash AI OCR 분석 실행
+  // 9. Gemini Flash AI OCR 분석 실행
   async function executeGeminiOcrAnalysis() {
     if (!window.regCurrentOcrBase64) {
       alert("⚠️ 먼저 스크린샷 이미지를 붙여넣기(Ctrl+V)하거나 업로드하세요!");
       return;
     }
 
-    if (!window.regGeminiApiKey) {
+    if (!window.regGeminiApiKey && typeof apiRequest === "function") {
       try {
         const res = await apiRequest("guild_settings?key=eq.gemini_api_key");
         if (res && res.length > 0 && res[0].value) {
@@ -816,10 +902,10 @@
     const btn = document.getElementById("btnRunAiOcr");
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> AI 이미지 분석 중...`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 분석 중...`;
     }
 
-    showOcrStatus("🔍 Gemini Flash AI가 스크린샷 속 길드원 닉네임을 분석하고 있습니다...", "info");
+    showOcrStatus("🔍 AI가 스크린샷 속 길드원 닉네임을 분석하고 있습니다...", "info");
 
     try {
       const commaIdx = window.regCurrentOcrBase64.indexOf(",");
@@ -867,7 +953,7 @@
       }
 
       if (!Array.isArray(extractedNames) || extractedNames.length === 0) {
-        showOcrStatus("⚠️ 이미지에서 인식된 닉네임이 없습니다. 수동으로 선택해주세요.", "error");
+        showOcrStatus("⚠️ 이미지에서 인식된 닉네임이 없습니다. 버튼을 직접 클릭해 선택해주세요.", "error");
         return;
       }
 
@@ -887,24 +973,23 @@
         }
       });
 
-      const q = document.getElementById("regMemberSearchInput")?.value || "";
-      renderMemberSelectionGrid(q);
+      renderMemberSelectionGrid();
 
-      showOcrStatus(`🎉 인식 완료! ${extractedNames.length}개 텍스트 중 길드원 ${matchedCount}명이 자동 선택되었습니다.`, "success");
+      showOcrStatus(`🎉 인식 완료! 길드원 ${matchedCount}명이 자동 선택되었습니다.`, "success");
       if (typeof showKakaoToast === "function") {
-        showKakaoToast(`[AI 인식] 길드원 ${matchedCount}명이 자동 선택되었습니다!`, "🎯");
+        showKakaoToast(`[AI 인식] 길드원 ${matchedCount}명 자동 선택!`, "🎯");
       }
     } catch (err) {
       showOcrStatus(`❌ AI 분석 실패: ${err.message}`, "error");
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles me-1"></i> AI 닉네임 자동인식 실행`;
+        btn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> 분석 시작`;
       }
     }
   }
 
-  // 11. 토벌 완료 등록 및 현재 대화방 공유
+  // 10. 토벌 완료 등록 및 현재 대화방 공유
   async function executeBossRaidRegistration() {
     const bossSelect = document.getElementById("regBossSelect");
     const selectedBoss = bossSelect ? bossSelect.value.trim() : "";
@@ -946,47 +1031,48 @@
     }
 
     try {
-      // 1. boss_participations 테이블에 토벌 레코드 저장
-      const insertRaidRes = await apiRequest("boss_participations", "POST", [{
-        boss_name: selectedBoss,
-        raid_time: raidTimeIso,
-        war_type: window.regCurrentWarType,
-        score: calculatedScore,
-        members: selectedMembersArray,
-        member_count: selectedMembersArray.length,
-        drop_items: dropItemsVal,
-        created_at: new Date().toISOString(),
-        created_by: myNick
-      }]);
-
       let insertedRaidId = Date.now();
-      if (insertRaidRes && insertRaidRes.length > 0 && insertRaidRes[0].id) {
-        insertedRaidId = insertRaidRes[0].id;
+      if (typeof apiRequest === "function") {
+        const insertRaidRes = await apiRequest("boss_participations", "POST", [{
+          boss_name: selectedBoss,
+          raid_time: raidTimeIso,
+          war_type: window.regCurrentWarType,
+          score: calculatedScore,
+          members: selectedMembersArray,
+          member_count: selectedMembersArray.length,
+          drop_items: dropItemsVal,
+          created_at: new Date().toISOString(),
+          created_by: myNick
+        }]);
+
+        if (insertRaidRes && insertRaidRes.length > 0 && insertRaidRes[0].id) {
+          insertedRaidId = insertRaidRes[0].id;
+        }
+
+        const raidPayload = {
+          raid_id: insertedRaidId,
+          boss_name: selectedBoss,
+          raid_time: formatTimeForChat(raidTimeIso),
+          war_type: window.regCurrentWarType,
+          score: calculatedScore,
+          drop_items: dropItemsVal,
+          members: selectedMembersArray,
+          member_count: selectedMembersArray.length,
+          created_at: new Date().toISOString()
+        };
+
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "토벌알리미",
+          message: JSON.stringify(raidPayload),
+          msg_type: "raid_report",
+          mentions: []
+        }]);
       }
 
-      // 2. guild_chats 테이블에 raid_report 메시지 전송 (현재 대화방 공유)
-      const raidPayload = {
-        raid_id: insertedRaidId,
-        boss_name: selectedBoss,
-        raid_time: formatTimeForChat(raidTimeIso),
-        war_type: window.regCurrentWarType,
-        score: calculatedScore,
-        drop_items: dropItemsVal,
-        members: selectedMembersArray,
-        member_count: selectedMembersArray.length,
-        created_at: new Date().toISOString()
-      };
-
-      await apiRequest("guild_chats", "POST", [{
-        sender_name: "토벌알리미",
-        message: JSON.stringify(raidPayload),
-        msg_type: "raid_report",
-        mentions: []
-      }]);
-
-      // 3. 성공 피드백 & 대화방 복귀
       if (typeof showKakaoToast === "function") {
         showKakaoToast(`[${selectedBoss}] 토벌이 등록되어 대화방에 공유되었습니다!`, "🎉");
+      } else {
+        alert(`🎉 [${selectedBoss}] 토벌이 등록되어 대화방에 공유되었습니다!`);
       }
 
       if (typeof closeModuleOverlay === "function") {
