@@ -14,6 +14,7 @@
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
   <!-- 부트스트랩 & 폰트어썸 아이콘 -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -32,6 +33,23 @@
       --kakao-time-gray: #556677;
       --kakao-header-bg: #bacee0;
       --drawer-width: 260px;
+
+      /* 모듈 오버레이 테마 변수 (다크 모드 기본) */
+      --overlay-bg: #0b1120;
+      --overlay-header-bg: #0f172a;
+      --overlay-header-border: #1e293b;
+      --overlay-header-title: #f8fafc;
+      --overlay-back-btn-color: #cbd5e1;
+      --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
+    }
+
+    body.theme-light {
+      --overlay-bg: #f1f5f9;
+      --overlay-header-bg: #ffffff;
+      --overlay-header-border: #e2e8f0;
+      --overlay-header-title: #191919;
+      --overlay-back-btn-color: #334155;
+      --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
     }
 
     *, *::before, *::after {
@@ -42,7 +60,7 @@
     html, body {
       background-color: var(--kakao-bg) !important;
       color: var(--kakao-text-black);
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif; letter-spacing: -0.2px;
       height: 100vh;
       margin: 0;
       padding: 0;
@@ -495,12 +513,41 @@
     }
 
     .module-display-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #060a14; z-index: 200; display: none; flex-direction: column;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background-color: var(--overlay-bg) !important;
+      z-index: 200; display: none; flex-direction: column;
+      transition: background-color 0.2s ease;
     }
     .module-nav-header {
-      height: 48px; padding: 0 14px; background: #080d1a; border-bottom: 1px solid #1a2742; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+      height: 52px; padding: 0 14px;
+      background-color: var(--overlay-header-bg) !important;
+      border-bottom: 1px solid var(--overlay-header-border) !important;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
-    .module-scroll-body { flex: 1; overflow-y: auto; padding: 10px; max-width: 600px; width: 100%; margin: 0 auto; }
+    .btn-kakao-overlay-back {
+      background: transparent; border: none;
+      color: var(--overlay-back-btn-color);
+      font-size: 0.88rem; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 6px;
+      cursor: pointer; padding: 6px 10px; border-radius: 8px;
+      transition: background-color 0.15s ease, color 0.15s ease;
+      font-family: inherit;
+    }
+    .btn-kakao-overlay-back:hover {
+      background-color: var(--overlay-back-btn-hover-bg);
+      color: var(--overlay-header-title);
+    }
+    .overlay-nav-title-text {
+      font-size: 0.96rem; font-weight: 800;
+      color: var(--overlay-header-title);
+      letter-spacing: -0.3px;
+      font-family: inherit;
+    }
+    .module-scroll-body {
+      flex: 1; overflow-y: auto; padding: 12px 10px;
+      max-width: 600px; width: 100%; margin: 0 auto;
+    }
 
     .kakao-modal-backdrop {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.45); z-index: 9999999;
@@ -692,14 +739,15 @@
       </div>
     </footer>
 
-    <!-- 모듈 오버레이 -->
+    <!-- 모듈 오버레이 (대화방 복귀 및 다크/라이트 테마 자동 동기화) -->
     <div id="moduleOverlay" class="module-display-overlay">
       <div class="module-nav-header">
-        <button type="button" class="btn btn-outline-info btn-xs py-1 px-2" onclick="closeModuleOverlay()">
-          <i class="fa-solid fa-arrow-left me-1"></i>채팅방으로 복귀
+        <button type="button" class="btn-kakao-overlay-back" onclick="closeModuleOverlay()" title="대화방으로 복귀">
+          <i class="fa-solid fa-chevron-left" style="font-size: 0.95rem;"></i>
+          <span>대화방</span>
         </button>
-        <span class="fw-bold text-white small" id="overlayNavTitle">기능 화면</span>
-        <div style="width: 50px;"></div>
+        <span class="overlay-nav-title-text" id="overlayNavTitle">기능 화면</span>
+        <div style="width: 65px;"></div>
       </div>
       <div class="module-scroll-body" id="overlayBodyContent"></div>
     </div>
@@ -876,7 +924,20 @@
       return formatter.format(d);
     }
 
+    
+    window.applyAppTheme = function(mode) {
+      const theme = mode || localStorage.getItem("guild_theme_mode") || "dark";
+      if (theme === "light") {
+        document.body.classList.add("theme-light");
+        document.body.classList.remove("theme-dark");
+      } else {
+        document.body.classList.add("theme-dark");
+        document.body.classList.remove("theme-light");
+      }
+    };
+
     async function initApp() {
+      if (typeof window.applyAppTheme === 'function') window.applyAppTheme();
       if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
         supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
       }
@@ -1268,6 +1329,7 @@
       localStorage.setItem("guild_my_pin", inputPin);
 
       // 🎯 직급별 세션 및 세분화된 권한 체계 적용
+      // (길드장 캐릭터라도 admin 마스터 로그인을 하지 않은 일반 접속 시에는 운영 관리자 권한으로 안전하게 제한)
       const userRole = targetMember.role || "일반";
       localStorage.setItem("guild_my_role", userRole);
 
@@ -1890,6 +1952,7 @@
       };
 
       navTitle.innerText = titleMap[pageName] || "기능 화면";
+      if (typeof window.applyAppTheme === "function") window.applyAppTheme();
       overlay.style.display = "flex";
       body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
 
