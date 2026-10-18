@@ -765,15 +765,26 @@
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 닉네임과 개인 비밀번호를 입력하세요.</p>
       
-      <select id="loginMemberSelect" style="height: 36px;">
+      <!-- 🔍 닉네임 직접입력 및 실시간 검색 필터링 -->
+      <div style="position: relative; margin-bottom: 8px; text-align: left;">
+        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 11px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
+        <input type="text" id="loginNickSearchInput" placeholder="닉네임 검색 또는 직접 입력..." autocomplete="off"
+               style="padding-left: 32px; height: 38px; margin-bottom: 0;"
+               oninput="onLoginSearchInput(this.value)"
+               onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
+      </div>
+
+      <!-- 길드원 선택 드롭다운 -->
+      <select id="loginMemberSelect" style="height: 38px;" onchange="onLoginSelectChange(this.value)">
         <option value="">닉네임을 선택하세요...</option>
       </select>
-      <input type="password" id="loginPinInput" class="text-center" placeholder="••••" maxlength="16" inputmode="numeric" style="height: 38px; font-size: 1rem; letter-spacing: 4px;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
 
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; font-size: 0.85rem;" onclick="executeGuildLogin()">
+      <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 입력" maxlength="20" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
+
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; font-size: 0.88rem; border-radius: 8px;" onclick="executeGuildLogin()">
         로그인
       </button>
-      <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 길드원 목록에서 가능합니다.</div>
+      <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 설정에서 가능합니다.</div>
     </div>
   </div>
 
@@ -898,13 +909,20 @@
 
     async function loadGuildMetadata() {
       try {
-        const res = await apiRequest("guild_settings?key=eq.guild_name");
-        if (res && res.length > 0 && res[0].value) {
-          const gName = res[0].value;
-          document.getElementById("menuGuildNameText").innerText = `${gName} 관리`;
-          document.getElementById("chatRoomTitle").innerText = gName;
-          document.getElementById("loginGuildTitle").innerText = `${gName} 길드 로그인`;
-          document.title = gName;
+        const res = await apiRequest("guild_settings?select=key,value");
+        if (res && res.length > 0) {
+          res.forEach(item => {
+            if (item.key === "guild_name" && item.value) {
+              const gName = item.value;
+              document.getElementById("menuGuildNameText").innerText = `${gName} 관리`;
+              document.getElementById("chatRoomTitle").innerText = gName;
+              document.getElementById("loginGuildTitle").innerText = `${gName} 길드 로그인`;
+              document.title = gName;
+            }
+            if (item.key === "super_admin_pw" && item.value) {
+              window.masterAdminPin = item.value;
+            }
+          });
         }
       } catch (e) {}
     }
@@ -943,11 +961,7 @@
 
         document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
 
-        const select = document.getElementById("loginMemberSelect");
-        if (select) {
-          select.innerHTML = '<option value="">닉네임을 선택하세요...</option>' + 
-            cachedMemberList.map(m => `<option value="${m.name}" ${m.name === myCurrentNick ? 'selected' : ''}>${m.name} (${m.role || '일반'})</option>`).join('');
-        }
+        renderLoginMemberDropdown("");
       } catch (e) {}
     };
 
@@ -1106,6 +1120,14 @@
     }
 
     async function verifyStoredSession(nick, pin) {
+      const masterPin = window.masterAdminPin || "123456";
+      if (nick === "슈퍼관리자" && (pin === "123456" || pin === masterPin)) {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "super");
+        myCurrentClass = "👑 슈퍼관리자";
+        myCurrentAvatar = "👑";
+        return true;
+      }
       try {
         const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(nick)}&select=name,pin,role,job_class`);
         if (res && res.length > 0) {
@@ -1117,6 +1139,18 @@
               localStorage.setItem("guild_my_class", myCurrentClass);
               localStorage.setItem("guild_my_avatar", myCurrentAvatar);
             }
+            const userRole = res[0].role || "일반";
+            localStorage.setItem("guild_my_role", userRole);
+            if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
+              sessionStorage.setItem("admin_auth", "true");
+              sessionStorage.setItem("admin_role", "admin");
+            } else if (userRole === "정예") {
+              sessionStorage.setItem("admin_auth", "true");
+              sessionStorage.setItem("admin_role", "elite");
+            } else {
+              sessionStorage.removeItem("admin_auth");
+              sessionStorage.removeItem("admin_role");
+            }
             return true;
           }
         }
@@ -1124,26 +1158,98 @@
       return false;
     }
 
+    // 🔍 [로그인 닉네임 검색 및 드롭다운 연동 헬퍼]
+    function renderLoginMemberDropdown(query = "") {
+      const select = document.getElementById("loginMemberSelect");
+      if (!select) return;
+      const q = (query || "").trim().toLowerCase();
+      const filtered = q
+        ? cachedMemberList.filter(m => (m.name || "").toLowerCase().includes(q) || (m.role || "").toLowerCase().includes(q))
+        : cachedMemberList;
+
+      let html = '<option value="">' + (q ? `검색 결과 (${filtered.length}명)...` : '닉네임을 선택하세요...') + '</option>';
+      html += filtered.map(m => `<option value="${m.name}" ${m.name === myCurrentNick ? 'selected' : ''}>${m.name} (${m.role || '일반'})</option>`).join('');
+      select.innerHTML = html;
+
+      if (filtered.length === 1 && q) {
+        select.value = filtered[0].name;
+      }
+    }
+
+    function onLoginSearchInput(val) {
+      renderLoginMemberDropdown(val);
+    }
+
+    function onLoginSelectChange(val) {
+      if (val) {
+        const searchInput = document.getElementById("loginNickSearchInput");
+        if (searchInput) searchInput.value = val;
+      }
+    }
+
     function showGuildLoginModal() {
       document.getElementById("guildLoginModal").style.display = "flex";
-      document.getElementById("loginPinInput").value = "";
+      const searchInput = document.getElementById("loginNickSearchInput");
+      const pinInput = document.getElementById("loginPinInput");
+      if (searchInput) {
+        searchInput.value = myCurrentNick || "";
+        renderLoginMemberDropdown(searchInput.value);
+      }
+      if (pinInput) pinInput.value = "";
     }
 
     async function executeGuildLogin() {
-      const selectedName = document.getElementById("loginMemberSelect").value;
+      const searchInput = document.getElementById("loginNickSearchInput");
+      const selectElem = document.getElementById("loginMemberSelect");
+      const selectedName = (searchInput && searchInput.value.trim()) || (selectElem && selectElem.value.trim()) || "";
       const inputPin = document.getElementById("loginPinInput").value.trim();
 
-      if (!selectedName) return showKakaoToast("본인 닉네임을 선택해주세요!", "⚠️");
-      if (!inputPin) return showKakaoToast("개인 비밀번호를 입력해주세요!", "⚠️");
+      if (!selectedName) return showKakaoToast("본인 닉네임을 입력하거나 선택해주세요!", "⚠️");
+      if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-      const targetMember = cachedMemberList.find(m => m.name === selectedName);
+      // 👑 [스텔스 슈퍼관리자 인증: 비밀 로그인]
+      // 검색/직접입력에 'admin' 또는 '슈퍼관리자'를 치고 마스터 비밀번호(123456)를 입력하면 슈퍼관리자로 승격
+      const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
+      const masterPin = window.masterAdminPin || "123456";
+
+      if (isSuperId && (inputPin === "123456" || inputPin === masterPin)) {
+        myCurrentNick = "슈퍼관리자";
+        myCurrentPin = inputPin;
+        localStorage.setItem("guild_my_nickname", "슈퍼관리자");
+        localStorage.setItem("guild_my_pin", inputPin);
+        localStorage.setItem("guild_my_role", "길드장");
+
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "super");
+
+        myCurrentClass = "👑 슈퍼관리자";
+        myCurrentAvatar = "👑";
+        localStorage.setItem("guild_my_class", myCurrentClass);
+        localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+
+        updateProfileUI("슈퍼관리자");
+        document.getElementById("guildLoginModal").style.display = "none";
+        return showKakaoToast("👑 슈퍼관리자(Master)로 인증되었습니다.", "🎉");
+      }
+
+      // 일반 길드원 인증
+      const targetMember = cachedMemberList.find(m => m.name.toLowerCase() === selectedName.toLowerCase());
+      if (!targetMember && isSuperId) {
+        document.getElementById("loginPinInput").value = "";
+        document.getElementById("loginPinInput").focus();
+        return showKakaoToast("비밀번호가 올바르지 않습니다!", "❌");
+      }
+
+      if (!targetMember) {
+        return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
+      }
+
       let expectedPin = "0000";
-
-      if (targetMember && targetMember.pin) {
+      if (targetMember.pin) {
         expectedPin = String(targetMember.pin).trim();
       } else {
         try {
-          const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(selectedName)}&select=pin,role`);
+          const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(targetMember.name)}&select=pin,role`);
           if (res && res.length > 0 && res[0].pin) {
             expectedPin = String(res[0].pin).trim();
           }
@@ -1156,29 +1262,32 @@
         return showKakaoToast("비밀번호가 올바르지 않습니다! (초기값: 0000)", "❌");
       }
 
-      myCurrentNick = selectedName;
+      myCurrentNick = targetMember.name;
       myCurrentPin = inputPin;
-      localStorage.setItem("guild_my_nickname", selectedName);
+      localStorage.setItem("guild_my_nickname", targetMember.name);
       localStorage.setItem("guild_my_pin", inputPin);
 
-      // 🎯 직급 및 권한 세션 동기화
-      const userRole = (targetMember && targetMember.role) ? targetMember.role : "일반";
+      // 🎯 직급별 세션 및 세분화된 권한 체계 적용
+      const userRole = targetMember.role || "일반";
       localStorage.setItem("guild_my_role", userRole);
 
       if (userRole === "길드장" || userRole === "길마") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "super");
+        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
       } else if (userRole === "부길드장" || userRole === "부길마") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "admin");
+        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
+      } else if (userRole === "정예") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "elite"); // 현장 정예 관리자
       } else {
         sessionStorage.removeItem("admin_auth");
         sessionStorage.removeItem("admin_role");
       }
 
-      updateProfileUI(selectedName);
+      updateProfileUI(targetMember.name);
       document.getElementById("guildLoginModal").style.display = "none";
-      showKakaoToast(`[${selectedName}] 님 반갑습니다!`, "🎉");
+      showKakaoToast(`[${targetMember.name}] 님 반갑습니다!`, "🎉");
     }
 
     function handleUserLogout() {
@@ -1747,10 +1856,12 @@
     window.openModulePage = async function(pageName) {
       closeAllDrawers();
 
-      // 로그인한 유저의 직급/권한 확인
+      // 로그인한 유저의 직급/권한 확인 (슈퍼관리자 / 운영진 / 정예 / 일반 세분화)
       const myRole = localStorage.getItem("guild_my_role") || "일반";
-      const isSuper = (sessionStorage.getItem("admin_role") === "super") || (myRole === "길드장" || myRole === "길마");
-      const isAdmin = isSuper || (myRole === "부길드장" || myRole === "부길마" || myRole === "정예");
+      const adminRole = sessionStorage.getItem("admin_role") || "";
+      const isSuper = (adminRole === "super");
+      const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
+      const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
       // 관리자 전용 페이지 접근 가드
       if (pageName === 'PageSettings' && !isAdmin) {
@@ -1758,6 +1869,9 @@
       }
       if (pageName === 'PageFinance' && !isAdmin) {
         return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
+      }
+      if (pageName === 'PageRegister' && !isElite) {
+        return showKakaoToast("보스참여등록은 정예 이상만 접근할 수 있습니다.", "⚠️");
       }
 
       const overlay = document.getElementById("moduleOverlay");
