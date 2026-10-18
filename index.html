@@ -21,35 +21,184 @@
   <!-- Supabase 공식 SDK 및 설정 파일 로드 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
+  <script src="theme.js"></script>
 
   <style>
     :root {
+      /* [기본 라이트 모드 테마 변수] */
       --kakao-bg: #bacee0;
+      --kakao-header-bg: #bacee0;
+      --kakao-header-text: #191919;
+      --kakao-header-subtext: #556677;
+      --kakao-header-icon-btn: #3b4b59;
+      --kakao-header-border: rgba(0, 0, 0, 0.05);
+
       --kakao-yellow: #fee500;
       --kakao-unread-yellow: #ffeb3b;
       --kakao-bubble-me: #fee500;
+      --kakao-bubble-me-text: #191919;
       --kakao-bubble-other: #ffffff;
-      --kakao-text-black: #191919;
+      --kakao-bubble-other-text: #191919;
       --kakao-time-gray: #556677;
-      --kakao-header-bg: #bacee0;
+
+      --kakao-notice-bg: #ffffff;
+      --kakao-notice-text: #222222;
+      --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
+      --kakao-input-bg: #ffffff;
+      --kakao-input-border: #d4d4d4;
+      --kakao-input-text: #191919;
+      --kakao-input-placeholder: #94a3b8;
+      --kakao-input-icon: #64748b;
+
       --drawer-width: 260px;
+      --drawer-bg: #ffffff;
+      --drawer-border: #dcdcdc;
+      --drawer-header-bg: #f7f7f7;
+      --drawer-header-border: #ececec;
+      --drawer-title: #191919;
+      --drawer-item-text: #333333;
+      --drawer-item-hover-bg: #f0f0f0;
+      --drawer-footer-bg: #fafafa;
+      --drawer-footer-border: #ececec;
+      --drawer-sub-text: #64748b;
 
-      /* 모듈 오버레이 테마 변수 (다크 모드 기본) */
-      --overlay-bg: #0b1120;
-      --overlay-header-bg: #0f172a;
-      --overlay-header-border: #1e293b;
-      --overlay-header-title: #f8fafc;
-      --overlay-back-btn-color: #cbd5e1;
-      --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
-    }
+      --drawer-card-bg: #ffffff;
+      --drawer-card-border: #e2e8f0;
 
-    body.theme-light {
+      --modal-bg: #ffffff;
+      --modal-text: #191919;
+      --modal-input-bg: #f7f7f7;
+      --modal-input-border: #e2e8f0;
+      --modal-input-text: #191919;
+
       --overlay-bg: #f1f5f9;
       --overlay-header-bg: #ffffff;
       --overlay-header-border: #e2e8f0;
       --overlay-header-title: #191919;
       --overlay-back-btn-color: #334155;
       --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+      /* 카카오톡 맞춤 슬림 스크롤바 색상 (라이트) */
+      --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
+      --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
+    }
+
+    /* 🌙 [다크 모드 전체 창 일괄 동기화] */
+    body.theme-dark {
+      --kakao-bg: #1e232a;
+      --kakao-header-bg: #181d24;
+      --kakao-header-text: #f3f4f6;
+      --kakao-header-subtext: #9ca3af;
+      --kakao-header-icon-btn: #cbd5e1;
+      --kakao-header-border: #282f3a;
+
+      --kakao-yellow: #fee500;
+      --kakao-unread-yellow: #facc15;
+      --kakao-bubble-me: #fee500;
+      --kakao-bubble-me-text: #191919;
+      --kakao-bubble-other: #2b323c;
+      --kakao-bubble-other-text: #f3f4f6;
+      --kakao-time-gray: #9ca3af;
+
+      --kakao-notice-bg: #262d37;
+      --kakao-notice-text: #f3f4f6;
+      --kakao-notice-border: #374151;
+
+      --kakao-input-bg: #181d24;
+      --kakao-input-border: #282f3a;
+      --kakao-input-text: #f3f4f6;
+      --kakao-input-placeholder: #6b7280;
+      --kakao-input-icon: #9ca3af;
+
+      --drawer-bg: #181d24;
+      --drawer-border: #282f3a;
+      --drawer-header-bg: #13171d;
+      --drawer-header-border: #282f3a;
+      --drawer-title: #f3f4f6;
+      --drawer-item-text: #e5e7eb;
+      --drawer-item-hover-bg: #262d37;
+      --drawer-footer-bg: #13171d;
+      --drawer-footer-border: #282f3a;
+      --drawer-sub-text: #9ca3af;
+
+      --drawer-card-bg: #262d37;
+      --drawer-card-border: #374151;
+
+      --modal-bg: #1e2530;
+      --modal-text: #f3f4f6;
+      --modal-input-bg: #141922;
+      --modal-input-border: #2c3545;
+      --modal-input-text: #ffffff;
+
+      --overlay-bg: #0b1120;
+      --overlay-header-bg: #0f172a;
+      --overlay-header-border: #1e293b;
+      --overlay-header-title: #f8fafc;
+      --overlay-back-btn-color: #cbd5e1;
+      --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
+
+      /* 카카오톡 맞춤 슬림 스크롤바 색상 (다크) */
+      --kakao-scroll-thumb: rgba(255, 255, 255, 0.22);
+      --kakao-scroll-thumb-hover: rgba(255, 255, 255, 0.42);
+    }
+
+    /* ☀️ [라이트 모드 전체 창 일괄 동기화] */
+    body.theme-light {
+      --kakao-bg: #bacee0;
+      --kakao-header-bg: #bacee0;
+      --kakao-header-text: #191919;
+      --kakao-header-subtext: #556677;
+      --kakao-header-icon-btn: #3b4b59;
+      --kakao-header-border: rgba(0, 0, 0, 0.05);
+
+      --kakao-yellow: #fee500;
+      --kakao-unread-yellow: #ffeb3b;
+      --kakao-bubble-me: #fee500;
+      --kakao-bubble-me-text: #191919;
+      --kakao-bubble-other: #ffffff;
+      --kakao-bubble-other-text: #191919;
+      --kakao-time-gray: #556677;
+
+      --kakao-notice-bg: #ffffff;
+      --kakao-notice-text: #222222;
+      --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
+      --kakao-input-bg: #ffffff;
+      --kakao-input-border: #d4d4d4;
+      --kakao-input-text: #191919;
+      --kakao-input-placeholder: #94a3b8;
+      --kakao-input-icon: #64748b;
+
+      --drawer-bg: #ffffff;
+      --drawer-border: #dcdcdc;
+      --drawer-header-bg: #f7f7f7;
+      --drawer-header-border: #ececec;
+      --drawer-title: #191919;
+      --drawer-item-text: #333333;
+      --drawer-item-hover-bg: #f0f0f0;
+      --drawer-footer-bg: #fafafa;
+      --drawer-footer-border: #ececec;
+      --drawer-sub-text: #64748b;
+
+      --drawer-card-bg: #ffffff;
+      --drawer-card-border: #e2e8f0;
+
+      --modal-bg: #ffffff;
+      --modal-text: #191919;
+      --modal-input-bg: #f7f7f7;
+      --modal-input-border: #e2e8f0;
+      --modal-input-text: #191919;
+
+      --overlay-bg: #f1f5f9;
+      --overlay-header-bg: #ffffff;
+      --overlay-header-border: #e2e8f0;
+      --overlay-header-title: #191919;
+      --overlay-back-btn-color: #334155;
+      --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+      --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
+      --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
     }
 
     *, *::before, *::after {
@@ -57,10 +206,43 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    /* ========================================================
+       [카카오톡 스타일 초슬림 5px 캡슐 스크롤바 - Windows / Webkit 완벽 대응]
+       ======================================================== */
+    * {
+      scrollbar-width: thin !important;
+      scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
+    }
+    ::-webkit-scrollbar {
+      width: 5px !important;
+      height: 5px !important;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--kakao-scroll-thumb) !important;
+      border-radius: 10px !important;
+      transition: background 0.2s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--kakao-scroll-thumb-hover) !important;
+    }
+    /* 윈도우 크롬 기본 화살표 버튼 완전 제거 */
+    ::-webkit-scrollbar-button {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    ::-webkit-scrollbar-corner {
+      background: transparent !important;
+    }
+
     html, body {
       background-color: var(--kakao-bg) !important;
-      color: var(--kakao-text-black);
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif; letter-spacing: -0.2px;
+      color: var(--kakao-header-text);
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+      letter-spacing: -0.2px;
       height: 100vh;
       margin: 0;
       padding: 0;
@@ -68,6 +250,7 @@
       display: flex;
       position: relative;
       width: 100%;
+      transition: background-color 0.2s ease, color 0.2s ease;
     }
 
     /* 서랍 공통 백드롭 */
@@ -75,7 +258,7 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.5);
       z-index: 99998;
       display: none;
       opacity: 0;
@@ -92,11 +275,11 @@
       top: 0; left: 0;
       width: var(--drawer-width) !important;
       height: 100vh;
-      background: #ffffff;
-      border-right: 1px solid #dcdcdc;
+      background: var(--drawer-bg) !important;
+      border-right: 1px solid var(--drawer-border) !important;
       z-index: 99999;
       transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
       display: flex;
       flex-direction: column;
       box-shadow: none;
@@ -105,7 +288,7 @@
     .app-sidebar-drawer.open {
       transform: translateX(0);
       visibility: visible;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
     }
 
     .sidebar-header {
@@ -114,21 +297,22 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid #ececec;
-      background: #f7f7f7;
+      border-bottom: 1px solid var(--drawer-header-border) !important;
+      background: var(--drawer-header-bg) !important;
       flex-shrink: 0;
+      transition: background 0.2s ease;
     }
     .sidebar-brand {
       font-weight: 800;
       font-size: 0.92rem;
-      color: #191919;
+      color: var(--drawer-title) !important;
       display: flex;
       align-items: center;
       gap: 7px;
     }
     .sidebar-close-btn {
       background: none; border: none;
-      color: #707070; font-size: 1.15rem;
+      color: var(--drawer-sub-text) !important; font-size: 1.15rem;
       cursor: pointer;
     }
 
@@ -144,7 +328,7 @@
       align-items: center;
       gap: 10px;
       padding: 10px 12px;
-      color: #333333;
+      color: var(--drawer-item-text) !important;
       font-size: 0.84rem;
       font-weight: 600;
       border-radius: 7px;
@@ -152,17 +336,21 @@
       transition: background 0.12s ease;
       margin-bottom: 2px;
     }
-    .sidebar-menu-item:hover { background: #f0f0f0; color: #111111; }
+    .sidebar-menu-item:hover {
+      background: var(--drawer-item-hover-bg) !important;
+      color: var(--drawer-title) !important;
+    }
     .sidebar-menu-item i { width: 20px; text-align: center; font-size: 0.95rem; }
 
     .sidebar-footer {
       padding: 10px 14px;
-      border-top: 1px solid #ececec;
-      background: #fafafa;
+      border-top: 1px solid var(--drawer-footer-border) !important;
+      background: var(--drawer-footer-bg) !important;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
+      transition: background 0.2s ease;
     }
     .user-profile-badge {
       display: flex;
@@ -174,19 +362,22 @@
     .user-avatar {
       width: 34px; height: 34px;
       border-radius: 12px;
-      background: #f1f5f9;
-      border: 1px solid #cbd5e1;
+      background: var(--drawer-card-bg) !important;
+      border: 1px solid var(--drawer-card-border) !important;
       display: flex;
       align-items: center; justify-content: center;
-      color: #0f172a; font-size: 1.1rem; font-weight: 800;
+      color: var(--drawer-title) !important; font-size: 1.1rem; font-weight: 800;
       flex-shrink: 0;
     }
     .user-name-text {
-      font-size: 0.82rem; font-weight: 700; color: #191919;
+      font-size: 0.82rem; font-weight: 700; color: var(--drawer-title) !important;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .user-sub-class {
       font-size: 0.68rem; color: #0284c7; font-weight: 600;
+    }
+    body.theme-dark .user-sub-class {
+      color: #38bdf8 !important;
     }
 
     /* 2. 길드원 목록 서랍 (260px) */
@@ -195,11 +386,11 @@
       top: 0; left: 0;
       width: var(--drawer-width) !important;
       height: 100vh;
-      background: #ffffff;
-      border-right: 1px solid #dcdcdc;
+      background: var(--drawer-bg) !important;
+      border-right: 1px solid var(--drawer-border) !important;
       z-index: 99999;
       transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
       display: flex;
       flex-direction: column;
       visibility: hidden;
@@ -207,7 +398,7 @@
     .app-members-drawer.open {
       transform: translateX(0);
       visibility: visible;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
     }
 
     /* 4. 보스타임 서랍 (260px) */
@@ -216,11 +407,11 @@
       top: 0; left: 0;
       width: var(--drawer-width) !important;
       height: 100vh;
-      background: #ffffff;
-      border-right: 1px solid #dcdcdc;
+      background: var(--drawer-bg) !important;
+      border-right: 1px solid var(--drawer-border) !important;
       z-index: 99999;
       transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
       display: flex;
       flex-direction: column;
       visibility: hidden;
@@ -228,7 +419,7 @@
     .app-boss-drawer.open {
       transform: translateX(0);
       visibility: visible;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
     }
     .boss-drawer-header-bar {
       height: 50px !important;
@@ -236,14 +427,15 @@
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
-      border-bottom: 1px solid #ececec !important;
-      background: #ffffff !important;
+      border-bottom: 1px solid var(--drawer-header-border) !important;
+      background: var(--drawer-header-bg) !important;
       flex-shrink: 0 !important;
+      transition: background 0.2s ease;
     }
     .boss-drawer-title-box {
       font-weight: 800 !important;
       font-size: 0.95rem !important;
-      color: #191919 !important;
+      color: var(--drawer-title) !important;
       display: flex !important;
       align-items: center !important;
       gap: 6px !important;
@@ -262,13 +454,16 @@
 
     .btn-tool-icon {
       background: none; border: none;
-      color: #475569; font-size: 0.95rem;
+      color: var(--drawer-sub-text) !important; font-size: 0.95rem;
       padding: 5px; cursor: pointer;
       border-radius: 5px;
       display: inline-flex; align-items: center; justify-content: center;
-      transition: transform 0.25s ease;
+      transition: transform 0.25s ease, background 0.15s ease;
     }
-    .btn-tool-icon:hover { background: #e2e8f0; color: #1e293b; }
+    .btn-tool-icon:hover {
+      background: var(--drawer-item-hover-bg) !important;
+      color: var(--drawer-title) !important;
+    }
     .btn-tool-icon.rotating i {
       animation: spinAnim 0.6s ease-in-out;
     }
@@ -285,9 +480,10 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      background: var(--kakao-bg);
+      background: var(--kakao-bg) !important;
       min-width: 0 !important;
       overflow: hidden;
+      transition: background-color 0.2s ease;
     }
 
     .kakao-chat-header {
@@ -296,9 +492,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: var(--kakao-header-bg);
+      background: var(--kakao-header-bg) !important;
+      border-bottom: 1px solid var(--kakao-header-border) !important;
       flex-shrink: 0;
       z-index: 10;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
     }
     .header-left-area {
       display: flex;
@@ -312,7 +510,7 @@
     .btn-kakao-menu {
       background: none;
       border: none;
-      color: #2b3945;
+      color: var(--kakao-header-icon-btn) !important;
       font-size: 1.05rem;
       cursor: pointer;
       padding: 6px 4px;
@@ -324,7 +522,10 @@
       transition: background 0.15s ease;
     }
     .btn-kakao-menu:hover {
-      background: rgba(0, 0, 0, 0.06);
+      background: rgba(0, 0, 0, 0.08);
+    }
+    body.theme-dark .btn-kakao-menu:hover {
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .room-avatar-circle {
@@ -339,6 +540,9 @@
       font-size: 0.9rem;
       flex-shrink: 0;
     }
+    body.theme-dark .room-avatar-circle {
+      background: #334155;
+    }
     .room-info-box {
       display: flex;
       flex-direction: column;
@@ -349,7 +553,7 @@
     .room-title-text {
       font-size: 0.85rem;
       font-weight: 700;
-      color: #191919;
+      color: var(--kakao-header-text) !important;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -357,7 +561,7 @@
     }
     .room-count-text {
       font-size: 0.68rem;
-      color: #556677;
+      color: var(--kakao-header-subtext) !important;
       font-weight: 600;
       cursor: pointer;
       line-height: 1.2;
@@ -373,7 +577,7 @@
     .btn-kakao-head {
       background: none;
       border: none;
-      color: #3b4b59;
+      color: var(--kakao-header-icon-btn) !important;
       font-size: 0.92rem;
       cursor: pointer;
       padding: 6px;
@@ -381,27 +585,32 @@
       transition: background 0.15s ease;
     }
     .btn-kakao-head:hover {
-      background: rgba(0,0,0,0.06);
+      background: rgba(0,0,0,0.08);
+    }
+    body.theme-dark .btn-kakao-head:hover {
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .kakao-notice-banner {
-      background: #ffffff;
+      background: var(--kakao-notice-bg) !important;
+      border: 1px solid var(--kakao-notice-border) !important;
       border-radius: 6px;
       margin: 3px 6px 1px 6px;
       padding: 4px 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
       cursor: pointer;
       flex-shrink: 0;
+      transition: background-color 0.2s ease;
     }
     .notice-icon-part { color: #1e88e5; font-size: 0.78rem; margin-right: 6px; flex-shrink: 0; }
     .notice-text-content {
       flex: 1;
       font-size: 0.72rem;
       font-weight: 600;
-      color: #222;
+      color: var(--kakao-notice-text) !important;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -426,20 +635,23 @@
 
     .chat-sender-avatar {
       width: 34px; height: 34px; border-radius: 13px;
-      background: #ffffff; border: 1px solid #dcdcdc;
+      background: var(--drawer-card-bg) !important; border: 1px solid var(--drawer-card-border) !important;
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 0.95rem; color: #3b82f6; flex-shrink: 0;
       margin-top: 1px;
     }
     .chat-sender-avatar.bot {
-      background: #fee2e2; border-color: #ef4444; color: #dc2626;
+      background: #fee2e2 !important; border-color: #ef4444 !important; color: #dc2626 !important;
+    }
+    body.theme-dark .chat-sender-avatar.bot {
+      background: #451a1a !important; border-color: #7f1d1d !important; color: #f87171 !important;
     }
 
     .chat-msg-body {
       display: flex; flex-direction: column; max-width: 90%; width: fit-content !important;
     }
     .chat-sender-name {
-      font-size: 0.7rem; color: #333; margin-bottom: 2px; font-weight: 600;
+      font-size: 0.7rem; color: var(--kakao-header-subtext) !important; margin-bottom: 2px; font-weight: 600;
     }
     .chat-bubble-flex {
       display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important;
@@ -449,24 +661,32 @@
     .chat-bubble {
       display: inline-block; width: fit-content; max-width: 100%;
       padding: 5px 9px; border-radius: 5px; font-size: 0.78rem; line-height: 1.35;
-      word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06); white-space: pre-wrap;
+      word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
     }
-    .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other); color: var(--kakao-text-black); }
-    .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me); color: var(--kakao-text-black); }
+    .chat-item-row.other .chat-bubble {
+      background: var(--kakao-bubble-other) !important;
+      color: var(--kakao-bubble-other-text) !important;
+    }
+    .chat-item-row.me .chat-bubble {
+      background: var(--kakao-bubble-me) !important;
+      color: var(--kakao-bubble-me-text) !important;
+    }
 
     .chat-meta-box {
       display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-bottom: 1px;
     }
     .chat-unread-count { color: var(--kakao-unread-yellow); font-size: 0.6rem; font-weight: 800; margin-bottom: 2px; }
-    .chat-timestamp { font-size: 0.58rem; color: var(--kakao-time-gray); white-space: nowrap; }
+    .chat-timestamp { font-size: 0.58rem; color: var(--kakao-time-gray) !important; white-space: nowrap; }
 
     .boss-brief-bubble {
-      background: #ffffff !important; border-radius: 6px !important; padding: 4px 8px 3px 8px !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important; width: fit-content !important;
+      background: var(--kakao-notice-bg) !important;
+      color: var(--kakao-notice-text) !important;
+      border-radius: 6px !important; padding: 4px 8px 3px 8px !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.12) !important; width: fit-content !important;
     }
     .boss-brief-title {
-      font-size: 0.74rem !important; font-weight: 800 !important; color: #191919 !important;
-      border-bottom: 1px dashed #cbd5e1 !important; display: flex !important; justify-content: space-between !important;
+      font-size: 0.74rem !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
+      border-bottom: 1px dashed var(--drawer-card-border) !important; display: flex !important; justify-content: space-between !important;
     }
     .boss-brief-line {
       display: flex !important; justify-content: space-between !important; gap: 12px !important;
@@ -475,12 +695,15 @@
     .boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
 
     .boss-alert-mini-card {
-      background: #ffffff !important; border-radius: 5px !important; padding: 5px 8px !important;
-      font-size: 0.75rem !important; box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
+      background: var(--kakao-notice-bg) !important;
+      color: var(--kakao-notice-text) !important;
+      border-radius: 5px !important; padding: 5px 8px !important;
+      font-size: 0.75rem !important; box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
     }
     .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
     .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
     .boss-alert-mini-card.alert-spawn { border-left: 4px solid #ef4444 !important; background: #fff8f8 !important; }
+    body.theme-dark .boss-alert-mini-card.alert-spawn { background: #3b1c1c !important; color: #fca5a5 !important; }
     .boss-alert-mini-card.alert-cut { border-left: 4px solid #38bdf8 !important; }
 
     .spawn-card-wrapper { display: flex; flex-direction: column; width: fit-content; max-width: 100%; }
@@ -492,24 +715,49 @@
     .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled { background: #94a3b8 !important; border-color: #64748b !important; cursor: not-allowed !important; }
 
     .kakao-input-area {
-      background: #ffffff; border-top: 1px solid #d4d4d4; padding: 6px 10px 7px 10px; display: flex; flex-direction: column; flex-shrink: 0;
+      background: var(--kakao-input-bg) !important;
+      border-top: 1px solid var(--kakao-input-border) !important;
+      padding: 6px 10px 7px 10px; display: flex; flex-direction: column; flex-shrink: 0;
+      transition: background-color 0.2s ease;
     }
     .input-textarea-custom {
-      width: 100%; height: 38px; border: none; outline: none; resize: none; font-size: 0.8rem; color: #191919; background: transparent;
+      width: 100%; height: 38px; border: none; outline: none; resize: none;
+      font-size: 0.8rem;
+      color: var(--kakao-input-text) !important;
+      background: transparent !important;
+    }
+    .input-textarea-custom::placeholder {
+      color: var(--kakao-input-placeholder) !important;
     }
     .input-bottom-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-    .input-tool-icons { display: flex; gap: 10px; color: #64748b; font-size: 1rem; cursor: pointer; }
+    .input-tool-icons {
+      display: flex; gap: 10px;
+      color: var(--kakao-input-icon) !important;
+      font-size: 1rem; cursor: pointer;
+    }
     .btn-kakao-send {
       background: #e2e8f0; border: none; color: #94a3b8; font-size: 0.76rem; font-weight: 700; padding: 4px 14px; border-radius: 4px; cursor: pointer;
     }
-    .btn-kakao-send.active { background: var(--kakao-yellow); color: #191919; }
+    body.theme-dark .btn-kakao-send {
+      background: #282f3a; color: #64748b;
+    }
+    .btn-kakao-send.active { background: var(--kakao-yellow) !important; color: #191919 !important; }
 
     .mention-popup-container {
-      position: absolute; bottom: 78px; left: 8px; max-width: 220px; background: #ffffff; border: 1px solid #ccc; border-radius: 6px;
-      max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: none; z-index: 100;
+      position: absolute; bottom: 78px; left: 8px; max-width: 220px;
+      background: var(--modal-bg) !important;
+      border: 1px solid var(--drawer-card-border) !important;
+      color: var(--drawer-title) !important;
+      border-radius: 6px;
+      max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: none; z-index: 100;
     }
     .mention-item-row {
-      padding: 5px 8px; font-size: 0.75rem; font-weight: 600; color: #333; cursor: pointer; border-bottom: 1px solid #f4f4f4;
+      padding: 5px 8px; font-size: 0.75rem; font-weight: 600;
+      color: var(--drawer-title) !important;
+      cursor: pointer; border-bottom: 1px solid var(--drawer-header-border);
+    }
+    .mention-item-row:hover {
+      background: var(--drawer-item-hover-bg) !important;
     }
 
     .module-display-overlay {
@@ -550,22 +798,38 @@
     }
 
     .kakao-modal-backdrop {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.45); z-index: 9999999;
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999999;
       display: flex; align-items: center; justify-content: center; padding: 16px;
     }
     .kakao-modal-card {
-      background: #ffffff; border-radius: 12px; width: 100%; max-width: 320px; padding: 18px 16px; text-align: center; box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+      background: var(--modal-bg) !important;
+      color: var(--modal-text) !important;
+      border: 1px solid var(--drawer-card-border) !important;
+      border-radius: 12px; width: 100%; max-width: 320px; padding: 18px 16px; text-align: center;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+      transition: background 0.2s ease;
     }
     .kakao-modal-card input, .kakao-modal-card select {
-      width: 100%; background: #f7f7f7; border: 1px solid #e2e8f0; border-radius: 7px; padding: 7px 10px; font-size: 0.82rem; outline: none; margin-bottom: 8px;
+      width: 100%;
+      background: var(--modal-input-bg) !important;
+      border: 1px solid var(--modal-input-border) !important;
+      color: var(--modal-input-text) !important;
+      border-radius: 7px; padding: 7px 10px; font-size: 0.82rem; outline: none; margin-bottom: 8px;
     }
 
     .class-preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
     .class-preset-cell {
-      padding: 6px 3px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+      padding: 6px 3px; border-radius: 8px;
+      background: var(--modal-input-bg) !important;
+      border: 1px solid var(--modal-input-border) !important;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .class-preset-cell:hover {
+      background: var(--drawer-item-hover-bg) !important;
     }
     .class-icon-big { font-size: 1.2rem; line-height: 1; }
-    .class-title-small { font-size: 0.65rem; font-weight: 700; color: #334155; }
+    .class-title-small { font-size: 0.65rem; font-weight: 700; color: var(--modal-text) !important; }
 
     .kakao-toast-box {
       position: fixed; top: 22px; left: 50%; transform: translateX(-50%) translateY(-20px);
@@ -575,7 +839,460 @@
       white-space: nowrap; display: flex; align-items: center; gap: 8px;
     }
     .kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  </style>
+
+    /* ========================================================
+       [길드원 서랍 & 보스타임 서랍 내부 컴포넌트 실시간 테마 연동]
+       ======================================================== */
+    .members-drawer-container {
+      background: var(--drawer-bg) !important;
+      color: var(--drawer-title) !important;
+    }
+    .members-top-bar {
+      background: var(--drawer-header-bg) !important;
+      border-bottom: 1px solid var(--drawer-header-border) !important;
+    }
+    .members-title-area {
+      color: var(--drawer-title) !important;
+    }
+    .members-search-box {
+      background: var(--drawer-bg) !important;
+      border-bottom: 1px solid var(--drawer-border) !important;
+    }
+    .members-search-input {
+      background: var(--modal-input-bg) !important;
+      border: 1px solid var(--modal-input-border) !important;
+      color: var(--drawer-title) !important;
+    }
+    .members-scroll-area {
+      background: var(--drawer-bg) !important;
+    }
+    .member-profile-row:hover {
+      background: var(--drawer-item-hover-bg) !important;
+    }
+    .member-avatar-round {
+      background: var(--drawer-card-bg) !important;
+      border-color: var(--drawer-card-border) !important;
+    }
+    .member-name-text {
+      color: var(--drawer-title) !important;
+    }
+    .member-sub-text {
+      color: var(--drawer-sub-text) !important;
+    }
+
+    #drawerBossListArea {
+      background: var(--drawer-bg) !important;
+    }
+    .drawer-boss-list-wrap {
+      background: var(--drawer-bg) !important;
+    }
+    .drawer-boss-card {
+      background: var(--drawer-card-bg) !important;
+      border: 1px solid var(--drawer-card-border) !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+    }
+    .drawer-boss-card:hover {
+      background: var(--drawer-item-hover-bg) !important;
+    }
+    .drawer-boss-name {
+      color: var(--drawer-title) !important;
+    }
+    .drawer-card-bottom {
+      color: var(--drawer-sub-text) !important;
+    }
+    body.theme-dark .drawer-boss-card.spawned {
+      background: #3b1c1c !important;
+      border-color: #ef4444 !important;
+    }
+  
+    /* 🌙 [PageMembers & PageTimer 상세 서랍 다크모드 심층 오버라이드] */
+    body.theme-dark .member-name-line {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .member-class-desc {
+      color: #38bdf8 !important;
+    }
+    body.theme-dark .member-avatar-round.master { background: rgba(245, 158, 11, 0.15) !important; border-color: #f59e0b !important; color: #fbbf24 !important; }
+    body.theme-dark .member-avatar-round.sub { background: rgba(192, 132, 252, 0.15) !important; border-color: #c084fc !important; color: #d8b4fe !important; }
+    body.theme-dark .member-avatar-round.elite { background: rgba(56, 189, 248, 0.15) !important; border-color: #38bdf8 !important; color: #38bdf8 !important; }
+    body.theme-dark .member-avatar-round.normal { background: #262d37 !important; border-color: #374151 !important; color: #94a3b8 !important; }
+    body.theme-dark .role-tag-master { background: rgba(245, 158, 11, 0.2) !important; color: #fbbf24 !important; }
+    body.theme-dark .role-tag-sub { background: rgba(192, 132, 252, 0.2) !important; color: #d8b4fe !important; }
+    body.theme-dark .role-tag-elite { background: rgba(56, 189, 248, 0.2) !important; color: #38bdf8 !important; }
+    body.theme-dark .role-tag-normal { background: #374151 !important; color: #cbd5e1 !important; }
+    body.theme-dark .btn-member-tool-icon:hover { background: #262d37 !important; }
+    body.theme-dark .btn-member-tool-icon.btn-gray-icon { color: #94a3b8 !important; }
+
+    body.theme-dark .drawer-boss-name { color: #f3f4f6 !important; }
+    body.theme-dark .drawer-card-bottom { color: #94a3b8 !important; }
+    body.theme-dark .badge-boss-state.state-wait { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
+    body.theme-dark .badge-boss-state.state-spawn { background: #451a1a !important; color: #f87171 !important; border-color: #7f1d1d !important; }
+    body.theme-dark .badge-boss-state.state-imminent { background: #3c2a10 !important; color: #fbbf24 !important; border-color: #78350f !important; }
+    body.theme-dark .badge-boss-state.state-normal { background: #0c2b4e !important; color: #38bdf8 !important; border-color: #0369a1 !important; }
+    body.theme-dark .btn-drawer-reserve { background: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
+    body.theme-dark .btn-drawer-reserve:hover { background: #262d37 !important; color: #ffffff !important; }
+    body.theme-dark .drawer-modal-card { background: #1e2530 !important; color: #f3f4f6 !important; border: 1px solid #374151 !important; }
+    body.theme-dark #drawerReserveBossName { color: #ffffff !important; }
+    body.theme-dark #drawerReserveTimeInput { background: #141922 !important; border-color: #2c3545 !important; color: #ffffff !important; }
+
+    /* 카카오톡 스크롤바 덮어쓰기 (모든 스크롤 영역 강제 적용) */
+    .chat-messages-container,
+    .sidebar-menu-list,
+    .members-scroll-area,
+    .drawer-boss-list-wrap,
+    .module-scroll-body,
+    .class-preset-grid,
+    .mention-popup-container {
+      scrollbar-width: thin !important;
+      scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
+    }
+    .chat-messages-container::-webkit-scrollbar-thumb,
+    .sidebar-menu-list::-webkit-scrollbar-thumb,
+    .members-scroll-area::-webkit-scrollbar-thumb,
+    .drawer-boss-list-wrap::-webkit-scrollbar-thumb,
+    .module-scroll-body::-webkit-scrollbar-thumb,
+    .class-preset-grid::-webkit-scrollbar-thumb,
+    .mention-popup-container::-webkit-scrollbar-thumb {
+      background: var(--kakao-scroll-thumb) !important;
+      border-radius: 10px !important;
+    }
+    .chat-messages-container::-webkit-scrollbar-thumb:hover,
+    .sidebar-menu-list::-webkit-scrollbar-thumb:hover,
+    .members-scroll-area::-webkit-scrollbar-thumb:hover,
+    .drawer-boss-list-wrap::-webkit-scrollbar-thumb:hover,
+    .module-scroll-body::-webkit-scrollbar-thumb:hover,
+    .class-preset-grid::-webkit-scrollbar-thumb:hover,
+    .mention-popup-container::-webkit-scrollbar-thumb:hover {
+      background: var(--kakao-scroll-thumb-hover) !important;
+    }
+
+    /* ========================================================
+       [전체 창 다크모드 / 라이트모드 100% 강제 일치 오버라이드]
+       ======================================================== */
+    /* 🌙 다크모드 적용 시 메인 대화방 & 모든 서랍 */
+    body.theme-dark,
+    body.theme-dark .app-main-layout {
+      background-color: #1e232a !important;
+    }
+    body.theme-dark .kakao-chat-header {
+      background-color: #181d24 !important;
+      border-bottom: 1px solid #282f3a !important;
+    }
+    body.theme-dark .btn-kakao-menu,
+    body.theme-dark .btn-kakao-head {
+      color: #cbd5e1 !important;
+    }
+    body.theme-dark .room-title-text {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .room-count-text {
+      color: #9ca3af !important;
+    }
+    body.theme-dark .kakao-notice-banner {
+      background-color: #262d37 !important;
+      border: 1px solid #374151 !important;
+    }
+    body.theme-dark .notice-text-content {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .chat-messages-container {
+      background-color: #1e232a !important;
+    }
+    body.theme-dark .chat-sender-name {
+      color: #9ca3af !important;
+    }
+    body.theme-dark .chat-timestamp {
+      color: #9ca3af !important;
+    }
+    body.theme-dark .chat-sender-avatar {
+      background-color: #262d37 !important;
+      border-color: #374151 !important;
+      color: #60a5fa !important;
+    }
+    body.theme-dark .chat-item-row.other .chat-bubble {
+      background-color: #2b323c !important;
+      color: #f3f4f6 !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+    }
+    body.theme-dark .chat-item-row.me .chat-bubble {
+      background-color: #fee500 !important;
+      color: #191919 !important;
+    }
+    body.theme-dark .boss-brief-bubble {
+      background-color: #262d37 !important;
+      color: #f3f4f6 !important;
+      border: 1px solid #374151 !important;
+    }
+    body.theme-dark .boss-brief-title {
+      color: #f3f4f6 !important;
+      border-bottom: 1px dashed #374151 !important;
+    }
+    body.theme-dark .boss-alert-mini-card {
+      background-color: #262d37 !important;
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .kakao-input-area {
+      background-color: #181d24 !important;
+      border-top: 1px solid #282f3a !important;
+    }
+    body.theme-dark .input-textarea-custom {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .input-tool-icons {
+      color: #9ca3af !important;
+    }
+
+    /* 🌙 다크모드 적용 시 햄버거 메뉴 서랍 */
+    body.theme-dark .app-sidebar-drawer {
+      background-color: #181d24 !important;
+      border-right: 1px solid #282f3a !important;
+    }
+    body.theme-dark .sidebar-header {
+      background-color: #13171d !important;
+      border-bottom: 1px solid #282f3a !important;
+    }
+    body.theme-dark .sidebar-brand {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .sidebar-close-btn {
+      color: #9ca3af !important;
+    }
+    body.theme-dark .sidebar-menu-item {
+      color: #e5e7eb !important;
+    }
+    body.theme-dark .sidebar-menu-item:hover {
+      background-color: #262d37 !important;
+      color: #ffffff !important;
+    }
+    body.theme-dark .sidebar-footer {
+      background-color: #13171d !important;
+      border-top: 1px solid #282f3a !important;
+    }
+    body.theme-dark .user-name-text {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .user-avatar {
+      background-color: #262d37 !important;
+      border-color: #374151 !important;
+      color: #f3f4f6 !important;
+    }
+
+    /* 🌙 다크모드 적용 시 길드원 서랍 & 보스타임 서랍 & 모달 */
+    body.theme-dark .app-members-drawer,
+    body.theme-dark #drawerMembersContainer,
+    body.theme-dark .members-drawer-container {
+      background-color: #181d24 !important;
+      border-right-color: #282f3a !important;
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .members-top-bar {
+      background-color: #13171d !important;
+      border-bottom: 1px solid #282f3a !important;
+    }
+    body.theme-dark .members-title-area {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .members-search-box {
+      background-color: #181d24 !important;
+      border-bottom: 1px solid #282f3a !important;
+    }
+    body.theme-dark .members-search-input {
+      background-color: #262d37 !important;
+      border: 1px solid #374151 !important;
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .members-scroll-area {
+      background-color: #181d24 !important;
+    }
+    body.theme-dark .member-profile-row:hover {
+      background-color: #262d37 !important;
+    }
+    body.theme-dark .app-boss-drawer,
+    body.theme-dark #drawerBossListArea,
+    body.theme-dark .drawer-boss-list-wrap {
+      background-color: #181d24 !important;
+      border-right-color: #282f3a !important;
+    }
+    body.theme-dark .boss-drawer-header-bar {
+      background-color: #13171d !important;
+      border-bottom-color: #282f3a !important;
+    }
+    body.theme-dark .boss-drawer-title-box {
+      color: #f3f4f6 !important;
+    }
+    body.theme-dark .kakao-modal-card {
+      background-color: #1e2530 !important;
+      color: #f3f4f6 !important;
+      border-color: #374151 !important;
+    }
+    body.theme-dark .kakao-modal-card input,
+    body.theme-dark .kakao-modal-card select {
+      background-color: #141922 !important;
+      border-color: #2c3545 !important;
+      color: #ffffff !important;
+    }
+
+    /* ☀️ 라이트모드 복귀 시 메인 대화방 & 모든 서랍 */
+    body.theme-light,
+    body.theme-light .app-main-layout {
+      background-color: #bacee0 !important;
+    }
+    body.theme-light .kakao-chat-header {
+      background-color: #bacee0 !important;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+    }
+    body.theme-light .btn-kakao-menu,
+    body.theme-light .btn-kakao-head {
+      color: #3b4b59 !important;
+    }
+    body.theme-light .room-title-text {
+      color: #191919 !important;
+    }
+    body.theme-light .room-count-text {
+      color: #556677 !important;
+    }
+    body.theme-light .kakao-notice-banner {
+      background-color: #ffffff !important;
+      border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    }
+    body.theme-light .notice-text-content {
+      color: #222222 !important;
+    }
+    body.theme-light .chat-messages-container {
+      background-color: #bacee0 !important;
+    }
+    body.theme-light .chat-sender-name {
+      color: #333333 !important;
+    }
+    body.theme-light .chat-timestamp {
+      color: #556677 !important;
+    }
+    body.theme-light .chat-sender-avatar {
+      background-color: #ffffff !important;
+      border-color: #dcdcdc !important;
+      color: #3b82f6 !important;
+    }
+    body.theme-light .chat-item-row.other .chat-bubble {
+      background-color: #ffffff !important;
+      color: #191919 !important;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
+    }
+    body.theme-light .chat-item-row.me .chat-bubble {
+      background-color: #fee500 !important;
+      color: #191919 !important;
+    }
+    body.theme-light .boss-brief-bubble {
+      background-color: #ffffff !important;
+      color: #191919 !important;
+      border: none !important;
+    }
+    body.theme-light .boss-brief-title {
+      color: #191919 !important;
+      border-bottom: 1px dashed #cbd5e1 !important;
+    }
+    body.theme-light .boss-alert-mini-card {
+      background-color: #ffffff !important;
+      color: #191919 !important;
+    }
+    body.theme-light .kakao-input-area {
+      background-color: #ffffff !important;
+      border-top: 1px solid #d4d4d4 !important;
+    }
+    body.theme-light .input-textarea-custom {
+      color: #191919 !important;
+    }
+    body.theme-light .input-tool-icons {
+      color: #64748b !important;
+    }
+
+    body.theme-light .app-sidebar-drawer {
+      background-color: #ffffff !important;
+      border-right: 1px solid #dcdcdc !important;
+    }
+    body.theme-light .sidebar-header {
+      background-color: #f7f7f7 !important;
+      border-bottom: 1px solid #ececec !important;
+    }
+    body.theme-light .sidebar-brand {
+      color: #191919 !important;
+    }
+    body.theme-light .sidebar-close-btn {
+      color: #707070 !important;
+    }
+    body.theme-light .sidebar-menu-item {
+      color: #333333 !important;
+    }
+    body.theme-light .sidebar-menu-item:hover {
+      background-color: #f0f0f0 !important;
+      color: #111111 !important;
+    }
+    body.theme-light .sidebar-footer {
+      background-color: #fafafa !important;
+      border-top: 1px solid #ececec !important;
+    }
+    body.theme-light .user-name-text {
+      color: #191919 !important;
+    }
+    body.theme-light .user-avatar {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+
+    body.theme-light .app-members-drawer,
+    body.theme-light #drawerMembersContainer,
+    body.theme-light .members-drawer-container {
+      background-color: #ffffff !important;
+      border-right-color: #dcdcdc !important;
+      color: #191919 !important;
+    }
+    body.theme-light .members-top-bar {
+      background-color: #ffffff !important;
+      border-bottom: 1px solid #ececec !important;
+    }
+    body.theme-light .members-title-area {
+      color: #191919 !important;
+    }
+    body.theme-light .members-search-box {
+      background-color: #ffffff !important;
+      border-bottom: 1px solid #f0f0f0 !important;
+    }
+    body.theme-light .members-search-input {
+      background-color: #f4f5f7 !important;
+      border: none !important;
+      color: #191919 !important;
+    }
+    body.theme-light .members-scroll-area {
+      background-color: #ffffff !important;
+    }
+    body.theme-light .member-profile-row:hover {
+      background-color: #f8fafc !important;
+    }
+    body.theme-light .app-boss-drawer,
+    body.theme-light #drawerBossListArea,
+    body.theme-light .drawer-boss-list-wrap {
+      background-color: #ffffff !important;
+      border-right-color: #dcdcdc !important;
+    }
+    body.theme-light .boss-drawer-header-bar {
+      background-color: #ffffff !important;
+      border-bottom-color: #ececec !important;
+    }
+    body.theme-light .boss-drawer-title-box {
+      color: #191919 !important;
+    }
+    body.theme-light .kakao-modal-card {
+      background-color: #ffffff !important;
+      color: #191919 !important;
+      border-color: #e2e8f0 !important;
+    }
+    body.theme-light .kakao-modal-card input,
+    body.theme-light .kakao-modal-card select {
+      background-color: #f7f7f7 !important;
+      border-color: #e2e8f0 !important;
+      color: #191919 !important;
+    }
+</style>
 </head>
 <body>
 
@@ -666,7 +1383,7 @@
         </button>
       </div>
     </div>
-    <div id="drawerBossListArea" style="flex: 1; overflow-y: auto; background: #ffffff;">
+    <div id="drawerBossListArea" style="flex: 1; overflow-y: auto;">
       <div class="text-secondary small text-center py-4">보스타임을 불러오는 중...</div>
     </div>
   </aside>
@@ -924,16 +1641,21 @@
       return formatter.format(d);
     }
 
-    
     window.applyAppTheme = function(mode) {
       const theme = mode || localStorage.getItem("guild_theme_mode") || "dark";
-      if (theme === "light") {
+      const isLight = (theme === "light");
+      if (isLight) {
+        document.documentElement.classList.add("theme-light");
+        document.documentElement.classList.remove("theme-dark");
         document.body.classList.add("theme-light");
         document.body.classList.remove("theme-dark");
       } else {
+        document.documentElement.classList.add("theme-dark");
+        document.documentElement.classList.remove("theme-light");
         document.body.classList.add("theme-dark");
         document.body.classList.remove("theme-light");
       }
+      localStorage.setItem("guild_theme_mode", theme);
     };
 
     async function initApp() {
@@ -1269,7 +1991,6 @@
       if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
       // 👑 [스텔스 슈퍼관리자 인증: 비밀 로그인]
-      // 검색/직접입력에 'admin' 또는 '슈퍼관리자'를 치고 마스터 비밀번호(123456)를 입력하면 슈퍼관리자로 승격
       const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
       const masterPin = window.masterAdminPin || "123456";
 
@@ -1328,20 +2049,15 @@
       localStorage.setItem("guild_my_nickname", targetMember.name);
       localStorage.setItem("guild_my_pin", inputPin);
 
-      // 🎯 직급별 세션 및 세분화된 권한 체계 적용
-      // (길드장 캐릭터라도 admin 마스터 로그인을 하지 않은 일반 접속 시에는 운영 관리자 권한으로 안전하게 제한)
       const userRole = targetMember.role || "일반";
       localStorage.setItem("guild_my_role", userRole);
 
-      if (userRole === "길드장" || userRole === "길마") {
+      if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
-      } else if (userRole === "부길드장" || userRole === "부길마") {
-        sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
+        sessionStorage.setItem("admin_role", "admin");
       } else if (userRole === "정예") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "elite"); // 현장 정예 관리자
+        sessionStorage.setItem("admin_role", "elite");
       } else {
         sessionStorage.removeItem("admin_auth");
         sessionStorage.removeItem("admin_role");
@@ -1918,14 +2634,12 @@
     window.openModulePage = async function(pageName) {
       closeAllDrawers();
 
-      // 로그인한 유저의 직급/권한 확인 (슈퍼관리자 / 운영진 / 정예 / 일반 세분화)
       const myRole = localStorage.getItem("guild_my_role") || "일반";
       const adminRole = sessionStorage.getItem("admin_role") || "";
       const isSuper = (adminRole === "super");
       const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
       const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
-      // 관리자 전용 페이지 접근 가드
       if (pageName === 'PageSettings' && !isAdmin) {
         return showKakaoToast("설정 페이지는 관리자만 접근할 수 있습니다.", "⚠️");
       }
@@ -1957,7 +2671,10 @@
       body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
 
       try {
-        const res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
+        let res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
+        if (!res.ok) {
+          res = await fetch(`pages/${pageName}.htm?_t=${Date.now()}`);
+        }
         if (!res.ok) throw new Error("로드 실패");
         const html = await res.text();
         body.innerHTML = html;
@@ -1978,6 +2695,7 @@
       document.getElementById("moduleOverlay").style.display = "none";
       document.getElementById("overlayBodyContent").innerHTML = "";
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
+      if (typeof window.applyAppTheme === "function") window.applyAppTheme();
     };
 
     function startLocalBossWatchTimer() {
