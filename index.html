@@ -1977,6 +1977,7 @@
         sessionStorage.setItem("admin_role", "super");
         myCurrentClass = "👑 슈퍼관리자";
         myCurrentAvatar = "👑";
+        localStorage.setItem("guild_my_role", "슈퍼관리자");
         return true;
       }
       try {
@@ -2068,7 +2069,7 @@
         myCurrentPin = inputPin;
         localStorage.setItem("guild_my_nickname", "슈퍼관리자");
         localStorage.setItem("guild_my_pin", inputPin);
-        localStorage.setItem("guild_my_role", "길드장");
+        localStorage.setItem("guild_my_role", "슈퍼관리자");
 
         sessionStorage.setItem("admin_auth", "true");
         sessionStorage.setItem("admin_role", "super");
