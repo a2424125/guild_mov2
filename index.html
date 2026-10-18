@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
   <!-- 부트스트랩 & 폰트어썸 아이콘 -->
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+  <!-- 카카오톡 정품 폰트 (맑은 고딕 / Apple SD Gothic Neo) 사용 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -260,6 +260,7 @@
       visibility: hidden !important;
     }
     * {
+      font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, sans-serif;
       scrollbar-width: thin !important;
       scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
     }
@@ -267,7 +268,7 @@
     html, body {
       background-color: var(--kakao-bg) !important;
       color: var(--kakao-header-text);
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
+      font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
       letter-spacing: -0.25px;
       -webkit-font-smoothing: antialiased !important;
       -moz-osx-font-smoothing: grayscale !important;
@@ -673,7 +674,7 @@
       background: #fee2e2 !important; border-color: #ef4444 !important; color: #dc2626 !important;
     }
     body.theme-dark .chat-sender-avatar.bot {
-      background: #451a1a !important; border-color: #7f1d1d !important; color: #f87171 !important;
+      background: #262d37 !important; border-color: #ef4444 !important; color: #ff6b6b !important;
     }
 
     .chat-msg-body {
@@ -689,9 +690,9 @@
 
     .chat-bubble {
       display: inline-block; width: fit-content; max-width: 100%;
-      padding: 7px 12px; border-radius: 8px; font-size: 0.88rem; line-height: 1.5;
-      font-weight: 500; word-break: break-all; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); white-space: pre-wrap;
-      letter-spacing: -0.2px; -webkit-font-smoothing: antialiased;
+      padding: 7px 10px; border-radius: 4px; font-size: 13px; line-height: 1.42;
+      font-weight: 400; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
+      letter-spacing: -0.25px;
     }
     .chat-item-row.other .chat-bubble {
       background: var(--kakao-bubble-other) !important;
@@ -724,6 +725,7 @@
       padding: 2.5px 0 !important; font-size: 0.84rem !important; font-weight: 600 !important;
     }
     .boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
+    body.theme-dark .boss-brief-line.spawned { color: #ff6b6b !important; font-weight: 700 !important; }
 
     .boss-alert-mini-card {
       background: var(--kakao-notice-bg) !important;
@@ -734,8 +736,8 @@
     }
     .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
     .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
-    .boss-alert-mini-card.alert-spawn { border-left: 4px solid #ef4444 !important; background: #fff8f8 !important; }
-    body.theme-dark .boss-alert-mini-card.alert-spawn { background: #3b1c1c !important; color: #fca5a5 !important; }
+    .boss-alert-mini-card.alert-spawn { border-left: 4px solid #ef4444 !important; background: #ffffff !important; color: #191919 !important; }
+    body.theme-dark .boss-alert-mini-card.alert-spawn { background: #262d37 !important; border-left: 4px solid #ef4444 !important; color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important; }
     .boss-alert-mini-card.alert-cut { border-left: 4px solid #38bdf8 !important; }
 
     .spawn-card-wrapper { display: flex; flex-direction: column; width: fit-content; max-width: 100%; }
@@ -934,7 +936,7 @@
       color: var(--drawer-sub-text) !important;
     }
     body.theme-dark .drawer-boss-card.spawned {
-      background: #3b1c1c !important;
+      background: #262d37 !important;
       border-color: #ef4444 !important;
     }
   
@@ -959,7 +961,7 @@
     body.theme-dark .drawer-boss-name { color: #f3f4f6 !important; }
     body.theme-dark .drawer-card-bottom { color: #94a3b8 !important; }
     body.theme-dark .badge-boss-state.state-wait { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
-    body.theme-dark .badge-boss-state.state-spawn { background: #451a1a !important; color: #f87171 !important; border-color: #7f1d1d !important; }
+    body.theme-dark .badge-boss-state.state-spawn { background: rgba(239, 68, 68, 0.2) !important; color: #ff6b6b !important; border-color: #ef4444 !important; font-weight: 700 !important; }
     body.theme-dark .badge-boss-state.state-imminent { background: #3c2a10 !important; color: #fbbf24 !important; border-color: #78350f !important; }
     body.theme-dark .badge-boss-state.state-normal { background: #0c2b4e !important; color: #38bdf8 !important; border-color: #0369a1 !important; }
     body.theme-dark .btn-drawer-reserve { background: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
