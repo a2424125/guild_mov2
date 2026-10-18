@@ -410,17 +410,96 @@
     white-space: nowrap;
   }
 
-  .form-switch .form-check-input {
-    width: 2.8em;
-    height: 1.5em;
+  /* 🎚️ 고대비 커스텀 테마 토글 스위치 (검은색 뭉침 현상 완전 해결) */
+  .custom-theme-switch-wrap {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 32px;
+    margin: 0;
     cursor: pointer;
-    background-color: #1e293b;
-    border-color: #334155;
     flex-shrink: 0;
+    user-select: none;
+    -webkit-user-select: none;
   }
-  .form-switch .form-check-input:checked {
+  .custom-theme-switch-wrap input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    margin: 0;
+    pointer-events: none;
+  }
+  .theme-slider-track {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #334155;
+    border: 2px solid #475569;
+    border-radius: 32px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+  }
+  .theme-slider-knob {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 2px;
+    bottom: 2px;
+    background-color: #ffffff !important;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  }
+  .custom-theme-switch-wrap input:checked + .theme-slider-track {
     background-color: #0284c7;
     border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+  }
+  .custom-theme-switch-wrap input:checked + .theme-slider-track .theme-slider-knob {
+    transform: translateX(28px);
+    background-color: #ffffff !important;
+  }
+  .settings-card.light-mode .custom-theme-switch-wrap .theme-slider-track {
+    background-color: #e2e8f0;
+    border-color: #cbd5e1;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  .settings-card.light-mode .custom-theme-switch-wrap input:checked + .theme-slider-track {
+    background-color: #0284c7;
+    border-color: #0284c7;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+  }
+
+  /* 일반 설정 및 권한 스위치 고대비 스타일링 */
+  .form-switch .form-check-input {
+    width: 3.2em !important;
+    height: 1.65em !important;
+    cursor: pointer !important;
+    background-color: #334155 !important;
+    border: 1.5px solid #64748b !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+    background-position: left center !important;
+    border-radius: 2em !important;
+    transition: background-color 0.2s ease, border-color 0.2s ease, background-position 0.2s ease, box-shadow 0.2s ease !important;
+    flex-shrink: 0 !important;
+  }
+  .form-switch .form-check-input:checked {
+    background-color: #0284c7 !important;
+    border-color: #38bdf8 !important;
+    background-position: right center !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+  }
+  .settings-card.light-mode .form-switch .form-check-input {
+    background-color: #cbd5e1 !important;
+    border-color: #94a3b8 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
+  }
+  .settings-card.light-mode .form-switch .form-check-input:checked {
+    background-color: #0284c7 !important;
+    border-color: #0284c7 !important;
+    background-position: right center !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
   }
   .perm-switch-item {
     background: #090e1c;
@@ -460,6 +539,9 @@
     scrollbar-width: none !important; -ms-overflow-style: none !important;
   }
   .ground-region-chips::-webkit-scrollbar {
+    display: none !important; width: 0 !important; height: 0 !important;
+  }
+  .ground-region-chips::-webkit-scrollbar-button {
     display: none !important; width: 0 !important; height: 0 !important;
   }
   .region-chip-btn {
@@ -532,7 +614,8 @@
   .custom-app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   @media (max-width: 480px) {
-    .settings-card { padding: 14px 12px; }
+    .settings-card {
+      font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif !important; padding: 14px 12px; }
     .settings-section-box { padding: 12px 10px; }
     .boss-grid-container, .ground-grid-container { grid-template-columns: repeat(1, minmax(0, 1fr)); }
     .settings-nav-btn { font-size: 0.72rem; padding: 7px 5px; }
@@ -546,6 +629,11 @@
     width: 5px !important;
     height: 5px !important;
   }
+  .boss-grid-container::-webkit-scrollbar-track,
+  .ground-grid-container::-webkit-scrollbar-track,
+  .profile-class-grid::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
   .boss-grid-container::-webkit-scrollbar-thumb,
   .ground-grid-container::-webkit-scrollbar-thumb,
   .profile-class-grid::-webkit-scrollbar-thumb {
@@ -556,6 +644,13 @@
   .settings-card.light-mode .ground-grid-container::-webkit-scrollbar-thumb,
   .settings-card.light-mode .profile-class-grid::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.2) !important;
+  }
+  .boss-grid-container::-webkit-scrollbar-button,
+  .ground-grid-container::-webkit-scrollbar-button,
+  .profile-class-grid::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 </style>
 
@@ -571,7 +666,7 @@
     </span>
   </div>
 
-  <!-- 탭 메뉴 (토벌/운영, 길드원보안, 설정보안 분리 및 3x2 무스크롤 배치) -->
+  <!-- 탭 메뉴 (토벌/운영, 길드원보안, 설정보안 분리) -->
   <div class="settings-nav-container mb-3">
     <button type="button" class="settings-nav-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
       🏢 기본
@@ -593,7 +688,9 @@
     </button>
   </div>
 
-  <!-- [탭 1] 기본 탭: 소속길드명(단순 텍스트), 카카오톡 스타일 프로필, 테마 토글 스위치 -->
+  <!-- ========================================================
+       [탭 1] 기본 탭: 소속길드명(단순 텍스트), 카카오톡 스타일 프로필, 테마 모드
+       ======================================================== -->
   <div id="tabSettingsGeneral">
     <!-- 1. 소속 길드명 -->
     <div class="d-flex align-items-center justify-content-between mb-3 px-3 py-2 rounded" style="background: rgba(0, 0, 0, 0.18); border: 1px solid rgba(255, 255, 255, 0.08);">
@@ -608,7 +705,7 @@
       <input type="hidden" id="cfgGuildName" value="">
     </div>
 
-    <!-- 2 & 3. 카카오톡 스타일 프로필 카드 (클릭 시 통합 모달 오픈, 하단 큰 버튼 제거) -->
+    <!-- 2 & 3. 카카오톡 스타일 프로필 카드 (클릭 시 통합 프로필/비밀번호 모달 오픈, 하단 큰 버튼 제거) -->
     <div class="settings-section-box mb-3">
       <div class="kt-profile-card" onclick="openCombinedProfileModal()" style="cursor: pointer;" title="클릭하여 캐릭터 직업 및 비밀번호 변경">
         <div class="kt-avatar-wrapper">
@@ -633,7 +730,7 @@
       </div>
     </div>
 
-    <!-- 4. 라이트 / 다크모드 설정 (원클릭 토글 스위치) -->
+    <!-- 4. 라이트 / 다크모드 설정 (고대비 커스텀 토글 스위치) -->
     <div class="settings-section-box d-flex justify-content-between align-items-center py-3 px-3">
       <div class="d-flex align-items-center gap-3">
         <div id="themeToggleIconBox" style="width: 40px; height: 40px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; transition: all 0.2s ease;">
@@ -647,13 +744,19 @@
           <div class="text-secondary" id="themeToggleSubtext" style="font-size: 0.72rem; margin-top: 2px;">선명하고 눈이 편안한 다크 테마</div>
         </div>
       </div>
-      <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-        <input class="form-check-input ms-0 theme-toggle-switch" type="checkbox" id="themeToggleSwitch" role="switch" onchange="onThemeToggleSwitch(this.checked)" style="width: 3.2em; height: 1.65em; cursor: pointer;">
-      </div>
+      <!-- 커스텀 고가시성 테마 토글 슬라이더 (검은색 뭉침 현상 완전 해결) -->
+      <label class="custom-theme-switch-wrap" for="themeToggleSwitch" title="클릭하여 다크/라이트 모드 전환">
+        <input type="checkbox" id="themeToggleSwitch" onchange="onThemeToggleSwitch(this.checked)">
+        <span class="theme-slider-track">
+          <span class="theme-slider-knob"></span>
+        </span>
+      </label>
     </div>
   </div>
 
-  <!-- [탭 2] 토벌설정 탭: 토벌 & 전쟁 배점 규정, 3분 추가등록 링크 -->
+  <!-- ========================================================
+       [탭 2] 토벌설정 탭: 토벌 & 전쟁 배점 규정, 3분 추가등록 링크
+       ======================================================== -->
   <div id="tabSettingsRaid" style="display: none;">
     <div class="settings-section-box">
       <div class="fw-bold text-warning small mb-2"><i class="fa-solid fa-star me-1"></i> 토벌 & 전쟁 배점 규정 (신규 등록 건부터 적용)</div>
@@ -721,7 +824,9 @@
     </div>
   </div>
 
-  <!-- [탭 3] 길드원보안 탭: 길드원별 비밀번호 초기화 도구 -->
+  <!-- ========================================================
+       [탭 3] 길드원보안 탭: 길드원별 비밀번호 초기화 도구
+       ======================================================== -->
   <div id="tabSettingsMemberAuth" style="display: none;">
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2">
@@ -744,9 +849,11 @@
     </div>
   </div>
 
-  <!-- [탭 4] 설정보안 탭: Gemini AI OCR API 키 관리 + 관리자 비밀번호 보안 -->
+  <!-- ========================================================
+       [탭 4 - 신설] 설정보안 탭: Gemini AI OCR API 키 관리 + 관리자 비밀번호 보안
+       ======================================================== -->
   <div id="tabSettingsSecurity" style="display: none;">
-    <!-- 1. Gemini AI OCR API 키 -->
+    <!-- 1. Gemini AI OCR API 키 (중요 시스템 자격증명) -->
     <div class="settings-section-box border-primary border-opacity-50 mb-3">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
         <div class="d-flex align-items-center gap-2" style="min-width:0; flex:1;">
@@ -773,7 +880,7 @@
       </div>
     </div>
 
-    <!-- 2. 관리자 비밀번호 보안 -->
+    <!-- 2. 관리자 비밀번호 보안 (마스터키 변경) -->
     <div class="settings-section-box border-danger border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
         <div class="d-flex align-items-center gap-2">
@@ -790,7 +897,9 @@
     </div>
   </div>
 
-  <!-- [탭 5] 관리자 권한 탭: 세부 기능별 권한 스위치 -->
+  <!-- ========================================================
+       [탭 5] 관리자 권한 탭: 세부 기능별 권한 스위치
+       ======================================================== -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
@@ -810,6 +919,19 @@
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permSettingsSecurity" role="switch">
+        </div>
+      </div>
+
+      <!-- [신규 추가] 토벌설정 탭 접근 권한 스위치 -->
+      <div class="perm-switch-item">
+        <div style="min-width:0; flex:1;">
+          <div class="text-white fw-bold small" style="font-size: 0.8rem;">
+            <i class="fa-solid fa-crosshairs text-warning me-1"></i>설정창 토벌설정 탭 권한
+          </div>
+          <div class="text-secondary" style="font-size: 0.68rem;">토벌 & 전쟁 배점 규정 및 추가등록 링크 정책 제어 탭 진입 허용</div>
+        </div>
+        <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+          <input class="form-check-input ms-0" type="checkbox" id="permSettingsRaid" role="switch">
         </div>
       </div>
 
@@ -1119,6 +1241,14 @@
     if (tab === 'permissions') {
       if (!isSuper) {
         alert("⚠️ [관리자 권한] 제어판은 슈퍼관리자(Master)만 진입할 수 있습니다.");
+        return;
+      }
+    }
+
+    if (tab === 'raid' && !isSuper) {
+      const allowRaid = window.currentSettingsMap['perm_settings_raid'] !== 'false';
+      if (!allowRaid) {
+        alert("⚠️ 일반 관리자에게는 토벌설정 탭 접근 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
         return;
       }
     }
@@ -1443,6 +1573,7 @@
 
       const parseBool = (k) => window.currentSettingsMap[k] !== 'false';
       document.getElementById('permSettingsSecurity').checked = parseBool('perm_settings_security');
+      document.getElementById('permSettingsRaid').checked = parseBool('perm_settings_raid');
       document.getElementById('permSettingsBossGround').checked = parseBool('perm_settings_boss_ground');
       document.getElementById('permBossRegister').checked = parseBool('perm_boss_register');
       document.getElementById('permBossRecordsEdit').checked = parseBool('perm_boss_records_edit');
@@ -1559,6 +1690,7 @@
 
     const permissions = {
       perm_settings_security: document.getElementById('permSettingsSecurity').checked ? 'true' : 'false',
+      perm_settings_raid: document.getElementById('permSettingsRaid').checked ? 'true' : 'false',
       perm_settings_boss_ground: document.getElementById('permSettingsBossGround').checked ? 'true' : 'false',
       perm_boss_register: document.getElementById('permBossRegister').checked ? 'true' : 'false',
       perm_boss_records_edit: document.getElementById('permBossRecordsEdit').checked ? 'true' : 'false',
