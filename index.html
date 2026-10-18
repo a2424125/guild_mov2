@@ -715,7 +715,7 @@
 
     .chat-bubble {
       display: inline-block; width: fit-content; max-width: 100%;
-      padding: 5px 9px; border-radius: 4px; font-size: 12px; line-height: 1.38;
+      padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.42;
       font-weight: 400; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
       letter-spacing: 0;
     }
@@ -737,7 +737,7 @@
     .boss-brief-bubble {
       background: var(--kakao-notice-bg) !important;
       color: var(--kakao-notice-text) !important;
-      border-radius: 4px !important; padding: 5px 9px 4px 9px !important;
+      border-radius: 6px !important; padding: 8px 12px !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important; width: fit-content !important;
     }
     .boss-brief-title {
@@ -755,8 +755,8 @@
     .boss-alert-mini-card {
       background: var(--kakao-notice-bg) !important;
       color: var(--kakao-notice-text) !important;
-      border-radius: 4px !important; padding: 5px 9px !important;
-      font-size: 12px !important; font-weight: 400 !important; line-height: 1.38 !important;
+      border-radius: 6px !important; padding: 8px 12px !important;
+      font-size: 12px !important; font-weight: 400 !important; line-height: 1.42 !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
       letter-spacing: 0;
     }
@@ -1859,6 +1859,7 @@
     var bossWatcherInterval = null;
     var deferredPrompt = null;
     var kakaoToastTimer = null;
+    var pendingOptimisticMessages = [];
 
     var notifiedBossSpawnMap = new Set(JSON.parse(localStorage.getItem("boss_spawn_notified_keys") || "[]"));
 
@@ -2422,7 +2423,26 @@
       supabaseClient
         .channel("public:guild_chats")
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
-          renderKakaoChatBubble(payload.new, true);
+          const newMsg = payload.new;
+          if (!newMsg) return;
+
+          // 🚀 [낙관적 UI 중복 수신 방지] 내가 방금 보낸 메시지인 경우 스킵 및 ID 연동
+          if (newMsg.sender_name === myCurrentNick && newMsg.msg_type === "chat") {
+            const pendingIdx = pendingOptimisticMessages.findIndex(p => p.text === newMsg.message && (Date.now() - p.time < 15000));
+            if (pendingIdx !== -1) {
+              const pending = pendingOptimisticMessages[pendingIdx];
+              pendingOptimisticMessages.splice(pendingIdx, 1);
+
+              const rowElem = document.getElementById("msg_" + pending.tempId);
+              if (rowElem) {
+                rowElem.id = "msg_" + newMsg.id;
+                rowElem.setAttribute("data-msg-id", newMsg.id);
+              }
+              return; // 이미 화면에 0초 만에 렌더링되었으므로 중복 렌더링 방지!
+            }
+          }
+
+          renderKakaoChatBubble(newMsg, true);
         })
         .subscribe();
     }
@@ -2486,6 +2506,7 @@
       const container = document.getElementById("chatMessagesView");
       const isMe = (msg.sender_name === myCurrentNick);
       const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
+      const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
       
       const timeStr = formatKSTChatTime(msg.created_at);
       const totalMembers = cachedMemberList.length || 52;
@@ -2505,7 +2526,7 @@
 
       if (msg.msg_type === "boss_briefing") {
         html = `
-          <div class="chat-item-row other">
+          <div class="chat-item-row other" id="${msgKey}">
             <div class="chat-sender-avatar bot">⏰</div>
             <div class="chat-msg-body">
               <div class="chat-sender-name">보스알리미</div>
@@ -2532,7 +2553,7 @@
 
         if (!raidData) {
           html = `
-            <div class="chat-item-row other">
+            <div class="chat-item-row other" id="${msgKey}">
               <div class="chat-sender-avatar bot">⚔️</div>
               <div class="chat-msg-body">
                 <div class="chat-sender-name">토벌알리미</div>
@@ -2613,7 +2634,7 @@
           }
 
           html = `
-            <div class="chat-item-row other">
+            <div class="chat-item-row other" id="${msgKey}">
               <div class="chat-sender-avatar bot">⚔️</div>
               <div class="chat-msg-body raid-msg-body">
                 <div class="chat-sender-name">토벌알리미</div>
@@ -2712,7 +2733,7 @@
         }
 
         html = `
-          <div class="chat-item-row other">
+          <div class="chat-item-row other" id="${msgKey}">
             <div class="chat-sender-avatar bot">📢</div>
             <div class="chat-msg-body">
               <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
@@ -2734,7 +2755,7 @@
       }
       else if (isMe) {
         html = `
-          <div class="chat-item-row me">
+          <div class="chat-item-row me" id="${msgKey}">
             <div class="chat-msg-body">
               <div class="chat-bubble-flex">
                 <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
@@ -2749,7 +2770,7 @@
       }
       else {
         html = `
-          <div class="chat-item-row other">
+          <div class="chat-item-row other" id="${msgKey}">
             <div class="chat-sender-avatar">${senderAvatarIcon}</div>
             <div class="chat-msg-body">
               <div class="chat-sender-name">
@@ -3029,32 +3050,74 @@
         return;
       }
 
+      // 1. 입력창 즉시 초기화 및 팝업 닫기 (체감 반응 0ms)
       textarea.value = "";
       handleInputState(textarea);
       closeMentionPopup();
 
       const isCommand = (text.startsWith('!') || text.startsWith('！'));
 
-      try {
-        const detectedMentions = [];
-        cachedMemberList.forEach(m => {
-          if (text.includes(`@${m.name}`)) detectedMentions.push(m.name);
-        });
+      // 2. 멘션 감지
+      const detectedMentions = [];
+      cachedMemberList.forEach(m => {
+        if (text.includes(`@${m.name}`)) detectedMentions.push(m.name);
+      });
 
-        await apiRequest("guild_chats", "POST", [{
-          sender_name: myCurrentNick,
-          message: text,
-          msg_type: "chat",
-          mentions: detectedMentions
-        }]);
-      } catch (err) {
-        showKakaoToast("전송 실패: " + err.message, "❌");
-        return;
+      // 3. 🚀 [낙관적 UI (Optimistic UI)] 0.00초 즉시 화면에 내 말풍선 렌더링
+      const tempId = "opt_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
+      const optimisticMsg = {
+        id: tempId,
+        sender_name: myCurrentNick,
+        message: text,
+        msg_type: "chat",
+        mentions: detectedMentions,
+        created_at: new Date().toISOString()
+      };
+
+      // 중복 웹소켓 수신 방지 큐에 등록
+      pendingOptimisticMessages.push({
+        tempId: tempId,
+        text: text,
+        time: Date.now()
+      });
+      if (pendingOptimisticMessages.length > 40) {
+        pendingOptimisticMessages = pendingOptimisticMessages.filter(p => Date.now() - p.time < 15000);
       }
 
-      if (isCommand) {
-        await handleBossChatCommands(text);
-      }
+      // 0.00초 만에 즉시 내 말풍선 화면 출력!
+      renderKakaoChatBubble(optimisticMsg, false);
+
+      // 4. 🌐 백그라운드 비동기 통신 (서버 저장 & 웹소켓 브로드캐스트)
+      (async () => {
+        try {
+          const insertRes = await apiRequest("guild_chats", "POST", [{
+            sender_name: myCurrentNick,
+            message: text,
+            msg_type: "chat",
+            mentions: detectedMentions
+          }]);
+
+          if (insertRes && insertRes[0] && insertRes[0].id) {
+            const rowElem = document.getElementById("msg_" + tempId);
+            if (rowElem) {
+              rowElem.id = "msg_" + insertRes[0].id;
+              rowElem.setAttribute("data-msg-id", insertRes[0].id);
+            }
+          }
+        } catch (err) {
+          showKakaoToast("전송 실패: " + err.message, "❌");
+          const rowElem = document.getElementById("msg_" + tempId);
+          if (rowElem) {
+            const bubble = rowElem.querySelector(".chat-bubble");
+            if (bubble) bubble.classList.add("border", "border-danger");
+          }
+          return;
+        }
+
+        if (isCommand) {
+          await handleBossChatCommands(text);
+        }
+      })();
     }
 
     function bindMentionInputEvents() {
