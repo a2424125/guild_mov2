@@ -14,7 +14,6 @@
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
   <!-- 부트스트랩 & 폰트어썸 아이콘 -->
-  <!-- 카카오톡 정품 폰트 (맑은 고딕 / Apple SD Gothic Neo) 사용 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
@@ -93,7 +92,6 @@
       --overlay-back-btn-color: #334155;
       --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
 
-      /* 카카오톡 맞춤 슬림 스크롤바 색상 (라이트) */
       --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
       --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
     }
@@ -153,7 +151,6 @@
       --overlay-back-btn-color: #cbd5e1;
       --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
 
-      /* 카카오톡 맞춤 슬림 스크롤바 색상 (다크) */
       --kakao-scroll-thumb: rgba(255, 255, 255, 0.22);
       --kakao-scroll-thumb-hover: rgba(255, 255, 255, 0.42);
     }
@@ -222,10 +219,7 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ========================================================
-       [카카오톡 스타일 초슬림 캡슐 스크롤바 표준]
-       ======================================================== */
-    /* [카카오톡 정품 초슬림 5px 캡슐 스크롤바 & 윈도우 화살표 버튼 완전 박멸] */
+    /* 카카오톡 정품 초슬림 5px 캡슐 스크롤바 */
     ::-webkit-scrollbar {
       width: 5px !important;
       height: 5px !important;
@@ -244,20 +238,10 @@
     ::-webkit-scrollbar-corner {
       background: transparent !important;
     }
-    ::-webkit-scrollbar-button,
-    ::-webkit-scrollbar-button:single-button,
-    ::-webkit-scrollbar-button:start,
-    ::-webkit-scrollbar-button:end,
-    ::-webkit-scrollbar-button:vertical:start:decrement,
-    ::-webkit-scrollbar-button:vertical:end:increment,
-    ::-webkit-scrollbar-button:horizontal:start:decrement,
-    ::-webkit-scrollbar-button:horizontal:end:increment {
+    ::-webkit-scrollbar-button {
       display: none !important;
       width: 0 !important;
       height: 0 !important;
-      background: transparent !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
     }
     * {
       -webkit-font-smoothing: subpixel-antialiased !important;
@@ -267,7 +251,6 @@
       scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
     }
 
-    /* 폰트어썸 아이콘 폰트 강제 보호 (Malgun Gothic 상속으로 인한 네모 박스 방지) */
     .fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
       font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
       font-style: normal !important;
@@ -275,16 +258,9 @@
       text-rendering: auto !important;
       line-height: 1 !important;
     }
-    .fa-solid, .fas {
-      font-weight: 900 !important;
-    }
-    .fa-regular, .far {
-      font-weight: 400 !important;
-    }
-    .fa-brands, .fab {
-      font-family: "Font Awesome 6 Brands" !important;
-      font-weight: 400 !important;
-    }
+    .fa-solid, .fas { font-weight: 900 !important; }
+    .fa-regular, .far { font-weight: 400 !important; }
+    .fa-brands, .fab { font-family: "Font Awesome 6 Brands" !important; font-weight: 400 !important; }
 
     button, input, textarea, select {
       font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -295,9 +271,6 @@
       color: var(--kakao-header-text);
       font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
       letter-spacing: 0;
-      -webkit-font-smoothing: subpixel-antialiased !important;
-      -moz-osx-font-smoothing: auto !important;
-      text-rendering: auto !important;
       height: 100vh;
       margin: 0;
       padding: 0;
@@ -308,7 +281,6 @@
       transition: background-color 0.2s ease, color 0.2s ease;
     }
 
-    /* 서랍 공통 백드롭 */
     .drawer-backdrop {
       position: fixed;
       top: 0; left: 0;
@@ -319,10 +291,7 @@
       opacity: 0;
       transition: opacity 0.2s ease;
     }
-    .drawer-backdrop.show {
-      display: block;
-      opacity: 1;
-    }
+    .drawer-backdrop.show { display: block; opacity: 1; }
 
     /* 1. 햄버거 메뉴 서랍 (260px) */
     .app-sidebar-drawer {
@@ -345,7 +314,6 @@
       visibility: visible;
       box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
     }
-
     .sidebar-header {
       height: 50px;
       padding: 0 14px;
@@ -370,7 +338,6 @@
       color: var(--drawer-sub-text) !important; font-size: 1.15rem;
       cursor: pointer;
     }
-
     .sidebar-menu-list {
       list-style: none;
       padding: 8px 6px;
@@ -396,7 +363,6 @@
       color: var(--drawer-title) !important;
     }
     .sidebar-menu-item i { width: 20px; text-align: center; font-size: 0.95rem; }
-
     .sidebar-footer {
       padding: 10px 14px;
       border-top: 1px solid var(--drawer-footer-border) !important;
@@ -431,9 +397,7 @@
     .user-sub-class {
       font-size: 0.68rem; color: #0284c7; font-weight: 600;
     }
-    body.theme-dark .user-sub-class {
-      color: #38bdf8 !important;
-    }
+    body.theme-dark .user-sub-class { color: #38bdf8 !important; }
 
     /* 2. 길드원 목록 서랍 (260px) */
     .app-members-drawer {
@@ -496,10 +460,7 @@
       gap: 6px !important;
       white-space: nowrap !important;
     }
-    .boss-drawer-title-box i {
-      font-size: 0.95rem;
-      color: #f59e0b;
-    }
+    .boss-drawer-title-box i { font-size: 0.95rem; color: #f59e0b; }
     .boss-header-tools-box {
       display: flex !important;
       align-items: center !important;
@@ -519,13 +480,8 @@
       background: var(--drawer-item-hover-bg) !important;
       color: var(--drawer-title) !important;
     }
-    .btn-tool-icon.rotating i {
-      animation: spinAnim 0.6s ease-in-out;
-    }
-    @keyframes spinAnim {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    .btn-tool-icon.rotating i { animation: spinAnim 0.6s ease-in-out; }
+    @keyframes spinAnim { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
     /* 3. 메인 대화방 */
     .app-main-layout {
@@ -561,7 +517,6 @@
       flex: 1;
       overflow: hidden;
     }
-
     .btn-kakao-menu {
       background: none;
       border: none;
@@ -576,12 +531,8 @@
       flex-shrink: 0;
       transition: background 0.15s ease;
     }
-    .btn-kakao-menu:hover {
-      background: rgba(0, 0, 0, 0.08);
-    }
-    body.theme-dark .btn-kakao-menu:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
+    .btn-kakao-menu:hover { background: rgba(0, 0, 0, 0.08); }
+    body.theme-dark .btn-kakao-menu:hover { background: rgba(255, 255, 255, 0.08); }
 
     .room-avatar-circle {
       width: 30px;
@@ -595,9 +546,7 @@
       font-size: 0.9rem;
       flex-shrink: 0;
     }
-    body.theme-dark .room-avatar-circle {
-      background: #334155;
-    }
+    body.theme-dark .room-avatar-circle { background: #334155; }
     .room-info-box {
       display: flex;
       flex-direction: column;
@@ -622,7 +571,6 @@
       line-height: 1.2;
       margin-top: 1px;
     }
-
     .header-right-tools {
       display: flex;
       align-items: center;
@@ -639,12 +587,8 @@
       border-radius: 6px;
       transition: background 0.15s ease;
     }
-    .btn-kakao-head:hover {
-      background: rgba(0,0,0,0.08);
-    }
-    body.theme-dark .btn-kakao-head:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
+    .btn-kakao-head:hover { background: rgba(0,0,0,0.08); }
+    body.theme-dark .btn-kakao-head:hover { background: rgba(255, 255, 255, 0.08); }
 
     .kakao-notice-banner {
       background: var(--kakao-notice-bg) !important;
@@ -774,6 +718,239 @@
     }
     .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled { background: #94a3b8 !important; border-color: #64748b !important; cursor: not-allowed !important; }
 
+    /* ========================================================
+       [카카오톡 스타일 토벌 보고서 카드 & 실시간 추가참여/3분 카운터]
+       ======================================================== */
+    .raid-msg-body {
+      max-width: 95% !important;
+      width: fit-content !important;
+    }
+    .raid-report-card {
+      background: var(--kakao-notice-bg) !important;
+      color: var(--kakao-notice-text) !important;
+      border: 1px solid var(--drawer-card-border) !important;
+      border-radius: 12px !important;
+      padding: 10px 12px !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+      width: 290px !important;
+      max-width: 100% !important;
+      letter-spacing: 0;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+    .raid-card-header {
+      border-bottom: 1px dashed var(--drawer-card-border) !important;
+      padding-bottom: 6px !important;
+      margin-bottom: 8px !important;
+    }
+    .raid-boss-title {
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      color: var(--kakao-notice-text) !important;
+      display: flex !important;
+      align-items: center !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+    .raid-time-sub {
+      font-size: 10.5px !important;
+      color: var(--kakao-time-gray) !important;
+      margin-top: 2px !important;
+    }
+    .badge-war-normal {
+      background: rgba(56, 189, 248, 0.15) !important;
+      color: #0284c7 !important;
+      border: 1px solid rgba(56, 189, 248, 0.4) !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      padding: 2px 6px !important;
+    }
+    body.theme-dark .badge-war-normal {
+      background: rgba(56, 189, 248, 0.2) !important;
+      color: #38bdf8 !important;
+      border-color: #0284c7 !important;
+    }
+    .badge-war-internal {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #d97706 !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      padding: 2px 6px !important;
+    }
+    body.theme-dark .badge-war-internal {
+      background: rgba(245, 158, 11, 0.2) !important;
+      color: #fbbf24 !important;
+      border-color: #d97706 !important;
+    }
+    .badge-war-inter {
+      background: rgba(239, 68, 68, 0.15) !important;
+      color: #dc2626 !important;
+      border: 1px solid rgba(239, 68, 68, 0.4) !important;
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      padding: 2px 6px !important;
+    }
+    body.theme-dark .badge-war-inter {
+      background: rgba(239, 68, 68, 0.2) !important;
+      color: #ff6b6b !important;
+      border-color: #ef4444 !important;
+    }
+    .raid-card-item-row {
+      font-size: 11.5px !important;
+      line-height: 1.4 !important;
+      margin-bottom: 6px !important;
+      background: rgba(0, 0, 0, 0.03) !important;
+      border-radius: 6px !important;
+      padding: 4px 7px !important;
+    }
+    body.theme-dark .raid-card-item-row {
+      background: rgba(255, 255, 255, 0.04) !important;
+    }
+    .raid-row-label {
+      font-weight: 700 !important;
+      color: var(--kakao-notice-text) !important;
+      margin-right: 4px !important;
+    }
+    .raid-item-val {
+      color: #e11d48 !important;
+      font-weight: 700 !important;
+      word-break: break-all !important;
+    }
+    body.theme-dark .raid-item-val {
+      color: #fb7185 !important;
+    }
+    .raid-members-box {
+      margin-bottom: 8px !important;
+    }
+    .raid-members-header {
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      color: var(--kakao-notice-text) !important;
+      margin-bottom: 4px !important;
+    }
+    .raid-members-tags {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 3px !important;
+      max-height: 90px !important;
+      overflow-y: auto !important;
+      padding: 1px !important;
+    }
+    .raid-member-pill {
+      font-size: 10.5px !important;
+      background: #f1f5f9 !important;
+      color: #334155 !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 4px !important;
+      padding: 1px 5px !important;
+      font-weight: 600 !important;
+      white-space: nowrap !important;
+    }
+    body.theme-dark .raid-member-pill {
+      background: #141922 !important;
+      color: #cbd5e1 !important;
+      border-color: #2c3545 !important;
+    }
+    .raid-member-pill.new-joined {
+      background: rgba(254, 229, 0, 0.25) !important;
+      border-color: #fee500 !important;
+      color: #191919 !important;
+      font-weight: 700 !important;
+    }
+    body.theme-dark .raid-member-pill.new-joined {
+      background: rgba(254, 229, 0, 0.2) !important;
+      border-color: #fee500 !important;
+      color: #fee500 !important;
+    }
+    .raid-action-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 8px !important;
+      margin-top: 8px !important;
+      padding-top: 6px !important;
+      border-top: 1px solid var(--drawer-card-border) !important;
+    }
+    .btn-raid-self-add {
+      flex: 1 !important;
+      background: #fee500 !important;
+      color: #191919 !important;
+      border: 1px solid #e5cf00 !important;
+      font-size: 12px !important;
+      font-weight: 800 !important;
+      padding: 6px 10px !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transition: all 0.15s ease !important;
+      white-space: nowrap !important;
+    }
+    .btn-raid-self-add:hover:not(:disabled) {
+      background: #fada0a !important;
+      transform: translateY(-1px) !important;
+    }
+    .btn-raid-self-add:active:not(:disabled) {
+      transform: translateY(0) !important;
+    }
+    .btn-raid-self-add.joined {
+      background: #e2e8f0 !important;
+      color: #64748b !important;
+      border-color: #cbd5e1 !important;
+      cursor: default !important;
+    }
+    body.theme-dark .btn-raid-self-add.joined {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      border-color: #334155 !important;
+    }
+    .btn-raid-self-add.disabled, .btn-raid-self-add:disabled {
+      background: #e2e8f0 !important;
+      color: #94a3b8 !important;
+      border-color: #cbd5e1 !important;
+      cursor: not-allowed !important;
+    }
+    body.theme-dark .btn-raid-self-add.disabled, body.theme-dark .btn-raid-self-add:disabled {
+      background: #1e293b !important;
+      color: #64748b !important;
+      border-color: #334155 !important;
+    }
+    .badge-raid-timer {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 5px 8px !important;
+      border-radius: 6px !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      min-width: 65px !important;
+      letter-spacing: 0.5px !important;
+    }
+    .badge-raid-timer.active {
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #d97706 !important;
+      border: 1px solid rgba(245, 158, 11, 0.4) !important;
+    }
+    body.theme-dark .badge-raid-timer.active {
+      background: rgba(245, 158, 11, 0.2) !important;
+      color: #facc15 !important;
+      border-color: #d97706 !important;
+    }
+    .badge-raid-timer.expired {
+      background: #f1f5f9 !important;
+      color: #94a3b8 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    body.theme-dark .badge-raid-timer.expired {
+      background: #1e2530 !important;
+      color: #64748b !important;
+      border-color: #2c3545 !important;
+    }
+
     .kakao-input-area {
       background: var(--kakao-input-bg) !important;
       border-top: 1px solid var(--kakao-input-border) !important;
@@ -899,460 +1076,6 @@
       white-space: nowrap; display: flex; align-items: center; gap: 8px;
     }
     .kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* ========================================================
-       [길드원 서랍 & 보스타임 서랍 내부 컴포넌트 실시간 테마 연동]
-       ======================================================== */
-    .members-drawer-container {
-      background: var(--drawer-bg) !important;
-      color: var(--drawer-title) !important;
-    }
-    .members-top-bar {
-      background: var(--drawer-header-bg) !important;
-      border-bottom: 1px solid var(--drawer-header-border) !important;
-    }
-    .members-title-area {
-      color: var(--drawer-title) !important;
-    }
-    .members-search-box {
-      background: var(--drawer-bg) !important;
-      border-bottom: 1px solid var(--drawer-border) !important;
-    }
-    .members-search-input {
-      background: var(--modal-input-bg) !important;
-      border: 1px solid var(--modal-input-border) !important;
-      color: var(--drawer-title) !important;
-    }
-    .members-scroll-area {
-      background: var(--drawer-bg) !important;
-    }
-    .member-profile-row:hover {
-      background: var(--drawer-item-hover-bg) !important;
-    }
-    .member-avatar-round {
-      background: var(--drawer-card-bg) !important;
-      border-color: var(--drawer-card-border) !important;
-    }
-    .member-name-text {
-      color: var(--drawer-title) !important;
-    }
-    .member-sub-text {
-      color: var(--drawer-sub-text) !important;
-    }
-
-    #drawerBossListArea {
-      background: var(--drawer-bg) !important;
-    }
-    .drawer-boss-list-wrap {
-      background: var(--drawer-bg) !important;
-    }
-    .drawer-boss-card {
-      background: var(--drawer-card-bg) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
-    }
-    .drawer-boss-card:hover {
-      background: var(--drawer-item-hover-bg) !important;
-    }
-    .drawer-boss-name {
-      color: var(--drawer-title) !important;
-    }
-    .drawer-card-bottom {
-      color: var(--drawer-sub-text) !important;
-    }
-    body.theme-dark .drawer-boss-card.spawned {
-      background: #262d37 !important;
-      border-color: #ef4444 !important;
-    }
-  
-    /* 🌙 [PageMembers & PageTimer 상세 서랍 다크모드 심층 오버라이드] */
-    body.theme-dark .member-name-line {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .member-class-desc {
-      color: #38bdf8 !important;
-    }
-    body.theme-dark .member-avatar-round.master { background: rgba(245, 158, 11, 0.15) !important; border-color: #f59e0b !important; color: #fbbf24 !important; }
-    body.theme-dark .member-avatar-round.sub { background: rgba(192, 132, 252, 0.15) !important; border-color: #c084fc !important; color: #d8b4fe !important; }
-    body.theme-dark .member-avatar-round.elite { background: rgba(56, 189, 248, 0.15) !important; border-color: #38bdf8 !important; color: #38bdf8 !important; }
-    body.theme-dark .member-avatar-round.normal { background: #262d37 !important; border-color: #374151 !important; color: #94a3b8 !important; }
-    body.theme-dark .role-tag-master { background: rgba(245, 158, 11, 0.2) !important; color: #fbbf24 !important; }
-    body.theme-dark .role-tag-sub { background: rgba(192, 132, 252, 0.2) !important; color: #d8b4fe !important; }
-    body.theme-dark .role-tag-elite { background: rgba(56, 189, 248, 0.2) !important; color: #38bdf8 !important; }
-    body.theme-dark .role-tag-normal { background: #374151 !important; color: #cbd5e1 !important; }
-    body.theme-dark .btn-member-tool-icon:hover { background: #262d37 !important; }
-    body.theme-dark .btn-member-tool-icon.btn-gray-icon { color: #94a3b8 !important; }
-
-    body.theme-dark .drawer-boss-name { color: #f3f4f6 !important; }
-    body.theme-dark .drawer-card-bottom { color: #94a3b8 !important; }
-    body.theme-dark .badge-boss-state.state-wait { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
-    body.theme-dark .badge-boss-state.state-spawn { background: rgba(239, 68, 68, 0.2) !important; color: #ff6b6b !important; border-color: #ef4444 !important; font-weight: 700 !important; }
-    body.theme-dark .badge-boss-state.state-imminent { background: #3c2a10 !important; color: #fbbf24 !important; border-color: #78350f !important; }
-    body.theme-dark .badge-boss-state.state-normal { background: #0c2b4e !important; color: #38bdf8 !important; border-color: #0369a1 !important; }
-    body.theme-dark .btn-drawer-reserve { background: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
-    body.theme-dark .btn-drawer-reserve:hover { background: #262d37 !important; color: #ffffff !important; }
-    body.theme-dark .drawer-modal-card { background: #1e2530 !important; color: #f3f4f6 !important; border: 1px solid #374151 !important; }
-    body.theme-dark #drawerReserveBossName { color: #ffffff !important; }
-    body.theme-dark #drawerReserveTimeInput { background: #141922 !important; border-color: #2c3545 !important; color: #ffffff !important; }
-
-    /* 카카오톡 스크롤바 덮어쓰기 (모든 스크롤 영역 강제 적용) */
-    .chat-messages-container,
-    .sidebar-menu-list,
-    .members-scroll-area,
-    .drawer-boss-list-wrap,
-    .module-scroll-body,
-    .class-preset-grid,
-    .mention-popup-container {
-      scrollbar-width: thin !important;
-      scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
-    }
-    .chat-messages-container::-webkit-scrollbar-thumb,
-    .sidebar-menu-list::-webkit-scrollbar-thumb,
-    .members-scroll-area::-webkit-scrollbar-thumb,
-    .drawer-boss-list-wrap::-webkit-scrollbar-thumb,
-    .module-scroll-body::-webkit-scrollbar-thumb,
-    .class-preset-grid::-webkit-scrollbar-thumb,
-    .mention-popup-container::-webkit-scrollbar-thumb {
-      background: var(--kakao-scroll-thumb) !important;
-      border-radius: 10px !important;
-    }
-    .chat-messages-container::-webkit-scrollbar-thumb:hover,
-    .sidebar-menu-list::-webkit-scrollbar-thumb:hover,
-    .members-scroll-area::-webkit-scrollbar-thumb:hover,
-    .drawer-boss-list-wrap::-webkit-scrollbar-thumb:hover,
-    .module-scroll-body::-webkit-scrollbar-thumb:hover,
-    .class-preset-grid::-webkit-scrollbar-thumb:hover,
-    .mention-popup-container::-webkit-scrollbar-thumb:hover {
-      background: var(--kakao-scroll-thumb-hover) !important;
-    }
-
-    /* ========================================================
-       [전체 창 다크모드 / 라이트모드 100% 강제 일치 오버라이드]
-       ======================================================== */
-    /* 🌙 다크모드 적용 시 메인 대화방 & 모든 서랍 */
-    body.theme-dark,
-    body.theme-dark .app-main-layout {
-      background-color: #1e232a !important;
-    }
-    body.theme-dark .kakao-chat-header {
-      background-color: #181d24 !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .btn-kakao-menu,
-    body.theme-dark .btn-kakao-head {
-      color: #cbd5e1 !important;
-    }
-    body.theme-dark .room-title-text {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .room-count-text {
-      color: #9ca3af !important;
-    }
-    body.theme-dark .kakao-notice-banner {
-      background-color: #262d37 !important;
-      border: 1px solid #374151 !important;
-    }
-    body.theme-dark .notice-text-content {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .chat-messages-container {
-      background-color: #1e232a !important;
-    }
-    body.theme-dark .chat-sender-name {
-      color: #9ca3af !important;
-      font-weight: 400;
-    }
-    body.theme-dark .chat-timestamp {
-      color: #9ca3af !important;
-    }
-    body.theme-dark .chat-sender-avatar {
-      background-color: #262d37 !important;
-      border-color: #374151 !important;
-      color: #60a5fa !important;
-    }
-    body.theme-dark .chat-item-row.other .chat-bubble {
-      background-color: #2b323c !important;
-      color: #f3f4f6 !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
-    }
-    body.theme-dark .chat-item-row.me .chat-bubble {
-      background-color: #fee500 !important;
-      color: #191919 !important;
-    }
-    body.theme-dark .boss-brief-bubble {
-      background-color: #262d37 !important;
-      color: #f3f4f6 !important;
-      border: 1px solid #374151 !important;
-    }
-    body.theme-dark .boss-brief-title {
-      color: #f3f4f6 !important;
-      border-bottom: 1px dashed #374151 !important;
-    }
-    body.theme-dark .boss-alert-mini-card {
-      background-color: #262d37 !important;
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .kakao-input-area {
-      background-color: #181d24 !important;
-      border-top: 1px solid #282f3a !important;
-    }
-    body.theme-dark .input-textarea-custom {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .input-tool-icons {
-      color: #9ca3af !important;
-    }
-
-    /* 🌙 다크모드 적용 시 햄버거 메뉴 서랍 */
-    body.theme-dark .app-sidebar-drawer {
-      background-color: #181d24 !important;
-      border-right: 1px solid #282f3a !important;
-    }
-    body.theme-dark .sidebar-header {
-      background-color: #13171d !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .sidebar-brand {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .sidebar-close-btn {
-      color: #9ca3af !important;
-    }
-    body.theme-dark .sidebar-menu-item {
-      color: #e5e7eb !important;
-    }
-    body.theme-dark .sidebar-menu-item:hover {
-      background-color: #262d37 !important;
-      color: #ffffff !important;
-    }
-    body.theme-dark .sidebar-footer {
-      background-color: #13171d !important;
-      border-top: 1px solid #282f3a !important;
-    }
-    body.theme-dark .user-name-text {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .user-avatar {
-      background-color: #262d37 !important;
-      border-color: #374151 !important;
-      color: #f3f4f6 !important;
-    }
-
-    /* 🌙 다크모드 적용 시 길드원 서랍 & 보스타임 서랍 & 모달 */
-    body.theme-dark .app-members-drawer,
-    body.theme-dark #drawerMembersContainer,
-    body.theme-dark .members-drawer-container {
-      background-color: #181d24 !important;
-      border-right-color: #282f3a !important;
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .members-top-bar {
-      background-color: #13171d !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .members-title-area {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .members-search-box {
-      background-color: #181d24 !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .members-search-input {
-      background-color: #262d37 !important;
-      border: 1px solid #374151 !important;
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .members-scroll-area {
-      background-color: #181d24 !important;
-    }
-    body.theme-dark .member-profile-row:hover {
-      background-color: #262d37 !important;
-    }
-    body.theme-dark .app-boss-drawer,
-    body.theme-dark #drawerBossListArea,
-    body.theme-dark .drawer-boss-list-wrap {
-      background-color: #181d24 !important;
-      border-right-color: #282f3a !important;
-    }
-    body.theme-dark .boss-drawer-header-bar {
-      background-color: #13171d !important;
-      border-bottom-color: #282f3a !important;
-    }
-    body.theme-dark .boss-drawer-title-box {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .kakao-modal-card {
-      background-color: #1e2530 !important;
-      color: #f3f4f6 !important;
-      border-color: #374151 !important;
-    }
-    body.theme-dark .kakao-modal-card input,
-    body.theme-dark .kakao-modal-card select {
-      background-color: #141922 !important;
-      border-color: #2c3545 !important;
-      color: #ffffff !important;
-    }
-
-    /* ☀️ 라이트모드 복귀 시 메인 대화방 & 모든 서랍 */
-    body.theme-light,
-    body.theme-light .app-main-layout {
-      background-color: #bacee0 !important;
-    }
-    body.theme-light .kakao-chat-header {
-      background-color: #bacee0 !important;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-    }
-    body.theme-light .btn-kakao-menu,
-    body.theme-light .btn-kakao-head {
-      color: #3b4b59 !important;
-    }
-    body.theme-light .room-title-text {
-      color: #191919 !important;
-    }
-    body.theme-light .room-count-text {
-      color: #556677 !important;
-    }
-    body.theme-light .kakao-notice-banner {
-      background-color: #ffffff !important;
-      border: 1px solid rgba(0, 0, 0, 0.05) !important;
-    }
-    body.theme-light .notice-text-content {
-      color: #222222 !important;
-    }
-    body.theme-light .chat-messages-container {
-      background-color: #bacee0 !important;
-    }
-    body.theme-light .chat-sender-name {
-      color: #333333 !important;
-    }
-    body.theme-light .chat-timestamp {
-      color: #556677 !important;
-    }
-    body.theme-light .chat-sender-avatar {
-      background-color: #ffffff !important;
-      border-color: #dcdcdc !important;
-      color: #3b82f6 !important;
-    }
-    body.theme-light .chat-item-row.other .chat-bubble {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
-    }
-    body.theme-light .chat-item-row.me .chat-bubble {
-      background-color: #fee500 !important;
-      color: #191919 !important;
-    }
-    body.theme-light .boss-brief-bubble {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-      border: none !important;
-    }
-    body.theme-light .boss-brief-title {
-      color: #191919 !important;
-      border-bottom: 1px dashed #cbd5e1 !important;
-    }
-    body.theme-light .boss-alert-mini-card {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-    }
-    body.theme-light .kakao-input-area {
-      background-color: #ffffff !important;
-      border-top: 1px solid #d4d4d4 !important;
-    }
-    body.theme-light .input-textarea-custom {
-      color: #191919 !important;
-    }
-    body.theme-light .input-tool-icons {
-      color: #64748b !important;
-    }
-
-    body.theme-light .app-sidebar-drawer {
-      background-color: #ffffff !important;
-      border-right: 1px solid #dcdcdc !important;
-    }
-    body.theme-light .sidebar-header {
-      background-color: #f7f7f7 !important;
-      border-bottom: 1px solid #ececec !important;
-    }
-    body.theme-light .sidebar-brand {
-      color: #191919 !important;
-    }
-    body.theme-light .sidebar-close-btn {
-      color: #707070 !important;
-    }
-    body.theme-light .sidebar-menu-item {
-      color: #333333 !important;
-    }
-    body.theme-light .sidebar-menu-item:hover {
-      background-color: #f0f0f0 !important;
-      color: #111111 !important;
-    }
-    body.theme-light .sidebar-footer {
-      background-color: #fafafa !important;
-      border-top: 1px solid #ececec !important;
-    }
-    body.theme-light .user-name-text {
-      color: #191919 !important;
-    }
-    body.theme-light .user-avatar {
-      background-color: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
-      color: #0f172a !important;
-    }
-
-    body.theme-light .app-members-drawer,
-    body.theme-light #drawerMembersContainer,
-    body.theme-light .members-drawer-container {
-      background-color: #ffffff !important;
-      border-right-color: #dcdcdc !important;
-      color: #191919 !important;
-    }
-    body.theme-light .members-top-bar {
-      background-color: #ffffff !important;
-      border-bottom: 1px solid #ececec !important;
-    }
-    body.theme-light .members-title-area {
-      color: #191919 !important;
-    }
-    body.theme-light .members-search-box {
-      background-color: #ffffff !important;
-      border-bottom: 1px solid #f0f0f0 !important;
-    }
-    body.theme-light .members-search-input {
-      background-color: #f4f5f7 !important;
-      border: none !important;
-      color: #191919 !important;
-    }
-    body.theme-light .members-scroll-area {
-      background-color: #ffffff !important;
-    }
-    body.theme-light .member-profile-row:hover {
-      background-color: #f8fafc !important;
-    }
-    body.theme-light .app-boss-drawer,
-    body.theme-light #drawerBossListArea,
-    body.theme-light .drawer-boss-list-wrap {
-      background-color: #ffffff !important;
-      border-right-color: #dcdcdc !important;
-    }
-    body.theme-light .boss-drawer-header-bar {
-      background-color: #ffffff !important;
-      border-bottom-color: #ececec !important;
-    }
-    body.theme-light .boss-drawer-title-box {
-      color: #191919 !important;
-    }
-    body.theme-light .kakao-modal-card {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-      border-color: #e2e8f0 !important;
-    }
-    body.theme-light .kakao-modal-card input,
-    body.theme-light .kakao-modal-card select {
-      background-color: #f7f7f7 !important;
-      border-color: #e2e8f0 !important;
-      color: #191919 !important;
-    }
 </style>
 </head>
 <body class="theme-dark">
@@ -1394,14 +1117,12 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
         <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
       </li>
-      <!-- 보스타임 서랍 열기 -->
       <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
         <i class="fa-solid fa-skull text-danger"></i><span>원수목록</span>
       </li>
-      <!-- 설정 페이지 연동 -->
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
@@ -1421,14 +1142,14 @@
     </div>
   </aside>
 
-  <!-- 2. 길드원 목록 서랍 (260px) - PageMembers.html 동적 삽입 영역 -->
+  <!-- 2. 길드원 목록 서랍 (260px) -->
   <aside id="membersSidebarDrawer" class="app-members-drawer">
     <div id="drawerMembersContainer" style="height: 100%; display: flex; flex-direction: column;">
       <div class="text-secondary small text-center py-5">길드원을 불러오는 중...</div>
     </div>
   </aside>
 
-  <!-- 4. 보스타임 전용 서랍 (260px) - PageTimer.html 동적 삽입 영역 -->
+  <!-- 4. 보스타임 전용 서랍 (260px) -->
   <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header-bar">
       <div class="boss-drawer-title-box">
@@ -1517,7 +1238,7 @@
       </div>
     </footer>
 
-    <!-- 모듈 오버레이 (대화방 복귀 및 다크/라이트 테마 자동 동기화) -->
+    <!-- 모듈 오버레이 -->
     <div id="moduleOverlay" class="module-display-overlay">
       <div class="module-nav-header">
         <button type="button" class="btn-kakao-overlay-back" onclick="closeModuleOverlay()" title="대화방으로 복귀">
@@ -1591,7 +1312,6 @@
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 닉네임과 개인 비밀번호를 입력하세요.</p>
       
-      <!-- 🔍 닉네임 직접입력 및 실시간 검색 필터링 -->
       <div style="position: relative; margin-bottom: 8px; text-align: left;">
         <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 11px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="text" id="loginNickSearchInput" placeholder="닉네임 검색 또는 직접 입력..." autocomplete="off"
@@ -1600,7 +1320,6 @@
                onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
       </div>
 
-      <!-- 길드원 선택 드롭다운 -->
       <select id="loginMemberSelect" style="height: 38px;" onchange="onLoginSelectChange(this.value)">
         <option value="">닉네임을 선택하세요...</option>
       </select>
@@ -1702,7 +1421,6 @@
       return formatter.format(d);
     }
 
-    
     window.applyAppTheme = function(mode) {
       const theme = mode || localStorage.getItem("guild_theme_mode") || "dark";
       const isLight = (theme === "light");
@@ -1751,7 +1469,9 @@
       await loadPastChatMessages();
       listenRealtimeChatMessages();
       listenRealtimeBossTimers();
+      listenRealtimeBossParticipations();
       startLocalBossWatchTimer();
+      startRaidReportCountdowns();
       cleanupOldChatsBackground();
 
       bindMentionInputEvents();
@@ -1811,7 +1531,6 @@
         });
 
         document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
-
         renderLoginMemberDropdown("");
       } catch (e) {}
     };
@@ -1838,7 +1557,6 @@
       }
     }
 
-    /* 🎯 길드원 서랍 열 때 PageMembers.html 동적 로드 */
     async function toggleMembersDrawer(isOpen) {
       const drawer = document.getElementById("membersSidebarDrawer");
       const backdrop = document.getElementById("commonDrawerBackdrop");
@@ -1872,7 +1590,6 @@
       }
     }
 
-    /* 🎯 보스타임 서랍 열 때 PageTimer.html 동적 로드 */
     async function toggleBossDrawer(isOpen) {
       const drawer = document.getElementById("bossTimerSidebarDrawer");
       const backdrop = document.getElementById("commonDrawerBackdrop");
@@ -2010,7 +1727,6 @@
       return false;
     }
 
-    // 🔍 [로그인 닉네임 검색 및 드롭다운 연동 헬퍼]
     function renderLoginMemberDropdown(query = "") {
       const select = document.getElementById("loginMemberSelect");
       if (!select) return;
@@ -2059,8 +1775,6 @@
       if (!selectedName) return showKakaoToast("본인 닉네임을 입력하거나 선택해주세요!", "⚠️");
       if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-      // 👑 [스텔스 슈퍼관리자 인증: 비밀 로그인]
-      // 검색/직접입력에 'admin' 또는 '슈퍼관리자'를 치고 마스터 비밀번호(123456)를 입력하면 슈퍼관리자로 승격
       const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
       const masterPin = window.masterAdminPin || "123456";
 
@@ -2084,7 +1798,6 @@
         return showKakaoToast("👑 슈퍼관리자(Master)로 인증되었습니다.", "🎉");
       }
 
-      // 일반 길드원 인증
       const targetMember = cachedMemberList.find(m => m.name.toLowerCase() === selectedName.toLowerCase());
       if (!targetMember && isSuperId) {
         document.getElementById("loginPinInput").value = "";
@@ -2119,20 +1832,15 @@
       localStorage.setItem("guild_my_nickname", targetMember.name);
       localStorage.setItem("guild_my_pin", inputPin);
 
-      // 🎯 직급별 세션 및 세분화된 권한 체계 적용
-      // (길드장 캐릭터라도 admin 마스터 로그인을 하지 않은 일반 접속 시에는 운영 관리자 권한으로 안전하게 제한)
       const userRole = targetMember.role || "일반";
       localStorage.setItem("guild_my_role", userRole);
 
-      if (userRole === "길드장" || userRole === "길마") {
+      if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
-      } else if (userRole === "부길드장" || userRole === "부길마") {
-        sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
+        sessionStorage.setItem("admin_role", "admin");
       } else if (userRole === "정예") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "elite"); // 현장 정예 관리자
+        sessionStorage.setItem("admin_role", "elite");
       } else {
         sessionStorage.removeItem("admin_auth");
         sessionStorage.removeItem("admin_role");
@@ -2285,6 +1993,125 @@
             </div>
           </div>
         `;
+      }
+      else if (msg.msg_type === "raid_report") {
+        let raidData = null;
+        try {
+          raidData = typeof msg.message === "object" ? msg.message : JSON.parse(msg.message);
+        } catch (e) {
+          raidData = null;
+        }
+
+        if (!raidData) {
+          html = `
+            <div class="chat-item-row other">
+              <div class="chat-sender-avatar bot">⚔️</div>
+              <div class="chat-msg-body">
+                <div class="chat-sender-name">토벌알리미</div>
+                <div class="chat-bubble-flex">
+                  <div class="chat-bubble">${formatMessageWithMentions(cleanMessageText)}</div>
+                  <div class="chat-meta-box">
+                    <span class="chat-unread-count">${unreadCount}</span>
+                    <span class="chat-timestamp">${timeStr}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        } else {
+          const raidId = raidData.raid_id || msg.id;
+          const bossName = raidData.boss_name || "보스";
+          const raidTimeDisplay = raidData.raid_time || timeStr;
+          const warType = raidData.war_type || "일반";
+          const score = raidData.score || 1;
+          const members = Array.isArray(raidData.members) ? raidData.members : [];
+          const memberCount = members.length;
+          const dropItems = (raidData.drop_items || "").trim();
+          const createdAtIso = msg.created_at || new Date().toISOString();
+
+          const diffSec = Math.floor((Date.now() - new Date(createdAtIso).getTime()) / 1000);
+          const remainingSec = 180 - diffSec;
+          const isExpired = remainingSec <= 0;
+          const isAlreadyJoined = members.includes(myCurrentNick);
+
+          let initialTimerText = isExpired ? "마감" : `${String(Math.floor(remainingSec / 60)).padStart(2, '0')}:${String(remainingSec % 60).padStart(2, '0')}`;
+
+          let warBadgeClass = "badge-war-normal";
+          if (warType === "내전") warBadgeClass = "badge-war-internal";
+          else if (warType === "인터") warBadgeClass = "badge-war-inter";
+
+          let dropItemsHtml = "";
+          if (dropItems) {
+            dropItemsHtml = `
+              <div class="raid-card-item-row">
+                <span class="raid-row-label"><i class="fa-solid fa-gift text-warning me-1"></i>획득 아이템:</span>
+                <span class="raid-item-val">${escapeHtmlText(dropItems)}</span>
+              </div>
+            `;
+          }
+
+          html = `
+            <div class="chat-item-row other">
+              <div class="chat-sender-avatar bot">⚔️</div>
+              <div class="chat-msg-body raid-msg-body">
+                <div class="chat-sender-name">토벌알리미</div>
+                <div class="chat-bubble-flex">
+                  <div class="raid-report-card" id="raidCard_${raidId}">
+                    <div class="raid-card-header">
+                      <div class="d-flex align-items-center justify-content-between gap-2">
+                        <div class="raid-boss-title">
+                          <i class="fa-solid fa-shield-halved text-warning me-1"></i>
+                          <span>[${escapeHtmlText(bossName)}] 토벌 보고</span>
+                        </div>
+                        <span class="badge ${warBadgeClass}">${escapeHtmlText(warType)} (+${score}점)</span>
+                      </div>
+                      <div class="raid-time-sub">
+                        <i class="fa-regular fa-clock me-1"></i>${escapeHtmlText(raidTimeDisplay)}
+                      </div>
+                    </div>
+
+                    <div class="raid-card-content">
+                      ${dropItemsHtml}
+                      
+                      <div class="raid-members-box">
+                        <div class="raid-members-header">
+                          <span><i class="fa-solid fa-users me-1 text-primary"></i>참여자 (<span id="raid_mcount_${raidId}">${memberCount}</span>명)</span>
+                        </div>
+                        <div class="raid-members-tags" id="raid_mlist_${raidId}">
+                          ${members.map(m => `<span class="raid-member-pill">${escapeHtmlText(m)}</span>`).join('')}
+                        </div>
+                      </div>
+
+                      <div class="raid-action-row">
+                        <button type="button" 
+                                id="btnRaidAdd_${raidId}" 
+                                class="btn-raid-self-add ${isAlreadyJoined ? 'joined' : (isExpired ? 'disabled' : '')}" 
+                                ${isAlreadyJoined || isExpired ? 'disabled' : ''} 
+                                onclick="handleQuickRaidSelfAdd('${raidId}', '${escapeHtmlText(bossName)}')">
+                          <i class="fa-solid ${isAlreadyJoined ? 'fa-check' : 'fa-user-plus'} me-1"></i>
+                          <span class="btn-text">${isAlreadyJoined ? '참여완료' : (isExpired ? '마감됨' : '추가참여')}</span>
+                        </button>
+
+                        <div class="badge-raid-timer ${isExpired ? 'expired' : 'active'}" 
+                             id="timer_raid_${raidId}" 
+                             data-raid-id="${raidId}" 
+                             data-created-at="${createdAtIso}">
+                          <i class="fa-regular fa-clock me-1"></i>
+                          <span class="time-text">${initialTimerText}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="chat-meta-box">
+                    <span class="chat-unread-count">${unreadCount}</span>
+                    <span class="chat-timestamp">${timeStr}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
       }
       else if (msg.msg_type === "boss_alert") {
         let cardTypeClass = "alert-3m";
@@ -2709,14 +2536,12 @@
     window.openModulePage = async function(pageName) {
       closeAllDrawers();
 
-      // 로그인한 유저의 직급/권한 확인 (슈퍼관리자 / 운영진 / 정예 / 일반 세분화)
       const myRole = localStorage.getItem("guild_my_role") || "일반";
       const adminRole = sessionStorage.getItem("admin_role") || "";
       const isSuper = (adminRole === "super");
       const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
       const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
-      // 관리자 전용 페이지 접근 가드
       if (pageName === 'PageSettings' && !isAdmin) {
         return showKakaoToast("설정 페이지는 관리자만 접근할 수 있습니다.", "⚠️");
       }
@@ -2774,6 +2599,183 @@
       document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
       if (typeof window.applyAppTheme === "function") window.applyAppTheme();
     };
+
+    // ========================================================
+    // [보스 토벌 3분 실시간 카운터 및 1클릭 자동 추가참여 기능]
+    // ========================================================
+    var raidCountdownInterval = null;
+
+    function startRaidReportCountdowns() {
+      if (raidCountdownInterval) clearInterval(raidCountdownInterval);
+
+      raidCountdownInterval = setInterval(() => {
+        const timerBadges = document.querySelectorAll(".badge-raid-timer");
+        const now = Date.now();
+
+        timerBadges.forEach(badge => {
+          const createdAtStr = badge.getAttribute("data-created-at");
+          const raidId = badge.getAttribute("data-raid-id");
+          if (!createdAtStr) return;
+
+          let createdTime = new Date(createdAtStr).getTime();
+          if (isNaN(createdTime)) return;
+
+          const diffSec = Math.floor((now - createdTime) / 1000);
+          const remainingSec = 180 - diffSec;
+
+          const timeTextElem = badge.querySelector(".time-text") || badge;
+          const btn = document.getElementById(`btnRaidAdd_${raidId}`);
+
+          if (remainingSec > 0) {
+            const m = String(Math.floor(remainingSec / 60)).padStart(2, '0');
+            const s = String(remainingSec % 60).padStart(2, '0');
+            timeTextElem.innerText = `${m}:${s}`;
+            badge.classList.remove("expired");
+            badge.classList.add("active");
+          } else {
+            timeTextElem.innerText = "마감";
+            badge.classList.remove("active");
+            badge.classList.add("expired");
+            if (btn && !btn.classList.contains("joined")) {
+              btn.disabled = true;
+              btn.classList.add("disabled");
+              const btnSpan = btn.querySelector(".btn-text");
+              if (btnSpan) btnSpan.innerText = "마감됨";
+            }
+          }
+        });
+      }, 1000);
+    }
+
+    // 🙋‍♂️ [추가참여] 1-클릭 개인비밀번호 생략 자동참여 처리기
+    window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
+      const myNick = localStorage.getItem("guild_my_nickname");
+      if (!myNick) {
+        showKakaoToast("로그인이 필요합니다.", "⚠️");
+        showGuildLoginModal();
+        return;
+      }
+
+      const btn = document.getElementById(`btnRaidAdd_${raidId}`);
+      const timerBadge = document.getElementById(`timer_raid_${raidId}`);
+
+      if (timerBadge && timerBadge.classList.contains("expired")) {
+        return showKakaoToast("참여 가능 시간(3분)이 이미 마감되었습니다.", "⚠️");
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        const btnSpan = btn.querySelector(".btn-text");
+        if (btnSpan) btnSpan.innerText = "참여 중...";
+      }
+
+      try {
+        const records = await apiRequest(`boss_participations?id=eq.${raidId}&select=*`);
+        if (!records || records.length === 0) {
+          if (btn) btn.disabled = false;
+          return showKakaoToast("토벌 기록을 찾을 수 없습니다.", "❌");
+        }
+
+        const raid = records[0];
+        const createdAt = new Date(raid.created_at).getTime();
+
+        if (Date.now() - createdAt > 180 * 1000) {
+          if (btn) {
+            btn.disabled = true;
+            btn.classList.add("disabled");
+            const btnSpan = btn.querySelector(".btn-text");
+            if (btnSpan) btnSpan.innerText = "마감됨";
+          }
+          if (timerBadge) {
+            timerBadge.classList.remove("active");
+            timerBadge.classList.add("expired");
+            const timeText = timerBadge.querySelector(".time-text");
+            if (timeText) timeText.innerText = "마감";
+          }
+          return showKakaoToast("참여 가능 시간(3분)이 종료되었습니다.", "⚠️");
+        }
+
+        let members = Array.isArray(raid.members) ? raid.members : [];
+        if (members.includes(myNick)) {
+          if (btn) {
+            btn.disabled = true;
+            btn.classList.add("joined");
+            btn.innerHTML = `<i class="fa-solid fa-check me-1"></i><span class="btn-text">참여완료</span>`;
+          }
+          return showKakaoToast("이미 참여 명단에 등록되어 있습니다!", "ℹ️");
+        }
+
+        members.push(myNick);
+        const newCount = members.length;
+
+        await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
+          members: members,
+          member_count: newCount
+        });
+
+        const countElem = document.getElementById(`raid_mcount_${raidId}`);
+        if (countElem) countElem.innerText = newCount;
+
+        const listElem = document.getElementById(`raid_mlist_${raidId}`);
+        if (listElem) {
+          const newPill = document.createElement("span");
+          newPill.className = "raid-member-pill new-joined";
+          newPill.innerText = myNick;
+          listElem.appendChild(newPill);
+        }
+
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add("joined");
+          btn.innerHTML = `<i class="fa-solid fa-check me-1"></i><span class="btn-text">참여완료</span>`;
+        }
+
+        await apiRequest("guild_chats", "POST", [{
+          sender_name: "토벌알리미",
+          message: `🎉 [${myNick}] 님이 [${bossName}] 토벌에 추가 참여하였습니다! (현재 총 ${newCount}명)`,
+          msg_type: "chat",
+          mentions: []
+        }]);
+
+        showKakaoToast(`[${bossName}] 토벌에 추가 참여 완료!`, "🎉");
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          const btnSpan = btn.querySelector(".btn-text");
+          if (btnSpan) btnSpan.innerText = "추가참여";
+        }
+        showKakaoToast("참여 실패: " + err.message, "❌");
+      }
+    };
+
+    function listenRealtimeBossParticipations() {
+      if (!supabaseClient) return;
+
+      supabaseClient
+        .channel("public:boss_participations")
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "boss_participations" }, (payload) => {
+          const updated = payload.new;
+          if (!updated) return;
+
+          const countElem = document.getElementById(`raid_mcount_${updated.id}`);
+          if (countElem) countElem.innerText = updated.member_count;
+
+          const listElem = document.getElementById(`raid_mlist_${updated.id}`);
+          if (listElem && Array.isArray(updated.members)) {
+            listElem.innerHTML = updated.members.map(m => `<span class="raid-member-pill">${escapeHtmlText(m)}</span>`).join('');
+          }
+
+          if (Array.isArray(updated.members) && updated.members.includes(myCurrentNick)) {
+            const btn = document.getElementById(`btnRaidAdd_${updated.id}`);
+            if (btn) {
+              btn.disabled = true;
+              btn.classList.add("joined");
+              btn.innerHTML = `<i class="fa-solid fa-check me-1"></i><span class="btn-text">참여완료</span>`;
+            }
+          }
+        })
+        .subscribe();
+    }
 
     function startLocalBossWatchTimer() {
       if (bossWatcherInterval) clearInterval(bossWatcherInterval);
