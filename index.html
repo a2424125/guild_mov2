@@ -21,7 +21,21 @@
   <!-- Supabase 공식 SDK 및 설정 파일 로드 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
-  <script src="theme.js"></script>
+  <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
+  <script>
+    (function() {
+      try {
+        var theme = localStorage.getItem("guild_theme_mode") || "dark";
+        if (theme === "light") {
+          document.documentElement.classList.add("theme-light");
+          document.documentElement.classList.remove("theme-dark");
+        } else {
+          document.documentElement.classList.add("theme-dark");
+          document.documentElement.classList.remove("theme-light");
+        }
+      } catch (e) {}
+    })();
+  </script>
 
   <style>
     :root {
@@ -85,6 +99,7 @@
     }
 
     /* 🌙 [다크 모드 전체 창 일괄 동기화] */
+    html.theme-dark,
     body.theme-dark {
       --kakao-bg: #1e232a;
       --kakao-header-bg: #181d24;
@@ -144,6 +159,7 @@
     }
 
     /* ☀️ [라이트 모드 전체 창 일괄 동기화] */
+    html.theme-light,
     body.theme-light {
       --kakao-bg: #bacee0;
       --kakao-header-bg: #bacee0;
@@ -207,12 +223,9 @@
     }
 
     /* ========================================================
-       [카카오톡 스타일 초슬림 5px 캡슐 스크롤바 - Windows / Webkit 완벽 대응]
+       [카카오톡 스타일 초슬림 캡슐 스크롤바 표준]
        ======================================================== */
-    * {
-      scrollbar-width: thin !important;
-      scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
-    }
+    /* [카카오톡 정품 초슬림 5px 캡슐 스크롤바 & 윈도우 화살표 버튼 완전 박멸] */
     ::-webkit-scrollbar {
       width: 5px !important;
       height: 5px !important;
@@ -223,26 +236,42 @@
     ::-webkit-scrollbar-thumb {
       background: var(--kakao-scroll-thumb) !important;
       border-radius: 10px !important;
-      transition: background 0.2s ease;
+      border: none !important;
     }
     ::-webkit-scrollbar-thumb:hover {
       background: var(--kakao-scroll-thumb-hover) !important;
     }
-    /* 윈도우 크롬 기본 화살표 버튼 완전 제거 */
-    ::-webkit-scrollbar-button {
+    ::-webkit-scrollbar-corner {
+      background: transparent !important;
+    }
+    ::-webkit-scrollbar-button,
+    ::-webkit-scrollbar-button:single-button,
+    ::-webkit-scrollbar-button:start,
+    ::-webkit-scrollbar-button:end,
+    ::-webkit-scrollbar-button:vertical:start:decrement,
+    ::-webkit-scrollbar-button:vertical:end:increment,
+    ::-webkit-scrollbar-button:horizontal:start:decrement,
+    ::-webkit-scrollbar-button:horizontal:end:increment {
       display: none !important;
       width: 0 !important;
       height: 0 !important;
-    }
-    ::-webkit-scrollbar-corner {
       background: transparent !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+    }
+    * {
+      scrollbar-width: thin !important;
+      scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
     }
 
     html, body {
       background-color: var(--kakao-bg) !important;
       color: var(--kakao-header-text);
       font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
-      letter-spacing: -0.2px;
+      letter-spacing: -0.25px;
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
       height: 100vh;
       margin: 0;
       padding: 0;
@@ -651,7 +680,7 @@
       display: flex; flex-direction: column; max-width: 90%; width: fit-content !important;
     }
     .chat-sender-name {
-      font-size: 0.7rem; color: var(--kakao-header-subtext) !important; margin-bottom: 2px; font-weight: 600;
+      font-size: 0.78rem; color: var(--kakao-header-subtext) !important; margin-bottom: 3px; font-weight: 700; -webkit-font-smoothing: antialiased;
     }
     .chat-bubble-flex {
       display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important;
@@ -660,8 +689,9 @@
 
     .chat-bubble {
       display: inline-block; width: fit-content; max-width: 100%;
-      padding: 5px 9px; border-radius: 5px; font-size: 0.78rem; line-height: 1.35;
-      word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
+      padding: 7px 12px; border-radius: 8px; font-size: 0.88rem; line-height: 1.5;
+      font-weight: 500; word-break: break-all; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); white-space: pre-wrap;
+      letter-spacing: -0.2px; -webkit-font-smoothing: antialiased;
     }
     .chat-item-row.other .chat-bubble {
       background: var(--kakao-bubble-other) !important;
@@ -675,30 +705,32 @@
     .chat-meta-box {
       display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-bottom: 1px;
     }
-    .chat-unread-count { color: var(--kakao-unread-yellow); font-size: 0.6rem; font-weight: 800; margin-bottom: 2px; }
-    .chat-timestamp { font-size: 0.58rem; color: var(--kakao-time-gray) !important; white-space: nowrap; }
+    .chat-unread-count { color: var(--kakao-unread-yellow); font-size: 0.68rem; font-weight: 800; margin-bottom: 2px; }
+    .chat-timestamp { font-size: 0.65rem; color: var(--kakao-time-gray) !important; white-space: nowrap; font-weight: 600; }
 
     .boss-brief-bubble {
       background: var(--kakao-notice-bg) !important;
       color: var(--kakao-notice-text) !important;
-      border-radius: 6px !important; padding: 4px 8px 3px 8px !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.12) !important; width: fit-content !important;
+      border-radius: 8px !important; padding: 8px 12px 7px 12px !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15) !important; width: fit-content !important;
     }
     .boss-brief-title {
-      font-size: 0.74rem !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
+      font-size: 0.88rem !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
       border-bottom: 1px dashed var(--drawer-card-border) !important; display: flex !important; justify-content: space-between !important;
+      padding-bottom: 4px !important; margin-bottom: 5px !important;
     }
     .boss-brief-line {
-      display: flex !important; justify-content: space-between !important; gap: 12px !important;
-      padding: 1.5px 0 !important; font-size: 0.73rem !important;
+      display: flex !important; justify-content: space-between !important; gap: 16px !important;
+      padding: 2.5px 0 !important; font-size: 0.84rem !important; font-weight: 600 !important;
     }
     .boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
 
     .boss-alert-mini-card {
       background: var(--kakao-notice-bg) !important;
       color: var(--kakao-notice-text) !important;
-      border-radius: 5px !important; padding: 5px 8px !important;
-      font-size: 0.75rem !important; box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+      border-radius: 8px !important; padding: 8px 12px !important;
+      font-size: 0.86rem !important; font-weight: 600 !important; line-height: 1.5 !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12) !important;
     }
     .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
     .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
@@ -722,9 +754,10 @@
     }
     .input-textarea-custom {
       width: 100%; height: 38px; border: none; outline: none; resize: none;
-      font-size: 0.8rem;
+      font-size: 0.88rem; font-weight: 500;
       color: var(--kakao-input-text) !important;
       background: transparent !important;
+      -webkit-font-smoothing: antialiased;
     }
     .input-textarea-custom::placeholder {
       color: var(--kakao-input-placeholder) !important;
@@ -1294,7 +1327,7 @@
     }
 </style>
 </head>
-<body>
+<body class="theme-dark">
 
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
@@ -1641,6 +1674,7 @@
       return formatter.format(d);
     }
 
+    
     window.applyAppTheme = function(mode) {
       const theme = mode || localStorage.getItem("guild_theme_mode") || "dark";
       const isLight = (theme === "light");
@@ -1657,6 +1691,12 @@
       }
       localStorage.setItem("guild_theme_mode", theme);
     };
+
+    window.addEventListener("storage", function(e) {
+      if (e.key === "guild_theme_mode") {
+        window.applyAppTheme(e.newValue);
+      }
+    });
 
     async function initApp() {
       if (typeof window.applyAppTheme === 'function') window.applyAppTheme();
@@ -1991,6 +2031,7 @@
       if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
       // 👑 [스텔스 슈퍼관리자 인증: 비밀 로그인]
+      // 검색/직접입력에 'admin' 또는 '슈퍼관리자'를 치고 마스터 비밀번호(123456)를 입력하면 슈퍼관리자로 승격
       const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
       const masterPin = window.masterAdminPin || "123456";
 
@@ -2049,15 +2090,20 @@
       localStorage.setItem("guild_my_nickname", targetMember.name);
       localStorage.setItem("guild_my_pin", inputPin);
 
+      // 🎯 직급별 세션 및 세분화된 권한 체계 적용
+      // (길드장 캐릭터라도 admin 마스터 로그인을 하지 않은 일반 접속 시에는 운영 관리자 권한으로 안전하게 제한)
       const userRole = targetMember.role || "일반";
       localStorage.setItem("guild_my_role", userRole);
 
-      if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
+      if (userRole === "길드장" || userRole === "길마") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "admin");
+        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
+      } else if (userRole === "부길드장" || userRole === "부길마") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "admin"); // 운영 관리자
       } else if (userRole === "정예") {
         sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "elite");
+        sessionStorage.setItem("admin_role", "elite"); // 현장 정예 관리자
       } else {
         sessionStorage.removeItem("admin_auth");
         sessionStorage.removeItem("admin_role");
@@ -2634,12 +2680,14 @@
     window.openModulePage = async function(pageName) {
       closeAllDrawers();
 
+      // 로그인한 유저의 직급/권한 확인 (슈퍼관리자 / 운영진 / 정예 / 일반 세분화)
       const myRole = localStorage.getItem("guild_my_role") || "일반";
       const adminRole = sessionStorage.getItem("admin_role") || "";
       const isSuper = (adminRole === "super");
       const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
       const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
+      // 관리자 전용 페이지 접근 가드
       if (pageName === 'PageSettings' && !isAdmin) {
         return showKakaoToast("설정 페이지는 관리자만 접근할 수 있습니다.", "⚠️");
       }
