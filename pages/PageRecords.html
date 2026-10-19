@@ -1,0 +1,1852 @@
+<!-- ==========================================
+     [ECLIPSE 길드관리] 보스 & 전쟁 참여 통계 모듈
+     경로: pages/PageRecords.html
+     ========================================== -->
+<style>
+  :root {
+    --rec-card-bg: #181d24;
+    --rec-card-border: #282f3a;
+    --rec-text-main: #f3f4f6;
+    --rec-text-sub: #9ca3af;
+    --rec-section-bg: #1e2530;
+    --rec-section-border: #2c3545;
+    --rec-input-bg: #141922;
+    --rec-input-border: #2c3545;
+    --rec-input-text: #ffffff;
+    --rec-item-bg: #141922;
+    --rec-item-border: #282f3a;
+    --rec-item-hover: #1e293b;
+    --rec-chip-bg: #141922;
+    --rec-chip-border: #2c3545;
+    --rec-chip-text: #cbd5e1;
+    --rec-score-text: #facc15;
+    --rec-score-badge-bg: #0f172a;
+    --rec-score-badge-border: #eab308;
+    --rec-score-badge-text: #f8fafc;
+    --rec-yellow: #fee500;
+
+    /* 모달 변수 */
+    --rec-modal-bg: #1e2530;
+    --rec-modal-border: #374151;
+    --rec-modal-header-bg: #141922;
+    --rec-modal-text: #f3f4f6;
+    --rec-modal-subtext: #9ca3af;
+    --rec-modal-input-bg: #141922;
+    --rec-modal-input-border: #2c3545;
+    --rec-modal-input-text: #ffffff;
+  }
+
+  /* ☀️ 라이트 모드 고대비(High-Contrast) 스타일 완벽 일치 */
+  html.theme-light .records-card,
+  body.theme-light .records-card,
+  .records-card.light-mode {
+    --rec-card-bg: #ffffff;
+    --rec-card-border: #e2e8f0;
+    --rec-text-main: #0f172a;
+    --rec-text-sub: #475569;
+    --rec-section-bg: #f8fafc;
+    --rec-section-border: #e2e8f0;
+    --rec-input-bg: #ffffff;
+    --rec-input-border: #cbd5e1;
+    --rec-input-text: #0f172a;
+    --rec-item-bg: #ffffff;
+    --rec-item-border: #e2e8f0;
+    --rec-item-hover: #f1f5f9;
+    --rec-chip-bg: #f1f5f9;
+    --rec-chip-border: #cbd5e1;
+    --rec-chip-text: #334155;
+    --rec-score-text: #b45309;
+    --rec-score-badge-bg: #fffbeb;
+    --rec-score-badge-border: #f59e0b;
+    --rec-score-badge-text: #92400e;
+    --rec-yellow: #fee500;
+
+    --rec-modal-bg: #ffffff;
+    --rec-modal-border: #cbd5e1;
+    --rec-modal-header-bg: #f8fafc;
+    --rec-modal-text: #0f172a;
+    --rec-modal-subtext: #475569;
+    --rec-modal-input-bg: #ffffff;
+    --rec-modal-input-border: #cbd5e1;
+    --rec-modal-input-text: #0f172a;
+  }
+
+  .records-card {
+    background: var(--rec-card-bg);
+    border: 1px solid var(--rec-card-border);
+    border-radius: 16px;
+    padding: 13px 14px;
+    color: var(--rec-text-main);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    letter-spacing: -0.2px;
+  }
+
+  .stat-filter-box {
+    background: var(--rec-section-bg);
+    border: 1px solid var(--rec-section-border);
+    border-radius: 11px;
+    padding: 10px 12px;
+    margin-bottom: 11px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .quick-filter-group {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .btn-quick-stat {
+    flex: 1;
+    background: var(--rec-input-bg);
+    border: 1px solid var(--rec-input-border);
+    color: var(--rec-text-sub);
+    padding: 5px 6px;
+    font-weight: 700;
+    font-size: 0.73rem;
+    border-radius: 7px;
+    transition: all 0.15s ease;
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+    user-select: none;
+    line-height: 1.2;
+  }
+  .btn-quick-stat:hover {
+    border-color: #0284c7;
+    color: #0284c7;
+  }
+  .btn-quick-stat.active {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 1px 4px rgba(2, 132, 199, 0.35) !important;
+  }
+
+  .input-custom-stat {
+    background-color: var(--rec-input-bg) !important;
+    border: 1px solid var(--rec-input-border) !important;
+    color: var(--rec-input-text) !important;
+    border-radius: 7px !important;
+    padding: 4px 8px !important;
+    font-size: 0.77rem !important;
+    height: 32px;
+    outline: none !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .input-custom-stat:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+  }
+
+  /* 💬 슬림 인라인 대화방 공유 버튼 */
+  .btn-share-records {
+    background: #fee500;
+    color: #191919 !important;
+    border: 1px solid #e5cf00;
+    border-radius: 14px;
+    padding: 3px 10px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+    line-height: 1;
+    height: 26px;
+  }
+  .btn-share-records:hover:not(:disabled) {
+    background: #fada0a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+  }
+  .btn-share-records:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  .btn-share-records:disabled {
+    background: #94a3b8;
+    color: #ffffff !important;
+    border-color: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  /* 🏆 TOP 5 랭킹 보드 (직업 아이콘 배제) */
+  .top5-container {
+    background: var(--rec-section-bg);
+    border: 1px solid var(--rec-section-border);
+    border-radius: 11px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .best-tab-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--rec-section-border);
+    padding-bottom: 6px;
+  }
+  .btn-best-tab {
+    flex: 1;
+    background: var(--rec-input-bg);
+    border: 1px solid var(--rec-input-border);
+    color: var(--rec-text-sub);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 3px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1.2;
+  }
+  .btn-best-tab:hover {
+    border-color: #94a3b8;
+  }
+  .btn-best-tab.active {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: #f59e0b;
+    color: #d97706;
+  }
+  body.theme-dark .btn-best-tab.active {
+    background: rgba(245, 158, 11, 0.22);
+    border-color: #f59e0b;
+    color: #fbbf24;
+  }
+
+  .top5-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .top5-title {
+    color: #d97706;
+    font-size: 0.79rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  body.theme-dark .top5-title {
+    color: #fbbf24;
+  }
+  .top5-sub {
+    color: var(--rec-text-sub);
+    font-size: 0.66rem;
+    white-space: nowrap;
+  }
+  .top5-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .top5-item {
+    background: var(--rec-item-bg);
+    border: 1px solid var(--rec-item-border);
+    border-radius: 7px;
+    padding: 6px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    transition: all 0.12s ease;
+  }
+  .top5-item:hover {
+    background: var(--rec-item-hover);
+    border-color: #0284c7;
+  }
+
+  .top-rank-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+  }
+  .rank-1 { background: linear-gradient(135deg, #f59e0b, #d97706); color: #ffffff; }
+  .rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); color: #ffffff; }
+  .rank-3 { background: linear-gradient(135deg, #b45309, #78350f); color: #ffffff; }
+  .rank-normal {
+    background: var(--rec-section-bg);
+    color: var(--rec-text-sub);
+    border: 1px solid var(--rec-section-border);
+  }
+
+  .top5-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--rec-text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .top5-score {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    padding: 2px 7px;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  body.theme-dark .top5-score {
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.2);
+  }
+
+  /* 3대 메인 탭 */
+  .records-tab-nav {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 9px;
+  }
+  .tab-btn-3 {
+    flex: 1;
+    background: var(--rec-section-bg);
+    border: 1px solid var(--rec-section-border);
+    color: var(--rec-text-sub);
+    padding: 7px 4px;
+    font-weight: 700;
+    font-size: 0.76rem;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    text-align: center;
+    cursor: pointer;
+    white-space: nowrap;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .tab-btn-3:hover {
+    border-color: #0284c7;
+    color: #0284c7;
+  }
+  .tab-btn-3.active {
+    background: #0284c7 !important;
+    border-color: #0284c7 !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+  }
+
+  /* 🔍 검색창 래퍼 */
+  .search-wrapper-stat {
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .search-wrapper-stat i.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #0284c7;
+    font-size: 0.78rem;
+    pointer-events: none;
+  }
+  .search-input-stat {
+    width: 100%;
+    background-color: var(--rec-input-bg) !important;
+    border: 1px solid var(--rec-input-border) !important;
+    color: var(--rec-input-text) !important;
+    border-radius: 8px !important;
+    padding: 5px 28px 5px 28px !important;
+    font-size: 0.78rem !important;
+    height: 33px;
+    outline: none !important;
+    transition: border-color 0.15s ease;
+  }
+  .search-input-stat:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+  }
+  .search-clear-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--rec-text-sub);
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: none;
+  }
+  .search-clear-btn:hover {
+    color: #ef4444;
+  }
+
+  /* 👥 길드원별 통계 카드 */
+  .member-stat-card {
+    background: var(--rec-item-bg);
+    border: 1px solid var(--rec-item-border);
+    border-radius: 9px;
+    margin-bottom: 6px;
+    transition: all 0.15s ease;
+    overflow: hidden;
+  }
+  .member-stat-card:hover {
+    border-color: #0284c7;
+  }
+  .member-stat-card.active {
+    border-color: #0284c7;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+  }
+
+  .member-card-header {
+    padding: 8px 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .member-card-header:hover {
+    background: var(--rec-item-hover);
+  }
+
+  .member-detail-accordion {
+    display: none;
+    background: var(--rec-section-bg);
+    border-top: 1px solid var(--rec-section-border);
+    padding: 10px 12px;
+  }
+  .member-stat-card.active .member-detail-accordion {
+    display: block;
+  }
+
+  .boss-stat-tag {
+    background: var(--rec-chip-bg);
+    border: 1px solid var(--rec-chip-border);
+    color: var(--rec-chip-text);
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 2px 1px;
+    font-weight: 600;
+  }
+
+  .badge-role-pill {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    letter-spacing: -0.3px;
+  }
+  .role-master {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid #f59e0b;
+    color: #d97706;
+  }
+  body.theme-dark .role-master {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+  }
+  .role-submaster {
+    background: rgba(192, 132, 252, 0.15);
+    border: 1px solid #c084fc;
+    color: #9333ea;
+  }
+  body.theme-dark .role-submaster {
+    background: rgba(192, 132, 252, 0.2);
+    color: #d8b4fe;
+  }
+  .role-elite {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid #0284c7;
+    color: #0284c7;
+  }
+  body.theme-dark .role-elite {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .role-normal {
+    background: var(--rec-section-bg);
+    border: 1px solid var(--rec-section-border);
+    color: var(--rec-text-sub);
+  }
+
+  /* 📜 항목 스타일 */
+  .history-item {
+    background: var(--rec-item-bg);
+    border: 1px solid var(--rec-item-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    transition: all 0.15s ease;
+  }
+  .history-item:hover {
+    border-color: #0284c7;
+  }
+
+  .history-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+  .history-title-area {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-width: 0;
+    flex: 1;
+  }
+  .history-tools-area {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  .badge-score-custom {
+    font-size: 0.66rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    line-height: 1.25;
+    white-space: nowrap;
+    letter-spacing: -0.2px;
+  }
+  .badge-score-inter {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid #dc2626;
+    color: #dc2626;
+  }
+  body.theme-dark .badge-score-inter {
+    color: #ff6b6b;
+    border-color: #ef4444;
+  }
+  .badge-score-internal {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid #d97706;
+    color: #d97706;
+  }
+  body.theme-dark .badge-score-internal {
+    color: #fbbf24;
+    border-color: #f59e0b;
+  }
+  .badge-score-extra {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid #059669;
+    color: #059669;
+  }
+  body.theme-dark .badge-score-extra {
+    color: #34d399;
+    border-color: #10b981;
+  }
+  .badge-score-normal {
+    background: var(--rec-section-bg);
+    border: 1px solid var(--rec-section-border);
+    color: var(--rec-text-sub);
+  }
+
+  .btn-record-action {
+    background: var(--rec-input-bg);
+    border: 1px solid var(--rec-input-border);
+    font-size: 0.69rem;
+    padding: 2px 7px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all 0.12s ease;
+  }
+  .btn-record-edit {
+    color: #0284c7;
+    border-color: #0284c7;
+  }
+  .btn-record-edit:hover {
+    background: #0284c7;
+    color: #ffffff;
+  }
+  .btn-record-del {
+    color: #e11d48;
+    border-color: #e11d48;
+  }
+  .btn-record-del:hover {
+    background: #e11d48;
+    color: #ffffff;
+  }
+
+  /* 모달 & 알림창 */
+  .rec-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 9999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: fadeInRecModal 0.15s ease-out;
+  }
+  @keyframes fadeInRecModal {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .rec-modal-card {
+    background: var(--rec-modal-bg);
+    border: 1px solid var(--rec-modal-border);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    color: var(--rec-modal-text);
+    overflow: hidden;
+  }
+  .rec-modal-header {
+    background: var(--rec-modal-header-bg);
+    border-bottom: 1px solid var(--rec-modal-border);
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .rec-modal-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .rec-modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--rec-modal-subtext);
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+  }
+  .rec-modal-close-btn:hover {
+    color: #ef4444;
+  }
+  .rec-modal-body {
+    padding: 12px 14px;
+  }
+
+  .modal-members-grid-4col {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    background: var(--rec-input-bg);
+    border: 1px solid var(--rec-input-border);
+    border-radius: 8px;
+    padding: 8px 6px;
+    max-height: 280px;
+    overflow-y: auto;
+  }
+  .modal-member-check-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    background: var(--rec-section-bg);
+    border: 1px solid var(--rec-section-border);
+    padding: 3px 5px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .modal-member-check-item:hover {
+    border-color: #0284c7;
+  }
+  .modal-member-check-item input[type="checkbox"] {
+    width: 13px;
+    height: 13px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  .modal-member-check-item label {
+    font-size: 0.67rem;
+    color: var(--rec-modal-text);
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+    font-weight: 600;
+  }
+
+  .custom-records-toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: #0d1830;
+    border: 1.5px solid #fee500;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 0.84rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 99999999;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+  }
+  .custom-records-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 480px) {
+    .modal-members-grid-4col {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 360px) {
+    .modal-members-grid-4col {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>
+
+<div class="records-card mb-4" id="recordsRootCard">
+  <!-- 상단 헤더: 제목 + 고대비 인라인 대화방 공유 버튼 -->
+  <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
+    <div class="d-flex align-items-center gap-2">
+      <span style="font-size: 1.15rem;">📜</span>
+      <div>
+        <h6 class="fw-bold mb-0" style="font-size: 0.88rem; color: var(--rec-text-main);">보스참여자 통계</h6>
+        <span class="small text-secondary" style="font-size: 0.65rem;">보스 & 전쟁 참여 통계 집계 및 실시간 공유</span>
+      </div>
+    </div>
+    <!-- 💬 26px 슬림 캡슐 대화방 공유 버튼 -->
+    <button type="button" class="btn-share-records" id="btnShareRecordsReport" onclick="window.shareRecordsReportToChat()" title="현재 조회 중인 통계 요약을 대화방에 즉시 공유합니다">
+      <i class="fa-solid fa-comment-dots"></i>
+      <span>대화방 공유</span>
+    </button>
+  </div>
+
+  <!-- 1. 기간 필터 박스 -->
+  <div class="stat-filter-box">
+    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+      <span class="small fw-bold" style="font-size: 0.74rem; color: var(--rec-text-main);">
+        <i class="fa-solid fa-calendar-days me-1 text-primary"></i>집계 기간 선택
+      </span>
+      <span class="small text-secondary" style="font-size: 0.68rem;" id="filterStatusText">
+        이번 주 통계
+      </span>
+    </div>
+
+    <div class="quick-filter-group">
+      <button type="button" class="btn-quick-stat active" id="btnFilterWeek" onclick="setStatPeriod('thisWeek')">이번주</button>
+      <button type="button" class="btn-quick-stat" id="btnFilterLastWeek" onclick="setStatPeriod('lastWeek')">지난주</button>
+      <button type="button" class="btn-quick-stat" id="btnFilterMonth" onclick="setStatPeriod('thisMonth')">이번달</button>
+      <button type="button" class="btn-quick-stat" id="btnFilterAll" onclick="setStatPeriod('all')">전체</button>
+    </div>
+
+    <div class="row g-1 align-items-center">
+      <div class="col-5">
+        <input type="date" id="filterStartDate" class="form-control input-custom-stat w-100" onchange="fetchStatsData()">
+      </div>
+      <div class="col-2 text-center text-secondary small" style="font-size: 0.72rem;">~</div>
+      <div class="col-5">
+        <input type="date" id="filterEndDate" class="form-control input-custom-stat w-100" onchange="fetchStatsData()">
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. TOP 5 랭킹 박스 -->
+  <div class="top5-container">
+    <div class="best-tab-nav">
+      <button class="btn-best-tab active" id="bestTabTotal" onclick="switchBestTab('total')">
+        👑 총참여 베스트
+      </button>
+      <button class="btn-best-tab" id="bestTabBoss" onclick="switchBestTab('boss')">
+        🎯 보스참여 베스트
+      </button>
+      <button class="btn-best-tab" id="bestTabWar" onclick="switchBestTab('war')">
+        ⚔️ 전쟁참여 베스트
+      </button>
+    </div>
+    <div class="top5-header">
+      <span class="top5-title" id="top5TitleText">👑 총참여 베스트 TOP 5</span>
+      <span class="top5-sub" id="top5SubText">보스 점수 + 전쟁/추가 점수 누적 합산</span>
+    </div>
+    <div id="top5RankingList" class="top5-list">
+      <div class="text-secondary text-center py-2" style="font-size: 0.72rem;">순위 집계 중...</div>
+    </div>
+  </div>
+
+  <!-- 3. 하단 3대 메인 탭 -->
+  <div class="records-tab-nav">
+    <button class="tab-btn-3 active" id="tabBtnMembers" onclick="switchRecordsTab('members')">
+      <i class="fa-solid fa-users"></i> 길드원별 통계
+    </button>
+    <button class="tab-btn-3" id="tabBtnWarLog" onclick="switchRecordsTab('warlog')">
+      <i class="fa-solid fa-shield-halved"></i> 전쟁기록
+    </button>
+    <button class="tab-btn-3" id="tabBtnHistory" onclick="switchRecordsTab('history')">
+      <i class="fa-solid fa-list-check"></i> 토벌기록
+    </button>
+  </div>
+
+  <!-- 1) 전체길드원통계 뷰 -->
+  <div id="viewMembers">
+    <div class="search-wrapper-stat">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="statMemberSearch" class="search-input-stat" 
+             placeholder="길드원 닉네임 검색..." 
+             autocomplete="off" 
+             value="" 
+             oninput="filterMemberStats()">
+      <i class="fa-solid fa-circle-xmark search-clear-btn" id="statMemberSearchClear" onclick="clearMemberSearch()" title="검색 초기화"></i>
+    </div>
+    <div id="memberStatsList" style="max-height: 460px; overflow-y: auto;">
+      <div class="text-secondary small text-center py-3">데이터를 불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- 2) 전쟁기록 뷰 -->
+  <div id="viewWarLog" style="display: none;">
+    <div id="warLogList" style="max-height: 460px; overflow-y: auto;">
+      <div class="text-secondary small text-center py-3">데이터를 불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- 3) 토벌기록 뷰 -->
+  <div id="viewHistory" style="display: none;">
+    <div id="historyList" style="max-height: 460px; overflow-y: auto;">
+      <div class="text-secondary small text-center py-3">데이터를 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 상단 플로팅 토스트 알림 컨테이너 -->
+<div id="recordsToastBox" class="custom-records-toast">
+  <span id="recordsToastIcon" style="font-size: 1.1rem;">✅</span>
+  <span id="recordsToastMsg">알림 내용</span>
+</div>
+
+<!-- 커스텀 다크 모달 (확인 및 경고) -->
+<div id="customConfirmModal" class="rec-modal-backdrop" style="display: none;">
+  <div class="rec-modal-card" style="max-width: 330px; text-align: center; padding: 20px 16px;">
+    <div style="font-size: 2rem; margin-bottom: 8px;" id="confirmModalIconEmoji">⚠️</div>
+    <h6 class="fw-bold mb-2" id="confirmModalTitle" style="font-size: 0.95rem; color: var(--rec-modal-text);">확인</h6>
+    <p class="small text-secondary mb-3" id="confirmModalMsg" style="font-size: 0.78rem; line-height: 1.45; word-break: keep-all; white-space: pre-line;"></p>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" id="btnConfirmCancel" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;">취소</button>
+      <button type="button" class="btn btn-danger btn-sm flex-fill py-2" id="btnConfirmOk" style="border-radius: 8px; font-weight: 800; font-size: 0.78rem;">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 토벌 참여 인원 수정 모달 -->
+<div id="modalEditRecord" class="rec-modal-backdrop" style="display: none;">
+  <div class="rec-modal-card">
+    <div class="rec-modal-header">
+      <div class="rec-modal-title">
+        <i class="fa-solid fa-user-pen text-primary"></i>
+        <span>토벌 참여 인원 수정</span>
+      </div>
+      <button type="button" class="rec-modal-close-btn" onclick="closeEditModal()" title="닫기">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="rec-modal-body">
+      <input type="hidden" id="editRecordId">
+      <input type="hidden" id="editRecordBossName">
+      <div class="mb-2 text-secondary small" id="editRecordSummary" style="font-size: 0.74rem;"></div>
+      <div id="editMemberCheckList" class="modal-members-grid-4col"></div>
+      
+      <div class="d-flex justify-content-end gap-2 mt-3 pt-2 border-top border-secondary border-opacity-10">
+        <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeEditModal()" style="font-size: 0.78rem; border-radius: 6px;">취소</button>
+        <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" onclick="promptSaveRecordMembers()" style="font-size: 0.78rem; border-radius: 6px;">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 개인별 보스 목록 선택/수정 모달 -->
+<div id="modalMemberBossManager" class="rec-modal-backdrop" style="display: none;">
+  <div class="rec-modal-card" style="max-height: 85vh; display: flex; flex-direction: column;">
+    <div class="rec-modal-header">
+      <div>
+        <div class="rec-modal-title" id="mgrMemberNameTitle">참여 보스 목록 수정</div>
+        <div class="text-secondary small mt-1" style="font-size: 0.68rem;">기간 내 잡은 보스 중 참여한 항목을 체크/해제하세요.</div>
+      </div>
+      <button type="button" class="rec-modal-close-btn" onclick="closeMemberBossManagerModal()" title="닫기">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    
+    <div class="rec-modal-body" style="flex: 1; overflow-y: auto; max-height: 380px;">
+      <div id="memberBossCheckListArea"></div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center p-3 border-top border-secondary border-opacity-10 flex-shrink-0">
+      <div class="text-secondary small" id="mgrSelectionCount" style="font-size: 0.72rem;">선택: 0건</div>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeMemberBossManagerModal()" style="font-size: 0.78rem; border-radius: 6px;">취소</button>
+        <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" onclick="saveMemberBossSelection()" style="font-size: 0.78rem; border-radius: 6px;">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var rawStatsData = { records: [], warRecords: [], memberStats: {}, bossList: [] };
+  var currentBestTab = 'total';
+  var managingMemberName = "";
+  var allGuildMembersList = [];
+  var recordsToastTimer = null;
+  var currentEditingOriginalMembers = [];
+
+  var liveSettings = {
+    guildName: "길드",
+    scoreBase: 1,
+    scoreInternal: 1,
+    scoreInter: 2
+  };
+
+  async function verifyAdminPermission() {
+    const isAuth = (typeof isAdminLoggedIn === "function") ? isAdminLoggedIn() : (sessionStorage.getItem("admin_auth") === "true");
+    if (!isAuth) {
+      alert("⚠️ 관리자 권한이 필요합니다.\n우측 상단의 [관리자 로그인]을 먼저 진행해주세요.");
+      if (typeof handleAdminAuthToggle === "function") handleAdminAuthToggle();
+      return false;
+    }
+
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    if (!isSuper) {
+      try {
+        const permRow = await apiRequest("guild_settings?key=eq.perm_boss_records_edit");
+        if (permRow && permRow.length > 0 && permRow[0].value === 'false') {
+          alert("⚠️ 일반 관리자에게는 [토벌기록 및 닉네임 수정/제거 권한]이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
+          return false;
+        }
+      } catch (e) {}
+    }
+
+    return true;
+  }
+
+  function showRecordsToast(msg, icon = "✅") {
+    const box = document.getElementById("recordsToastBox");
+    const m = document.getElementById("recordsToastMsg");
+    const ic = document.getElementById("recordsToastIcon");
+    if (!box) {
+      if (typeof showKakaoToast === "function") showKakaoToast(msg, icon);
+      return;
+    }
+
+    m.innerText = msg;
+    ic.innerText = icon;
+    box.classList.add("show");
+
+    if (recordsToastTimer) clearTimeout(recordsToastTimer);
+    recordsToastTimer = setTimeout(() => box.classList.remove("show"), 2200);
+  }
+
+  function openCustomConfirm(title, msg, emoji = "⚠️") {
+    return new Promise(resolve => {
+      const modal = document.getElementById("customConfirmModal");
+      const titleElem = document.getElementById("confirmModalTitle");
+      const msgElem = document.getElementById("confirmModalMsg");
+      const emojiElem = document.getElementById("confirmModalIconEmoji");
+      const btnCancel = document.getElementById("btnConfirmCancel");
+      const btnOk = document.getElementById("btnConfirmOk");
+
+      if (!modal) {
+        resolve(confirm(msg));
+        return;
+      }
+
+      titleElem.innerText = title;
+      msgElem.innerText = msg;
+      if (emojiElem) emojiElem.innerText = emoji;
+
+      modal.style.display = "flex";
+
+      btnCancel.onclick = () => {
+        modal.style.display = "none";
+        resolve(false);
+      };
+      btnOk.onclick = () => {
+        modal.style.display = "none";
+        resolve(true);
+      };
+    });
+  }
+
+  // 초기화 함수
+  (async function initRecordsPage() {
+    setStatPeriod('thisWeek');
+  })();
+
+  function setStatPeriod(type) {
+    document.querySelectorAll('#btnFilterWeek, #btnFilterLastWeek, #btnFilterMonth, #btnFilterAll').forEach(b => b.classList.remove('active'));
+
+    const today = new Date();
+    const currentDay = (today.getDay() + 6) % 7; // 월=0, 일=6
+
+    let start = null;
+    let end = null;
+    let statusLabel = "이번 주 통계";
+
+    if (type === 'thisWeek') {
+      document.getElementById('btnFilterWeek').classList.add('active');
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - currentDay);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+      statusLabel = "이번 주 통계";
+    } else if (type === 'lastWeek') {
+      document.getElementById('btnFilterLastWeek').classList.add('active');
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - currentDay - 7);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+      statusLabel = "지난 주 통계";
+    } else if (type === 'thisMonth') {
+      document.getElementById('btnFilterMonth').classList.add('active');
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      statusLabel = "이번 달 통계";
+    } else if (type === 'all') {
+      document.getElementById('btnFilterAll').classList.add('active');
+      statusLabel = "전체 기간 통계";
+    }
+
+    const fmt = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    document.getElementById('filterStartDate').value = start ? fmt(start) : '';
+    document.getElementById('filterEndDate').value = end ? fmt(end) : '';
+    
+    const statusElem = document.getElementById('filterStatusText');
+    if (statusElem) statusElem.innerText = statusLabel;
+
+    fetchStatsData();
+  }
+
+  async function fetchStatsData() {
+    const start = document.getElementById('filterStartDate').value;
+    const end = document.getElementById('filterEndDate').value;
+
+    const top5Area = document.getElementById('top5RankingList');
+    const listArea = document.getElementById('memberStatsList');
+    const warArea = document.getElementById('warLogList');
+    const histArea = document.getElementById('historyList');
+
+    if (top5Area) top5Area.innerHTML = '<div class="text-secondary text-center py-2" style="font-size: 0.72rem;"><i class="fa-solid fa-spinner fa-spin me-1"></i>집계 중...</div>';
+    if (listArea) listArea.innerHTML = '<div class="text-secondary small text-center py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>전체 통계 집계 중...</div>';
+    if (warArea) warArea.innerHTML = '<div class="text-secondary small text-center py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>전쟁 기록 불러오는 중...</div>';
+    if (histArea) histArea.innerHTML = '<div class="text-secondary small text-center py-3"><i class="fa-solid fa-spinner fa-spin me-2"></i>토벌 기록 불러오는 중...</div>';
+
+    try {
+      const [members, raids, settings] = await Promise.all([
+        apiRequest("guild_members?select=name,role&order=name.asc"),
+        apiRequest("boss_participations?select=*&order=raid_time.desc"),
+        apiRequest("guild_settings?select=*")
+      ]);
+
+      allGuildMembersList = members || [];
+      const allRaids = raids || [];
+
+      if (settings && settings.length > 0) {
+        settings.forEach(s => {
+          if (s.key === 'guild_name') liveSettings.guildName = s.value || "길드";
+          if (s.key === 'score_base') liveSettings.scoreBase = parseInt(s.value, 10) || 1;
+          if (s.key === 'score_war_internal') liveSettings.scoreInternal = parseInt(s.value, 10) || 1;
+          if (s.key === 'score_war_inter') liveSettings.scoreInter = parseInt(s.value, 10) || 2;
+        });
+      }
+
+      const filtered = allRaids.filter(r => {
+        if (!r.raid_time) return false;
+        const d = r.raid_time.slice(0, 10);
+        if (start && d < start) return false;
+        if (end && d > end) return false;
+        return true;
+      });
+
+      const records = [];
+      const warRecords = [];
+      const memberStats = {};
+
+      allGuildMembersList.forEach(m => {
+        memberStats[m.name] = {
+          role: m.role || '일반',
+          totalScore: 0,
+          bossScore: 0,
+          internalScore: 0,
+          interScore: 0,
+          extraBonus: 0,
+          warExtraBonus: 0,
+          generalExtraBonus: 0,
+          bossCount: 0,
+          warCount: 0,
+          byBoss: {}
+        };
+      });
+
+      filtered.forEach(r => {
+        const warType = r.war_type || '일반';
+        const isInternal = warType.includes('내전');
+        const isInter = warType.includes('인터');
+        const isWar = isInternal || isInter;
+        const extra = parseInt(r.extra_score, 10) || 0;
+        const membersArr = Array.isArray(r.members) ? r.members : [];
+
+        // 배점 계산 (기본 + 전쟁가산 + 추가)
+        let calcScore = liveSettings.scoreBase || 1;
+        if (isInternal) calcScore += (liveSettings.scoreInternal || 1);
+        else if (isInter) calcScore += (liveSettings.scoreInter || 2);
+        calcScore += extra;
+
+        const recordObj = {
+          id: r.id,
+          bossName: r.boss_name,
+          warType: warType,
+          isInternal: isInternal,
+          isInter: isInter,
+          dropItem: r.drop_items || '없음',
+          dateTime: r.raid_time ? r.raid_time.replace('T', ' ').slice(0, 16) : '',
+          count: membersArr.length,
+          totalScore: calcScore,
+          extraBonus: extra,
+          members: membersArr
+        };
+
+        records.push(recordObj);
+
+        if (isWar) {
+          warRecords.push(recordObj);
+        }
+
+        membersArr.forEach(name => {
+          if (!memberStats[name]) {
+            memberStats[name] = {
+              role: '일반',
+              totalScore: 0, bossScore: 0, internalScore: 0, interScore: 0,
+              extraBonus: 0, warExtraBonus: 0, generalExtraBonus: 0,
+              bossCount: 0, warCount: 0, byBoss: {}
+            };
+          }
+
+          const st = memberStats[name];
+          st.totalScore += calcScore;
+          st.bossScore += 1;
+          st.bossCount += 1;
+          st.extraBonus += extra;
+
+          if (isInternal) st.internalScore += (liveSettings.scoreInternal || 1);
+          if (isInter) st.interScore += (liveSettings.scoreInter || 2);
+
+          if (isWar) {
+            st.warCount += 1;
+            st.warExtraBonus += extra;
+          } else {
+            st.generalExtraBonus += extra;
+          }
+
+          st.byBoss[r.boss_name] = (st.byBoss[r.boss_name] || 0) + 1;
+        });
+      });
+
+      rawStatsData = { records, warRecords, memberStats };
+
+      renderTop5Ranking();
+      renderMemberStats(rawStatsData.memberStats);
+      renderWarLogList(rawStatsData.warRecords);
+      renderHistoryList(rawStatsData.records);
+
+      filterMemberStats();
+    } catch (err) {
+      showRecordsToast("통계 조회 실패: " + err.message, "❌");
+    }
+  }
+
+  function switchBestTab(tabKey) {
+    currentBestTab = tabKey;
+    document.getElementById('bestTabTotal').classList.toggle('active', tabKey === 'total');
+    document.getElementById('bestTabBoss').classList.toggle('active', tabKey === 'boss');
+    document.getElementById('bestTabWar').classList.toggle('active', tabKey === 'war');
+
+    if (tabKey === 'total') {
+      document.getElementById('top5TitleText').innerText = "👑 총참여 베스트 TOP 5";
+      document.getElementById('top5SubText').innerText = "보스 점수 + 전쟁/추가 점수 누적 합산";
+    } else if (tabKey === 'boss') {
+      document.getElementById('top5TitleText').innerText = "🎯 보스참여 베스트 TOP 5";
+      document.getElementById('top5SubText').innerText = "순수 보스 토벌 참여 횟수 기준";
+    } else {
+      document.getElementById('top5TitleText').innerText = "⚔️ 전쟁참여 베스트 TOP 5";
+      document.getElementById('top5SubText').innerText = "내전 및 인터쟁 참여 횟수 기준";
+    }
+    renderTop5Ranking();
+  }
+
+  function renderTop5Ranking() {
+    const container = document.getElementById('top5RankingList');
+    if (!container) return;
+
+    const statsObj = rawStatsData.memberStats || {};
+    const allMembers = Object.keys(statsObj);
+
+    let sortedMembers = allMembers.filter(m => (statsObj[m].totalScore || 0) > 0);
+
+    if (currentBestTab === 'total') {
+      sortedMembers.sort((a, b) => (statsObj[b].totalScore || 0) - (statsObj[a].totalScore || 0));
+    } else if (currentBestTab === 'boss') {
+      sortedMembers.sort((a, b) => (statsObj[b].bossCount || 0) - (statsObj[a].bossCount || 0));
+    } else if (currentBestTab === 'war') {
+      sortedMembers.sort((a, b) => (statsObj[b].warCount || 0) - (statsObj[a].warCount || 0));
+    }
+
+    const top5 = sortedMembers.slice(0, 5);
+
+    if (top5.length === 0) {
+      container.innerHTML = '<div class="text-secondary text-center py-2" style="font-size: 0.72rem;">참여 기록이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = top5.map((name, i) => {
+      const d = statsObj[name];
+      const rankNum = i + 1;
+      const rankClass = rankNum === 1 ? 'rank-1' : (rankNum === 2 ? 'rank-2' : (rankNum === 3 ? 'rank-3' : 'rank-normal'));
+      
+      let scoreText = `${d.totalScore}점`;
+      if (currentBestTab === 'boss') scoreText = `토벌 ${d.bossCount}회`;
+      else if (currentBestTab === 'war') scoreText = `전쟁 ${d.warCount}회`;
+
+      const roleBadge = getRoleBadgeHtml(d.role);
+
+      return `
+        <div class="top5-item">
+          <div class="d-flex align-items-center gap-2" style="min-width: 0; flex: 1;">
+            <span class="top-rank-badge ${rankClass}">${rankNum}</span>
+            <span class="top5-name">${escapeHtml(name)}</span>
+            ${roleBadge}
+          </div>
+          <span class="top5-score">${scoreText}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderMemberStats(statsObj) {
+    const container = document.getElementById('memberStatsList');
+    if (!container) return;
+
+    const allMembers = Object.keys(statsObj || {});
+    const members = allMembers.filter(m => (statsObj[m].totalScore || 0) > 0);
+
+    if (members.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-3">해당 기간 동안 참여 기록이 없습니다.</div>';
+      return;
+    }
+
+    members.sort((a, b) => statsObj[b].totalScore - statsObj[a].totalScore);
+
+    container.innerHTML = members.map((name, idx) => {
+      const data = statsObj[name];
+      const totalSc = data.totalScore || 0;
+      const bossCount = data.bossCount || 0;
+      const warCount = data.warCount || 0;
+      const roleBadge = getRoleBadgeHtml(data.role);
+
+      const bossTags = Object.keys(data.byBoss || {}).map(bName => `
+        <span class="boss-stat-tag">${escapeHtml(bName)} <strong class="text-primary">${data.byBoss[bName]}</strong>회</span>
+      `).join('');
+
+      const fullScoreDisplay = `총 ${totalSc}점 (${bossCount}회 / 전쟁 ${warCount}회)`;
+      const safeName = encodeURIComponent(name);
+
+      const memberRecords = (rawStatsData.records || []).filter(r => r.members && r.members.includes(name));
+      let historyRows = '<div class="text-secondary small text-center py-2">참여 토벌 기록이 없습니다.</div>';
+
+      if (memberRecords.length > 0) {
+        historyRows = memberRecords.map(r => {
+          let badgeHtml = "";
+          if (r.isInter) badgeHtml += `<span class="badge-score-custom badge-score-inter">인터</span> `;
+          if (r.isInternal) badgeHtml += `<span class="badge-score-custom badge-score-internal">내전</span> `;
+          if (!r.isInter && !r.isInternal) badgeHtml += `<span class="badge-score-custom badge-score-normal">일반</span> `;
+
+          return `
+            <div class="history-item d-flex justify-content-between align-items-center gap-2">
+              <div style="min-width: 0; flex: 1;">
+                <div class="d-flex align-items-center gap-1 flex-wrap">
+                  <strong class="text-primary" style="font-size: 0.78rem;">${escapeHtml(r.bossName)}</strong>
+                  ${badgeHtml}
+                </div>
+                <div class="text-secondary" style="font-size: 0.68rem; margin-top: 1px;">
+                  ${r.dateTime} (${r.count}명 참여 / 배점 ${r.totalScore}점)
+                </div>
+              </div>
+              <div style="flex-shrink: 0;">
+                <button type="button" class="btn-record-action btn-record-del" onclick="event.stopPropagation(); removeSingleMember('${safeName}', ${r.id}, '${escapeHtml(r.bossName)}')">제외</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      return `
+        <div class="member-stat-card" id="card_m_${idx}">
+          <div class="member-card-header" onclick="toggleMemberDetailCard('card_m_${idx}')">
+            <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+              <div class="d-flex align-items-center gap-2" style="min-width: 0;">
+                <span class="badge rounded-pill" style="background: rgba(2, 132, 199, 0.15); color: #0284c7; font-size: 0.68rem; font-weight: 800; padding: 2px 7px;">${idx + 1}위</span>
+                <strong style="font-size: 0.88rem; color: var(--rec-text-main);">${escapeHtml(name)}</strong>
+                ${roleBadge}
+                <i class="fa-solid fa-chevron-down text-secondary ms-1" style="font-size: 0.68rem;"></i>
+              </div>
+              <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.72rem; font-weight: 800; white-space: nowrap;">
+                ${fullScoreDisplay}
+              </span>
+            </div>
+            <div class="mt-1">${bossTags}</div>
+          </div>
+
+          <div class="member-detail-accordion">
+            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-secondary border-opacity-10 gap-2 flex-wrap">
+              <span class="small fw-bold" style="font-size: 0.74rem; color: var(--rec-text-main);">
+                <i class="fa-solid fa-list-check me-1 text-primary"></i>개별 토벌 참여 내역
+              </span>
+              <div class="d-flex gap-1">
+                <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 0.68rem; border-radius: 5px;" onclick="openMemberBossManagerModal('${safeName}')">
+                  <i class="fa-solid fa-sliders me-1"></i>보스별 참여현황 수정
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 0.68rem; border-radius: 5px;" onclick="removeMemberAll('${safeName}')">
+                  <i class="fa-solid fa-ban me-1"></i>일괄 제외
+                </button>
+              </div>
+            </div>
+            <div class="member-history-sublist" style="max-height: 220px; overflow-y: auto;">
+              ${historyRows}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function getRoleBadgeHtml(role) {
+    const r = String(role || '').trim();
+    if (r === '길드장' || r === '길마') return `<span class="badge-role-pill role-master">길드장</span>`;
+    if (r === '부길드장' || r === '부길마') return `<span class="badge-role-pill role-submaster">부길드장</span>`;
+    if (r === '정예') return `<span class="badge-role-pill role-elite">정예</span>`;
+    return `<span class="badge-role-pill role-normal">일반</span>`;
+  }
+
+  function toggleMemberDetailCard(cardId) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.classList.toggle('active');
+    const icon = card.querySelector('.fa-chevron-down, .fa-chevron-up');
+    if (icon) {
+      if (card.classList.contains('active')) {
+        icon.className = 'fa-solid fa-chevron-up text-secondary ms-1';
+      } else {
+        icon.className = 'fa-solid fa-chevron-down text-secondary ms-1';
+      }
+    }
+  }
+
+  function filterMemberStats() {
+    const inputElem = document.getElementById('statMemberSearch');
+    const clearBtn = document.getElementById('statMemberSearchClear');
+    const q = inputElem ? inputElem.value.trim().toLowerCase() : '';
+    
+    if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+    const cards = document.querySelectorAll('.member-stat-card');
+    cards.forEach(card => {
+      const header = card.querySelector('.member-card-header');
+      const text = header ? header.innerText.toLowerCase() : '';
+      card.style.display = text.includes(q) ? 'block' : 'none';
+    });
+  }
+
+  function clearMemberSearch() {
+    const input = document.getElementById('statMemberSearch');
+    if (input) {
+      input.value = '';
+      filterMemberStats();
+      input.focus();
+    }
+  }
+
+  function renderWarLogList(warRecords) {
+    const container = document.getElementById('warLogList');
+    if (!container) return;
+
+    if (!warRecords || warRecords.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-3">해당 기간 동안 발생한 전쟁(내전/인터) 기록이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = warRecords.map(r => {
+      let badgeParts = [];
+      if (r.isInter) badgeParts.push(`<span class="badge-score-custom badge-score-inter">🌐 인터</span>`);
+      if (r.isInternal) badgeParts.push(`<span class="badge-score-custom badge-score-internal">🛡️ 내전</span>`);
+      if (r.extraBonus > 0) badgeParts.push(`<span class="badge-score-custom badge-score-extra">+${r.extraBonus}점</span>`);
+
+      return `
+        <div class="history-item" style="border-left: 3.5px solid ${r.isInter ? '#dc2626' : '#d97706'};">
+          <div class="d-flex justify-content-between align-items-center mb-1 gap-2 flex-wrap">
+            <div class="d-flex align-items-center flex-wrap gap-1">
+              <strong class="text-primary" style="font-size: 0.84rem;">${escapeHtml(r.bossName)}</strong>
+              ${badgeParts.join(' ')}
+            </div>
+            <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.7rem; font-weight: 800;">
+              배점 ${r.totalScore}점 (${r.count}명 참여)
+            </span>
+          </div>
+          <div class="text-secondary small mb-1" style="font-size: 0.68rem;">일시: ${r.dateTime}</div>
+          <div style="font-size: 0.74rem; color: var(--rec-text-sub); line-height: 1.4; word-break: keep-all;">
+            <strong style="color: var(--rec-text-main);">참여자:</strong> ${r.members.map(m => escapeHtml(m)).join(', ')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function renderHistoryList(records) {
+    const container = document.getElementById('historyList');
+    if (!container) return;
+
+    if (!records || records.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-3">토벌 기록이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = records.map((r, idx) => {
+      let badgeHtml = "";
+      if (r.isInter || r.isInternal || r.extraBonus > 0) {
+        let parts = [];
+        if (r.isInter) parts.push(`<span class="badge-score-custom badge-score-inter">🌐 인터</span>`);
+        if (r.isInternal) parts.push(`<span class="badge-score-custom badge-score-internal">🛡️ 내전</span>`);
+        if (r.extraBonus > 0) parts.push(`<span class="badge-score-custom badge-score-extra">추가(+${r.extraBonus}점)</span>`);
+        badgeHtml = parts.join(' ');
+      } else {
+        badgeHtml = `<span class="badge-score-custom badge-score-normal">일반</span>`;
+      }
+
+      return `
+        <div class="history-item">
+          <div class="history-header-flex">
+            <div class="history-title-area">
+              <strong class="text-primary" style="font-size: 0.84rem; white-space: nowrap;">${escapeHtml(r.bossName)}</strong>
+              ${badgeHtml}
+            </div>
+            <div class="history-tools-area">
+              <span class="text-secondary me-1" style="font-size: 0.68rem; white-space: nowrap;">${r.dateTime}</span>
+              <button type="button" class="btn-record-action btn-record-edit" onclick="triggerEditRecordModal(${idx})">수정</button>
+              <button type="button" class="btn-record-action btn-record-del" onclick="triggerDeleteRecord(${r.id}, '${escapeHtml(r.bossName)}')">삭제</button>
+            </div>
+          </div>
+          <div class="text-secondary mb-1" style="font-size: 0.72rem;">획득 아이템: <strong style="color: var(--rec-text-main);">${escapeHtml(r.dropItem || '없음')}</strong></div>
+          <div style="font-size: 0.74rem; color: var(--rec-text-sub); line-height: 1.4; word-break: keep-all;">
+            <strong style="color: var(--rec-text-main);">참여 (${r.count}명 / 배점 ${r.totalScore}점):</strong> ${r.members.map(m => escapeHtml(m)).join(', ')}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function switchRecordsTab(tab) {
+    document.getElementById('viewMembers').style.display = (tab === 'members') ? 'block' : 'none';
+    document.getElementById('viewWarLog').style.display = (tab === 'warlog') ? 'block' : 'none';
+    document.getElementById('viewHistory').style.display = (tab === 'history') ? 'block' : 'none';
+
+    document.getElementById('tabBtnMembers').classList.toggle('active', tab === 'members');
+    document.getElementById('tabBtnWarLog').classList.toggle('active', tab === 'warlog');
+    document.getElementById('tabBtnHistory').classList.toggle('active', tab === 'history');
+  }
+
+  async function triggerEditRecordModal(idx) {
+    if (!(await verifyAdminPermission())) return;
+
+    const record = rawStatsData.records[idx];
+    if (!record) return;
+
+    document.getElementById('editRecordId').value = record.id;
+    document.getElementById('editRecordBossName').value = record.bossName;
+    document.getElementById('editRecordSummary').innerText = `[${record.bossName}] ${record.dateTime} (${record.warType || '일반'})`;
+
+    currentEditingOriginalMembers = (record.members || []).slice();
+
+    const container = document.getElementById('editMemberCheckList');
+    container.innerHTML = allGuildMembersList.map((m, i) => {
+      const isChecked = record.members.includes(m.name) ? 'checked' : '';
+      return `
+        <div class="modal-member-check-item">
+          <input type="checkbox" id="echk_${i}" value="${escapeHtml(m.name)}" ${isChecked} class="edit-chk">
+          <label for="echk_${i}" title="${escapeHtml(m.name)}">${escapeHtml(m.name)}</label>
+        </div>
+      `;
+    }).join('');
+
+    document.getElementById('modalEditRecord').style.display = 'flex';
+  }
+
+  function closeEditModal() {
+    document.getElementById('modalEditRecord').style.display = 'none';
+  }
+
+  async function promptSaveRecordMembers() {
+    if (!(await verifyAdminPermission())) return;
+
+    const raidId = document.getElementById('editRecordId').value;
+    const bossName = document.getElementById('editRecordBossName').value || "보스";
+    const selected = Array.from(document.querySelectorAll('.edit-chk:checked')).map(c => c.value);
+
+    const addedMembers = selected.filter(name => !currentEditingOriginalMembers.includes(name));
+    const removedMembers = currentEditingOriginalMembers.filter(name => !selected.includes(name));
+
+    let confirmMessage = "";
+    if (selected.length === 0) {
+      confirmMessage = `선택된 인원이 없습니다.\n[${bossName}] 토벌 참여자를 0명으로 저장하시겠습니까?`;
+    } else if (addedMembers.length > 0 && removedMembers.length === 0) {
+      confirmMessage = `[${bossName}] 토벌에\n[${addedMembers.join(', ')}] 님을 추가하시겠습니까?`;
+    } else if (addedMembers.length === 0 && removedMembers.length > 0) {
+      confirmMessage = `[${bossName}] 토벌에서\n[${removedMembers.join(', ')}] 님을 제외하시겠습니까?`;
+    } else if (addedMembers.length > 0 && removedMembers.length > 0) {
+      confirmMessage = `[${bossName}] 토벌 명단 변경\n• 추가: ${addedMembers.join(', ')}\n• 제외: ${removedMembers.join(', ')}\n\n반영하시겠습니까?`;
+    } else {
+      confirmMessage = `[${bossName}] 토벌 참여 명단에 변동이 없습니다.\n현재 명단(${selected.length}명) 그대로 유지하시겠습니까?`;
+    }
+
+    const confirmed = await openCustomConfirm(
+      "참여 인원 수정 확인",
+      confirmMessage,
+      "📝"
+    );
+    if (!confirmed) return;
+
+    closeEditModal();
+
+    try {
+      await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
+        members: selected,
+        member_count: selected.length
+      });
+
+      showRecordsToast('참여 명단이 정상적으로 수정되었습니다.', '✅');
+      await fetchStatsData();
+    } catch (err) {
+      showRecordsToast("수정 실패: " + err.message, "❌");
+    }
+  }
+
+  async function triggerDeleteRecord(raidId, bossName) {
+    if (!(await verifyAdminPermission())) return;
+
+    const confirmed = await openCustomConfirm(
+      "토벌 기록 삭제",
+      `[${bossName}] 토벌 기록을 삭제하시겠습니까?\n삭제된 기록은 복구할 수 없습니다.`,
+      "🗑️"
+    );
+    if (!confirmed) return;
+
+    try {
+      await apiRequest(`boss_participations?id=eq.${raidId}`, "DELETE");
+      showRecordsToast('토벌 기록이 삭제되었습니다.', '🗑️');
+      await fetchStatsData();
+    } catch (err) {
+      showRecordsToast("삭제 실패: " + err.message, "❌");
+    }
+  }
+
+  async function openMemberBossManagerModal(encodedName) {
+    if (!(await verifyAdminPermission())) return;
+
+    const name = decodeURIComponent(encodedName);
+    managingMemberName = name;
+
+    document.getElementById('mgrMemberNameTitle').innerHTML = `<i class="fa-solid fa-user-pen me-2 text-primary"></i>[${escapeHtml(name)}] 님 참여 보스 목록`;
+
+    const container = document.getElementById('memberBossCheckListArea');
+    const allPeriodRecords = rawStatsData.records || [];
+
+    if (allPeriodRecords.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-4">조회 기간 내 토벌 기록이 없습니다.</div>';
+      document.getElementById('modalMemberBossManager').style.display = 'flex';
+      return;
+    }
+
+    container.innerHTML = allPeriodRecords.map((r, i) => {
+      const isChecked = (r.members && r.members.includes(name)) ? 'checked' : '';
+      return `
+        <div class="d-flex align-items-center gap-2 p-2 mb-1 rounded" style="background: var(--rec-section-bg); border: 1px solid var(--rec-section-border);">
+          <input class="form-check-input mgr-boss-chk m-0" type="checkbox" id="mchk_${i}" value="${r.id}" ${isChecked} onchange="updateMgrSelectionCount()" style="width: 1.15rem; height: 1.15rem; flex-shrink: 0; cursor: pointer;">
+          <label class="d-flex justify-content-between align-items-center w-100 m-0 ps-1 gap-1 flex-wrap" for="mchk_${i}" style="cursor: pointer; user-select: none;">
+            <div>
+              <strong class="text-primary" style="font-size: 0.82rem;">${escapeHtml(r.bossName)}</strong>
+              <span class="text-secondary small ms-1" style="font-size: 0.7rem;">(${r.warType})</span>
+            </div>
+            <span class="text-secondary" style="font-size: 0.7rem; white-space: nowrap;">${r.dateTime}</span>
+          </label>
+        </div>
+      `;
+    }).join('');
+
+    updateMgrSelectionCount();
+    document.getElementById('modalMemberBossManager').style.display = 'flex';
+  }
+
+  function updateMgrSelectionCount() {
+    const checked = document.querySelectorAll('.mgr-boss-chk:checked').length;
+    const total = document.querySelectorAll('.mgr-boss-chk').length;
+    document.getElementById('mgrSelectionCount').innerText = `선택: ${checked} / 전체 ${total}건`;
+  }
+
+  function closeMemberBossManagerModal() {
+    document.getElementById('modalMemberBossManager').style.display = 'none';
+  }
+
+  async function saveMemberBossSelection() {
+    if (!(await verifyAdminPermission())) return;
+
+    const checkboxes = Array.from(document.querySelectorAll('.mgr-boss-chk'));
+    const name = managingMemberName;
+    if (!name) return;
+
+    let updatedCount = 0;
+
+    try {
+      for (const chk of checkboxes) {
+        const raidId = parseInt(chk.value, 10);
+        const shouldBeIn = chk.checked;
+        const targetRecord = rawStatsData.records.find(r => r.id === raidId);
+        if (!targetRecord) continue;
+
+        const isCurrentlyIn = targetRecord.members && targetRecord.members.includes(name);
+
+        if (shouldBeIn && !isCurrentlyIn) {
+          const updated = [...targetRecord.members, name];
+          await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
+            members: updated,
+            member_count: updated.length
+          });
+          targetRecord.members = updated;
+          updatedCount++;
+        } else if (!shouldBeIn && isCurrentlyIn) {
+          const updated = targetRecord.members.filter(m => m !== name);
+          await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
+            members: updated,
+            member_count: updated.length
+          });
+          targetRecord.members = updated;
+          updatedCount++;
+        }
+      }
+
+      closeMemberBossManagerModal();
+      showRecordsToast(`[${name}] 님의 참여 현황 (${updatedCount}건 변동) 저장 완료!`, "🎉");
+      await fetchStatsData();
+    } catch (err) {
+      showRecordsToast("저장 실패: " + err.message, "❌");
+    }
+  }
+
+  async function removeSingleMember(encodedName, raidId, bossName) {
+    if (!(await verifyAdminPermission())) return;
+
+    const name = decodeURIComponent(encodedName);
+    const confirmed = await openCustomConfirm(
+      "참여 인원 제외",
+      `[${bossName}] 토벌 기록에서 [${name}] 님을 제외하시겠습니까?`,
+      "👤"
+    );
+    if (!confirmed) return;
+
+    try {
+      const targetRecord = rawStatsData.records.find(r => r.id === raidId);
+      if (!targetRecord) return;
+
+      const updatedMembers = targetRecord.members.filter(m => m !== name);
+      await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
+        members: updatedMembers,
+        member_count: updatedMembers.length
+      });
+
+      showRecordsToast(`[${name}] 님이 해당 토벌에서 제외되었습니다.`, "🗑️");
+      await fetchStatsData();
+    } catch (err) {
+      showRecordsToast("제외 실패: " + err.message, "❌");
+    }
+  }
+
+  async function removeMemberAll(encodedName) {
+    if (!(await verifyAdminPermission())) return;
+
+    const name = decodeURIComponent(encodedName);
+    const confirmed = await openCustomConfirm(
+      "참여 기록 일괄 제외",
+      `[${name}] 님이 참여한 모든 토벌 기록에서 일괄 제외하시겠습니까?\n이 작업은 되돌릴 수 없습니다.`,
+      "⚠️"
+    );
+    if (!confirmed) return;
+
+    try {
+      const recordsToUpdate = rawStatsData.records.filter(r => r.members && r.members.includes(name));
+      for (const r of recordsToUpdate) {
+        const updated = r.members.filter(m => m !== name);
+        await apiRequest(`boss_participations?id=eq.${r.id}`, "PATCH", {
+          members: updated,
+          member_count: updated.length
+        });
+      }
+
+      showRecordsToast(`[${name}] 님의 전체 참여 기록 일괄 제외 완료!`, "🗑️");
+      await fetchStatsData();
+    } catch (err) {
+      showRecordsToast("일괄 제외 실패: " + err.message, "❌");
+    }
+  }
+
+  window.shareRecordsReportToChat = async function() {
+    const btn = document.getElementById('btnShareRecordsReport');
+    const statsObj = rawStatsData.memberStats || {};
+    const allMembers = Object.keys(statsObj);
+    const members = allMembers.filter(m => (statsObj[m].totalScore || 0) > 0);
+
+    if (members.length === 0) {
+      return showRecordsToast('공유할 참여 내역 데이터가 없습니다.', '⚠️');
+    }
+
+    const sDate = document.getElementById('filterStartDate').value || '';
+    const eDate = document.getElementById('filterEndDate').value || '';
+    const gName = liveSettings.guildName || "길드";
+
+    members.sort((a, b) => statsObj[b].totalScore - statsObj[a].totalScore);
+
+    const totalRaidsCount = rawStatsData.records.length;
+    const totalWarCount = rawStatsData.warRecords.length;
+    let totalScoreSum = 0;
+    members.forEach(m => { totalScoreSum += (statsObj[m].totalScore || 0); });
+
+    const top5 = members.slice(0, 5);
+
+    function formatCleanDate(dStr) {
+      if (!dStr) return '';
+      try {
+        const parts = dStr.split('-');
+        if (parts.length === 3) return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
+      } catch (e) {}
+      return dStr;
+    }
+
+    const sClean = sDate ? formatCleanDate(sDate) : '시작';
+    const eClean = eDate ? formatCleanDate(eDate) : '현재';
+    const periodLabel = `${sClean} ~ ${eClean}`;
+
+    const rankListHtml = top5.map((name, i) => {
+      const d = statsObj[name];
+      const rankNum = i + 1;
+      const rankClass = rankNum === 1 ? 'rec-rank-1' : (rankNum === 2 ? 'rec-rank-2' : (rankNum === 3 ? 'rec-rank-3' : 'rec-rank-other'));
+      return `
+        <div class="rec-rank-row">
+          <div style="display: flex; align-items: center; min-width: 0;">
+            <span class="rec-rank-badge ${rankClass}">${rankNum}</span>
+            <span style="font-weight: 700; color: var(--kakao-notice-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">${escapeHtml(name)}</span>
+          </div>
+          <span style="font-weight: 800; color: #d97706; flex-shrink: 0;">${d.totalScore}점 <small style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">(${d.bossCount}회)</small></span>
+        </div>
+      `;
+    }).join('');
+
+    const reportCardHtml = `
+      <div class="records-report-card">
+        <div class="rec-card-header">
+          <div class="rec-card-title">
+            <i class="fa-solid fa-scroll text-warning"></i>
+            <span>[${escapeHtml(gName)}] 보스&전쟁 통계</span>
+          </div>
+          <span class="rec-date-badge">
+            <i class="fa-regular fa-clock me-1"></i>${periodLabel}
+          </span>
+        </div>
+
+        <div class="rec-hero-box">
+          <div>
+            <div class="rec-hero-label">
+              <i class="fa-solid fa-trophy text-warning me-1"></i>종합 참여 1위 MVP
+            </div>
+            <div class="rec-hero-val">
+              🥇 ${escapeHtml(top5[0] || '없음')} <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">(${statsObj[top5[0]]?.totalScore || 0}점)</span>
+            </div>
+          </div>
+          <div style="font-size: 1.55rem; line-height: 1;">👑</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">
+          <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 5px 8px; color: #0284c7;">
+            <div style="font-size: 10px; font-weight: 600;">총 토벌 횟수</div>
+            <div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">⚔️ ${totalRaidsCount}회 <small style="font-size: 10px; opacity: 0.8;">(전쟁 ${totalWarCount}회)</small></div>
+          </div>
+          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 5px 8px; color: #d97706;">
+            <div style="font-size: 10px; font-weight: 600;">참여 인원 / 총점</div>
+            <div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">👥 ${members.length}명 / ${totalScoreSum}점</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 6px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <span><i class="fa-solid fa-ranking-star me-1 text-primary"></i>TOP 5 랭킹</span>
+            <span style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">총 ${members.length}명 참여</span>
+          </div>
+          ${rankListHtml}
+        </div>
+      </div>
+    `;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 공유 중`;
+    }
+
+    try {
+      await apiRequest("guild_chats", "POST", [{
+        sender_name: "통계알리미",
+        message: reportCardHtml,
+        msg_type: "records_report",
+        mentions: []
+      }]);
+
+      showRecordsToast("보스&전쟁 통계가 대화방에 공유되었습니다!", "📜");
+    } catch (err) {
+      showRecordsToast("공유 실패: " + err.message, "❌");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i><span>대화방 공유</span>`;
+      }
+    }
+  };
+
+  function escapeHtml(t) {
+    return (t || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+  }
+</script>
