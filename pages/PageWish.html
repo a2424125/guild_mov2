@@ -4,49 +4,47 @@
      ========================================== -->
 <style>
   .wish-card {
-    background: rgba(18, 26, 45, 0.95);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 20px;
+    background: var(--card-bg, #1e293b);
+    border: 1px solid var(--drawer-card-border, #334155);
+    border-radius: 16px;
     padding: 16px;
-    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   }
 
   .wish-section-box {
-    background: #0d1527;
-    border: 1px solid #1e2c47;
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 14px;
+    background: var(--drawer-bg, #0f172a);
+    border: 1px solid var(--drawer-card-border, #1e293b);
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
   }
 
   .input-custom-wish {
-    background-color: #080d1a !important;
-    border: 1px solid #233554 !important;
-    color: #ffffff !important;
-    border-radius: 10px !important;
-    padding: 9px 12px !important;
-    font-size: 0.85rem !important;
-    color-scheme: dark;
+    background-color: var(--input-bg, #111827) !important;
+    border: 1px solid var(--input-border, #374151) !important;
+    color: var(--input-text, #ffffff) !important;
+    border-radius: 8px !important;
+    padding: 8px 10px !important;
+    font-size: 0.82rem !important;
     transition: all 0.15s ease;
   }
   .input-custom-wish:focus, .input-custom-wish:hover {
     border-color: #38bdf8 !important;
     outline: none !important;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25) !important;
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.25) !important;
   }
   .input-custom-wish::placeholder {
-    color: #475569 !important;
+    color: #64748b !important;
     opacity: 1 !important;
   }
 
   .tax-toggle-btn {
-    background: #111a2e;
-    border: 1px solid #233554;
-    color: #94a3b8;
-    font-size: 0.75rem;
+    background: var(--input-bg, #111827);
+    border: 1px solid var(--input-border, #374151);
+    color: var(--kakao-time-gray, #94a3b8);
+    font-size: 0.74rem;
     font-weight: 700;
-    padding: 7px 10px;
+    padding: 6px 10px;
     border-radius: 8px;
     transition: all 0.15s;
     cursor: pointer;
@@ -59,19 +57,19 @@
   }
 
   .stock-item-card {
-    background: #10192d;
-    border: 1px solid #1f2e4d;
-    border-radius: 12px;
-    padding: 11px 14px;
+    background: var(--input-bg, #111827);
+    border: 1px solid var(--input-border, #1f2937);
+    border-radius: 10px;
+    padding: 10px 12px;
     margin-bottom: 8px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
-  .stock-item-card:hover { border-color: #38bdf8; background: #14223d; }
+  .stock-item-card:hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
   .stock-item-card.selected {
     border-color: #38bdf8;
     background: rgba(56, 189, 248, 0.12);
-    box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
   }
 
   .btn-wish-submit {
@@ -79,23 +77,20 @@
     border: none;
     color: #fff;
     font-weight: 700;
-    font-size: 0.92rem;
-    padding: 12px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.35);
+    font-size: 0.9rem;
+    padding: 11px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     cursor: pointer;
     transition: all 0.15s;
   }
-  .btn-wish-submit:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-  }
+  .btn-wish-submit:hover { opacity: 0.95; transform: translateY(-1px); }
 
   .dist-history-row {
-    background: #090e1c;
-    border: 1px solid #1b263b;
-    border-radius: 10px;
-    padding: 10px 12px;
+    background: var(--input-bg, #111827);
+    border: 1px solid var(--input-border, #1f2937);
+    border-radius: 8px;
+    padding: 9px 11px;
     margin-bottom: 6px;
     display: flex;
     justify-content: space-between;
@@ -104,201 +99,189 @@
     cursor: pointer;
     transition: all 0.15s ease;
   }
-  .dist-history-row:hover {
-    border-color: #38bdf8;
-    background: #12213d;
-  }
-  .dist-history-left { min-width: 0; flex: 1; }
-  .dist-history-right { display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; }
+  .dist-history-row:hover { border-color: #38bdf8; background: rgba(56, 189, 248, 0.05); }
 
   .custom-wish-toast {
     position: fixed;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    background: #0d1830;
-    border: 1.5px solid #38bdf8;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
-    color: #ffffff;
-    padding: 12px 22px;
-    border-radius: 30px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 99999999;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.25s;
-    white-space: nowrap;
+    top: 24px; left: 50%; transform: translateX(-50%) translateY(-20px);
+    background: var(--card-bg, #1e293b); border: 1.5px solid #38bdf8;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); color: var(--kakao-notice-text, #ffffff);
+    padding: 10px 20px; border-radius: 30px; font-size: 0.85rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px; z-index: 99999999;
+    opacity: 0; pointer-events: none; transition: all 0.25s; white-space: nowrap;
   }
   .custom-wish-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   .wish-modal-backdrop {
-    position: fixed;
-    top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(6, 10, 20, 0.85);
-    backdrop-filter: blur(8px);
-    z-index: 9999999;
-    display: flex; align-items: center; justify-content: center;
-    padding: 14px;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px);
+    z-index: 9999999; display: flex; align-items: center; justify-content: center; padding: 14px;
   }
   .wish-modal-box {
-    background: #0d1527;
-    border: 1.5px solid #38bdf8;
-    border-radius: 20px;
-    width: 100%; max-width: 380px;
-    max-height: 85vh;
-    overflow-y: auto;
-    padding: 20px 16px;
-    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.9);
-    text-align: center;
+    background: var(--card-bg, #1e293b); border: 1.5px solid #38bdf8;
+    border-radius: 16px; width: 100%; max-width: 360px; max-height: 85vh;
+    overflow-y: auto; padding: 18px 14px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); text-align: center;
   }
 
   .detail-members-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-    max-height: 190px;
-    overflow-y: auto;
-    background: #080d1a;
-    padding: 8px 6px;
-    border-radius: 10px;
-    border: 1px solid #1e2c47;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+    max-height: 180px; overflow-y: auto; background: var(--input-bg, #111827);
+    padding: 8px 6px; border-radius: 8px; border: 1px solid var(--input-border, #374151);
   }
   .detail-member-chip {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #111a2e;
-    border: 1px solid #1f2e4d;
-    color: #e2e8f0;
-    font-size: 0.73rem;
-    font-weight: 600;
-    padding: 6px 4px;
-    border-radius: 7px;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--card-bg, #1e293b); border: 1px solid var(--input-border, #374151);
+    color: var(--kakao-notice-text, #ffffff); font-size: 0.72rem; font-weight: 600;
+    padding: 5px 3px; border-radius: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+
+  /* 탭 네비게이션 스타일 */
+  .wish-tab-header {
+    display: flex; gap: 6px; margin-bottom: 14px; background: var(--input-bg, #111827);
+    padding: 4px; border-radius: 10px; border: 1px solid var(--input-border, #374151);
+  }
+  .wish-tab-btn {
+    flex: 1; background: transparent; border: none; color: var(--kakao-time-gray, #94a3b8);
+    font-size: 0.8rem; font-weight: 700; padding: 8px; border-radius: 8px;
+    transition: all 0.15s; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .wish-tab-btn.active {
+    background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    color: #ffffff; box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  }
+  .wish-tab-content { display: none; }
+  .wish-tab-content.active { display: block; }
 </style>
 
 <div class="wish-card mb-4">
   <div class="d-flex align-items-center gap-2 mb-3">
-    <span style="font-size: 1.3rem;">🎁</span>
+    <span style="font-size: 1.2rem;">🎁</span>
     <h6 class="fw-bold mb-0 text-white">아이템 분배 및 N/1 정산</h6>
   </div>
 
-  <!-- 1. 보유 대기 아이템 -->
-  <div class="wish-section-box">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <span class="small fw-bold text-secondary">📦 분배 대기 아이템 (터치하여 선택)</span>
-      <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size: 0.72rem;" onclick="loadStockItems()">
-        <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
-      </button>
-    </div>
-    <div id="stockItemContainer" style="max-height: 200px; overflow-y: auto;">
-      <div class="text-secondary small text-center py-3">보유 아이템을 불러오는 중...</div>
-    </div>
-  </div>
-
-  <!-- 2. 낙찰 및 지원금 설정 -->
-  <div class="wish-section-box">
-    <div class="small fw-bold text-white mb-2"><i class="fa-solid fa-gavel me-1 text-info"></i> 낙찰 등록 & N/1 분배</div>
-
-    <div class="p-2 mb-3 rounded" style="background: #080d1a; border: 1px solid #1e2c47;" id="selectedSummaryBox">
-      <div class="text-secondary small">선택된 아이템이 없습니다. 위 목록에서 선택하세요.</div>
-    </div>
-
-    <!-- 게임 경매 수수료 토글 -->
-    <div class="mb-3 p-2 rounded" style="background: #080d1a; border: 1px solid #1e2c47;">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <label class="form-label small text-secondary mb-0">⚖️ 게임 시스템 경매 수수료 (5%)</label>
-        <span class="text-info small" style="font-size: 0.72rem;" id="taxStatusText">세율 5% 자동 차감 적용</span>
-      </div>
-      <div class="d-flex gap-2">
-        <button type="button" class="tax-toggle-btn active flex-fill" id="btnTaxDeduct" onclick="setAuctionTaxMode(true)">
-          <i class="fa-solid fa-percent me-1"></i>세율 5% 차감 (기본)
-        </button>
-        <button type="button" class="tax-toggle-btn flex-fill" id="btnTaxNone" onclick="setAuctionTaxMode(false)">
-          <i class="fa-solid fa-ban me-1"></i>세율 미적용 (0%)
-        </button>
-      </div>
-    </div>
-
-    <!-- 가져간 길드원 & 낙찰 금액 -->
-    <div class="row g-2 mb-3">
-      <div class="col-6">
-        <label class="form-label small text-secondary mb-1">가져간 길드원</label>
-        <select id="wishMemberSelect" class="form-select input-custom-wish">
-          <option value="">길드원 선택...</option>
-        </select>
-      </div>
-      <div class="col-6">
-        <label class="form-label small text-secondary mb-1">낙찰 금액 (다이아)</label>
-        <input type="number" id="wishPrice" class="form-control input-custom-wish" placeholder="예: 7000" onkeyup="calculateNShare()">
-      </div>
-    </div>
-
-    <!-- 길드비용 적립 비율 & 추가 지원금 -->
-    <div class="row g-2 mb-3">
-      <div class="col-6">
-        <label class="form-label small text-secondary mb-1">🏛️ 길드비용 적립 비율</label>
-        <select id="guildFeeSelect" class="form-select input-custom-wish" onchange="calculateNShare()">
-          <option value="0" selected>0% (전액 분배)</option>
-          <option value="5">5% 적립</option>
-          <option value="10">10% 적립</option>
-          <option value="15">15% 적립</option>
-          <option value="20">20% 적립</option>
-        </select>
-      </div>
-      <div class="col-6">
-        <label class="form-label small text-secondary mb-1">➕ 추가 지원금</label>
-        <input type="number" id="wishExtraFund" class="form-control input-custom-wish" placeholder="0 (다이아 입력)" onkeyup="calculateNShare()">
-      </div>
-    </div>
-
-    <!-- 정산 금액 미리보기 인포박스 -->
-    <div id="shareCalcNotice" class="p-3 rounded mb-3" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); display: none;">
-      <div class="small text-secondary d-flex justify-content-between">
-        <span>게임 경매 수수료 (5%):</span>
-        <strong id="gameTaxText" class="text-danger" style="white-space: nowrap;">-0 다이아</strong>
-      </div>
-      <div class="small text-secondary d-flex justify-content-between mt-1">
-        <span>길드 금고 실입금액 (세후):</span>
-        <strong id="vaultNetIncomeText" class="text-white" style="white-space: nowrap;">0 다이아</strong>
-      </div>
-      <div class="small text-secondary d-flex justify-content-between mt-1">
-        <span>길드 금고 순적립액:</span>
-        <strong id="guildFeeText" class="text-warning" style="white-space: nowrap;">0 다이아</strong>
-      </div>
-      <div class="small text-secondary d-flex justify-content-between mt-1">
-        <span>추가 지원금:</span>
-        <strong id="guildExtraText" class="text-success" style="white-space: nowrap;">+0 다이아</strong>
-      </div>
-      <div class="small text-secondary d-flex justify-content-between mt-2 pt-2 border-top border-secondary border-opacity-25 align-items-center">
-        <span class="text-white fw-bold">참여자 1인당 최종 배당금:</span>
-        <strong id="perShareText" class="text-info fs-6 fw-bold" style="white-space: nowrap;">0 다이아</strong>
-      </div>
-    </div>
-
-    <button type="button" class="btn btn-wish-submit w-100" id="btnDistSubmitAction" onclick="executeWishDistributionProcess()">
-      <i class="fa-solid fa-check me-1"></i> 낙찰 완료 및 정산/금고 반영
+  <!-- 상단 탭 메뉴 (미정산 / 분배 완료 이력) -->
+  <div class="wish-tab-header">
+    <button type="button" class="wish-tab-btn active" id="tabBtnUnsettled" onclick="switchWishTab('unsettled')">
+      <i class="fa-solid fa-gift"></i> 미정산 분배 등록 <span class="badge bg-danger rounded-pill" id="unsettledBadgeCount">0</span>
+    </button>
+    <button type="button" class="wish-tab-btn" id="tabBtnHistory" onclick="switchWishTab('history')">
+      <i class="fa-solid fa-scroll"></i> 분배 완료 이력
     </button>
   </div>
 
-  <!-- 3. 최근 분배 이력 -->
-  <div class="wish-section-box mb-0">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <span class="small fw-bold text-secondary">📜 최근 분배 이력 <small class="text-info fw-normal">(터치 시 수령 명단 확인)</small></span>
-      <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size: 0.72rem; white-space: nowrap;" onclick="loadDistHistory()">
-        <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
+  <!-- 탭 1: 미정산 분배 등록 컨테이너 -->
+  <div id="tabContentUnsettled" class="wish-tab-content active">
+    <!-- 1. 보유 대기 아이템 -->
+    <div class="wish-section-box">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="small fw-bold text-secondary">📦 분배 대기 아이템 (터치하여 선택)</span>
+        <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size: 0.72rem;" onclick="loadStockItems()">
+          <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
+        </button>
+      </div>
+      <div id="stockItemContainer" style="max-height: 190px; overflow-y: auto;">
+        <div class="text-secondary small text-center py-3">보유 아이템을 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- 2. 낙찰 및 지원금 설정 -->
+    <div class="wish-section-box mb-0">
+      <div class="small fw-bold text-white mb-2"><i class="fa-solid fa-gavel me-1 text-info"></i> 낙찰 등록 & N/1 분배</div>
+
+      <div class="p-2 mb-3 rounded" style="background: var(--input-bg, #111827); border: 1px solid var(--input-border, #374151);" id="selectedSummaryBox">
+        <div class="text-secondary small">선택된 아이템이 없습니다. 위 목록에서 선택하세요.</div>
+      </div>
+
+      <!-- 게임 경매 수수료 토글 -->
+      <div class="mb-3 p-2 rounded" style="background: var(--input-bg, #111827); border: 1px solid var(--input-border, #374151);">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <label class="form-label small text-secondary mb-0">⚖️ 게임 시스템 경매 수수료 (5%)</label>
+          <span class="text-info small" style="font-size: 0.72rem;" id="taxStatusText">세율 5% 자동 차감 적용</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button type="button" class="tax-toggle-btn active flex-fill" id="btnTaxDeduct" onclick="setAuctionTaxMode(true)">
+            <i class="fa-solid fa-percent me-1"></i>세율 5% 차감 (기본)
+          </button>
+          <button type="button" class="tax-toggle-btn flex-fill" id="btnTaxNone" onclick="setAuctionTaxMode(false)">
+            <i class="fa-solid fa-ban me-1"></i>세율 미적용 (0%)
+          </button>
+        </div>
+      </div>
+
+      <!-- 가져간 길드원 & 낙찰 금액 -->
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <label class="form-label small text-secondary mb-1">가져간 길드원</label>
+          <select id="wishMemberSelect" class="form-select input-custom-wish">
+            <option value="">길드원 선택...</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-secondary mb-1">낙찰 금액 (다이아)</label>
+          <input type="number" id="wishPrice" class="form-control input-custom-wish" placeholder="예: 7000" onkeyup="calculateNShare()">
+        </div>
+      </div>
+
+      <!-- 길드비용 적립 비율 & 추가 지원금 -->
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <label class="form-label small text-secondary mb-1">🏛️ 길드비용 적립 비율</label>
+          <select id="guildFeeSelect" class="form-select input-custom-wish" onchange="calculateNShare()">
+            <option value="0" selected>0% (전액 분배)</option>
+            <option value="5">5% 적립</option>
+            <option value="10">10% 적립</option>
+            <option value="15">15% 적립</option>
+            <option value="20">20% 적립</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-secondary mb-1">➕ 추가 지원금</label>
+          <input type="number" id="wishExtraFund" class="form-control input-custom-wish" placeholder="0" onkeyup="calculateNShare()">
+        </div>
+      </div>
+
+      <!-- 정산 금액 미리보기 인포박스 -->
+      <div id="shareCalcNotice" class="p-3 rounded mb-3" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); display: none;">
+        <div class="small text-secondary d-flex justify-content-between">
+          <span>게임 경매 수수료 (5%):</span>
+          <strong id="gameTaxText" class="text-danger" style="white-space: nowrap;">-0 다이아</strong>
+        </div>
+        <div class="small text-secondary d-flex justify-content-between mt-1">
+          <span>길드 금고 실입금액 (세후):</span>
+          <strong id="vaultNetIncomeText" class="text-white" style="white-space: nowrap;">0 다이아</strong>
+        </div>
+        <div class="small text-secondary d-flex justify-content-between mt-1">
+          <span>길드 금고 순적립액:</span>
+          <strong id="guildFeeText" class="text-warning" style="white-space: nowrap;">0 다이아</strong>
+        </div>
+        <div class="small text-secondary d-flex justify-content-between mt-1">
+          <span>추가 지원금:</span>
+          <strong id="guildExtraText" class="text-success" style="white-space: nowrap;">+0 다이아</strong>
+        </div>
+        <div class="small text-secondary d-flex justify-content-between mt-2 pt-2 border-top border-secondary border-opacity-25 align-items-center">
+          <span class="text-white fw-bold">참여자 1인당 최종 배당금:</span>
+          <strong id="perShareText" class="text-info fs-6 fw-bold" style="white-space: nowrap;">0 다이아</strong>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-wish-submit w-100" id="btnDistSubmitAction" onclick="executeWishDistributionProcess()">
+        <i class="fa-solid fa-check me-1"></i> 낙찰 완료 및 정산/금고 반영
       </button>
     </div>
-    <div id="distHistoryList" style="max-height: 220px; overflow-y: auto;">
-      <div class="text-secondary small text-center py-2">기록을 불러오는 중...</div>
+  </div>
+
+  <!-- 탭 2: 분배 완료 이력 컨테이너 -->
+  <div id="tabContentHistory" class="wish-tab-content">
+    <div class="wish-section-box mb-0">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="small fw-bold text-secondary">📜 분배 완료 이력 <small class="text-info fw-normal">(항목 터치 시 수령 명단 확인)</small></span>
+        <button type="button" class="btn btn-outline-secondary btn-xs py-0 px-2" style="font-size: 0.72rem;" onclick="loadDistHistory()">
+          <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
+        </button>
+      </div>
+      <div id="distHistoryList" style="max-height: 380px; overflow-y: auto;">
+        <div class="text-secondary small text-center py-3">기록을 불러오는 중...</div>
+      </div>
     </div>
   </div>
 </div>
@@ -319,7 +302,7 @@
       <button type="button" class="btn-close btn-close-white" style="font-size: 0.8rem; flex-shrink: 0;" onclick="window.closeWishDetailModal()"></button>
     </div>
 
-    <div class="p-2 mb-3 rounded text-start" style="background:#080d1a; border:1px solid #1e2c47; font-size:0.78rem; line-height: 1.65;">
+    <div class="p-2 mb-3 rounded text-start" style="background: var(--input-bg, #111827); border: 1px solid var(--input-border, #374151); font-size: 0.78rem; line-height: 1.65;">
       <div class="d-flex justify-content-between align-items-center">
         <span class="text-secondary">낙찰자:</span>
         <strong class="text-info" style="white-space: nowrap;" id="detailWinnerName">-</strong>
@@ -342,8 +325,7 @@
       <span class="fw-bold text-white small"><i class="fa-solid fa-users me-1 text-info"></i> N/1 배당 수령 명단</span>
       <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; white-space: nowrap;" id="detailMembersCount">0명</span>
     </div>
-    <div id="detailMembersGrid" class="detail-members-grid mb-3">
-    </div>
+    <div id="detailMembersGrid" class="detail-members-grid mb-3"></div>
 
     <button type="button" class="btn btn-outline-secondary w-100 py-2 small fw-bold" onclick="window.closeWishDetailModal()">
       닫기
@@ -354,13 +336,12 @@
 <!-- 낙찰 완료 결과 모달 -->
 <div id="wishSuccessModal" class="wish-modal-backdrop" style="display: none;">
   <div class="wish-modal-box">
-    <div style="width: 58px; height: 58px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); border: 2px solid #38bdf8; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 14px;">
+    <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); border: 2px solid #38bdf8; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 12px;">
       🎉
     </div>
-    <h6 class="fw-bold text-white mb-2" style="font-size: 1.05rem;">낙찰 및 N/1 분배 완료</h6>
-    <div class="text-secondary small mb-4 text-start p-2 rounded" id="wishSuccessDetails" style="background:#080d1a; border:1px solid #1e2c47; font-size:0.78rem; line-height:1.6;">
-    </div>
-    <button type="button" class="btn w-100 fw-bold py-2" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #fff; border: none; font-size: 0.9rem; border-radius: 10px;" onclick="closeWishSuccessModal()">
+    <h6 class="fw-bold text-white mb-2" style="font-size: 1rem;">낙찰 및 N/1 분배 완료</h6>
+    <div class="text-secondary small mb-3 text-start p-2 rounded" id="wishSuccessDetails" style="background: var(--input-bg, #111827); border: 1px solid var(--input-border, #374151); font-size: 0.76rem; line-height: 1.6;"></div>
+    <button type="button" class="btn w-100 fw-bold py-2" style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); color: #fff; border: none; font-size: 0.88rem; border-radius: 8px;" onclick="closeWishSuccessModal()">
       확인
     </button>
   </div>
@@ -377,6 +358,26 @@
     if (window.wishToastTimer) {
       clearTimeout(window.wishToastTimer);
       window.wishToastTimer = null;
+    }
+  };
+
+  window.switchWishTab = function(tabName) {
+    const btnUnsettled = document.getElementById('tabBtnUnsettled');
+    const btnHistory = document.getElementById('tabBtnHistory');
+    const contentUnsettled = document.getElementById('tabContentUnsettled');
+    const contentHistory = document.getElementById('tabContentHistory');
+
+    if (tabName === 'unsettled') {
+      btnUnsettled.classList.add('active');
+      btnHistory.classList.remove('active');
+      contentUnsettled.classList.add('active');
+      contentHistory.classList.remove('active');
+    } else {
+      btnUnsettled.classList.remove('active');
+      btnHistory.classList.add('active');
+      contentUnsettled.classList.remove('active');
+      contentHistory.classList.add('active');
+      window.loadDistHistory();
     }
   };
 
@@ -464,6 +465,7 @@
 
   window.loadStockItems = async function() {
     const container = document.getElementById('stockItemContainer');
+    const badge = document.getElementById('unsettledBadgeCount');
     if (!container) return;
     container.innerHTML = '<div class="text-secondary small text-center py-3"><i class="fa-solid fa-spinner fa-spin me-1"></i>보유 아이템 불러오는 중...</div>';
 
@@ -503,9 +505,11 @@
         });
       });
 
+      if (badge) badge.innerText = window.availableItemsData.length;
       window.renderStockItems(window.availableItemsData);
     } catch (err) {
       container.innerHTML = `<div class="text-danger small text-center py-2">조회 실패: ${err.message}</div>`;
+      if (badge) badge.innerText = "0";
     }
   };
 
@@ -541,7 +545,7 @@
           <strong class="text-white text-truncate">${window.currentSelectedItem.itemName}</strong>
           <span class="text-info small" style="white-space: nowrap; flex-shrink: 0;">[${window.currentSelectedItem.bossName}]</span>
         </div>
-        <div class="text-secondary small mt-1" style="font-size: 0.75rem; word-break: keep-all; line-height: 1.4;">
+        <div class="text-secondary small mt-1" style="font-size: 0.74rem; word-break: keep-all; line-height: 1.4;">
           <strong>N/1 대상자(${window.currentSelectedItem.memberCount}명):</strong> ${window.currentSelectedItem.members.join(', ')}
         </div>
       `;
@@ -653,7 +657,7 @@
         throw new Error(res?.error || "트랜잭션 실행 중 오류가 발생했습니다.");
       }
 
-      // 🚀 [핵심 수정] 대화방 공유 시 HTML 태그 원문이 노출되지 않도록 안전한 카드 객체 전송
+      // 대화방 공유 페이로드 객체 전송
       const chatReportPayload = {
         boss_name: window.currentSelectedItem.bossName,
         item_name: window.currentSelectedItem.itemName,
@@ -721,11 +725,11 @@
       window.currentDistHistoryCache = filteredList;
 
       if (!filteredList || filteredList.length === 0) {
-        container.innerHTML = '<div class="text-secondary small text-center py-2">최근 분배 완료된 아이템 이력이 없습니다.</div>';
+        container.innerHTML = '<div class="text-secondary small text-center py-3">분배 완료된 이력이 없습니다.</div>';
         return;
       }
 
-      container.innerHTML = filteredList.slice(0, 30).map((item, idx) => {
+      container.innerHTML = filteredList.map((item, idx) => {
         const winner = item.winner_name || item.member_name || '-';
         
         let membersCount = 0;
@@ -738,16 +742,16 @@
 
         return `
           <div class="dist-history-row" onclick="window.openWishDetailModal(${idx})" title="클릭하여 수령자 명단 확인">
-            <div class="dist-history-left">
+            <div style="min-width: 0; flex: 1;">
               <div class="fw-bold text-white small text-truncate">📦 ${item.item_name}</div>
               <div class="text-secondary text-truncate" style="font-size: 0.72rem;">
                 [${item.boss_name}] ${membersCount > 0 ? membersCount + '명 수령 • ' : ''}1인당 ${Number(item.per_share || 0).toLocaleString()} 다이아
               </div>
             </div>
-            <div class="dist-history-right">
-              <span class="fw-bold text-info" style="font-size: 0.84rem;">${winner}</span>
-              <span class="badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; font-size: 0.72rem;">
-                ${Number(item.price || 0).toLocaleString()} 다이아
+            <div style="display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
+              <span class="fw-bold text-info" style="font-size: 0.82rem;">${winner}</span>
+              <span class="badge" style="background: rgba(251, 191, 36, 0.15); color: #fbbf24; font-size: 0.7rem;">
+                ${Number(item.price || 0).toLocaleString()} D
               </span>
             </div>
           </div>
