@@ -711,6 +711,26 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
       </div>
     `;
   }
+  /* 📊 [통계알리미 카드 렌더링 분기 추가] */
+  else if (msg.msg_type === "records_report" || (msg.sender_name === "통계알리미" && cleanMessageText.includes("records-report-card"))) {
+    const isWrapped = cleanMessageText.includes("records-report-card");
+    const cardContent = isWrapped ? cleanMessageText : `<div class="records-report-card">${cleanMessageText}</div>`;
+    html = `
+      <div class="chat-item-row other" id="${msgKey}">
+        <div class="chat-sender-avatar bot" style="background: rgba(14, 165, 233, 0.2) !important; border-color: #0284c7 !important; color: #0284c7 !important;">📊</div>
+        <div class="chat-msg-body raid-msg-body">
+          <div class="chat-sender-name">통계알리미</div>
+          <div class="chat-bubble-flex">
+            ${cardContent}
+            <div class="chat-meta-box">
+              <span class="chat-unread-count">${unreadCount}</span>
+              <span class="chat-timestamp">${timeStr}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
   else if (msg.msg_type === "wish_report") {
     let wishData = null;
     try {
@@ -939,8 +959,8 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
                          id="timer_raid_${raidId}" 
                          data-raid-id="${raidId}" 
                          data-created-at="${createdAtIso}">
-                      <i class="fa-regular fa-clock me-1"></i>
-                      <span class="time-text">${initialTimerText}</span>
+                          <i class="fa-regular fa-clock me-1"></i>
+                          <span class="time-text">${initialTimerText}</span>
                     </div>
                   </div>
                 </div>
@@ -1192,7 +1212,7 @@ window.triggerQuickCutAction = async function(bossName, btnId) {
       next_spawn_time: nextSpawn.toISOString()
     });
 
-    const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
+        const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
 
     await apiRequest("guild_chats", "POST", [{
       sender_name: "보스알리미",
