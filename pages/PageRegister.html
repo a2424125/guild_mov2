@@ -934,9 +934,10 @@
     });
   }
 
+  // 🔄 폼 전역 변수 초기화 (기존 잔여 선택값 완전 백지화)
   window.regCachedMembers = window.regCachedMembers || [];
   window.regCachedBosses = window.regCachedBosses || [];
-  window.regSelectedMemberSet = window.regSelectedMemberSet || new Set();
+  window.regSelectedMemberSet = new Set(); // 이전 선택 인원 즉시 초기화
   window.regCurrentWarType = '일반';
   window.regExtraScore = 0;
   window.regCurrentOcrBase64 = null;
@@ -946,9 +947,58 @@
   window.regScoreWarInter = 2;
   window.regMemberSearchQuery = '';
 
-  // 1. 초기화 함수
-  (async function initPageRegister() {
+  // 🧹 [핵심] 보스참여등록 입력창 및 선택 상태 완전 초기화 함수
+  function resetRegisterForm() {
+    // 1. 선택 길드원 및 검색어 초기화
+    if (window.regSelectedMemberSet) {
+      window.regSelectedMemberSet.clear();
+    } else {
+      window.regSelectedMemberSet = new Set();
+    }
+    window.regMemberSearchQuery = '';
+    const searchInput = document.getElementById("regMemberSearchInput");
+    if (searchInput) searchInput.value = '';
+    const searchClear = document.getElementById("memberSearchClearBtn");
+    if (searchClear) searchClear.style.display = 'none';
+
+    // 2. 보스 선택 초기화
+    const bossSelect = document.getElementById("regBossSelect");
+    if (bossSelect) bossSelect.value = '';
+
+    // 3. 토벌 일시 현재 KST로 재설정
     setDefaultKstDateTime();
+
+    // 4. 전쟁 구분 및 추가점수 초기화
+    window.regCurrentWarType = '일반';
+    window.regExtraScore = 0;
+    const extraSelect = document.getElementById("regExtraScoreSelect");
+    if (extraSelect) extraSelect.value = '0';
+    selectWarType('일반');
+
+    // 5. 획득 드랍 아이템 입력창 비우기
+    const dropInput = document.getElementById("regDropItemsInput");
+    if (dropInput) dropInput.value = '';
+
+    // 6. 스크린샷 AI 인식 영역 초기화
+    window.regCurrentOcrBase64 = null;
+    const regCard = document.getElementById("ocrRegisteredCard");
+    const dropArea = document.getElementById("ocrDropArea");
+    const thumb = document.getElementById("ocrThumbImg");
+    const fileInput = document.getElementById("ocrFileInput");
+    if (regCard) regCard.style.display = "none";
+    if (dropArea) dropArea.style.display = "flex";
+    if (thumb) thumb.src = "";
+    if (fileInput) fileInput.value = "";
+    showOcrStatus("", "");
+
+    // 7. 길드원 선택 그리드 및 보스 칩 리렌더링
+    renderMemberSelectionGrid();
+    renderQuickBossChips();
+  }
+
+  // 1. 초기화 함수 (화면 진입 시 무조건 클린 리셋 실행)
+  (async function initPageRegister() {
+    resetRegisterForm();
     await loadSettingsAndPointRules();
     await loadRegisterBosses();
     await loadRegisterMembers();
@@ -1229,6 +1279,7 @@
 
   function selectAllMembers(isSelectAll) {
     if (isSelectAll) {
+      // 현재 필터링된 멤버가 있으면 검색된 멤버만 선택, 없으면 전체 선택
       const q = (window.regMemberSearchQuery || '').trim().toLowerCase();
       const targetList = q
         ? window.regCachedMembers.filter(m => (m.name || '').toLowerCase().includes(q))
@@ -1273,9 +1324,11 @@
         return showKakaoToast("최근 토벌에 등록된 참여자가 없습니다.", "⚠️");
       }
 
+      // 기존 선택 지우고 직전 참여자 명단으로 대체
       window.regSelectedMemberSet.clear();
       members.forEach(m => window.regSelectedMemberSet.add(m));
 
+      // 보스도 직전 보스로 자동 세팅
       if (lastRaid.boss_name) {
         const select = document.getElementById("regBossSelect");
         if (select) {
@@ -1361,10 +1414,12 @@
       });
     }
 
+    // 🧹 모듈 화면을 닫거나 나갈 때(뒤로가기 등) 호출되는 클린업 훅
     window.__currentModuleCleanup = function() {
       if (window.__pasteHandler) {
         window.removeEventListener("paste", window.__pasteHandler);
       }
+      resetRegisterForm(); // 화면 나갈 때 깨끗이 리셋!
     };
   }
 
@@ -1632,6 +1687,9 @@
       } else {
         await showRegAlert(`[${selectedBoss}] 토벌이 등록되어 대화방에 공유되었습니다!`, "🎉", "토벌 등록 완료");
       }
+
+      // 🧹 등록 완료 시 폼 데이터 깨끗이 리셋 후 대화방으로 복귀
+      resetRegisterForm();
 
       if (typeof closeModuleOverlay === "function") {
         closeModuleOverlay();
