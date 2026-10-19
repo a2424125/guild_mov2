@@ -305,15 +305,15 @@
      ======================================================== */
   .war-badge-group {
     display: inline-flex;
-    gap: 4px;
+    gap: 3px;
   }
   .war-badge-btn {
-    padding: 4px 8px;
+    padding: 3px 6px;
     border-radius: 6px;
     border: 1px solid var(--reg-section-border);
     background: var(--reg-input-bg);
     color: var(--reg-text-sub);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-align: center;
     cursor: pointer;
@@ -323,7 +323,7 @@
     line-height: 1.2;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
   }
   .war-badge-btn:hover {
     border-color: #94a3b8;
@@ -359,17 +359,19 @@
     color: #ff6b6b;
   }
 
-  /* ⭐ 추가점수 선택 드롭다운 */
+  /* ⭐ 추가점수 선택 드롭다운 (화살표 겹침 방지 여백 & 크기 최적화) */
   .reg-extra-select {
     background-color: var(--reg-input-bg) !important;
     border: 1px solid var(--reg-input-border) !important;
     color: var(--reg-input-text) !important;
     border-radius: 6px !important;
-    padding: 3px 6px !important;
+    padding: 2px 22px 2px 7px !important;
+    background-position: right 6px center !important;
+    background-size: 11px 9px !important;
     font-size: 0.72rem !important;
     font-weight: 700 !important;
-    height: 29px !important;
-    width: auto !important;
+    height: 28px !important;
+    min-width: 66px !important;
     cursor: pointer;
     outline: none !important;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -377,13 +379,6 @@
   .reg-extra-select:focus {
     border-color: #0284c7 !important;
     box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
-  }
-
-  /* ➔ 연결 화살표 */
-  .score-arrow-icon {
-    color: var(--reg-text-sub);
-    font-size: 0.75rem;
-    opacity: 0.8;
   }
 
   /* 1인당 최종 배점 안내 고대비 뱃지 (라이트 모드 고대비 골드브라운 완벽 적용) */
@@ -399,6 +394,7 @@
     align-items: center;
     gap: 4px;
     white-space: nowrap;
+    height: 28px;
   }
   .score-val-highlight {
     color: var(--reg-score-text) !important;
@@ -722,51 +718,45 @@
       </div>
     </div>
 
-    <!-- 전쟁 구분 [일반][내전][인터] + ⭐ 추가 점수 + ➔ [🏆 최종 배점] 일체형 컨트롤 -->
+    <!-- 전쟁 구분 [일반][내전][인터] + ⭐ 추가 점수 + [🏆 최종 배점] 일체형 컨트롤 (추가점수 바로 옆에 최종점수 배치) -->
     <div class="d-flex justify-content-between align-items-center mt-1 pt-1 border-top border-secondary border-opacity-10 gap-1 flex-wrap">
-      <div class="d-flex align-items-center gap-2 flex-wrap">
-        <!-- 1) 전쟁 구분 -->
-        <div class="d-flex align-items-center gap-1">
-          <span class="small text-secondary fw-bold" style="font-size: 0.66rem;">전쟁:</span>
-          <div class="war-badge-group">
-            <div class="war-badge-btn normal active" id="badgeWarNormal" onclick="selectWarType('일반')">
-              <span class="war-name">일반</span>
-              <span class="small opacity-75" id="labelWarScoreNormal">(1점)</span>
-            </div>
-            <div class="war-badge-btn internal" id="badgeWarInternal" onclick="selectWarType('내전')">
-              <span class="war-name">내전</span>
-              <span class="small opacity-75" id="labelWarScoreInternal">(+1점)</span>
-            </div>
-            <div class="war-badge-btn inter" id="badgeWarInter" onclick="selectWarType('인터')">
-              <span class="war-name">인터</span>
-              <span class="small opacity-75" id="labelWarScoreInter">(+2점)</span>
-            </div>
+      <!-- 1) 전쟁 구분 버튼 그룹 -->
+      <div class="d-flex align-items-center gap-1">
+        <span class="small text-secondary fw-bold" style="font-size: 0.66rem;">전쟁:</span>
+        <div class="war-badge-group">
+          <div class="war-badge-btn normal active" id="badgeWarNormal" onclick="selectWarType('일반')">
+            <span class="war-name">일반</span>
+            <span class="small opacity-75" id="labelWarScoreNormal">(1점)</span>
           </div>
-        </div>
-
-        <!-- 2) ⭐ 추가점수 (0점 ~ 10점) 드롭다운 -->
-        <div class="d-flex align-items-center gap-1">
-          <label for="regExtraScoreSelect" class="small text-secondary fw-bold" style="font-size: 0.66rem; white-space: nowrap;">⭐ 추가:</label>
-          <select id="regExtraScoreSelect" class="form-select reg-extra-select" onchange="onExtraScoreChange(this.value)">
-            <option value="0">0점</option>
-            <option value="1">+1점</option>
-            <option value="2">+2점</option>
-            <option value="3">+3점</option>
-            <option value="4">+4점</option>
-            <option value="5">+5점</option>
-            <option value="6">+6점</option>
-            <option value="7">+7점</option>
-            <option value="8">+8점</option>
-            <option value="9">+9점</option>
-            <option value="10">+10점</option>
-          </select>
+          <div class="war-badge-btn internal" id="badgeWarInternal" onclick="selectWarType('내전')">
+            <span class="war-name">내전</span>
+            <span class="small opacity-75" id="labelWarScoreInternal">(+1점)</span>
+          </div>
+          <div class="war-badge-btn inter" id="badgeWarInter" onclick="selectWarType('인터')">
+            <span class="war-name">인터</span>
+            <span class="small opacity-75" id="labelWarScoreInter">(+2점)</span>
+          </div>
         </div>
       </div>
 
-      <!-- 3) ➔ 최종 배점 안내 고대비 뱃지 -->
+      <!-- 2) ⭐ 추가점수 + [🏆 최종 배점] 한 묶음 (추가점수 바로 옆에 최종점수 배치) -->
       <div class="d-flex align-items-center gap-1 flex-shrink-0">
-        <i class="fa-solid fa-arrow-right score-arrow-icon d-none d-sm-inline"></i>
-        <div class="score-info-badge" id="regScoreBadge">
+        <label for="regExtraScoreSelect" class="small text-secondary fw-bold" style="font-size: 0.66rem; white-space: nowrap;">⭐ 추가:</label>
+        <select id="regExtraScoreSelect" class="form-select reg-extra-select" onchange="onExtraScoreChange(this.value)">
+          <option value="0">0점</option>
+          <option value="1">+1점</option>
+          <option value="2">+2점</option>
+          <option value="3">+3점</option>
+          <option value="4">+4점</option>
+          <option value="5">+5점</option>
+          <option value="6">+6점</option>
+          <option value="7">+7점</option>
+          <option value="8">+8점</option>
+          <option value="9">+9점</option>
+          <option value="10">+10점</option>
+        </select>
+
+        <div class="score-info-badge ms-1" id="regScoreBadge">
           🏆 최종: <strong class="score-val-highlight" id="regScoreValueText">1점</strong>
         </div>
       </div>
