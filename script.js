@@ -1071,8 +1071,7 @@ function formatMessageWithMentions(text) {
       safeText = safeText.replaceAll(mentionTarget, `<span class="badge bg-light text-primary" style="font-size:0.75rem;">@${name}</span>`);
     }
   });
-  return safeText.replace(/
-/g, '<br>');
+  return safeText.replace(/\n/g, '<br>');
 }
 
 function handleInputState(textarea) {
@@ -1196,7 +1195,7 @@ window.triggerQuickCutAction = async function(bossName, btnId) {
     const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
 
     await apiRequest("guild_chats", "POST", [{
-      sender_name: "보ส알리미",
+      sender_name: "보스알리미",
       message: alertMessage,
       msg_type: "boss_alert",
       mentions: []
