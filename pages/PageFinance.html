@@ -307,7 +307,7 @@
   .finance-logs-scroll-box {
     max-height: 250px;
     overflow-y: auto;
-    padding: 4px 3px 6px 3px !important; /* 상단 여백으로 첫 번째 아이템 호버 시 상단 테두리 100% 노출 */
+    padding: 4px 3px 6px 3px !important;
   }
 
   /* 📜 입출금 내역 타임라인 아이템 */
@@ -322,14 +322,14 @@
     align-items: center;
     cursor: pointer;
     transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-    position: relative; /* 중요: 호버 시 상위 z-index 레이어로 올림 */
+    position: relative;
     z-index: 1;
   }
   .finance-log-item:hover {
     border-color: #0284c7 !important;
     background: var(--fin-item-hover) !important;
-    z-index: 5 !important; /* 인접 아이템 및 위 레이아웃에 가려지지 않음 */
-    box-shadow: 0 0 0 1px #0284c7, 0 2px 8px rgba(2, 132, 199, 0.25) !important; /* 위 레이아웃과 겹침 없는 선명한 외곽선 */
+    z-index: 5 !important;
+    box-shadow: 0 0 0 1px #0284c7, 0 2px 8px rgba(2, 132, 199, 0.25) !important;
   }
   .fin-amount-badge-income {
     color: #047857;
@@ -679,7 +679,6 @@
         <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
       </button>
     </div>
-    <!-- 🎯 상하 패딩을 주어 첫 번째 아이템 호버 시 상단 외곽선이 위 레이아웃에 겹치지 않고 온전하게 노출됨 -->
     <div id="financeLogsList" class="finance-logs-scroll-box">
       <div class="text-secondary small text-center py-3">데이터를 불러오는 중...</div>
     </div>
@@ -1182,46 +1181,143 @@
   // 🏛️ 현재 길드금고현황을 현재 대화방으로 즉시 공유하는 함수
   window.shareFinanceReportToChat = async function() {
     const btn = document.getElementById('btnShareFinanceReport');
-    const start = document.getElementById('financeStartDate').value || '시작';
-    const end = document.getElementById('financeEndDate').value || '현재';
+    const startRaw = document.getElementById('financeStartDate').value || '';
+    const endRaw = document.getElementById('financeEndDate').value || '';
     const currentBalance = (window.lastFinanceData.currentBalance || 0).toLocaleString();
     const totalIncome = (window.lastFinanceData.totalIncome || 0).toLocaleString();
     const totalExpense = (window.lastFinanceData.totalExpense || 0).toLocaleString();
-    const filteredIncome = (window.lastFinanceData.filteredIncome || 0).toLocaleString();
+    const rawFilteredIncome = window.lastFinanceData.filteredIncome || 0;
+    const filteredIncome = rawFilteredIncome.toLocaleString();
+    const isNetPositive = rawFilteredIncome >= 0;
     const gName = window.activeGuildName || "길드";
+
+    // 날짜 가독성 개선 함수 (YYYY-MM-DD -> M/D(요일))
+    function formatFinanceDateClean(dateStr, withYear = false) {
+      if (!dateStr || dateStr === '시작' || dateStr === '현재') return dateStr || '';
+      try {
+        const parts = String(dateStr).split('T')[0].split('-');
+        if (parts.length === 3) {
+          const y = parts[0];
+          const m = parseInt(parts[1], 10);
+          const d = parseInt(parts[2], 10);
+          const dateObj = new Date(parseInt(y, 10), m - 1, d);
+          const days = ['일', '월', '화', '수', '목', '금', '토'];
+          const dow = days[dateObj.getDay()];
+          if (withYear) {
+            return `${y}.${String(m).padStart(2, '0')}.${String(d).padStart(2, '0')}(${dow})`;
+          }
+          return `${m}/${d}(${dow})`;
+        }
+      } catch (e) {}
+      return dateStr;
+    }
+
+    // 두 날짜 사이 일수 계산
+    function calcDaysDiff(d1Str, d2Str) {
+      if (!d1Str || !d2Str) return '';
+      try {
+        const d1 = new Date(d1Str.split('T')[0]);
+        const d2 = new Date(d2Str.split('T')[0]);
+        const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+        return diff > 0 ? `${diff}일간` : '';
+      } catch (e) {
+        return '';
+      }
+    }
+
+    const startClean = startRaw ? formatFinanceDateClean(startRaw, false) : '시작';
+    const endClean = endRaw ? formatFinanceDateClean(endRaw, false) : '현재';
+    const daysCount = (startRaw && endRaw) ? calcDaysDiff(startRaw, endRaw) : '';
+    const asOfDateBadge = endRaw ? `${formatFinanceDateClean(endRaw, false)} 기준` : '최신 기준';
 
     const incomeLogs = (window.lastFinanceData.logs || []).filter(l => l.inFilter && l.type === '입금');
     let logSummaryHtml = "";
     if (incomeLogs.length > 0) {
-      logSummaryHtml = incomeLogs.slice(0, 5).map(l => 
-        `<div class="boss-brief-line"><span>• ${l.reason}</span><span style="font-weight:700; color:#059669;">+${Number(l.amount).toLocaleString()} D</span></div>`
-      ).join('');
+      logSummaryHtml = incomeLogs.slice(0, 5).map(l => {
+        const itemDateClean = l.date ? formatFinanceDateClean(l.date, false) : '';
+        return `
+          <div class="fin-deposit-row">
+            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 175px;" title="${l.reason || ''}">
+              ${itemDateClean ? `<span style="font-size: 10px; color: var(--kakao-time-gray); margin-right: 3px;">[${itemDateClean}]</span>` : ''}
+              ${l.reason || '입금'}
+            </span>
+            <span style="font-weight: 700; color: #059669; flex-shrink: 0;">+${Number(l.amount).toLocaleString()} D</span>
+          </div>
+        `;
+      }).join('');
       if (incomeLogs.length > 5) {
-        logSummaryHtml += `<div class="boss-brief-line text-secondary small"><span>... 외 ${incomeLogs.length - 5}건</span></div>`;
+        logSummaryHtml += `<div style="text-align: right; font-size: 10px; color: var(--kakao-time-gray); padding: 2px 4px;">... 외 ${incomeLogs.length - 5}건 추가</div>`;
       }
     } else {
-      logSummaryHtml = `<div class="boss-brief-line text-secondary small"><span>• 기간 내 입금 내역 없음</span></div>`;
+      logSummaryHtml = `<div style="font-size: 11px; color: var(--kakao-time-gray); text-align: center; padding: 6px 0; background: rgba(0,0,0,0.02); border-radius: 4px;"><i class="fa-regular fa-folder-open me-1"></i>해당 기간 내 입금 내역이 없습니다.</div>`;
     }
 
     const reportCardHtml = `
-      <div class="boss-brief-title">
-        <span>🏛️ [${gName} 길드 금고 현황 보고]</span>
-        <span style="font-size:0.65rem; color:#f59e0b; font-weight:700;">${end}</span>
-      </div>
-      <div class="boss-brief-line" style="font-size: 0.85rem; font-weight: 800; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 4px; margin-bottom: 4px;">
-        <span>💰 현재 금고 보유액:</span>
-        <span style="color:#f59e0b;">${currentBalance} 다이아</span>
-      </div>
-      <div class="boss-brief-line" style="font-size: 0.72rem;">
-        <span>• 기간 순수익 (${start} ~ ${end}):</span>
-        <span style="font-weight: 700; color:#0284c7;">+${filteredIncome} D</span>
-      </div>
-      <div class="boss-brief-line" style="font-size: 0.72rem;">
-        <span>• 누적 적립: +${totalIncome} D / 누적 지출: -${totalExpense} D</span>
-      </div>
-      <div style="margin-top: 6px; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.1);">
-        <div style="font-size: 0.7rem; font-weight: 700; margin-bottom: 2px;">📋 기간 입금 내역 요약:</div>
-        ${logSummaryHtml}
+      <div class="finance-report-card">
+        <!-- 헤더: 길드명 + 정돈된 기준일자 뱃지 -->
+        <div class="fin-card-header">
+          <div class="fin-card-title">
+            <i class="fa-solid fa-landmark text-warning"></i>
+            <span>[${gName}] 금고 현황</span>
+          </div>
+          <span class="fin-date-badge">
+            <i class="fa-regular fa-clock me-1"></i>${asOfDateBadge}
+          </span>
+        </div>
+
+        <!-- 현재 금고 잔액 하이라이트 박스 -->
+        <div class="fin-vault-hero">
+          <div>
+            <div class="fin-vault-label">
+              <i class="fa-solid fa-vault text-warning me-1"></i>현재 금고 잔액
+            </div>
+            <div class="fin-vault-val">
+              ${currentBalance} <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">다이아</span>
+            </div>
+          </div>
+          <div style="font-size: 1.55rem; line-height: 1;">💰</div>
+        </div>
+
+        <!-- 집계 기간 및 기간 순수익 요약 박스 -->
+        <div class="fin-period-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px dashed var(--drawer-card-border);">
+            <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">
+              <i class="fa-regular fa-calendar-days me-1 text-primary"></i>집계 기간
+            </span>
+            <span style="font-weight: 700; font-size: 11.5px; color: var(--kakao-notice-text);">
+              ${startClean} ~ ${endClean} ${daysCount ? `<span style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">(${daysCount})</span>` : ''}
+            </span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; font-size: 11.5px; color: var(--kakao-notice-text);">
+              기간 순수익
+            </span>
+            <span style="font-weight: 800; font-size: 12.5px; color: ${isNetPositive ? '#059669' : '#dc2626'};">
+              ${isNetPositive ? '+' : ''}${filteredIncome} D
+            </span>
+          </div>
+        </div>
+
+        <!-- 누적 적립 / 누적 지출 2분할 칩 -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">
+          <div class="fin-badge-income">
+            <div style="font-size: 10px; font-weight: 600;">누적 입금</div>
+            <div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">+${totalIncome} D</div>
+          </div>
+          <div class="fin-badge-expense">
+            <div style="font-size: 10px; font-weight: 600;">누적 지출</div>
+            <div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">-${totalExpense} D</div>
+          </div>
+        </div>
+
+        <!-- 기간 입금 내역 요약 박스 -->
+        <div style="margin-top: 6px;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <span><i class="fa-solid fa-list-check me-1 text-primary"></i>기간 입금 요약</span>
+            ${incomeLogs.length > 0 ? `<span style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">총 ${incomeLogs.length}건</span>` : ''}
+          </div>
+          ${logSummaryHtml}
+        </div>
       </div>
     `;
 
