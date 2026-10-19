@@ -752,22 +752,23 @@
       display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 6px !important;
     }
     .fin-card-title {
-      font-size: 13px !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
-      display: flex !important; align-items: center !important; gap: 5px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+      font-size: 11.5px !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
+      display: flex !important; align-items: center !important; gap: 4px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+      flex: 1 !important; min-width: 0 !important;
     }
     .fin-date-badge {
       background: rgba(245, 158, 11, 0.15) !important; color: #d97706 !important; border: 1px solid rgba(245, 158, 11, 0.35) !important;
-      font-size: 10px !important; font-weight: 700 !important; padding: 2px 6px !important; border-radius: 5px !important; white-space: nowrap !important; flex-shrink: 0 !important;
+      font-size: 9.5px !important; font-weight: 700 !important; padding: 2px 5px !important; border-radius: 4px !important; white-space: nowrap !important; flex-shrink: 0 !important;
     }
     body.theme-dark .fin-date-badge { background: rgba(245, 158, 11, 0.2) !important; color: #facc15 !important; border-color: rgba(245, 158, 11, 0.5) !important; }
     .fin-vault-hero {
       background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%) !important;
-      border: 1px solid rgba(245, 158, 11, 0.3) !important; border-radius: 9px !important; padding: 8px 10px !important; margin-bottom: 8px !important;
+      border: 1px solid rgba(245, 158, 11, 0.3) !important; border-radius: 8px !important; padding: 7px 9px !important; margin-bottom: 7px !important;
       display: flex !important; align-items: center !important; justify-content: space-between !important;
     }
-    .fin-vault-label { font-size: 10.5px !important; color: var(--kakao-time-gray) !important; font-weight: 600 !important; }
-    .fin-vault-val { font-size: 16px !important; font-weight: 900 !important; color: #f59e0b !important; line-height: 1.2 !important; margin-top: 2px !important; }
-    .fin-period-box { background: rgba(0,0,0,0.03) !important; border: 1px solid var(--drawer-card-border) !important; border-radius: 8px !important; padding: 7px 9px !important; margin-bottom: 8px !important; font-size: 11.5px !important; }
+    .fin-vault-label { font-size: 10px !important; color: var(--kakao-time-gray) !important; font-weight: 600 !important; }
+    .fin-vault-val { font-size: 12.5px !important; font-weight: 800 !important; color: #f59e0b !important; line-height: 1.2 !important; margin-top: 1px !important; word-break: break-all !important; }
+    .fin-period-box { background: rgba(0,0,0,0.03) !important; border: 1px solid var(--drawer-card-border) !important; border-radius: 7px !important; padding: 6px 8px !important; margin-bottom: 7px !important; font-size: 11px !important; }
     body.theme-dark .fin-period-box { background: rgba(255,255,255,0.04) !important; }
   </style>
 </head>
@@ -1693,7 +1694,7 @@
           </div>
         `;
       }
-      /* 🚀 [추가 반영] 아이템 분배 영수증 카드 렌더링 분기 */
+      /* 🚀 [디자인 및 가독성 최적화 완벽 반영된 아이템 분배 영수증 카드] */
       else if (msg.msg_type === "wish_report") {
         let wishData = null;
         try {
@@ -1726,7 +1727,7 @@
           const price = Number(wishData.price || 0).toLocaleString();
           const perShare = Number(wishData.per_share || 0).toLocaleString();
           const memberCount = wishData.member_count || 0;
-          const membersList = Array.isArray(wishData.members) ? wishData.members.join(", ") : "";
+          const membersList = Array.isArray(wishData.members) ? wishData.members : [];
           const dateStr = wishData.date_str || "10/20";
           const reportTime = wishData.created_at ? formatKSTChatTime(wishData.created_at) : timeStr;
 
@@ -1740,23 +1741,23 @@
                     <div class="fin-card-header">
                       <div class="fin-card-title">
                         <i class="fa-solid fa-gift text-warning"></i>
-                        <span>[${escapeHtmlText(guildName)}] 아이템 분배 영수증</span>
+                        <span class="text-truncate">[${escapeHtmlText(guildName)}] 아이템 분배 영수증</span>
                       </div>
                       <span class="fin-date-badge">${dateStr}</span>
                     </div>
 
                     <div class="fin-vault-hero" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0.04) 100%) !important; border-color: rgba(56, 189, 248, 0.3) !important;">
-                      <div>
+                      <div style="min-width: 0; flex: 1; padding-right: 4px;">
                         <div class="fin-vault-label"><i class="fa-solid fa-box-open me-1 text-info"></i>낙찰 아이템</div>
-                        <div class="fin-vault-val" style="color: #38bdf8 !important; font-size: 13.5px !important;">[${escapeHtmlText(bossName)}] ${escapeHtmlText(itemName)}</div>
+                        <div class="fin-vault-val text-truncate" style="color: #38bdf8 !important; font-size: 12px !important;">[${escapeHtmlText(bossName)}] ${escapeHtmlText(itemName)}</div>
                       </div>
-                      <div style="font-size: 1.3rem;">🎁</div>
+                      <div style="font-size: 1.2rem; flex-shrink: 0;">🎁</div>
                     </div>
 
                     <div class="fin-period-box" style="margin-bottom: 6px;">
                       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                         <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👑 낙찰자:</span>
-                        <strong style="color: #fbbf24; font-size: 12px;">${escapeHtmlText(winnerName)} (${price} D)</strong>
+                        <strong style="color: #fbbf24; font-size: 11.5px;">${escapeHtmlText(winnerName)} (${price} D)</strong>
                       </div>
                       <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px dashed var(--drawer-card-border);">
                         <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👥 분배 대상:</span>
@@ -1764,13 +1765,16 @@
                       </div>
                     </div>
 
-                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 7px 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 7px; padding: 6px 9px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                       <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">💵 1인당 최종 배당금:</span>
-                      <strong style="font-size: 12.5px; font-weight: 900; color: #059669;">+${perShare} D</strong>
+                      <strong style="font-size: 12px; font-weight: 900; color: #059669;">+${perShare} D</strong>
                     </div>
 
-                    <div style="font-size: 10.5px; color: var(--kakao-time-gray); line-height: 1.4; word-break: keep-all;">
-                      <strong>수령자:</strong> ${escapeHtmlText(membersList)}
+                    <div style="background: rgba(0, 0, 0, 0.03); border: 1px solid var(--drawer-card-border); border-radius: 6px; padding: 5px 8px; max-height: 75px; overflow-y: auto;">
+                      <div style="font-size: 10px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 2px;">수령자 명단 (${memberCount}명):</div>
+                      <div style="font-size: 10.5px; color: var(--kakao-notice-text); line-height: 1.4; word-break: break-all;">
+                        ${membersList.map(m => escapeHtmlText(m)).join(', ')}
+                      </div>
                     </div>
                   </div>
 
