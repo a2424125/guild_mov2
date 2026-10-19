@@ -515,7 +515,7 @@ body.theme-dark .btn-kakao-head:hover { background: rgba(255, 255, 255, 0.08); }
 .chat-item-row {
   display: flex;
   width: 100%;
-  margin-bottom: 16px !important;
+  margin-bottom: 18px !important;
   align-items: flex-start !important;
 }
 .chat-item-row.consecutive {
