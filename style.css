@@ -623,7 +623,7 @@
     .notice-text-content {
       flex: 1;
       font-size: 12px;
-      font-weight: 400;
+      font-weight: 500;
       color: var(--kakao-notice-text) !important;
       white-space: nowrap;
       overflow: hidden;
@@ -675,7 +675,7 @@
     .chat-bubble {
       display: inline-block; width: fit-content; max-width: 100%;
       padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.42;
-      font-weight: 400; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
+      font-weight: 500 !important; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
       letter-spacing: 0;
     }
     .chat-item-row.other .chat-bubble {
@@ -706,7 +706,7 @@
     }
     .boss-brief-line {
       display: flex !important; justify-content: space-between !important; gap: 12px !important;
-      padding: 2px 0 !important; font-size: 12px !important; font-weight: 400 !important;
+      padding: 2px 0 !important; font-size: 12px !important; font-weight: 500 !important;
     }
     .boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
     body.theme-dark .boss-brief-line.spawned { color: #ff6b6b !important; font-weight: 700 !important; }
@@ -715,7 +715,7 @@
       background: var(--kakao-notice-bg) !important;
       color: var(--kakao-notice-text) !important;
       border-radius: 6px !important; padding: 8px 12px !important;
-      font-size: 12px !important; font-weight: 400 !important; line-height: 1.42 !important;
+      font-size: 12px !important; font-weight: 500 !important; line-height: 1.42 !important;
       box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
       letter-spacing: 0;
     }
@@ -741,7 +741,7 @@
     }
     .input-textarea-custom {
       width: 100%; height: 38px; border: none; outline: none; resize: none;
-      font-size: 12px; font-weight: 400; letter-spacing: 0;
+      font-size: 12px; font-weight: 500; letter-spacing: 0;
       color: var(--kakao-input-text) !important;
       background: transparent !important;
     }
@@ -1019,7 +1019,7 @@
     }
     body.theme-dark .chat-sender-name {
       color: #9ca3af !important;
-      font-weight: 400;
+      font-weight: 500;
     }
     body.theme-dark .chat-timestamp {
       color: #9ca3af !important;
@@ -1663,6 +1663,7 @@
     body.theme-dark .fin-badge-income {
       background: rgba(16, 185, 129, 0.18) !important;
       border-color: rgba(16, 185, 129, 0.4) !important;
+      color: #34d85, 129, 0.4) !important;
       color: #34d399 !important;
     }
     .fin-badge-expense {
