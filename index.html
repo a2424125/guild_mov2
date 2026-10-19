@@ -180,6 +180,7 @@
       --kakao-input-placeholder: #94a3b8;
       --kakao-input-icon: #64748b;
 
+      --drawer-width: 260px;
       --drawer-bg: #ffffff;
       --drawer-border: #dcdcdc;
       --drawer-header-bg: #f7f7f7;
@@ -546,15 +547,18 @@
     }
 
     .chat-messages-container {
-      flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 3px;
+      flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 0px;
     }
     
-    /* 🎯 서로 다른 발신자(닉네임) 간의 여백(숨통) 확보를 위한 넉넉한 하단 마진 (16px) */
+    /* 🎯 카카오톡 스타일: 연속 메시지(같은 사람)는 좁은 간격(2px), 다른 사람이면 넉넉한 간격(14px) */
     .chat-item-row {
       display: flex;
       width: 100%;
-      margin-bottom: 16px !important;
+      margin-bottom: 14px !important;
       align-items: flex-start !important;
+    }
+    .chat-item-row.consecutive {
+      margin-bottom: 2px !important;
     }
     .chat-item-row.other { align-items: flex-start !important; gap: 6px; }
     .chat-item-row.me { justify-content: flex-end; }
@@ -570,11 +574,11 @@
 
     .chat-msg-body { display: flex; flex-direction: column; max-width: 90%; width: fit-content !important; }
     
-    /* 🎯 닉네임과 말풍선 사이 간격 넉넉하게 확보 및 굵기 진하게(Bold) */
+    /* 🎯 진하고 선명한 닉네임 */
     .chat-sender-name {
       font-size: 11.5px;
       color: #191919 !important;
-      margin-bottom: 5px !important;
+      margin-bottom: 4px !important;
       font-weight: 700 !important;
     }
     body.theme-dark .chat-sender-name {
@@ -1563,7 +1567,12 @@
       try {
         const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=100");
         if (list && list.length > 0) {
-          list.reverse().forEach(c => renderKakaoChatBubble(c, false));
+          let prevSender = null;
+          list.reverse().forEach(c => {
+            const isConsecutive = (c.sender_name === prevSender && c.msg_type === "chat");
+            renderKakaoChatBubble(c, false, isConsecutive);
+            prevSender = c.msg_type === "chat" ? c.sender_name : null;
+          });
           scrollChatBottom();
           syncAllChatCutButtons();
         }
@@ -1576,6 +1585,8 @@
         await apiRequest(`guild_chats?created_at=lt.${sevenDaysAgo}`, "DELETE");
       } catch (e) {}
     }
+
+    var lastRenderedSender = null;
 
     function listenRealtimeChatMessages() {
       if (!supabaseClient) return;
@@ -1597,11 +1608,14 @@
                 rowElem.id = "msg_" + newMsg.id;
                 rowElem.setAttribute("data-msg-id", newMsg.id);
               }
+              lastRenderedSender = newMsg.sender_name;
               return;
             }
           }
 
-          renderKakaoChatBubble(newMsg, true);
+          const isConsecutive = (newMsg.sender_name === lastRenderedSender && newMsg.msg_type === "chat");
+          renderKakaoChatBubble(newMsg, true, isConsecutive);
+          lastRenderedSender = newMsg.msg_type === "chat" ? newMsg.sender_name : null;
         })
         .subscribe();
     }
@@ -1661,11 +1675,11 @@
       return "";
     }
 
-    function renderKakaoChatBubble(msg, isRealtime = true) {
+    function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
       const container = document.getElementById("chatMessagesView");
       const isMe = (msg.sender_name === myCurrentNick);
       const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
-      const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 1000000));
+      const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
       
       const timeStr = formatKSTChatTime(msg.created_at);
       const totalMembers = cachedMemberList.length || 52;
@@ -1983,8 +1997,10 @@
         `;
       }
       else if (isMe) {
+        const consecutiveClass = isConsecutive ? "consecutive" : "";
+        const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
         html = `
-          <div class="chat-item-row me" id="${msgKey}">
+          <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
             <div class="chat-msg-body">
               <div class="chat-bubble-flex">
                 <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
@@ -1998,11 +2014,14 @@
         `;
       }
       else {
+        const consecutiveClass = isConsecutive ? "consecutive" : "";
+        const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
+        const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
         html = `
-          <div class="chat-item-row other" id="${msgKey}">
-            <div class="chat-sender-avatar">${senderAvatarIcon}</div>
+          <div class="chat-item-row other ${consecutiveClass}" id="${msgKey}">
+            <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
             <div class="chat-msg-body">
-              <div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>
+              ${nameBlock}
               <div class="chat-bubble-flex">
                 <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
                 <div class="chat-meta-box">
@@ -2225,7 +2244,9 @@
       pendingOptimisticMessages.push({ tempId: tempId, text: text, time: Date.now() });
       if (pendingOptimisticMessages.length > 40) pendingOptimisticMessages = pendingOptimisticMessages.filter(p => Date.now() - p.time < 15000);
 
-      renderKakaoChatBubble(optimisticMsg, false);
+      const isConsecutive = (myCurrentNick === lastRenderedSender);
+      renderKakaoChatBubble(optimisticMsg, false, isConsecutive);
+      lastRenderedSender = myCurrentNick;
 
       (async () => {
         try {
