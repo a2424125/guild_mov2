@@ -515,11 +515,11 @@ body.theme-dark .btn-kakao-head:hover { background: rgba(255, 255, 255, 0.08); }
 .chat-item-row {
   display: flex;
   width: 100%;
-  margin-bottom: 14px !important;
+  margin-bottom: 16px !important;
   align-items: flex-start !important;
 }
 .chat-item-row.consecutive {
-  margin-bottom: 3.5px !important;
+  margin-bottom: 4px !important;
 }
 .chat-item-row.other { align-items: flex-start !important; gap: 6px; }
 .chat-item-row.me { justify-content: flex-end; }
