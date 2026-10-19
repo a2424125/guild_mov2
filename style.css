@@ -519,7 +519,7 @@ body.theme-dark .btn-kakao-head:hover { background: rgba(255, 255, 255, 0.08); }
   align-items: flex-start !important;
 }
 .chat-item-row.consecutive {
-  margin-bottom: 4px !important;
+  margin-bottom: 6px !important;
 }
 .chat-item-row.other { align-items: flex-start !important; gap: 6px; }
 .chat-item-row.me { justify-content: flex-end; }
