@@ -28,12 +28,27 @@
     --fin-badge-income-text: #34d399;
     --fin-badge-expense-bg: rgba(239, 68, 68, 0.15);
     --fin-badge-expense-text: #f87171;
+
+    /* 모달 전용 테마 변수 (다크 모드 기본) */
+    --fin-modal-bg: #0d1527;
+    --fin-modal-border: #233b66;
+    --fin-modal-header-bg: #090e1c;
+    --fin-modal-text: #f8fafc;
+    --fin-modal-subtext: #94a3b8;
+    --fin-modal-input-bg: #080d1a;
+    --fin-modal-input-border: #233554;
+    --fin-modal-input-text: #ffffff;
+    --fin-modal-btn-cancel-bg: #1e293b;
+    --fin-modal-btn-cancel-border: #334155;
+    --fin-modal-btn-cancel-text: #cbd5e1;
+    --fin-modal-btn-del-bg: rgba(239, 68, 68, 0.12);
+    --fin-modal-btn-del-border: rgba(239, 68, 68, 0.4);
+    --fin-modal-btn-del-text: #f87171;
   }
 
   /* ☀️ 라이트 모드 고대비(High-Contrast) 테마 오버라이드 */
-  html.theme-light .finance-card,
-  body.theme-light .finance-card,
-  .finance-card.light-mode {
+  html.theme-light,
+  body.theme-light {
     --fin-card-bg: #ffffff;
     --fin-card-border: #e2e8f0;
     --fin-text-main: #0f172a;
@@ -58,6 +73,22 @@
     --fin-badge-income-text: #047857;
     --fin-badge-expense-bg: #fef2f2;
     --fin-badge-expense-text: #b91c1c;
+
+    /* 모달 전용 라이트 모드 */
+    --fin-modal-bg: #ffffff;
+    --fin-modal-border: #cbd5e1;
+    --fin-modal-header-bg: #f8fafc;
+    --fin-modal-text: #0f172a;
+    --fin-modal-subtext: #475569;
+    --fin-modal-input-bg: #ffffff;
+    --fin-modal-input-border: #cbd5e1;
+    --fin-modal-input-text: #0f172a;
+    --fin-modal-btn-cancel-bg: #f1f5f9;
+    --fin-modal-btn-cancel-border: #cbd5e1;
+    --fin-modal-btn-cancel-text: #334155;
+    --fin-modal-btn-del-bg: #fef2f2;
+    --fin-modal-btn-del-border: #fca5a5;
+    --fin-modal-btn-del-text: #dc2626;
   }
 
   .finance-card {
@@ -272,23 +303,33 @@
     background: rgba(15, 23, 42, 0.7);
   }
 
-  /* 📜 4. 입출금 내역 타임라인 아이템 */
+  /* 📜 4. 입출금 내역 스크롤 박스 및 외곽선 겹침 완전 박멸 */
+  .finance-logs-scroll-box {
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 4px 3px 6px 3px !important; /* 상단 여백으로 첫 번째 아이템 호버 시 상단 테두리 100% 노출 */
+  }
+
+  /* 📜 입출금 내역 타임라인 아이템 */
   .finance-log-item {
     background: var(--fin-item-bg);
     border: 1px solid var(--fin-item-border);
     border-radius: 8px;
     padding: 8px 10px;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    position: relative; /* 중요: 호버 시 상위 z-index 레이어로 올림 */
+    z-index: 1;
   }
   .finance-log-item:hover {
-    border-color: #0284c7;
+    border-color: #0284c7 !important;
     background: var(--fin-item-hover) !important;
-    transform: translateY(-1px);
+    z-index: 5 !important; /* 인접 아이템 및 위 레이아웃에 가려지지 않음 */
+    box-shadow: 0 0 0 1px #0284c7, 0 2px 8px rgba(2, 132, 199, 0.25) !important; /* 위 레이아웃과 겹침 없는 선명한 외곽선 */
   }
   .fin-amount-badge-income {
     color: #047857;
@@ -307,7 +348,9 @@
     color: #fb7185;
   }
 
-  /* 모달 */
+  /* ========================================================
+     🎯 입출금 내역 수정/삭제 전용 모달 (다크/라이트 모드 완전 동기화)
+     ======================================================== */
   .fin-modal-bg {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
@@ -316,15 +359,139 @@
     z-index: 9999999;
     display: flex; align-items: center; justify-content: center;
     padding: 16px;
+    animation: finModalFadeIn 0.18s ease-out;
   }
+  @keyframes finModalFadeIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
   .fin-modal-box {
-    background: var(--fin-card-bg);
-    border: 1px solid var(--fin-card-border);
+    background: var(--fin-modal-bg) !important;
+    border: 1px solid var(--fin-modal-border) !important;
     border-radius: 14px;
     width: 100%; max-width: 380px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45);
     overflow: hidden;
-    color: var(--fin-text-main);
+    color: var(--fin-modal-text) !important;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .fin-modal-header {
+    background: var(--fin-modal-header-bg) !important;
+    border-bottom: 1px solid var(--fin-modal-border) !important;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .fin-modal-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--fin-modal-text) !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .fin-modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--fin-modal-subtext) !important;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .fin-modal-close-btn:hover {
+    color: #ef4444 !important;
+  }
+
+  .fin-modal-body {
+    padding: 14px;
+    background: var(--fin-modal-bg) !important;
+  }
+
+  .fin-modal-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--fin-modal-subtext) !important;
+    margin-bottom: 2px;
+  }
+
+  .fin-modal-input {
+    background-color: var(--fin-modal-input-bg) !important;
+    border: 1px solid var(--fin-modal-input-border) !important;
+    color: var(--fin-modal-input-text) !important;
+    border-radius: 7px !important;
+    padding: 5px 9px !important;
+    font-size: 0.8rem !important;
+    outline: none !important;
+    height: 34px;
+    width: 100%;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .fin-modal-input:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+  }
+
+  .btn-modal-cancel {
+    background: var(--fin-modal-btn-cancel-bg) !important;
+    border: 1px solid var(--fin-modal-btn-cancel-border) !important;
+    color: var(--fin-modal-btn-cancel-text) !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-modal-cancel:hover {
+    opacity: 0.88;
+  }
+
+  .btn-modal-delete {
+    background: var(--fin-modal-btn-del-bg) !important;
+    border: 1px solid var(--fin-modal-btn-del-border) !important;
+    color: var(--fin-modal-btn-del-text) !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-modal-delete:hover {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+  }
+
+  .btn-modal-save {
+    background: #0284c7 !important;
+    border: 1px solid #0284c7 !important;
+    color: #ffffff !important;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+  }
+  .btn-modal-save:hover {
+    background: #0369a1 !important;
   }
 
   .custom-fin-toast {
@@ -502,7 +669,7 @@
     </div>
   </div>
 
-  <!-- 4. 금고 입출금 내역 (타임라인 카드) -->
+  <!-- 4. 금고 입출금 내역 (타임라인 카드 & 마우스오버 외곽선 보존) -->
   <div class="finance-box mb-0">
     <div class="d-flex justify-content-between align-items-center mb-1">
       <span class="small fw-bold" style="font-size: 0.74rem; color: var(--fin-text-main);">
@@ -512,59 +679,68 @@
         <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
       </button>
     </div>
-    <div id="financeLogsList" style="max-height: 250px; overflow-y: auto;">
+    <!-- 🎯 상하 패딩을 주어 첫 번째 아이템 호버 시 상단 외곽선이 위 레이아웃에 겹치지 않고 온전하게 노출됨 -->
+    <div id="financeLogsList" class="finance-logs-scroll-box">
       <div class="text-secondary small text-center py-3">데이터를 불러오는 중...</div>
     </div>
   </div>
 </div>
 
-<!-- 🎯 입출금 내역 수정/삭제 전용 모달 -->
+<!-- ========================================================
+     🎯 입출금 내역 수정/삭제 전용 모달 (다크/라이트 모드 완전 동기화)
+     ======================================================== -->
 <div id="financeEditModal" class="fin-modal-bg" style="display: none;">
   <div class="fin-modal-box">
-    <div class="p-2 px-3 border-bottom border-secondary border-opacity-10 d-flex justify-content-between align-items-center">
-      <h6 class="fw-bold mb-0" style="font-size: 0.88rem;"><i class="fa-solid fa-pen-to-square me-1 text-primary"></i> 금고 내역 수정 / 삭제</h6>
-      <button type="button" class="btn-close" style="font-size: 0.75rem;" onclick="window.closeEditFinanceModal()"></button>
+    <div class="fin-modal-header">
+      <div class="fin-modal-title">
+        <i class="fa-solid fa-pen-to-square text-primary"></i>
+        <span>금고 내역 수정 / 삭제</span>
+      </div>
+      <button type="button" class="fin-modal-close-btn" onclick="window.closeEditFinanceModal()" title="닫기">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
-    <div class="p-3">
+
+    <div class="fin-modal-body">
       <input type="hidden" id="modalEditId">
       
       <div class="mb-2">
-        <label class="form-label text-secondary mb-0" style="font-size: 0.68rem;">기준 일자:</label>
-        <input type="date" id="modalEditDate" class="form-control input-custom-finance w-100">
+        <label class="fin-modal-label">기준 일자:</label>
+        <input type="date" id="modalEditDate" class="fin-modal-input">
       </div>
 
       <div class="row g-1 mb-2">
         <div class="col-6">
-          <label class="form-label text-secondary mb-0" style="font-size: 0.68rem;">구분:</label>
-          <select id="modalEditType" class="form-control input-custom-finance w-100">
+          <label class="fin-modal-label">구분:</label>
+          <select id="modalEditType" class="fin-modal-input">
             <option value="입금">입금 (+)</option>
             <option value="출금">출금 (-)</option>
           </select>
         </div>
         <div class="col-6">
-          <label class="form-label text-secondary mb-0" style="font-size: 0.68rem;">금액 (다이아):</label>
-          <input type="text" id="modalEditAmount" class="form-control input-custom-finance w-100" placeholder="숫자만 입력" onkeyup="window.formatCommaInput(this)">
+          <label class="fin-modal-label">금액 (다이아):</label>
+          <input type="text" id="modalEditAmount" class="fin-modal-input" placeholder="숫자만 입력" onkeyup="window.formatCommaInput(this)">
         </div>
       </div>
 
       <div class="mb-2">
-        <label class="form-label text-secondary mb-0" style="font-size: 0.68rem;">카테고리:</label>
-        <input type="text" id="modalEditCategory" class="form-control input-custom-finance w-100" placeholder="예: 수익금입금, 길드지출 등">
+        <label class="fin-modal-label">카테고리:</label>
+        <input type="text" id="modalEditCategory" class="fin-modal-input" placeholder="예: 수익금입금, 길드지출 등">
       </div>
 
       <div class="mb-3">
-        <label class="form-label text-secondary mb-0" style="font-size: 0.68rem;">상세 내용 / 사유:</label>
-        <input type="text" id="modalEditReason" class="form-control input-custom-finance w-100" placeholder="상세 사유 입력">
+        <label class="fin-modal-label">상세 내용 / 사유:</label>
+        <input type="text" id="modalEditReason" class="fin-modal-input" placeholder="상세 사유 입력">
       </div>
 
-      <div class="d-flex justify-content-between gap-2 pt-2 border-top border-secondary border-opacity-10">
-        <button type="button" class="btn btn-outline-danger btn-sm px-3 fw-bold" id="btnDeleteRecord" style="font-size: 0.76rem;" onclick="window.deleteFinanceRecord()">
-          <i class="fa-solid fa-trash-can me-1"></i>삭제
+      <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-10 gap-2">
+        <button type="button" class="btn-modal-delete" id="btnDeleteRecord" onclick="window.deleteFinanceRecord()">
+          <i class="fa-solid fa-trash-can"></i> 삭제
         </button>
-        <div class="d-flex gap-1">
-          <button type="button" class="btn btn-secondary btn-sm px-3" style="font-size: 0.76rem;" onclick="window.closeEditFinanceModal()">취소</button>
-          <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" id="btnUpdateRecord" style="font-size: 0.76rem;" onclick="window.updateFinanceRecord()">
-            <i class="fa-solid fa-check me-1"></i>수정 저장
+        <div class="d-flex gap-2">
+          <button type="button" class="btn-modal-cancel" onclick="window.closeEditFinanceModal()">취소</button>
+          <button type="button" class="btn-modal-save" id="btnUpdateRecord" onclick="window.updateFinanceRecord()">
+            <i class="fa-solid fa-check"></i> 수정 저장
           </button>
         </div>
       </div>
