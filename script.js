@@ -711,7 +711,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
       </div>
     `;
   }
-  /* 📊 [통계알리미 카드 렌더링 분기 추가] */
+  /* 📊 [통계알리미] 보스참여자 통계 보고서 카드 렌더링 분기 */
   else if (msg.msg_type === "records_report" || (msg.sender_name === "통계알리미" && cleanMessageText.includes("records-report-card"))) {
     const isWrapped = cleanMessageText.includes("records-report-card");
     const cardContent = isWrapped ? cleanMessageText : `<div class="records-report-card">${cleanMessageText}</div>`;
@@ -1212,7 +1212,7 @@ window.triggerQuickCutAction = async function(bossName, btnId) {
       next_spawn_time: nextSpawn.toISOString()
     });
 
-        const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
+    const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
 
     await apiRequest("guild_chats", "POST", [{
       sender_name: "보스알리미",
