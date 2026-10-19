@@ -301,29 +301,41 @@
   }
 
   /* ========================================================
-     전쟁 구분 & 배점 일체형 버튼 [일반 (1점)] [내전 (+1점)] [인터 (+2점)]
+     5개 일체형 단일행 컨트롤 바 [일반][내전][인터][추가][총점]
      ======================================================== */
-  .war-badge-group {
-    display: inline-flex;
+  .raid-score-control-bar {
+    display: flex;
+    align-items: center;
     gap: 3px;
+    width: 100%;
+    margin-top: 5px;
+    padding-top: 6px;
+    border-top: 1px solid var(--reg-section-border);
+    flex-wrap: nowrap !important;
   }
+
   .war-badge-btn {
-    padding: 3px 6px;
+    flex: 1 1 0;
+    min-width: 0;
+    height: 29px;
+    padding: 0 2px;
     border-radius: 6px;
     border: 1px solid var(--reg-section-border);
     background: var(--reg-input-bg);
     color: var(--reg-text-sub);
-    font-size: 0.7rem;
+    font-size: 0.69rem;
     font-weight: 700;
     text-align: center;
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
     white-space: nowrap;
-    line-height: 1.2;
+    line-height: 1.15;
     display: inline-flex;
     align-items: center;
-    gap: 2px;
+    justify-content: center;
+    gap: 1px;
+    letter-spacing: -0.3px;
   }
   .war-badge-btn:hover {
     border-color: #94a3b8;
@@ -359,47 +371,75 @@
     color: #ff6b6b;
   }
 
-  /* ⭐ 추가점수 선택 드롭다운 (화살표 겹침 방지 여백 & 크기 최적화) */
+  /* ⭐ 추가점수 선택 드롭다운 (단일행 5분할 일체형 & 화살표 겹침 방지) */
   .reg-extra-select {
+    flex: 1 1 0;
+    min-width: 0;
     background-color: var(--reg-input-bg) !important;
     border: 1px solid var(--reg-input-border) !important;
     color: var(--reg-input-text) !important;
     border-radius: 6px !important;
-    padding: 2px 22px 2px 7px !important;
-    background-position: right 6px center !important;
-    background-size: 11px 9px !important;
-    font-size: 0.72rem !important;
+    padding: 0 14px 0 3px !important;
+    background-position: right 3px center !important;
+    background-size: 8px 6px !important;
+    font-size: 0.69rem !important;
     font-weight: 700 !important;
-    height: 28px !important;
-    min-width: 66px !important;
+    height: 29px !important;
     cursor: pointer;
     outline: none !important;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    text-align: center;
+    letter-spacing: -0.3px;
   }
   .reg-extra-select:focus {
     border-color: #0284c7 !important;
     box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
   }
 
-  /* 1인당 최종 배점 안내 고대비 뱃지 (라이트 모드 고대비 골드브라운 완벽 적용) */
+  /* 1인당 최종 배점 안내 고대비 뱃지 (단일행 5분할 일체형) */
   .score-info-badge {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 29px;
     background: var(--reg-score-badge-bg);
     border: 1px solid var(--reg-score-badge-border);
     color: var(--reg-score-badge-text);
-    font-size: 0.72rem;
+    font-size: 0.69rem;
     font-weight: 700;
-    padding: 3px 8px;
+    padding: 0 2px;
     border-radius: 6px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    gap: 2px;
     white-space: nowrap;
-    height: 28px;
+    letter-spacing: -0.3px;
   }
   .score-val-highlight {
     color: var(--reg-score-text) !important;
     font-weight: 800;
-    font-size: 0.8rem;
+    font-size: 0.77rem;
+  }
+
+  @media (max-width: 350px) {
+    .raid-score-control-bar {
+      gap: 2px;
+    }
+    .war-badge-btn,
+    .reg-extra-select,
+    .score-info-badge {
+      font-size: 0.62rem !important;
+      letter-spacing: -0.5px;
+    }
+    .score-val-highlight {
+      font-size: 0.7rem !important;
+    }
+    .btn-member-cell {
+      font-size: 0.61rem;
+      letter-spacing: -0.7px;
+      padding: 4px 1px;
+      min-height: 30px;
+    }
   }
 
   /* ========================================================
@@ -498,6 +538,7 @@
     overflow-y: auto;
   }
 
+  /* 5열 모바일 반응형 그리드 */
   .member-grid-5col {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -530,21 +571,13 @@
     background: var(--reg-member-hover);
     transform: translateY(-1px);
   }
+  /* 선택 상태 (다크/라이트 모두 최고 대비 블루) */
   .btn-member-cell.selected {
     background: #0284c7 !important;
     border-color: #0284c7 !important;
     color: #ffffff !important;
     font-weight: 800 !important;
     box-shadow: 0 0 6px rgba(2, 132, 199, 0.45) !important;
-  }
-
-  @media (max-width: 350px) {
-    .btn-member-cell {
-      font-size: 0.61rem;
-      letter-spacing: -0.7px;
-      padding: 4px 1px;
-      min-height: 30px;
-    }
   }
 
   /* ========================================================
@@ -691,7 +724,7 @@
   </div>
 
   <!-- ========================================================
-       2. 토벌 정보 입력창 (보스 빠른 선택 칩 & 전쟁-추가-최종 일체형)
+       2. 토벌 정보 입력창 (보스 빠른 선택 칩 & 전쟁-배점 일체형)
        ======================================================== -->
   <div class="reg-section-box">
     <div class="row g-1 mb-1">
@@ -718,47 +751,45 @@
       </div>
     </div>
 
-    <!-- 전쟁 구분 [일반][내전][인터] + ⭐ 추가 점수 + [🏆 최종 배점] 일체형 컨트롤 (추가점수 바로 옆에 최종점수 배치) -->
-    <div class="d-flex justify-content-between align-items-center mt-1 pt-1 border-top border-secondary border-opacity-10 gap-1 flex-wrap">
-      <!-- 1) 전쟁 구분 버튼 그룹 -->
-      <div class="d-flex align-items-center gap-1">
-        <span class="small text-secondary fw-bold" style="font-size: 0.66rem;">전쟁:</span>
-        <div class="war-badge-group">
-          <div class="war-badge-btn normal active" id="badgeWarNormal" onclick="selectWarType('일반')">
-            <span class="war-name">일반</span>
-            <span class="small opacity-75" id="labelWarScoreNormal">(1점)</span>
-          </div>
-          <div class="war-badge-btn internal" id="badgeWarInternal" onclick="selectWarType('내전')">
-            <span class="war-name">내전</span>
-            <span class="small opacity-75" id="labelWarScoreInternal">(+1점)</span>
-          </div>
-          <div class="war-badge-btn inter" id="badgeWarInter" onclick="selectWarType('인터')">
-            <span class="war-name">인터</span>
-            <span class="small opacity-75" id="labelWarScoreInter">(+2점)</span>
-          </div>
-        </div>
+    <!-- 5개 일체형 단일행 컨트롤 바: [일반], [내전], [인터], [추가], [총점] -->
+    <div class="raid-score-control-bar">
+      <!-- 1) [일반] -->
+      <div class="war-badge-btn normal active" id="badgeWarNormal" onclick="selectWarType('일반')">
+        <span class="war-name">일반</span>
+        <span class="small opacity-75" id="labelWarScoreNormal">(1점)</span>
       </div>
 
-      <!-- 2) ⭐ 추가점수 + [🏆 최종 배점] 한 묶음 (추가점수 바로 옆에 최종점수 배치) -->
-      <div class="d-flex align-items-center gap-1 flex-shrink-0">
-        <label for="regExtraScoreSelect" class="small text-secondary fw-bold" style="font-size: 0.66rem; white-space: nowrap;">⭐ 추가:</label>
-        <select id="regExtraScoreSelect" class="form-select reg-extra-select" onchange="onExtraScoreChange(this.value)">
-          <option value="0">0점</option>
-          <option value="1">+1점</option>
-          <option value="2">+2점</option>
-          <option value="3">+3점</option>
-          <option value="4">+4점</option>
-          <option value="5">+5점</option>
-          <option value="6">+6점</option>
-          <option value="7">+7점</option>
-          <option value="8">+8점</option>
-          <option value="9">+9점</option>
-          <option value="10">+10점</option>
-        </select>
+      <!-- 2) [내전] -->
+      <div class="war-badge-btn internal" id="badgeWarInternal" onclick="selectWarType('내전')">
+        <span class="war-name">내전</span>
+        <span class="small opacity-75" id="labelWarScoreInternal">(+1점)</span>
+      </div>
 
-        <div class="score-info-badge ms-1" id="regScoreBadge">
-          🏆 최종: <strong class="score-val-highlight" id="regScoreValueText">1점</strong>
-        </div>
+      <!-- 3) [인터] -->
+      <div class="war-badge-btn inter" id="badgeWarInter" onclick="selectWarType('인터')">
+        <span class="war-name">인터</span>
+        <span class="small opacity-75" id="labelWarScoreInter">(+2점)</span>
+      </div>
+
+      <!-- 4) [추가] -->
+      <select id="regExtraScoreSelect" class="form-select reg-extra-select" onchange="onExtraScoreChange(this.value)">
+        <option value="0">추가 0점</option>
+        <option value="1">추가 +1점</option>
+        <option value="2">추가 +2점</option>
+        <option value="3">추가 +3점</option>
+        <option value="4">추가 +4점</option>
+        <option value="5">추가 +5점</option>
+        <option value="6">추가 +6점</option>
+        <option value="7">추가 +7점</option>
+        <option value="8">추가 +8점</option>
+        <option value="9">추가 +9점</option>
+        <option value="10">추가 +10점</option>
+      </select>
+
+      <!-- 5) [총점] -->
+      <div class="score-info-badge" id="regScoreBadge">
+        <span>총점:</span>
+        <strong class="score-val-highlight" id="regScoreValueText">1점</strong>
       </div>
     </div>
   </div>
@@ -1036,15 +1067,18 @@
 
     const currentSelected = document.getElementById("regBossSelect")?.value || "";
 
+    // 1) 보스타임 목록에서 현재 출현 중이거나 곧 젠되는 보스 우선 추출
     let list = [...(window.cachedBossList || window.regCachedBosses || [])];
     const now = Date.now();
 
+    // 젠 시각 순 정렬
     list.sort((a, b) => {
       const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
       const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
       return tA - tB;
     });
 
+    // 상위 5개 추출
     const topBosses = list.slice(0, 5);
 
     if (topBosses.length === 0) {
