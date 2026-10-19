@@ -9,6 +9,7 @@ var bossWatcherInterval = null;
 var deferredPrompt = null;
 var kakaoToastTimer = null;
 var pendingOptimisticMessages = [];
+var lastRenderedSender = null;
 
 var notifiedBossSpawnMap = new Set(JSON.parse(localStorage.getItem("boss_spawn_notified_keys") || "[]"));
 
@@ -223,7 +224,6 @@ function toggleMenuDrawer(isOpen) {
   }
 }
 
-/* 🎯 길드원 서랍 열 때 PageMembers.html 동적 로드 */
 async function toggleMembersDrawer(isOpen) {
   const drawer = document.getElementById("membersSidebarDrawer");
   const backdrop = document.getElementById("commonDrawerBackdrop");
@@ -257,7 +257,6 @@ async function toggleMembersDrawer(isOpen) {
   }
 }
 
-/* 🎯 보스타임 서랍 열 때 PageTimer.html 동적 로드 */
 async function toggleBossDrawer(isOpen) {
   const drawer = document.getElementById("bossTimerSidebarDrawer");
   const backdrop = document.getElementById("commonDrawerBackdrop");
@@ -395,7 +394,6 @@ async function verifyStoredSession(nick, pin) {
   return false;
 }
 
-// 🔍 [로그인 닉네임 검색 및 드롭다운 연동 헬퍼]
 function renderLoginMemberDropdown(query = "") {
   const select = document.getElementById("loginMemberSelect");
   if (!select) return;
@@ -444,7 +442,6 @@ async function executeGuildLogin() {
   if (!selectedName) return showKakaoToast("본인 닉네임을 입력하거나 선택해주세요!", "⚠️");
   if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-  // 👑 [스텔스 슈퍼관리자 인증: 비밀 로그인]
   const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
   const masterPin = window.masterAdminPin || "123456";
 
@@ -468,7 +465,6 @@ async function executeGuildLogin() {
     return showKakaoToast("👑 슈퍼관리자(Master)로 인증되었습니다.", "🎉");
   }
 
-  // 일반 길드원 인증
   const targetMember = cachedMemberList.find(m => m.name.toLowerCase() === selectedName.toLowerCase());
   if (!targetMember && isSuperId) {
     document.getElementById("loginPinInput").value = "";
@@ -548,7 +544,13 @@ async function loadPastChatMessages() {
   try {
     const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=100");
     if (list && list.length > 0) {
-      list.reverse().forEach(c => renderKakaoChatBubble(c, false));
+      let prevSender = null;
+      list.reverse().forEach(c => {
+        const isConsecutive = (c.sender_name === prevSender && c.msg_type === "chat");
+        renderKakaoChatBubble(c, false, isConsecutive);
+        prevSender = c.msg_type === "chat" ? c.sender_name : null;
+      });
+      lastRenderedSender = prevSender;
       scrollChatBottom();
       syncAllChatCutButtons();
     }
@@ -571,7 +573,6 @@ function listenRealtimeChatMessages() {
       const newMsg = payload.new;
       if (!newMsg) return;
 
-      // 🚀 [낙관적 UI 중복 수신 방지] 내가 방금 보낸 메시지인 경우 스킵 및 ID 연동
       if (newMsg.sender_name === myCurrentNick && newMsg.msg_type === "chat") {
         const pendingIdx = pendingOptimisticMessages.findIndex(p => p.text === newMsg.message && (Date.now() - p.time < 15000));
         if (pendingIdx !== -1) {
@@ -583,11 +584,14 @@ function listenRealtimeChatMessages() {
             rowElem.id = "msg_" + newMsg.id;
             rowElem.setAttribute("data-msg-id", newMsg.id);
           }
+          lastRenderedSender = newMsg.sender_name;
           return;
         }
       }
 
-      renderKakaoChatBubble(newMsg, true);
+      const isConsecutive = (newMsg.sender_name === lastRenderedSender && newMsg.msg_type === "chat");
+      renderKakaoChatBubble(newMsg, true, isConsecutive);
+      lastRenderedSender = newMsg.msg_type === "chat" ? newMsg.sender_name : null;
     })
     .subscribe();
 }
@@ -647,7 +651,7 @@ function extractBossNameFromMessage(text) {
   return "";
 }
 
-function renderKakaoChatBubble(msg, isRealtime = true) {
+function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
   const isMe = (msg.sender_name === myCurrentNick);
   const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
@@ -707,6 +711,99 @@ function renderKakaoChatBubble(msg, isRealtime = true) {
       </div>
     `;
   }
+  else if (msg.msg_type === "wish_report") {
+    let wishData = null;
+    try {
+      wishData = typeof msg.message === "object" ? msg.message : JSON.parse(msg.message);
+    } catch (e) {
+      wishData = null;
+    }
+
+    if (!wishData) {
+      html = `
+        <div class="chat-item-row other" id="${msgKey}">
+          <div class="chat-sender-avatar bot" style="background: rgba(56, 189, 248, 0.2) !important; border-color: #38bdf8 !important; color: #0284c7 !important;">🎁</div>
+          <div class="chat-msg-body">
+            <div class="chat-sender-name">정산알리미</div>
+            <div class="chat-bubble-flex">
+              <div class="chat-bubble">${formatMessageWithMentions(cleanMessageText)}</div>
+              <div class="chat-meta-box">
+                <span class="chat-unread-count">${unreadCount}</span>
+                <span class="chat-timestamp">${timeStr}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      const guildName = wishData.guild_name || "길드";
+      const bossName = wishData.boss_name || "보스";
+      const itemName = wishData.item_name || "아이템";
+      const winnerName = wishData.winner_name || "낙찰자";
+      const price = Number(wishData.price || 0).toLocaleString();
+      const perShare = Number(wishData.per_share || 0).toLocaleString();
+      const memberCount = wishData.member_count || 0;
+      const membersList = Array.isArray(wishData.members) ? wishData.members : [];
+      const dateStr = wishData.date_str || "10/20";
+      const reportTime = wishData.created_at ? formatKSTChatTime(wishData.created_at) : timeStr;
+
+      html = `
+        <div class="chat-item-row other" id="${msgKey}">
+          <div class="chat-sender-avatar bot" style="background: rgba(56, 189, 248, 0.2) !important; border-color: #38bdf8 !important; color: #0284c7 !important;">🎁</div>
+          <div class="chat-msg-body raid-msg-body">
+            <div class="chat-sender-name">정산알리미</div>
+            <div class="chat-bubble-flex">
+              <div class="finance-report-card">
+                <div class="fin-card-header">
+                  <div class="fin-card-title">
+                    <i class="fa-solid fa-gift text-warning"></i>
+                    <span class="text-truncate">[${escapeHtmlText(guildName)}] 아이템 분배 영수증</span>
+                  </div>
+                  <span class="fin-date-badge">${dateStr}</span>
+                </div>
+
+                <div class="fin-vault-hero" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0.04) 100%) !important; border-color: rgba(56, 189, 248, 0.3) !important;">
+                  <div style="min-width: 0; flex: 1; padding-right: 4px;">
+                    <div class="fin-vault-label"><i class="fa-solid fa-box-open me-1 text-info"></i>낙찰 아이템</div>
+                    <div class="fin-vault-val text-truncate" style="color: #38bdf8 !important; font-size: 12px !important;">[${escapeHtmlText(bossName)}] ${escapeHtmlText(itemName)}</div>
+                  </div>
+                  <div style="font-size: 1.2rem; flex-shrink: 0;">🎁</div>
+                </div>
+
+                <div class="fin-period-box" style="margin-bottom: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👑 낙찰자:</span>
+                    <strong style="color: #fbbf24; font-size: 11.5px;">${escapeHtmlText(winnerName)} (${price} D)</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px dashed var(--drawer-card-border);">
+                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👥 분배 대상:</span>
+                    <strong style="color: var(--kakao-notice-text); font-size: 11px;">참여자 ${memberCount}명</strong>
+                  </div>
+                </div>
+
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 7px; padding: 6px 9px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">💵 1인당 최종 배당금:</span>
+                  <strong style="font-size: 12px; font-weight: 900; color: #059669;">+${perShare} D</strong>
+                </div>
+
+                <div style="background: rgba(0, 0, 0, 0.03); border: 1px solid var(--drawer-card-border); border-radius: 6px; padding: 5px 8px; max-height: 75px; overflow-y: auto;">
+                  <div style="font-size: 10px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 2px;">수령자 명단 (${memberCount}명):</div>
+                  <div style="font-size: 10.5px; color: var(--kakao-notice-text); line-height: 1.4; word-break: break-all;">
+                    ${membersList.map(m => escapeHtmlText(m)).join(', ')}
+                  </div>
+                </div>
+              </div>
+
+              <div class="chat-meta-box">
+                <span class="chat-unread-count">${unreadCount}</span>
+                <span class="chat-timestamp">${reportTime}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+  }
   else if (msg.msg_type === "raid_report") {
     let raidData = null;
     try {
@@ -742,7 +839,6 @@ function renderKakaoChatBubble(msg, isRealtime = true) {
       const dropItems = (raidData.drop_items || "").trim();
       const createdAtIso = msg.created_at || new Date().toISOString();
 
-      // 잔여 시간 계산 (3분 = 180초)
       const diffSec = Math.floor((Date.now() - new Date(createdAtIso).getTime()) / 1000);
       const remainingSec = 180 - diffSec;
       const isExpired = remainingSec <= 0;
@@ -917,8 +1013,9 @@ function renderKakaoChatBubble(msg, isRealtime = true) {
     `;
   }
   else if (isMe) {
+    const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
-      <div class="chat-item-row me" id="${msgKey}">
+      <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
         <div class="chat-msg-body">
           <div class="chat-bubble-flex">
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
@@ -932,13 +1029,14 @@ function renderKakaoChatBubble(msg, isRealtime = true) {
     `;
   }
   else {
+    const consecutiveClass = isConsecutive ? "consecutive" : "";
+    const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
+    const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
     html = `
-      <div class="chat-item-row other" id="${msgKey}">
-        <div class="chat-sender-avatar">${senderAvatarIcon}</div>
+      <div class="chat-item-row other ${consecutiveClass}" id="${msgKey}">
+        <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
         <div class="chat-msg-body">
-          <div class="chat-sender-name">
-            <span>${escapeHtmlText(msg.sender_name)}</span>
-          </div>
+          ${nameBlock}
           <div class="chat-bubble-flex">
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
             <div class="chat-meta-box">
@@ -973,7 +1071,8 @@ function formatMessageWithMentions(text) {
       safeText = safeText.replaceAll(mentionTarget, `<span class="badge bg-light text-primary" style="font-size:0.75rem;">@${name}</span>`);
     }
   });
-  return safeText.replace(/\n/g, '<br>');
+  return safeText.replace(/
+/g, '<br>');
 }
 
 function handleInputState(textarea) {
@@ -1097,7 +1196,7 @@ window.triggerQuickCutAction = async function(bossName, btnId) {
     const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
 
     await apiRequest("guild_chats", "POST", [{
-      sender_name: "보스알리미",
+      sender_name: "보ส알리미",
       message: alertMessage,
       msg_type: "boss_alert",
       mentions: []
@@ -1213,20 +1312,17 @@ async function handleSendMessage() {
     return;
   }
 
-  // 1. 입력창 즉시 초기화 및 팝업 닫기 (체감 반응 0ms)
   textarea.value = "";
   handleInputState(textarea);
   closeMentionPopup();
 
   const isCommand = (text.startsWith('!') || text.startsWith('！'));
 
-  // 2. 멘션 감지
   const detectedMentions = [];
   cachedMemberList.forEach(m => {
     if (text.includes(`@${m.name}`)) detectedMentions.push(m.name);
   });
 
-  // 3. 🚀 [낙관적 UI (Optimistic UI)] 0.00초 즉시 화면에 내 말풍선 렌더링
   const tempId = "opt_" + Date.now() + "_" + Math.floor(Math.random() * 1000000);
   const optimisticMsg = {
     id: tempId,
@@ -1237,7 +1333,6 @@ async function handleSendMessage() {
     created_at: new Date().toISOString()
   };
 
-  // 중복 웹소켓 수신 방지 큐에 등록
   pendingOptimisticMessages.push({
     tempId: tempId,
     text: text,
@@ -1247,10 +1342,10 @@ async function handleSendMessage() {
     pendingOptimisticMessages = pendingOptimisticMessages.filter(p => Date.now() - p.time < 15000);
   }
 
-  // 0.00초 만에 즉시 내 말풍선 화면 출력!
-  renderKakaoChatBubble(optimisticMsg, false);
+  const isConsecutive = (myCurrentNick === lastRenderedSender);
+  renderKakaoChatBubble(optimisticMsg, false, isConsecutive);
+  lastRenderedSender = myCurrentNick;
 
-  // 4. 🌐 백그라운드 비동기 통신 (서버 저장 & 웹소켓 브로드캐스트)
   (async () => {
     try {
       const insertRes = await apiRequest("guild_chats", "POST", [{
@@ -1321,18 +1416,15 @@ function closeMentionPopup() {
   document.getElementById("mentionPopupBox").style.display = "none";
 }
 
-/* 🎯 [권한 가드 적용된 모듈 오픈 함수] */
 window.openModulePage = async function(pageName) {
   closeAllDrawers();
 
-  // 로그인한 유저의 직급/권한 확인 (슈퍼관리자 / 운영진 / 정예 / 일반 세분화)
   const myRole = localStorage.getItem("guild_my_role") || "일반";
   const adminRole = sessionStorage.getItem("admin_role") || "";
   const isSuper = (adminRole === "super");
   const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
   const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
-  // 관리자 전용 페이지 접근 가드
   if (pageName === 'PageSettings' && !isAdmin) {
     return showKakaoToast("설정 페이지는 관리자만 접근할 수 있습니다.", "⚠️");
   }
@@ -1375,7 +1467,7 @@ window.openModulePage = async function(pageName) {
     document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
     body.querySelectorAll("script").forEach(s => {
       const sc = document.createElement("script");
-      sc.className = "module-dynamic-script";
+      sc.className = "drawer-member-script";
       if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
       document.body.appendChild(sc);
     });
@@ -1391,10 +1483,6 @@ window.closeModuleOverlay = function() {
   if (typeof window.applyAppTheme === "function") window.applyAppTheme();
 };
 
-
-// ========================================================
-// [보스 토벌 3분 실시간 카운터 및 1클릭 자동 추가참여 기능]
-// ========================================================
 var raidCountdownInterval = null;
 
 function startRaidReportCountdowns() {
@@ -1439,7 +1527,6 @@ function startRaidReportCountdowns() {
   }, 1000);
 }
 
-// 🙋‍♂️ [추가참여] 1-클릭 개인비밀번호 생략 자동참여 처리기
 window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
   const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   if (!myNick) {
@@ -1448,13 +1535,11 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
     return;
   }
 
-  // 🚫 슈퍼관리자(시스템 관리 계정) 참여 원천 차단
   const currentRole = sessionStorage.getItem("admin_role") || "";
   if (myNick === "슈퍼관리자" || myNick.toLowerCase() === "admin" || currentRole === "super") {
     return showKakaoToast("슈퍼관리자는 시스템 관리 계정이므로 토벌에 참여할 수 없습니다.", "⚠️");
   }
 
-  // 🚫 실제 등록된 길드원 캐릭터만 참여 가능
   if (Array.isArray(cachedMemberList) && cachedMemberList.length > 0) {
     const isMember = cachedMemberList.some(m => m.name.toLowerCase() === myNick.toLowerCase());
     if (!isMember) {
@@ -1476,7 +1561,6 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
   }
 
   try {
-    // 1. 최신 boss_participations 레코드 조회
     const records = await apiRequest(`boss_participations?id=eq.${raidId}&select=*`);
     if (!records || records.length === 0) {
       if (btn) btn.disabled = false;
@@ -1486,7 +1570,6 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
     const raid = records[0];
     const createdAt = new Date(raid.created_at).getTime();
 
-    // 3분 시간 만료 검증
     if (Date.now() - createdAt > 180 * 1000) {
       if (btn) {
         btn.disabled = true;
@@ -1513,17 +1596,14 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
       return showKakaoToast("이미 참여 명단에 등록되어 있습니다!", "ℹ️");
     }
 
-    // 2. 길드원 추가 및 인원수 갱신
     members.push(myNick);
     const newCount = members.length;
 
-    // PATCH 업데이트
     await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
       members: members,
       member_count: newCount
     });
 
-    // 3. UI 즉시 갱신
     const countElem = document.getElementById(`raid_mcount_${raidId}`);
     if (countElem) countElem.innerText = newCount;
 
@@ -1541,7 +1621,6 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
       btn.innerHTML = `<i class="fa-solid fa-check me-1"></i><span class="btn-text">참여완료</span>`;
     }
 
-    // 4. 대화방에 안내 메시지 전송
     await apiRequest("guild_chats", "POST", [{
       sender_name: "토벌알리미",
       message: `🎉 [${myNick}] 님이 [${bossName}] 토벌에 추가 참여하였습니다! (현재 총 ${newCount}명)`,

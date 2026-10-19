@@ -1,1693 +1,755 @@
+/* ========================================================
+   [기본 테마 변수]
+   ======================================================== */
 :root {
-      /* [기본 라이트 모드 테마 변수] */
-      --kakao-bg: #bacee0;
-      --kakao-header-bg: #bacee0;
-      --kakao-header-text: #191919;
-      --kakao-header-subtext: #556677;
-      --kakao-header-icon-btn: #3b4b59;
-      --kakao-header-border: rgba(0, 0, 0, 0.05);
-
-      --kakao-yellow: #fee500;
-      --kakao-unread-yellow: #ffeb3b;
-      --kakao-bubble-me: #fee500;
-      --kakao-bubble-me-text: #000000;
-      --kakao-bubble-other: #ffffff;
-      --kakao-bubble-other-text: #000000;
-      --kakao-time-gray: #556677;
-
-      --kakao-notice-bg: #ffffff;
-      --kakao-notice-text: #000000;
-      --kakao-notice-border: rgba(0, 0, 0, 0.05);
-
-      --kakao-input-bg: #ffffff;
-      --kakao-input-border: #d4d4d4;
-      --kakao-input-text: #000000;
-      --kakao-input-placeholder: #94a3b8;
-      --kakao-input-icon: #64748b;
-
-      --drawer-width: 260px;
-      --drawer-bg: #ffffff;
-      --drawer-border: #dcdcdc;
-      --drawer-header-bg: #f7f7f7;
-      --drawer-header-border: #ececec;
-      --drawer-title: #191919;
-      --drawer-item-text: #333333;
-      --drawer-item-hover-bg: #f0f0f0;
-      --drawer-footer-bg: #fafafa;
-      --drawer-footer-border: #ececec;
-      --drawer-sub-text: #64748b;
-
-      --drawer-card-bg: #ffffff;
-      --drawer-card-border: #e2e8f0;
-
-      --modal-bg: #ffffff;
-      --modal-text: #191919;
-      --modal-input-bg: #f7f7f7;
-      --modal-input-border: #e2e8f0;
-      --modal-input-text: #191919;
-
-      --overlay-bg: #f1f5f9;
-      --overlay-header-bg: #ffffff;
-      --overlay-header-border: #e2e8f0;
-      --overlay-header-title: #191919;
-      --overlay-back-btn-color: #334155;
-      --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
-
-      /* 카카오톡 맞춤 슬림 스크롤바 색상 (라이트) */
-      --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
-      --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
-    }
-
-    /* 🌙 [다크 모드 전체 창 일괄 동기화] */
-    html.theme-dark,
-    body.theme-dark {
-      --kakao-bg: #1e232a;
-      --kakao-header-bg: #181d24;
-      --kakao-header-text: #f3f4f6;
-      --kakao-header-subtext: #9ca3af;
-      --kakao-header-icon-btn: #cbd5e1;
-      --kakao-header-border: #282f3a;
-
-      --kakao-yellow: #fee500;
-      --kakao-unread-yellow: #facc15;
-      --kakao-bubble-me: #fee500;
-      --kakao-bubble-me-text: #000000;
-      --kakao-bubble-other: #2b323c;
-      --kakao-bubble-other-text: #f3f4f6;
-      --kakao-time-gray: #9ca3af;
-
-      --kakao-notice-bg: #262d37;
-      --kakao-notice-text: #f3f4f6;
-      --kakao-notice-border: #374151;
-
-      --kakao-input-bg: #181d24;
-      --kakao-input-border: #282f3a;
-      --kakao-input-text: #f3f4f6;
-      --kakao-input-placeholder: #6b7280;
-      --kakao-input-icon: #9ca3af;
-
-      --drawer-bg: #181d24;
-      --drawer-border: #282f3a;
-      --drawer-header-bg: #13171d;
-      --drawer-header-border: #282f3a;
-      --drawer-title: #f3f4f6;
-      --drawer-item-text: #e5e7eb;
-      --drawer-item-hover-bg: #262d37;
-      --drawer-footer-bg: #13171d;
-      --drawer-footer-border: #282f3a;
-      --drawer-sub-text: #9ca3af;
-
-      --drawer-card-bg: #262d37;
-      --drawer-card-border: #374151;
-
-      --modal-bg: #1e2530;
-      --modal-text: #f3f4f6;
-      --modal-input-bg: #141922;
-      --modal-input-border: #2c3545;
-      --modal-input-text: #ffffff;
-
-      --overlay-bg: #0b1120;
-      --overlay-header-bg: #0f172a;
-      --overlay-header-border: #1e293b;
-      --overlay-header-title: #f8fafc;
-      --overlay-back-btn-color: #cbd5e1;
-      --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
-
-      /* 카카오톡 맞춤 슬림 스크롤바 색상 (다크) */
-      --kakao-scroll-thumb: rgba(255, 255, 255, 0.22);
-      --kakao-scroll-thumb-hover: rgba(255, 255, 255, 0.42);
-    }
-
-    /* ☀️ [라이트 모드 전체 창 일괄 동기화] */
-    html.theme-light,
-    body.theme-light {
-      --kakao-bg: #bacee0;
-      --kakao-header-bg: #bacee0;
-      --kakao-header-text: #191919;
-      --kakao-header-subtext: #556677;
-      --kakao-header-icon-btn: #3b4b59;
-      --kakao-header-border: rgba(0, 0, 0, 0.05);
-
-      --kakao-yellow: #fee500;
-      --kakao-unread-yellow: #ffeb3b;
-      --kakao-bubble-me: #fee500;
-      --kakao-bubble-me-text: #000000;
-      --kakao-bubble-other: #ffffff;
-      --kakao-bubble-other-text: #000000;
-      --kakao-time-gray: #556677;
-
-      --kakao-notice-bg: #ffffff;
-      --kakao-notice-text: #000000;
-      --kakao-notice-border: rgba(0, 0, 0, 0.05);
-
-      --kakao-input-bg: #ffffff;
-      --kakao-input-border: #d4d4d4;
-      --kakao-input-text: #000000;
-      --kakao-input-placeholder: #94a3b8;
-      --kakao-input-icon: #64748b;
-
-      --drawer-bg: #ffffff;
-      --drawer-border: #dcdcdc;
-      --drawer-header-bg: #f7f7f7;
-      --drawer-header-border: #ececec;
-      --drawer-title: #191919;
-      --drawer-item-text: #333333;
-      --drawer-item-hover-bg: #f0f0f0;
-      --drawer-footer-bg: #fafafa;
-      --drawer-footer-border: #ececec;
-      --drawer-sub-text: #64748b;
-
-      --drawer-card-bg: #ffffff;
-      --drawer-card-border: #e2e8f0;
-
-      --modal-bg: #ffffff;
-      --modal-text: #191919;
-      --modal-input-bg: #f7f7f7;
-      --modal-input-border: #e2e8f0;
-      --modal-input-text: #191919;
-
-      --overlay-bg: #f1f5f9;
-      --overlay-header-bg: #ffffff;
-      --overlay-header-border: #e2e8f0;
-      --overlay-header-title: #191919;
-      --overlay-back-btn-color: #334155;
-      --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
-
-      --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
-      --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box !important;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    /* ========================================================
-       [카카오톡 스타일 초슬림 캡슐 스크롤바 표준]
-       ======================================================== */
-    ::-webkit-scrollbar {
-      width: 5px !important;
-      height: 5px !important;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent !important;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--kakao-scroll-thumb) !important;
-      border-radius: 10px !important;
-      border: none !important;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--kakao-scroll-thumb-hover) !important;
-    }
-    ::-webkit-scrollbar-corner {
-      background: transparent !important;
-    }
-    ::-webkit-scrollbar-button,
-    ::-webkit-scrollbar-button:single-button,
-    ::-webkit-scrollbar-button:start,
-    ::-webkit-scrollbar-button:end,
-    ::-webkit-scrollbar-button:vertical:start:decrement,
-    ::-webkit-scrollbar-button:vertical:end:increment,
-    ::-webkit-scrollbar-button:horizontal:start:decrement,
-    ::-webkit-scrollbar-button:horizontal:end:increment {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-      background: transparent !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-    }
-    * {
-      -webkit-font-smoothing: subpixel-antialiased !important;
-      -moz-osx-font-smoothing: auto !important;
-      text-rendering: auto !important;
-      scrollbar-width: thin !important;
-      scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
-    }
-
-    /* 폰트어썸 아이콘 폰트 강제 보호 */
-    .fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
-      font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
-      font-style: normal !important;
-      font-variant: normal !important;
-      text-rendering: auto !important;
-      line-height: 1 !important;
-    }
-    .fa-solid, .fas {
-      font-weight: 900 !important;
-    }
-    .fa-regular, .far {
-      font-weight: 400 !important;
-    }
-    .fa-brands, .fab {
-      font-family: "Font Awesome 6 Brands" !important;
-      font-weight: 400 !important;
-    }
-
-    button, input, textarea, select {
-      font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-
-    html, body {
-      background-color: var(--kakao-bg) !important;
-      color: var(--kakao-header-text);
-      font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-      letter-spacing: 0;
-      -webkit-font-smoothing: subpixel-antialiased !important;
-      -moz-osx-font-smoothing: auto !important;
-      text-rendering: auto !important;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      display: flex;
-      position: relative;
-      width: 100%;
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
-
-    /* 서랍 공통 백드롭 */
-    .drawer-backdrop {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 99998;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-    }
-    .drawer-backdrop.show {
-      display: block;
-      opacity: 1;
-    }
-
-    /* 1. 햄버거 메뉴 서랍 (260px) */
-    .app-sidebar-drawer {
-      position: fixed;
-      top: 0; left: 0;
-      width: var(--drawer-width) !important;
-      height: 100vh;
-      background: var(--drawer-bg) !important;
-      border-right: 1px solid var(--drawer-border) !important;
-      z-index: 99999;
-      transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      box-shadow: none;
-      visibility: hidden;
-    }
-    .app-sidebar-drawer.open {
-      transform: translateX(0);
-      visibility: visible;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
-    }
-
-    .sidebar-header {
-      height: 50px;
-      padding: 0 14px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--drawer-header-border) !important;
-      background: var(--drawer-header-bg) !important;
-      flex-shrink: 0;
-      transition: background 0.2s ease;
-    }
-    .sidebar-brand {
-      font-weight: 800;
-      font-size: 0.92rem;
-      color: var(--drawer-title) !important;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .sidebar-close-btn {
-      background: none; border: none;
-      color: var(--drawer-sub-text) !important; font-size: 1.15rem;
-      cursor: pointer;
-    }
-
-    .sidebar-menu-list {
-      list-style: none;
-      padding: 8px 6px;
-      margin: 0;
-      overflow-y: auto;
-      flex: 1;
-    }
-    .sidebar-menu-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      color: var(--drawer-item-text) !important;
-      font-size: 0.84rem;
-      font-weight: 600;
-      border-radius: 7px;
-      cursor: pointer;
-      transition: background 0.12s ease;
-      margin-bottom: 2px;
-    }
-    .sidebar-menu-item:hover {
-      background: var(--drawer-item-hover-bg) !important;
-      color: var(--drawer-title) !important;
-    }
-    .sidebar-menu-item i { width: 20px; text-align: center; font-size: 0.95rem; }
-
-    .sidebar-footer {
-      padding: 10px 14px;
-      border-top: 1px solid var(--drawer-footer-border) !important;
-      background: var(--drawer-footer-bg) !important;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      transition: background 0.2s ease;
-    }
-    .user-profile-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-width: 0;
-      cursor: pointer;
-    }
-    .user-avatar {
-      width: 34px; height: 34px;
-      border-radius: 12px;
-      background: var(--drawer-card-bg) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      display: flex;
-      align-items: center; justify-content: center;
-      color: var(--drawer-title) !important; font-size: 1.1rem; font-weight: 800;
-      flex-shrink: 0;
-    }
-    .user-name-text {
-      font-size: 0.82rem; font-weight: 700; color: var(--drawer-title) !important;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .user-sub-class {
-      font-size: 0.68rem; color: #0284c7; font-weight: 600;
-    }
-    body.theme-dark .user-sub-class {
-      color: #38bdf8 !important;
-    }
-
-    /* 2. 길드원 목록 서랍 (260px) */
-    .app-members-drawer {
-      position: fixed;
-      top: 0; left: 0;
-      width: var(--drawer-width) !important;
-      height: 100vh;
-      background: var(--drawer-bg) !important;
-      border-right: 1px solid var(--drawer-border) !important;
-      z-index: 99999;
-      transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      visibility: hidden;
-    }
-    .app-members-drawer.open {
-      transform: translateX(0);
-      visibility: visible;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
-    }
-
-    /* 4. 보스타임 서랍 (260px) */
-    .app-boss-drawer {
-      position: fixed;
-      top: 0; left: 0;
-      width: var(--drawer-width) !important;
-      height: 100vh;
-      background: var(--drawer-bg) !important;
-      border-right: 1px solid var(--drawer-border) !important;
-      z-index: 99999;
-      transform: translateX(-100%);
-      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
-      display: flex;
-      flex-direction: column;
-      visibility: hidden;
-    }
-    .app-boss-drawer.open {
-      transform: translateX(0);
-      visibility: visible;
-      box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
-    }
-    .boss-drawer-header-bar {
-      height: 50px !important;
-      padding: 0 14px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      border-bottom: 1px solid var(--drawer-header-border) !important;
-      background: var(--drawer-header-bg) !important;
-      flex-shrink: 0 !important;
-      transition: background 0.2s ease;
-    }
-    .boss-drawer-title-box {
-      font-weight: 800 !important;
-      font-size: 0.95rem !important;
-      color: var(--drawer-title) !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 6px !important;
-      white-space: nowrap !important;
-    }
-    .boss-drawer-title-box i {
-      font-size: 0.95rem;
-      color: #f59e0b;
-    }
-    .boss-header-tools-box {
-      display: flex !important;
-      align-items: center !important;
-      gap: 4px !important;
-      flex-shrink: 0 !important;
-    }
-
-    .btn-tool-icon {
-      background: none; border: none;
-      color: var(--drawer-sub-text) !important; font-size: 0.95rem;
-      padding: 5px; cursor: pointer;
-      border-radius: 5px;
-      display: inline-flex; align-items: center; justify-content: center;
-      transition: transform 0.25s ease, background 0.15s ease;
-    }
-    .btn-tool-icon:hover {
-      background: var(--drawer-item-hover-bg) !important;
-      color: var(--drawer-title) !important;
-    }
-    .btn-tool-icon.rotating i {
-      animation: spinAnim 0.6s ease-in-out;
-    }
-    @keyframes spinAnim {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* 3. 메인 대화방 */
-    .app-main-layout {
-      flex: 1;
-      width: 100%;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      background: var(--kakao-bg) !important;
-      min-width: 0 !important;
-      overflow: hidden;
-      transition: background-color 0.2s ease;
-    }
-
-    .kakao-chat-header {
-      height: 48px;
-      padding: 0 10px 0 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: var(--kakao-header-bg) !important;
-      border-bottom: 1px solid var(--kakao-header-border) !important;
-      flex-shrink: 0;
-      z-index: 10;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
-    }
-    .header-left-area {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0 !important;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .btn-kakao-menu {
-      background: none;
-      border: none;
-      color: var(--kakao-header-icon-btn) !important;
-      font-size: 1.05rem;
-      cursor: pointer;
-      padding: 6px 4px;
-      border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.15s ease;
-    }
-    .btn-kakao-menu:hover {
-      background: rgba(0, 0, 0, 0.08);
-    }
-    body.theme-dark .btn-kakao-menu:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .room-avatar-circle {
-      width: 30px;
-      height: 30px;
-      border-radius: 11px;
-      background: #5b8296;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-size: 0.9rem;
-      flex-shrink: 0;
-    }
-    body.theme-dark .room-avatar-circle {
-      background: #334155;
-    }
-    .room-info-box {
-      display: flex;
-      flex-direction: column;
-      min-width: 0 !important;
-      flex: 1;
-      overflow: hidden;
-    }
-    .room-title-text {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--kakao-header-text) !important;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      line-height: 1.2;
-    }
-    .room-count-text {
-      font-size: 0.68rem;
-      color: var(--kakao-header-subtext) !important;
-      font-weight: 600;
-      cursor: pointer;
-      line-height: 1.2;
-      margin-top: 1px;
-    }
-
-    .header-right-tools {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      flex-shrink: 0;
-    }
-    .btn-kakao-head {
-      background: none;
-      border: none;
-      color: var(--kakao-header-icon-btn) !important;
-      font-size: 0.92rem;
-      cursor: pointer;
-      padding: 6px;
-      border-radius: 6px;
-      transition: background 0.15s ease;
-    }
-    .btn-kakao-head:hover {
-      background: rgba(0,0,0,0.08);
-    }
-    body.theme-dark .btn-kakao-head:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .kakao-notice-banner {
-      background: var(--kakao-notice-bg) !important;
-      border: 1px solid var(--kakao-notice-border) !important;
-      border-radius: 6px;
-      margin: 3px 6px 1px 6px;
-      padding: 4px 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: background-color 0.2s ease;
-    }
-    .notice-icon-part { color: #1e88e5; font-size: 0.78rem; margin-right: 6px; flex-shrink: 0; }
-    .notice-text-content {
-      flex: 1;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--kakao-notice-text) !important;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .chat-messages-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 6px 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .chat-item-row {
-      display: flex;
-      width: 100%;
-      margin-bottom: 2px;
-      align-items: flex-start !important;
-    }
-    .chat-item-row.other { align-items: flex-start !important; gap: 6px; }
-    .chat-item-row.me { justify-content: flex-end; }
-
-    .chat-sender-avatar {
-      width: 34px; height: 34px; border-radius: 13px;
-      background: var(--drawer-card-bg) !important; border: 1px solid var(--drawer-card-border) !important;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 0.95rem; color: #3b82f6; flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .chat-sender-avatar.bot {
-      background: #fee2e2 !important; border-color: #ef4444 !important; color: #dc2626 !important;
-    }
-    body.theme-dark .chat-sender-avatar.bot {
-      background: #262d37 !important; border-color: #ef4444 !important; color: #ff6b6b !important;
-    }
-
-    .chat-msg-body {
-      display: flex; flex-direction: column; max-width: 90%; width: fit-content !important;
-    }
-    .chat-sender-name {
-      font-size: 11px; color: #333333 !important; margin-bottom: 2px; font-weight: 500;
-    }
-    .chat-bubble-flex {
-      display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important;
-    }
-    .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
-
-    .chat-bubble {
-      display: inline-block; width: fit-content; max-width: 100%;
-      padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.42;
-      font-weight: 500 !important; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
-      letter-spacing: 0;
-    }
-    .chat-item-row.other .chat-bubble {
-      background: var(--kakao-bubble-other) !important;
-      color: var(--kakao-bubble-other-text) !important;
-    }
-    .chat-item-row.me .chat-bubble {
-      background: var(--kakao-bubble-me) !important;
-      color: var(--kakao-bubble-me-text) !important;
-    }
-
-    .chat-meta-box {
-      display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-bottom: 1px;
-    }
-    .chat-unread-count { color: var(--kakao-unread-yellow); font-size: 10px; font-weight: 700; margin-bottom: 1px; }
-    .chat-timestamp { font-size: 10px; color: var(--kakao-time-gray) !important; white-space: nowrap; font-weight: 400; }
-
-    .boss-brief-bubble {
-      background: var(--kakao-notice-bg) !important;
-      color: var(--kakao-notice-text) !important;
-      border-radius: 6px !important; padding: 8px 12px !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important; width: fit-content !important;
-    }
-    .boss-brief-title {
-      font-size: 12px !important; font-weight: 700 !important; color: var(--kakao-notice-text) !important;
-      border-bottom: 1px dashed var(--drawer-card-border) !important; display: flex !important; justify-content: space-between !important;
-      padding-bottom: 2px !important; margin-bottom: 3px !important;
-    }
-    .boss-brief-line {
-      display: flex !important; justify-content: space-between !important; gap: 12px !important;
-      padding: 2px 0 !important; font-size: 12px !important; font-weight: 500 !important;
-    }
-    .boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
-    body.theme-dark .boss-brief-line.spawned { color: #ff6b6b !important; font-weight: 700 !important; }
-
-    .boss-alert-mini-card {
-      background: var(--kakao-notice-bg) !important;
-      color: var(--kakao-notice-text) !important;
-      border-radius: 6px !important; padding: 8px 12px !important;
-      font-size: 12px !important; font-weight: 500 !important; line-height: 1.42 !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
-      letter-spacing: 0;
-    }
-    .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
-    .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
-    .boss-alert-mini-card.alert-spawn { border-left: 4px solid #ef4444 !important; background: #ffffff !important; color: #191919 !important; }
-    body.theme-dark .boss-alert-mini-card.alert-spawn { background: #262d37 !important; border-left: 4px solid #ef4444 !important; color: #ffffff !important; box-shadow: 0 1px 3px rgba(0,0,0,0.2) !important; }
-    .boss-alert-mini-card.alert-cut { border-left: 4px solid #38bdf8 !important; }
-
-    .spawn-card-wrapper { display: flex; flex-direction: column; width: fit-content; max-width: 100%; }
-    .spawn-msg-action-row { display: flex; justify-content: flex-end; width: 100%; margin-top: 3px; }
-    .btn-msg-sub-cut {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff;
-      border: 1px solid #b91c1c; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;
-    }
-    .btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled { background: #94a3b8 !important; border-color: #64748b !important; cursor: not-allowed !important; }
-
-    .kakao-input-area {
-      background: var(--kakao-input-bg) !important;
-      border-top: 1px solid var(--kakao-input-border) !important;
-      padding: 6px 10px 7px 10px; display: flex; flex-direction: column; flex-shrink: 0;
-      transition: background-color 0.2s ease;
-    }
-    .input-textarea-custom {
-      width: 100%; height: 38px; border: none; outline: none; resize: none;
-      font-size: 12px; font-weight: 500; letter-spacing: 0;
-      color: var(--kakao-input-text) !important;
-      background: transparent !important;
-    }
-    .input-textarea-custom::placeholder {
-      color: var(--kakao-input-placeholder) !important;
-    }
-    .input-bottom-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-    .input-tool-icons {
-      display: flex; gap: 10px;
-      color: var(--kakao-input-icon) !important;
-      font-size: 1rem; cursor: pointer;
-    }
-    .btn-kakao-send {
-      background: #e2e8f0; border: none; color: #94a3b8; font-size: 0.76rem; font-weight: 700; padding: 4px 14px; border-radius: 4px; cursor: pointer;
-    }
-    body.theme-dark .btn-kakao-send {
-      background: #282f3a; color: #64748b;
-    }
-    .btn-kakao-send.active { background: var(--kakao-yellow) !important; color: #191919 !important; }
-
-    .mention-popup-container {
-      position: absolute; bottom: 78px; left: 8px; max-width: 220px;
-      background: var(--modal-bg) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      color: var(--drawer-title) !important;
-      border-radius: 6px;
-      max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: none; z-index: 100;
-    }
-    .mention-item-row {
-      padding: 5px 8px; font-size: 0.75rem; font-weight: 600;
-      color: var(--drawer-title) !important;
-      cursor: pointer; border-bottom: 1px solid var(--drawer-header-border);
-    }
-    .mention-item-row:hover {
-      background: var(--drawer-item-hover-bg) !important;
-    }
-
-    .module-display-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background-color: var(--overlay-bg) !important;
-      z-index: 200; display: none; flex-direction: column;
-      transition: background-color 0.2s ease;
-    }
-    .module-nav-header {
-      height: 52px; padding: 0 14px;
-      background-color: var(--overlay-header-bg) !important;
-      border-bottom: 1px solid var(--overlay-header-border) !important;
-      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
-      transition: background-color 0.2s ease, border-color 0.2s ease;
-    }
-    .btn-kakao-overlay-back {
-      background: transparent; border: none;
-      color: var(--overlay-back-btn-color);
-      font-size: 0.88rem; font-weight: 600;
-      display: inline-flex; align-items: center; gap: 6px;
-      cursor: pointer; padding: 6px 10px; border-radius: 8px;
-      transition: background-color 0.15s ease, color 0.15s ease;
-      font-family: inherit;
-    }
-    .btn-kakao-overlay-back:hover {
-      background-color: var(--overlay-back-btn-hover-bg);
-      color: var(--overlay-header-title);
-    }
-    .overlay-nav-title-text {
-      font-size: 0.96rem; font-weight: 800;
-      color: var(--overlay-header-title);
-      letter-spacing: -0.3px;
-      font-family: inherit;
-    }
-    .module-scroll-body {
-      flex: 1; overflow-y: auto; padding: 12px 10px;
-      max-width: 600px; width: 100%; margin: 0 auto;
-    }
-
-    .kakao-modal-backdrop {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999999;
-      display: flex; align-items: center; justify-content: center; padding: 16px;
-    }
-    .kakao-modal-card {
-      background: var(--modal-bg) !important;
-      color: var(--modal-text) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      border-radius: 12px; width: 100%; max-width: 320px; padding: 18px 16px; text-align: center;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.35);
-      transition: background 0.2s ease;
-    }
-    .kakao-modal-card input, .kakao-modal-card select {
-      width: 100%;
-      background: var(--modal-input-bg) !important;
-      border: 1px solid var(--modal-input-border) !important;
-      color: var(--modal-input-text) !important;
-      border-radius: 7px; padding: 7px 10px; font-size: 0.82rem; outline: none; margin-bottom: 8px;
-    }
-
-    .class-preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
-    .class-preset-cell {
-      padding: 6px 3px; border-radius: 8px;
-      background: var(--modal-input-bg) !important;
-      border: 1px solid var(--modal-input-border) !important;
-      display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
-      transition: background 0.15s ease;
-    }
-    .class-preset-cell:hover {
-      background: var(--drawer-item-hover-bg) !important;
-    }
-    .class-icon-big { font-size: 1.2rem; line-height: 1; }
-    .class-title-small { font-size: 0.65rem; font-weight: 700; color: var(--modal-text) !important; }
-
-    .kakao-toast-box {
-      position: fixed; top: 22px; left: 50%; transform: translateX(-50%) translateY(-20px);
-      background: rgba(30, 30, 30, 0.95); color: #ffffff; padding: 9px 20px; border-radius: 24px;
-      font-size: 0.82rem; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-      z-index: 99999999; opacity: 0; pointer-events: none; transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-      white-space: nowrap; display: flex; align-items: center; gap: 8px;
-    }
-    .kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-    /* ========================================================
-       [길드원 서랍 & 보스타임 서랍 내부 컴포넌트 실시간 테마 연동]
-       ======================================================== */
-    .members-drawer-container {
-      background: var(--drawer-bg) !important;
-      color: var(--drawer-title) !important;
-    }
-    .members-top-bar {
-      background: var(--drawer-header-bg) !important;
-      border-bottom: 1px solid var(--drawer-header-border) !important;
-    }
-    .members-title-area {
-      color: var(--drawer-title) !important;
-    }
-    .members-search-box {
-      background: var(--drawer-bg) !important;
-      border-bottom: 1px solid var(--drawer-border) !important;
-    }
-    .members-search-input {
-      background: var(--modal-input-bg) !important;
-      border: 1px solid var(--modal-input-border) !important;
-      color: var(--drawer-title) !important;
-    }
-    .members-scroll-area {
-      background: var(--drawer-bg) !important;
-    }
-    .member-profile-row:hover {
-      background: var(--drawer-item-hover-bg) !important;
-    }
-    .member-avatar-round {
-      background: var(--drawer-card-bg) !important;
-      border-color: var(--drawer-card-border) !important;
-    }
-    .member-name-text {
-      color: var(--drawer-title) !important;
-    }
-    .member-sub-text {
-      color: var(--drawer-sub-text) !important;
-    }
-
-    #drawerBossListArea {
-      background: var(--drawer-bg) !important;
-    }
-    .drawer-boss-list-wrap {
-      background: var(--drawer-bg) !important;
-    }
-    .drawer-boss-card {
-      background: var(--drawer-card-bg) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
-    }
-    .drawer-boss-card:hover {
-      background: var(--drawer-item-hover-bg) !important;
-    }
-    .drawer-boss-name {
-      color: var(--drawer-title) !important;
-    }
-    .drawer-card-bottom {
-      color: var(--drawer-sub-text) !important;
-    }
-    body.theme-dark .drawer-boss-card.spawned {
-      background: #262d37 !important;
-      border-color: #ef4444 !important;
-    }
-  
-    /* 🌙 [PageMembers & PageTimer 상세 서랍 다크모드 심층 오버라이드] */
-    body.theme-dark .member-name-line {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .member-class-desc {
-      color: #38bdf8 !important;
-    }
-    body.theme-dark .member-avatar-round.master { background: rgba(245, 158, 11, 0.15) !important; border-color: #f59e0b !important; color: #fbbf24 !important; }
-    body.theme-dark .member-avatar-round.sub { background: rgba(192, 132, 252, 0.15) !important; border-color: #c084fc !important; color: #d8b4fe !important; }
-    body.theme-dark .member-avatar-round.elite { background: rgba(56, 189, 248, 0.15) !important; border-color: #38bdf8 !important; color: #38bdf8 !important; }
-    body.theme-dark .member-avatar-round.normal { background: #262d37 !important; border-color: #374151 !important; color: #94a3b8 !important; }
-    body.theme-dark .role-tag-master { background: rgba(245, 158, 11, 0.2) !important; color: #fbbf24 !important; }
-    body.theme-dark .role-tag-sub { background: rgba(192, 132, 252, 0.2) !important; color: #d8b4fe !important; }
-    body.theme-dark .role-tag-elite { background: rgba(56, 189, 248, 0.2) !important; color: #38bdf8 !important; }
-    body.theme-dark .role-tag-normal { background: #374151 !important; color: #cbd5e1 !important; }
-    body.theme-dark .btn-member-tool-icon:hover { background: #262d37 !important; }
-    body.theme-dark .btn-member-tool-icon.btn-gray-icon { color: #94a3b8 !important; }
-
-    body.theme-dark .drawer-boss-name { color: #f3f4f6 !important; }
-    body.theme-dark .drawer-card-bottom { color: #94a3b8 !important; }
-    body.theme-dark .badge-boss-state.state-wait { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
-    body.theme-dark .badge-boss-state.state-spawn { background: rgba(239, 68, 68, 0.2) !important; color: #ff6b6b !important; border-color: #ef4444 !important; font-weight: 700 !important; }
-    body.theme-dark .badge-boss-state.state-imminent { background: #3c2a10 !important; color: #fbbf24 !important; border-color: #78350f !important; }
-    body.theme-dark .badge-boss-state.state-normal { background: #0c2b4e !important; color: #38bdf8 !important; border-color: #0369a1 !important; }
-    body.theme-dark .btn-drawer-reserve { background: #1e293b !important; color: #cbd5e1 !important; border-color: #334155 !important; }
-    body.theme-dark .btn-drawer-reserve:hover { background: #262d37 !important; color: #ffffff !important; }
-    body.theme-dark .drawer-modal-card { background: #1e2530 !important; color: #f3f4f6 !important; border: 1px solid #374151 !important; }
-    body.theme-dark #drawerReserveBossName { color: #ffffff !important; }
-    body.theme-dark #drawerReserveTimeInput { background: #141922 !important; border-color: #2c3545 !important; color: #ffffff !important; }
-
-    /* 카카오톡 스크롤바 덮어쓰기 (모든 스크롤 영역 강제 적용) */
-    .chat-messages-container,
-    .sidebar-menu-list,
-    .members-scroll-area,
-    .drawer-boss-list-wrap,
-    .module-scroll-body,
-    .class-preset-grid,
-    .mention-popup-container {
-      scrollbar-width: thin !important;
-      scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
-    }
-    .chat-messages-container::-webkit-scrollbar-thumb,
-    .sidebar-menu-list::-webkit-scrollbar-thumb,
-    .members-scroll-area::-webkit-scrollbar-thumb,
-    .drawer-boss-list-wrap::-webkit-scrollbar-thumb,
-    .module-scroll-body::-webkit-scrollbar-thumb,
-    .class-preset-grid::-webkit-scrollbar-thumb,
-    .mention-popup-container::-webkit-scrollbar-thumb {
-      background: var(--kakao-scroll-thumb) !important;
-      border-radius: 10px !important;
-    }
-    .chat-messages-container::-webkit-scrollbar-thumb:hover,
-    .sidebar-menu-list::-webkit-scrollbar-thumb:hover,
-    .members-scroll-area::-webkit-scrollbar-thumb:hover,
-    .drawer-boss-list-wrap::-webkit-scrollbar-thumb:hover,
-    .module-scroll-body::-webkit-scrollbar-thumb:hover,
-    .class-preset-grid::-webkit-scrollbar-thumb:hover,
-    .mention-popup-container::-webkit-scrollbar-thumb:hover {
-      background: var(--kakao-scroll-thumb-hover) !important;
-    }
-
-    /* ========================================================
-       [전체 창 다크모드 / 라이트모드 100% 강제 일치 오버라이드]
-       ======================================================== */
-    /* 🌙 다크모드 적용 시 메인 대화방 & 모든 서랍 */
-    body.theme-dark,
-    body.theme-dark .app-main-layout {
-      background-color: #1e232a !important;
-    }
-    body.theme-dark .kakao-chat-header {
-      background-color: #181d24 !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .btn-kakao-menu,
-    body.theme-dark .btn-kakao-head {
-      color: #cbd5e1 !important;
-    }
-    body.theme-dark .room-title-text {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .room-count-text {
-      color: #9ca3af !important;
-    }
-    body.theme-dark .kakao-notice-banner {
-      background-color: #262d37 !important;
-      border: 1px solid #374151 !important;
-    }
-    body.theme-dark .notice-text-content {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .chat-messages-container {
-      background-color: #1e232a !important;
-    }
-    body.theme-dark .chat-sender-name {
-      color: #9ca3af !important;
-      font-weight: 500;
-    }
-    body.theme-dark .chat-timestamp {
-      color: #9ca3af !important;
-    }
-    body.theme-dark .chat-sender-avatar {
-      background-color: #262d37 !important;
-      border-color: #374151 !important;
-      color: #60a5fa !important;
-    }
-    body.theme-dark .chat-item-row.other .chat-bubble {
-      background-color: #2b323c !important;
-      color: #f3f4f6 !important;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
-    }
-    body.theme-dark .chat-item-row.me .chat-bubble {
-      background-color: #fee500 !important;
-      color: #191919 !important;
-    }
-    body.theme-dark .boss-brief-bubble {
-      background-color: #262d37 !important;
-      color: #f3f4f6 !important;
-      border: 1px solid #374151 !important;
-    }
-    body.theme-dark .boss-brief-title {
-      color: #f3f4f6 !important;
-      border-bottom: 1px dashed #374151 !important;
-    }
-    body.theme-dark .boss-alert-mini-card {
-      background-color: #262d37 !important;
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .kakao-input-area {
-      background-color: #181d24 !important;
-      border-top: 1px solid #282f3a !important;
-    }
-    body.theme-dark .input-textarea-custom {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .input-tool-icons {
-      color: #9ca3af !important;
-    }
-
-    /* 🌙 다크모드 적용 시 햄버거 메뉴 서랍 */
-    body.theme-dark .app-sidebar-drawer {
-      background-color: #181d24 !important;
-      border-right: 1px solid #282f3a !important;
-    }
-    body.theme-dark .sidebar-header {
-      background-color: #13171d !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .sidebar-brand {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .sidebar-close-btn {
-      color: #9ca3af !important;
-    }
-    body.theme-dark .sidebar-menu-item {
-      color: #e5e7eb !important;
-    }
-    body.theme-dark .sidebar-menu-item:hover {
-      background-color: #262d37 !important;
-      color: #ffffff !important;
-    }
-    body.theme-dark .sidebar-footer {
-      background-color: #13171d !important;
-      border-top: 1px solid #282f3a !important;
-    }
-    body.theme-dark .user-name-text {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .user-avatar {
-      background-color: #262d37 !important;
-      border-color: #374151 !important;
-      color: #f3f4f6 !important;
-    }
-
-    /* 🌙 다크모드 적용 시 길드원 서랍 & 보스타임 서랍 & 모달 */
-    body.theme-dark .app-members-drawer,
-    body.theme-dark #drawerMembersContainer,
-    body.theme-dark .members-drawer-container {
-      background-color: #181d24 !important;
-      border-right-color: #282f3a !important;
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .members-top-bar {
-      background-color: #13171d !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .members-title-area {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .members-search-box {
-      background-color: #181d24 !important;
-      border-bottom: 1px solid #282f3a !important;
-    }
-    body.theme-dark .members-search-input {
-      background-color: #262d37 !important;
-      border: 1px solid #374151 !important;
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .members-scroll-area {
-      background-color: #181d24 !important;
-    }
-    body.theme-dark .member-profile-row:hover {
-      background-color: #262d37 !important;
-    }
-    body.theme-dark .app-boss-drawer,
-    body.theme-dark #drawerBossListArea,
-    body.theme-dark .drawer-boss-list-wrap {
-      background-color: #181d24 !important;
-      border-right-color: #282f3a !important;
-    }
-    body.theme-dark .boss-drawer-header-bar {
-      background-color: #13171d !important;
-      border-bottom-color: #282f3a !important;
-    }
-    body.theme-dark .boss-drawer-title-box {
-      color: #f3f4f6 !important;
-    }
-    body.theme-dark .kakao-modal-card {
-      background-color: #1e2530 !important;
-      color: #f3f4f6 !important;
-      border-color: #374151 !important;
-    }
-    body.theme-dark .kakao-modal-card input,
-    body.theme-dark .kakao-modal-card select {
-      background-color: #141922 !important;
-      border-color: #2c3545 !important;
-      color: #ffffff !important;
-    }
-
-    /* ☀️ 라이트모드 복귀 시 메인 대화방 & 모든 서랍 */
-    body.theme-light,
-    body.theme-light .app-main-layout {
-      background-color: #bacee0 !important;
-    }
-    body.theme-light .kakao-chat-header {
-      background-color: #bacee0 !important;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-    }
-    body.theme-light .btn-kakao-menu,
-    body.theme-light .btn-kakao-head {
-      color: #3b4b59 !important;
-    }
-    body.theme-light .room-title-text {
-      color: #191919 !important;
-    }
-    body.theme-light .room-count-text {
-      color: #556677 !important;
-    }
-    body.theme-light .kakao-notice-banner {
-      background-color: #ffffff !important;
-      border: 1px solid rgba(0, 0, 0, 0.05) !important;
-    }
-    body.theme-light .notice-text-content {
-      color: #222222 !important;
-    }
-    body.theme-light .chat-messages-container {
-      background-color: #bacee0 !important;
-    }
-    body.theme-light .chat-sender-name {
-      color: #333333 !important;
-    }
-    body.theme-light .chat-timestamp {
-      color: #556677 !important;
-    }
-    body.theme-light .chat-sender-avatar {
-      background-color: #ffffff !important;
-      border-color: #dcdcdc !important;
-      color: #3b82f6 !important;
-    }
-    body.theme-light .chat-item-row.other .chat-bubble {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.06) !important;
-    }
-    body.theme-light .chat-item-row.me .chat-bubble {
-      background-color: #fee500 !important;
-      color: #191919 !important;
-    }
-    body.theme-light .boss-brief-bubble {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-      border: none !important;
-    }
-    body.theme-light .boss-brief-title {
-      color: #191919 !important;
-      border-bottom: 1px dashed #cbd5e1 !important;
-    }
-    body.theme-light .boss-alert-mini-card {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-    }
-    body.theme-light .kakao-input-area {
-      background-color: #ffffff !important;
-      border-top: 1px solid #d4d4d4 !important;
-    }
-    body.theme-light .input-textarea-custom {
-      color: #191919 !important;
-    }
-    body.theme-light .input-tool-icons {
-      color: #64748b !important;
-    }
-
-    body.theme-light .app-sidebar-drawer {
-      background-color: #ffffff !important;
-      border-right: 1px solid #dcdcdc !important;
-    }
-    body.theme-light .sidebar-header {
-      background-color: #f7f7f7 !important;
-      border-bottom: 1px solid #ececec !important;
-    }
-    body.theme-light .sidebar-brand {
-      color: #191919 !important;
-    }
-    body.theme-light .sidebar-close-btn {
-      color: #707070 !important;
-    }
-    body.theme-light .sidebar-menu-item {
-      color: #333333 !important;
-    }
-    body.theme-light .sidebar-menu-item:hover {
-      background-color: #f0f0f0 !important;
-      color: #111111 !important;
-    }
-    body.theme-light .sidebar-footer {
-      background-color: #fafafa !important;
-      border-top: 1px solid #ececec !important;
-    }
-    body.theme-light .user-name-text {
-      color: #191919 !important;
-    }
-    body.theme-light .user-avatar {
-      background-color: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
-      color: #0f172a !important;
-    }
-
-    body.theme-light .app-members-drawer,
-    body.theme-light #drawerMembersContainer,
-    body.theme-light .members-drawer-container {
-      background-color: #ffffff !important;
-      border-right-color: #dcdcdc !important;
-      color: #191919 !important;
-    }
-    body.theme-light .members-top-bar {
-      background-color: #ffffff !important;
-      border-bottom: 1px solid #ececec !important;
-    }
-    body.theme-light .members-title-area {
-      color: #191919 !important;
-    }
-    body.theme-light .members-search-box {
-      background-color: #ffffff !important;
-      border-bottom: 1px solid #f0f0f0 !important;
-    }
-    body.theme-light .members-search-input {
-      background-color: #f4f5f7 !important;
-      border: none !important;
-      color: #191919 !important;
-    }
-    body.theme-light .members-scroll-area {
-      background-color: #ffffff !important;
-    }
-    body.theme-light .member-profile-row:hover {
-      background-color: #f8fafc !important;
-    }
-    body.theme-light .app-boss-drawer,
-    body.theme-light #drawerBossListArea,
-    body.theme-light .drawer-boss-list-wrap {
-      background-color: #ffffff !important;
-      border-right-color: #dcdcdc !important;
-    }
-    body.theme-light .boss-drawer-header-bar {
-      background-color: #ffffff !important;
-      border-bottom-color: #ececec !important;
-    }
-    body.theme-light .boss-drawer-title-box {
-      color: #191919 !important;
-    }
-    body.theme-light .kakao-modal-card {
-      background-color: #ffffff !important;
-      color: #191919 !important;
-      border-color: #e2e8f0 !important;
-    }
-    body.theme-light .kakao-modal-card input,
-    body.theme-light .kakao-modal-card select {
-      background-color: #f7f7f7 !important;
-      border-color: #e2e8f0 !important;
-      color: #191919 !important;
-    }
-
-    /* ========================================================
-       [카카오톡 스타일 토벌 보고서 카드 & 실시간 추가참여/3분 카운터]
-       ======================================================== */
-    .raid-msg-body {
-      max-width: 95% !important;
-      width: fit-content !important;
-    }
-    .raid-report-card {
-      background: var(--kakao-notice-bg) !important;
-      color: var(--kakao-notice-text) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      border-radius: 12px !important;
-      padding: 10px 12px !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-      width: 290px !important;
-      max-width: 100% !important;
-      letter-spacing: 0;
-      transition: background 0.2s ease, border-color 0.2s ease;
-    }
-    .raid-card-header {
-      border-bottom: 1px dashed var(--drawer-card-border) !important;
-      padding-bottom: 6px !important;
-      margin-bottom: 8px !important;
-    }
-    .raid-boss-title {
-      font-size: 13px !important;
-      font-weight: 800 !important;
-      color: var(--kakao-notice-text) !important;
-      display: flex !important;
-      align-items: center !important;
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-    }
-    .raid-time-sub {
-      font-size: 10.5px !important;
-      color: var(--kakao-time-gray) !important;
-      margin-top: 2px !important;
-    }
-    .badge-war-normal {
-      background: rgba(56, 189, 248, 0.15) !important;
-      color: #0284c7 !important;
-      border: 1px solid rgba(56, 189, 248, 0.4) !important;
-      font-size: 10px !important;
-      font-weight: 700 !important;
-      padding: 2px 6px !important;
-    }
-    body.theme-dark .badge-war-normal {
-      background: rgba(56, 189, 248, 0.2) !important;
-      color: #38bdf8 !important;
-      border-color: #0284c7 !important;
-    }
-    .badge-war-internal {
-      background: rgba(245, 158, 11, 0.15) !important;
-      color: #d97706 !important;
-      border: 1px solid rgba(245, 158, 11, 0.4) !important;
-      font-size: 10px !important;
-      font-weight: 700 !important;
-      padding: 2px 6px !important;
-    }
-    body.theme-dark .badge-war-internal {
-      background: rgba(245, 158, 11, 0.2) !important;
-      color: #fbbf24 !important;
-      border-color: #d97706 !important;
-    }
-    .badge-war-inter {
-      background: rgba(239, 68, 68, 0.15) !important;
-      color: #dc2626 !important;
-      border: 1px solid rgba(239, 68, 68, 0.4) !important;
-      font-size: 10px !important;
-      font-weight: 700 !important;
-      padding: 2px 6px !important;
-    }
-    body.theme-dark .badge-war-inter {
-      background: rgba(239, 68, 68, 0.2) !important;
-      color: #ff6b6b !important;
-      border-color: #ef4444 !important;
-    }
-    .raid-card-item-row {
-      font-size: 11.5px !important;
-      line-height: 1.4 !important;
-      margin-bottom: 6px !important;
-      background: rgba(0, 0, 0, 0.03) !important;
-      border-radius: 6px !important;
-      padding: 4px 7px !important;
-    }
-    body.theme-dark .raid-card-item-row {
-      background: rgba(255, 255, 255, 0.04) !important;
-    }
-    .raid-row-label {
-      font-weight: 700 !important;
-      color: var(--kakao-notice-text) !important;
-      margin-right: 4px !important;
-    }
-    .raid-item-val {
-      color: #e11d48 !important;
-      font-weight: 700 !important;
-      word-break: break-all !important;
-    }
-    body.theme-dark .raid-item-val {
-      color: #fb7185 !important;
-    }
-    .raid-members-box {
-      margin-bottom: 8px !important;
-    }
-    .raid-members-header {
-      font-size: 11px !important;
-      font-weight: 700 !important;
-      color: var(--kakao-notice-text) !important;
-      margin-bottom: 4px !important;
-    }
-    .raid-members-tags {
-      display: flex !important;
-      flex-wrap: wrap !important;
-      gap: 3px !important;
-      max-height: 90px !important;
-      overflow-y: auto !important;
-      padding: 1px !important;
-    }
-    .raid-member-pill {
-      font-size: 10.5px !important;
-      background: #f1f5f9 !important;
-      color: #334155 !important;
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 4px !important;
-      padding: 1px 5px !important;
-      font-weight: 600 !important;
-      white-space: nowrap !important;
-    }
-    body.theme-dark .raid-member-pill {
-      background: #141922 !important;
-      color: #cbd5e1 !important;
-      border-color: #2c3545 !important;
-    }
-    .raid-member-pill.new-joined {
-      background: rgba(254, 229, 0, 0.25) !important;
-      border-color: #fee500 !important;
-      color: #191919 !important;
-      font-weight: 700 !important;
-    }
-    body.theme-dark .raid-member-pill.new-joined {
-      background: rgba(254, 229, 0, 0.2) !important;
-      border-color: #fee500 !important;
-      color: #fee500 !important;
-    }
-    .raid-action-row {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      gap: 8px !important;
-      margin-top: 8px !important;
-      padding-top: 6px !important;
-      border-top: 1px solid var(--drawer-card-border) !important;
-    }
-    .btn-raid-self-add {
-      flex: 1 !important;
-      background: #fee500 !important;
-      color: #191919 !important;
-      border: 1px solid #e5cf00 !important;
-      font-size: 12px !important;
-      font-weight: 800 !important;
-      padding: 6px 10px !important;
-      border-radius: 6px !important;
-      cursor: pointer !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      transition: all 0.15s ease !important;
-      white-space: nowrap !important;
-    }
-    .btn-raid-self-add:hover:not(:disabled) {
-      background: #fada0a !important;
-      transform: translateY(-1px) !important;
-    }
-    .btn-raid-self-add:active:not(:disabled) {
-      transform: translateY(0) !important;
-    }
-    .btn-raid-self-add.joined {
-      background: #e2e8f0 !important;
-      color: #64748b !important;
-      border-color: #cbd5e1 !important;
-      cursor: default !important;
-    }
-    body.theme-dark .btn-raid-self-add.joined {
-      background: #1e293b !important;
-      color: #94a3b8 !important;
-      border-color: #334155 !important;
-    }
-    .btn-raid-self-add.disabled, .btn-raid-self-add:disabled {
-      background: #e2e8f0 !important;
-      color: #94a3b8 !important;
-      border-color: #cbd5e1 !important;
-      cursor: not-allowed !important;
-    }
-    body.theme-dark .btn-raid-self-add.disabled, body.theme-dark .btn-raid-self-add:disabled {
-      background: #1e293b !important;
-      color: #64748b !important;
-      border-color: #334155 !important;
-    }
-    .badge-raid-timer {
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      padding: 5px 8px !important;
-      border-radius: 6px !important;
-      font-size: 11px !important;
-      font-weight: 700 !important;
-      white-space: nowrap !important;
-      flex-shrink: 0 !important;
-      min-width: 65px !important;
-      letter-spacing: 0.5px !important;
-    }
-    .badge-raid-timer.active {
-      background: rgba(245, 158, 11, 0.15) !important;
-      color: #d97706 !important;
-      border: 1px solid rgba(245, 158, 11, 0.4) !important;
-    }
-    body.theme-dark .badge-raid-timer.active {
-      background: rgba(245, 158, 11, 0.2) !important;
-      color: #facc15 !important;
-      border-color: #d97706 !important;
-    }
-    .badge-raid-timer.expired {
-      background: #f1f5f9 !important;
-      color: #94a3b8 !important;
-      border: 1px solid #cbd5e1 !important;
-    }
-    body.theme-dark .badge-raid-timer.expired {
-      background: #1e2530 !important;
-      color: #64748b !important;
-      border-color: #2c3545 !important;
-    }
-
-    /* ========================================================
-       [카카오톡 스타일 길드금고 보고서 카드 (다크/라이트 테마 완벽 동기화)]
-       ======================================================== */
-    /* 금고알리미 말풍선 이중 패딩/배경 제거 */
-    .boss-brief-bubble:has(.finance-report-card) {
-      background: transparent !important;
-      border: none !important;
-      padding: 0 !important;
-      box-shadow: none !important;
-    }
-    .boss-brief-bubble > .finance-report-card {
-      margin: 0 !important;
-    }
-
-    .finance-report-card {
-      background: var(--kakao-notice-bg) !important;
-      color: var(--kakao-notice-text) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      border-radius: 12px !important;
-      padding: 10px 10px !important;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-      width: 320px !important;
-      max-width: 100% !important;
-      letter-spacing: 0;
-      transition: background 0.2s ease, border-color 0.2s ease;
-      box-sizing: border-box !important;
-    }
-    .fin-card-header {
-      border-bottom: 1px dashed var(--drawer-card-border) !important;
-      padding-bottom: 6px !important;
-      margin-bottom: 8px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      gap: 4px !important;
-      width: 100% !important;
-      box-sizing: border-box !important;
-    }
-    .fin-card-title {
-      font-size: 11.5px !important;
-      font-weight: 800 !important;
-      color: var(--kakao-notice-text) !important;
-      display: flex !important;
-      align-items: center !important;
-      gap: 3px !important;
-      white-space: nowrap !important;
-      letter-spacing: -0.6px !important;
-      flex: 1 1 auto !important;
-      min-width: 0 !important;
-    }
-    .fin-card-title span {
-      white-space: nowrap !important;
-      overflow: visible !important;
-      letter-spacing: -0.6px !important;
-      display: inline-block !important;
-    }
-    .fin-date-badge {
-      background: rgba(245, 158, 11, 0.15) !important;
-      color: #d97706 !important;
-      border: 1px solid rgba(245, 158, 11, 0.35) !important;
-      font-size: 9px !important;
-      font-weight: 700 !important;
-      padding: 1.5px 4px !important;
-      border-radius: 4px !important;
-      white-space: nowrap !important;
-      flex-shrink: 0 !important;
-      letter-spacing: -0.4px !important;
-      line-height: 1.2 !important;
-    }
-    body.theme-dark .fin-date-badge {
-      background: rgba(245, 158, 11, 0.2) !important;
-      color: #facc15 !important;
-      border-color: rgba(245, 158, 11, 0.5) !important;
-    }
-    .fin-vault-hero {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%) !important;
-      border: 1px solid rgba(245, 158, 11, 0.3) !important;
-      border-radius: 9px !important;
-      padding: 8px 10px !important;
-      margin-bottom: 8px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-    }
-    .fin-vault-label {
-      font-size: 10.5px !important;
-      color: var(--kakao-time-gray) !important;
-      font-weight: 600 !important;
-    }
-    .fin-vault-val {
-      font-size: 16px !important;
-      font-weight: 900 !important;
-      color: #f59e0b !important;
-      line-height: 1.2 !important;
-      margin-top: 2px !important;
-    }
-    .fin-period-box {
-      background: rgba(0, 0, 0, 0.03) !important;
-      border: 1px solid var(--drawer-card-border) !important;
-      border-radius: 8px !important;
-      padding: 7px 9px !important;
-      margin-bottom: 8px !important;
-      font-size: 11.5px !important;
-    }
-    body.theme-dark .fin-period-box {
-      background: rgba(255, 255, 255, 0.04) !important;
-    }
-    .fin-badge-income {
-      background: rgba(16, 185, 129, 0.1) !important;
-      border: 1px solid rgba(16, 185, 129, 0.3) !important;
-      color: #059669 !important;
-      border-radius: 6px !important;
-      padding: 5px 8px !important;
-    }
-    body.theme-dark .fin-badge-income {
-      background: rgba(16, 185, 129, 0.18) !important;
-      border-color: rgba(16, 185, 129, 0.4) !important;
-      color: #34d85, 129, 0.4) !important;
-      color: #34d399 !important;
-    }
-    .fin-badge-expense {
-      background: rgba(239, 68, 68, 0.1) !important;
-      border: 1px solid rgba(239, 68, 68, 0.3) !important;
-      color: #dc2626 !important;
-      border-radius: 6px !important;
-      padding: 5px 8px !important;
-    }
-    body.theme-dark .fin-badge-expense {
-      background: rgba(239, 68, 68, 0.18) !important;
-      border-color: rgba(239, 68, 68, 0.4) !important;
-      color: #f87171 !important;
-    }
-    .fin-deposit-row {
-      display: flex !important;
-      justify-content: space-between !important;
-      align-items: center !important;
-      font-size: 11px !important;
-      padding: 3px 6px !important;
-      background: rgba(0, 0, 0, 0.02) !important;
-      border-radius: 4px !important;
-      margin-bottom: 2px !important;
-    }
-    body.theme-dark .fin-deposit-row {
-      background: rgba(255, 255, 255, 0.03) !important;
-    }
+  --kakao-bg: #bacee0;
+  --kakao-header-bg: #bacee0;
+  --kakao-header-text: #191919;
+  --kakao-header-subtext: #556677;
+  --kakao-header-icon-btn: #3b4b59;
+  --kakao-header-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #ffeb3b;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #ffffff;
+  --kakao-bubble-other-text: #000000;
+  --kakao-time-gray: #556677;
+
+  --kakao-notice-bg: #ffffff;
+  --kakao-notice-text: #000000;
+  --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-input-bg: #ffffff;
+  --kakao-input-border: #d4d4d4;
+  --kakao-input-text: #000000;
+  --kakao-input-placeholder: #94a3b8;
+  --kakao-input-icon: #64748b;
+
+  --drawer-width: 260px;
+  --drawer-bg: #ffffff;
+  --drawer-border: #dcdcdc;
+  --drawer-header-bg: #f7f7f7;
+  --drawer-header-border: #ececec;
+  --drawer-title: #191919;
+  --drawer-item-text: #333333;
+  --drawer-item-hover-bg: #f0f0f0;
+  --drawer-footer-bg: #fafafa;
+  --drawer-footer-border: #ececec;
+  --drawer-sub-text: #64748b;
+
+  --drawer-card-bg: #ffffff;
+  --drawer-card-border: #e2e8f0;
+
+  --modal-bg: #ffffff;
+  --modal-text: #191919;
+  --modal-input-bg: #f7f7f7;
+  --modal-input-border: #e2e8f0;
+  --modal-input-text: #191919;
+
+  --overlay-bg: #f1f5f9;
+  --overlay-header-bg: #ffffff;
+  --overlay-header-border: #e2e8f0;
+  --overlay-header-title: #191919;
+  --overlay-back-btn-color: #334155;
+  --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+  --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
+}
+
+html.theme-dark,
+body.theme-dark {
+  --kakao-bg: #1e232a;
+  --kakao-header-bg: #181d24;
+  --kakao-header-text: #f3f4f6;
+  --kakao-header-subtext: #9ca3af;
+  --kakao-header-icon-btn: #cbd5e1;
+  --kakao-header-border: #282f3a;
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #facc15;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #2b323c;
+  --kakao-bubble-other-text: #f3f4f6;
+  --kakao-time-gray: #9ca3af;
+
+  --kakao-notice-bg: #262d37;
+  --kakao-notice-text: #f3f4f6;
+  --kakao-notice-border: #374151;
+
+  --kakao-input-bg: #181d24;
+  --kakao-input-border: #282f3a;
+  --kakao-input-text: #f3f4f6;
+  --kakao-input-placeholder: #6b7280;
+  --kakao-input-icon: #9ca3af;
+
+  --drawer-bg: #181d24;
+  --drawer-border: #282f3a;
+  --drawer-header-bg: #13171d;
+  --drawer-header-border: #282f3a;
+  --drawer-title: #f3f4f6;
+  --drawer-item-text: #e5e7eb;
+  --drawer-item-hover-bg: #262d37;
+  --drawer-footer-bg: #13171d;
+  --drawer-footer-border: #282f3a;
+  --drawer-sub-text: #9ca3af;
+
+  --drawer-card-bg: #262d37;
+  --drawer-card-border: #374151;
+
+  --modal-bg: #1e2530;
+  --modal-text: #f3f4f6;
+  --modal-input-bg: #141922;
+  --modal-input-border: #2c3545;
+  --modal-input-text: #ffffff;
+
+  --overlay-bg: #0b1120;
+  --overlay-header-bg: #0f172a;
+  --overlay-header-border: #1e293b;
+  --overlay-header-title: #f8fafc;
+  --overlay-back-btn-color: #cbd5e1;
+  --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
+
+  --kakao-scroll-thumb: rgba(255, 255, 255, 0.22);
+  --kakao-scroll-thumb-hover: rgba(255, 255, 255, 0.42);
+}
+
+html.theme-light,
+body.theme-light {
+  --kakao-bg: #bacee0;
+  --kakao-header-bg: #bacee0;
+  --kakao-header-text: #191919;
+  --kakao-header-subtext: #556677;
+  --kakao-header-icon-btn: #3b4b59;
+  --kakao-header-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #ffeb3b;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #ffffff;
+  --kakao-bubble-other-text: #000000;
+  --kakao-time-gray: #556677;
+
+  --kakao-notice-bg: #ffffff;
+  --kakao-notice-text: #000000;
+  --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-input-bg: #ffffff;
+  --kakao-input-border: #d4d4d4;
+  --kakao-input-text: #000000;
+  --kakao-input-placeholder: #94a3b8;
+  --kakao-input-icon: #64748b;
+
+  --drawer-width: 260px;
+  --drawer-bg: #ffffff;
+  --drawer-border: #dcdcdc;
+  --drawer-header-bg: #f7f7f7;
+  --drawer-header-border: #ececec;
+  --drawer-title: #191919;
+  --drawer-item-text: #333333;
+  --drawer-item-hover-bg: #f0f0f0;
+  --drawer-footer-bg: #fafafa;
+  --drawer-footer-border: #ececec;
+  --drawer-sub-text: #64748b;
+
+  --drawer-card-bg: #ffffff;
+  --drawer-card-border: #e2e8f0;
+
+  --modal-bg: #ffffff;
+  --modal-text: #191919;
+  --modal-input-bg: #f7f7f7;
+  --modal-input-border: #e2e8f0;
+  --modal-input-text: #191919;
+
+  --overlay-bg: #f1f5f9;
+  --overlay-header-bg: #ffffff;
+  --overlay-header-border: #e2e8f0;
+  --overlay-header-title: #191919;
+  --overlay-back-btn-color: #334155;
+  --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+  --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--kakao-scroll-thumb) !important;
+  border-radius: 10px !important;
+  border: none !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--kakao-scroll-thumb-hover) !important;
+}
+::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:single-button,
+::-webkit-scrollbar-button:start,
+::-webkit-scrollbar-button:end {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+* {
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  -moz-osx-font-smoothing: auto !important;
+  text-rendering: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
+}
+
+.fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-rendering: auto !important;
+  line-height: 1 !important;
+}
+.fa-solid, .fas { font-weight: 900 !important; }
+.fa-regular, .far { font-weight: 400 !important; }
+.fa-brands, .fab { font-family: "Font Awesome 6 Brands" !important; font-weight: 400 !important; }
+
+button, input, textarea, select {
+  font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+html, body {
+  background-color: var(--kakao-bg) !important;
+  color: var(--kakao-header-text);
+  font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  letter-spacing: 0;
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  -moz-osx-font-smoothing: auto !important;
+  text-rendering: auto !important;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  position: relative;
+  width: 100%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99998;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.drawer-backdrop.show {
+  display: block;
+  opacity: 1;
+}
+
+.app-sidebar-drawer {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--drawer-width) !important;
+  height: 100vh;
+  background: var(--drawer-bg) !important;
+  border-right: 1px solid var(--drawer-border) !important;
+  z-index: 99999;
+  transform: translateX(-100%);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  visibility: hidden;
+}
+.app-sidebar-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
+}
+
+.sidebar-header {
+  height: 50px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--drawer-header-border) !important;
+  background: var(--drawer-header-bg) !important;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+.sidebar-brand {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--drawer-title) !important;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sidebar-close-btn {
+  background: none; border: none;
+  color: var(--drawer-sub-text) !important; font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.sidebar-menu-list {
+  list-style: none;
+  padding: 8px 6px;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--drawer-item-text) !important;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  margin-bottom: 2px;
+}
+.sidebar-menu-item:hover {
+  background: var(--drawer-item-hover-bg) !important;
+  color: var(--drawer-title) !important;
+}
+.sidebar-menu-item i { width: 20px; text-align: center; font-size: 0.95rem; }
+
+.sidebar-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--drawer-footer-border) !important;
+  background: var(--drawer-footer-bg) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  cursor: pointer;
+}
+.user-avatar {
+  width: 34px; height: 34px;
+  border-radius: 12px;
+  background: var(--drawer-card-bg) !important;
+  border: 1px solid var(--drawer-card-border) !important;
+  display: flex;
+  align-items: center; justify-content: center;
+  color: var(--drawer-title) !important; font-size: 1.1rem; font-weight: 800;
+  flex-shrink: 0;
+}
+.user-name-text {
+  font-size: 0.82rem; font-weight: 700; color: var(--drawer-title) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-sub-class {
+  font-size: 0.68rem; color: #0284c7; font-weight: 600;
+}
+body.theme-dark .user-sub-class { color: #38bdf8 !important; }
+
+.app-members-drawer,
+.app-boss-drawer {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--drawer-width) !important;
+  height: 100vh;
+  background: var(--drawer-bg) !important;
+  border-right: 1px solid var(--drawer-border) !important;
+  z-index: 99999;
+  transform: translateX(-100%);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  visibility: hidden;
+}
+.app-members-drawer.open,
+.app-boss-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
+}
+.boss-drawer-header-bar {
+  height: 50px !important;
+  padding: 0 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid var(--drawer-header-border) !important;
+  background: var(--drawer-header-bg) !important;
+  flex-shrink: 0 !important;
+}
+.boss-drawer-title-box {
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  color: var(--drawer-title) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+}
+.boss-drawer-title-box i { font-size: 0.95rem; color: #f59e0b; }
+.boss-header-tools-box {
+  display: flex !important; align-items: center !important; gap: 4px !important; flex-shrink: 0 !important;
+}
+
+.btn-tool-icon {
+  background: none; border: none;
+  color: var(--drawer-sub-text) !important; font-size: 0.95rem;
+  padding: 5px; cursor: pointer; border-radius: 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform 0.25s ease, background 0.15s ease;
+}
+.btn-tool-icon:hover {
+  background: var(--drawer-item-hover-bg) !important;
+  color: var(--drawer-title) !important;
+}
+.btn-tool-icon.rotating i { animation: spinAnim 0.6s ease-in-out; }
+@keyframes spinAnim {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.app-main-layout {
+  flex: 1;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--kakao-bg) !important;
+  min-width: 0 !important;
+  overflow: hidden;
+  transition: background-color 0.2s ease;
+}
+
+.kakao-chat-header {
+  height: 48px;
+  padding: 0 10px 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--kakao-header-bg) !important;
+  border-bottom: 1px solid var(--kakao-header-border) !important;
+  flex-shrink: 0;
+  z-index: 10;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.header-left-area {
+  display: flex; align-items: center; gap: 10px; min-width: 0 !important; flex: 1; overflow: hidden;
+}
+.btn-kakao-menu {
+  background: none; border: none;
+  color: var(--kakao-header-icon-btn) !important; font-size: 1.05rem;
+  cursor: pointer; padding: 6px 4px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.btn-kakao-menu:hover { background: rgba(0, 0, 0, 0.08); }
+body.theme-dark .btn-kakao-menu:hover { background: rgba(255, 255, 255, 0.08); }
+
+.room-avatar-circle {
+  width: 30px; height: 30px; border-radius: 11px;
+  background: #5b8296; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 0.9rem; flex-shrink: 0;
+}
+body.theme-dark .room-avatar-circle { background: #334155; }
+.room-info-box { display: flex; flex-direction: column; min-width: 0 !important; flex: 1; overflow: hidden; }
+.room-title-text {
+  font-size: 0.85rem; font-weight: 700; color: var(--kakao-header-text) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+}
+.room-count-text {
+  font-size: 0.68rem; color: var(--kakao-header-subtext) !important; font-weight: 600;
+  cursor: pointer; line-height: 1.2; margin-top: 1px;
+}
+
+.header-right-tools { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.btn-kakao-head {
+  background: none; border: none; color: var(--kakao-header-icon-btn) !important;
+  font-size: 0.92rem; cursor: pointer; padding: 6px; border-radius: 6px;
+}
+.btn-kakao-head:hover { background: rgba(0,0,0,0.08); }
+body.theme-dark .btn-kakao-head:hover { background: rgba(255, 255, 255, 0.08); }
+
+.kakao-notice-banner {
+  background: var(--kakao-notice-bg) !important;
+  border: 1px solid var(--kakao-notice-border) !important;
+  border-radius: 6px; margin: 3px 6px 1px 6px; padding: 4px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); cursor: pointer; flex-shrink: 0;
+}
+.notice-icon-part { color: #1e88e5; font-size: 0.78rem; margin-right: 6px; flex-shrink: 0; }
+.notice-text-content {
+  flex: 1; font-size: 12px; font-weight: 400; color: var(--kakao-notice-text) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.chat-messages-container {
+  flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 0px;
+}
+
+/* 🎯 카카오톡 스타일: 서로 다른 닉네임 간 14px 여백, 연속 메시지 2px 바짝 붙임 */
+.chat-item-row {
+  display: flex;
+  width: 100%;
+  margin-bottom: 14px !important;
+  align-items: flex-start !important;
+}
+.chat-item-row.consecutive {
+  margin-bottom: 2px !important;
+}
+.chat-item-row.other { align-items: flex-start !important; gap: 6px; }
+.chat-item-row.me { justify-content: flex-end; }
+
+.chat-sender-avatar {
+  width: 34px; height: 34px; border-radius: 13px;
+  background: var(--drawer-card-bg) !important; border: 1px solid var(--drawer-card-border) !important;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 0.95rem; color: #3b82f6; flex-shrink: 0; margin-top: 1px;
+}
+.chat-sender-avatar.bot { background: #fee2e2 !important; border-color: #ef4444 !important; color: #dc2626 !important; }
+body.theme-dark .chat-sender-avatar.bot { background: #262d37 !important; border-color: #ef4444 !important; color: #ff6b6b !important; }
+
+.chat-msg-body { display: flex; flex-direction: column; max-width: 90%; width: fit-content !important; }
+
+.chat-sender-name {
+  font-size: 11.5px;
+  color: #191919 !important;
+  margin-bottom: 4px !important;
+  font-weight: 700 !important;
+}
+body.theme-dark .chat-sender-name { color: #f3f4f6 !important; font-weight: 700 !important; }
+body.theme-light .chat-sender-name { color: #191919 !important; font-weight: 700 !important; }
+
+.chat-bubble-flex { display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important; }
+.chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
+
+.chat-bubble {
+  display: inline-block; width: fit-content; max-width: 100%;
+  padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.42;
+  font-weight: 400; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
+}
+.chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other) !important; color: var(--kakao-bubble-other-text) !important; }
+.chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me) !important; color: var(--kakao-bubble-me-text) !important; }
+
+.chat-meta-box { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-bottom: 1px; }
+.chat-unread-count { color: var(--kakao-unread-yellow); font-size: 10px; font-weight: 700; margin-bottom: 1px; }
+.chat-timestamp { font-size: 10px; color: var(--kakao-time-gray) !important; white-space: nowrap; font-weight: 400; }
+
+.boss-brief-bubble {
+  background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
+  border-radius: 6px !important; padding: 8px 12px !important; box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important; width: fit-content !important;
+}
+.boss-brief-title {
+  font-size: 12px !important; font-weight: 700 !important; color: var(--kakao-notice-text) !important;
+  border-bottom: 1px dashed var(--drawer-card-border) !important; display: flex !important; justify-content: space-between !important;
+  padding-bottom: 2px !important; margin-bottom: 3px !important;
+}
+.boss-brief-line {
+  display: flex !important; justify-content: space-between !important; gap: 12px !important;
+  padding: 2px 0 !important; font-size: 12px !important; font-weight: 400 !important;
+}
+.boss-brief-line.spawned { color: #dc2626 !important; font-weight: 700 !important; }
+body.theme-dark .boss-brief-line.spawned { color: #ff6b6b !important; font-weight: 700 !important; }
+
+.boss-alert-mini-card {
+  background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
+  border-radius: 6px !important; padding: 8px 12px !important; font-size: 12px !important; font-weight: 400 !important; line-height: 1.42 !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+}
+.boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
+.boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
+.boss-alert-mini-card.alert-spawn { border-left: 4px solid #ef4444 !important; background: #ffffff !important; color: #191919 !important; }
+body.theme-dark .boss-alert-mini-card.alert-spawn { background: #262d37 !important; border-left: 4px solid #ef4444 !important; color: #ffffff !important; }
+.boss-alert-mini-card.alert-cut { border-left: 4px solid #38bdf8 !important; }
+
+.spawn-card-wrapper { display: flex; flex-direction: column; width: fit-content; max-width: 100%; }
+.spawn-msg-action-row { display: flex; justify-content: flex-end; width: 100%; margin-top: 3px; }
+.btn-msg-sub-cut {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff;
+  border: 1px solid #b91c1c; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px; cursor: pointer;
+}
+.btn-msg-sub-cut.disabled, .btn-msg-sub-cut:disabled { background: #94a3b8 !important; border-color: #64748b !important; cursor: not-allowed !important; }
+
+.kakao-input-area {
+  background: var(--kakao-input-bg) !important; border-top: 1px solid var(--kakao-input-border) !important;
+  padding: 6px 10px 7px 10px; display: flex; flex-direction: column; flex-shrink: 0;
+}
+.input-textarea-custom {
+  width: 100%; height: 38px; border: none; outline: none; resize: none;
+  font-size: 12px; font-weight: 400; color: var(--kakao-input-text) !important; background: transparent !important;
+}
+.input-textarea-custom::placeholder { color: var(--kakao-input-placeholder) !important; }
+.input-bottom-tools { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.input-tool-icons { display: flex; gap: 10px; color: var(--kakao-input-icon) !important; font-size: 1rem; cursor: pointer; }
+.btn-kakao-send {
+  background: #e2e8f0; border: none; color: #94a3b8; font-size: 0.76rem; font-weight: 700; padding: 4px 14px; border-radius: 4px; cursor: pointer;
+}
+body.theme-dark .btn-kakao-send { background: #282f3a; color: #64748b; }
+.btn-kakao-send.active { background: var(--kakao-yellow) !important; color: #191919 !important; }
+
+.mention-popup-container {
+  position: absolute; bottom: 78px; left: 8px; max-width: 220px;
+  background: var(--modal-bg) !important; border: 1px solid var(--drawer-card-border) !important;
+  color: var(--drawer-title) !important; border-radius: 6px;
+  max-height: 150px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: none; z-index: 100;
+}
+.mention-item-row {
+  padding: 5px 8px; font-size: 0.75rem; font-weight: 600; color: var(--drawer-title) !important;
+  cursor: pointer; border-bottom: 1px solid var(--drawer-header-border);
+}
+.mention-item-row:hover { background: var(--drawer-item-hover-bg) !important; }
+
+.module-display-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: var(--overlay-bg) !important; z-index: 200; display: none; flex-direction: column;
+}
+.module-nav-header {
+  height: 52px; padding: 0 14px; background-color: var(--overlay-header-bg) !important;
+  border-bottom: 1px solid var(--overlay-header-border) !important;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.btn-kakao-overlay-back {
+  background: transparent; border: none; color: var(--overlay-back-btn-color);
+  font-size: 0.88rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+  cursor: pointer; padding: 6px 10px; border-radius: 8px; font-family: inherit;
+}
+.btn-kakao-overlay-back:hover { background-color: var(--overlay-back-btn-hover-bg); color: var(--overlay-header-title); }
+.overlay-nav-title-text { font-size: 0.96rem; font-weight: 800; color: var(--overlay-header-title); letter-spacing: -0.3px; font-family: inherit; }
+.module-scroll-body { flex: 1; overflow-y: auto; padding: 12px 10px; max-width: 600px; width: 100%; margin: 0 auto; }
+
+.kakao-modal-backdrop {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999999;
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+}
+.kakao-modal-card {
+  background: var(--modal-bg) !important; color: var(--modal-text) !important;
+  border: 1px solid var(--drawer-card-border) !important; border-radius: 12px; width: 100%; max-width: 320px; padding: 18px 16px; text-align: center;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.35);
+}
+.kakao-modal-card input, .kakao-modal-card select {
+  width: 100%; background: var(--modal-input-bg) !important; border: 1px solid var(--modal-input-border) !important;
+  color: var(--modal-input-text) !important; border-radius: 7px; padding: 7px 10px; font-size: 0.82rem; outline: none; margin-bottom: 8px;
+}
+
+.class-preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
+.class-preset-cell {
+  padding: 6px 3px; border-radius: 8px; background: var(--modal-input-bg) !important;
+  border: 1px solid var(--modal-input-border) !important; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+}
+.class-preset-cell:hover { background: var(--drawer-item-hover-bg) !important; }
+.class-icon-big { font-size: 1.2rem; line-height: 1; }
+.class-title-small { font-size: 0.65rem; font-weight: 700; color: var(--modal-text) !important; }
+
+.kakao-toast-box {
+  position: fixed; top: 22px; left: 50%; transform: translateX(-50%) translateY(-20px);
+  background: rgba(30, 30, 30, 0.95); color: #ffffff; padding: 9px 20px; border-radius: 24px;
+  font-size: 0.82rem; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  z-index: 99999999; opacity: 0; pointer-events: none; transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap; display: flex; align-items: center; gap: 8px;
+}
+.kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+body.theme-dark .member-name-line { color: #f3f4f6 !important; }
+body.theme-dark .member-class-desc { color: #38bdf8 !important; }
+body.theme-dark .drawer-boss-name { color: #f3f4f6 !important; }
+body.theme-dark .drawer-card-bottom { color: #94a3b8 !important; }
+
+.raid-msg-body { max-width: 95% !important; width: fit-content !important; }
+.raid-report-card {
+  background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
+  border: 1px solid var(--drawer-card-border) !important; border-radius: 12px !important;
+  padding: 10px 12px !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  width: 290px !important; max-width: 100% !important;
+}
+.raid-card-header { border-bottom: 1px dashed var(--drawer-card-border) !important; padding-bottom: 6px !important; margin-bottom: 8px !important; }
+.raid-boss-title {
+  font-size: 13px !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
+  display: flex !important; align-items: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+}
+.raid-time-sub { font-size: 10.5px !important; color: var(--kakao-time-gray) !important; margin-top: 2px !important; }
+.badge-war-normal { background: rgba(56, 189, 248, 0.15) !important; color: #0284c7 !important; border: 1px solid rgba(56, 189, 248, 0.4) !important; font-size: 10px !important; font-weight: 700 !important; padding: 2px 6px !important; }
+.badge-war-internal { background: rgba(245, 158, 11, 0.15) !important; color: #d97706 !important; border: 1px solid rgba(245, 158, 11, 0.4) !important; font-size: 10px !important; font-weight: 700 !important; padding: 2px 6px !important; }
+.badge-war-inter { background: rgba(239, 68, 68, 0.15) !important; color: #dc2626 !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; font-size: 10px !important; font-weight: 700 !important; padding: 2px 6px !important; }
+.raid-card-item-row { font-size: 11.5px !important; line-height: 1.4 !important; margin-bottom: 6px !important; background: rgba(0,0,0,0.03) !important; border-radius: 6px !important; padding: 4px 7px !important; }
+body.theme-dark .raid-card-item-row { background: rgba(255,255,255,0.04) !important; }
+.raid-row-label { font-weight: 700 !important; color: var(--kakao-notice-text) !important; margin-right: 4px !important; }
+.raid-item-val { color: #e11d48 !important; font-weight: 700 !important; word-break: break-all !important; }
+body.theme-dark .raid-item-val { color: #fb7185 !important; }
+.raid-members-box { margin-bottom: 8px !important; }
+.raid-members-header { font-size: 11px !important; font-weight: 700 !important; color: var(--kakao-notice-text) !important; margin-bottom: 4px !important; }
+.raid-members-tags { display: flex !important; flex-wrap: wrap !important; gap: 3px !important; max-height: 90px !important; overflow-y: auto !important; }
+.raid-member-pill { font-size: 10.5px !important; background: #f1f5f9 !important; color: #334155 !important; border: 1px solid #cbd5e1 !important; border-radius: 4px !important; padding: 1px 5px !important; font-weight: 600 !important; white-space: nowrap !important; }
+body.theme-dark .raid-member-pill { background: #141922 !important; color: #cbd5e1 !important; border-color: #2c3545 !important; }
+.raid-member-pill.new-joined { background: rgba(254, 229, 0, 0.25) !important; border-color: #fee500 !important; color: #191919 !important; font-weight: 700 !important; }
+body.theme-dark .raid-member-pill.new-joined { background: rgba(254, 229, 0, 0.2) !important; border-color: #fee500 !important; color: #fee500 !important; }
+.raid-action-row { display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important; margin-top: 8px !important; padding-top: 6px !important; border-top: 1px solid var(--drawer-card-border) !important; }
+.btn-raid-self-add {
+  flex: 1 !important; background: #fee500 !important; color: #191919 !important; border: 1px solid #e5cf00 !important;
+  font-size: 12px !important; font-weight: 800 !important; padding: 6px 10px !important; border-radius: 6px !important; cursor: pointer !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important;
+}
+.btn-raid-self-add.joined { background: #e2e8f0 !important; color: #64748b !important; border-color: #cbd5e1 !important; cursor: default !important; }
+body.theme-dark .btn-raid-self-add.joined { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
+.badge-raid-timer {
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 5px 8px !important;
+  border-radius: 6px !important; font-size: 11px !important; font-weight: 700 !important; white-space: nowrap !important; flex-shrink: 0 !important; min-width: 65px !important;
+}
+.badge-raid-timer.active { background: rgba(245, 158, 11, 0.15) !important; color: #d97706 !important; border: 1px solid rgba(245, 158, 11, 0.4) !important; }
+body.theme-dark .badge-raid-timer.active { background: rgba(245, 158, 11, 0.2) !important; color: #facc15 !important; border-color: #d97706 !important; }
+.badge-raid-timer.expired { background: #f1f5f9 !important; color: #94a3b8 !important; border: 1px solid #cbd5e1 !important; }
+body.theme-dark .badge-raid-timer.expired { background: #1e2530 !important; color: #64748b !important; border-color: #2c3545 !important; }
+
+.finance-report-card {
+  background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
+  border: 1px solid var(--drawer-card-border) !important; border-radius: 12px !important;
+  padding: 10px 12px !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important; width: 290px !important; max-width: 100% !important;
+}
+.fin-card-header {
+  border-bottom: 1px dashed var(--drawer-card-border) !important; padding-bottom: 6px !important; margin-bottom: 8px !important;
+  display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 6px !important;
+}
+.fin-card-title {
+  font-size: 13px !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
+  display: flex !important; align-items: center !important; gap: 5px !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+}
+.fin-date-badge {
+  background: rgba(245, 158, 11, 0.15) !important; color: #d97706 !important; border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  font-size: 10px !important; font-weight: 700 !important; padding: 2px 6px !important; border-radius: 5px !important; white-space: nowrap !important; flex-shrink: 0 !important;
+}
+body.theme-dark .fin-date-badge { background: rgba(245, 158, 11, 0.2) !important; color: #facc15 !important; border-color: rgba(245, 158, 11, 0.5) !important; }
+.fin-vault-hero {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important; border-radius: 9px !important; padding: 8px 10px !important; margin-bottom: 8px !important;
+  display: flex !important; align-items: center !important; justify-content: space-between !important;
+}
+.fin-vault-label { font-size: 10.5px !important; color: var(--kakao-time-gray) !important; font-weight: 600 !important; }
+.fin-vault-val { font-size: 16px !important; font-weight: 900 !important; color: #f59e0b !important; line-height: 1.2 !important; margin-top: 2px !important; }
+.fin-period-box { background: rgba(0,0,0,0.03) !important; border: 1px solid var(--drawer-card-border) !important; border-radius: 8px !important; padding: 7px 9px !important; margin-bottom: 8px !important; font-size: 11.5px !important; }
+body.theme-dark .fin-period-box { background: rgba(255,255,255,0.04) !important; }
