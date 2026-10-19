@@ -549,11 +549,11 @@
       flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 3px;
     }
     
-    /* 🎯 서로 다른 닉네임 간의 여백(숨통) 확보를 위해 하단 마진 확대 */
+    /* 🎯 서로 다른 발신자(닉네임) 간의 여백(숨통) 확보를 위한 넉넉한 하단 마진 (16px) */
     .chat-item-row {
       display: flex;
       width: 100%;
-      margin-bottom: 8px !important;
+      margin-bottom: 16px !important;
       align-items: flex-start !important;
     }
     .chat-item-row.other { align-items: flex-start !important; gap: 6px; }
@@ -1521,7 +1521,10 @@
       const userRole = targetMember.role || "일반";
       localStorage.setItem("guild_my_role", userRole);
 
-      if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
+      if (userRole === "길드장" || userRole === "길마") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "admin");
+      } else if (userRole === "부길드장" || userRole === "부길마") {
         sessionStorage.setItem("admin_auth", "true");
         sessionStorage.setItem("admin_role", "admin");
       } else if (userRole === "정예") {
