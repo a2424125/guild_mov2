@@ -1,6 +1,3 @@
-/* ========================================================
-   [기본 테마 변수]
-   ======================================================== */
 :root {
   --kakao-bg: #bacee0;
   --kakao-header-bg: #bacee0;
@@ -514,7 +511,7 @@ body.theme-dark .btn-kakao-head:hover { background: rgba(255, 255, 255, 0.08); }
   flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 0px;
 }
 
-/* 🎯 카카오톡 스타일: 서로 다른 닉네임 간 14px 여백, 연속 메시지 5px 여백으로 자연스럽게 정돈 */
+/* 🎯 서로 다른 닉네임 간 14px 여백, 연속 메시지는 5px 여백 */
 .chat-item-row {
   display: flex;
   width: 100%;
