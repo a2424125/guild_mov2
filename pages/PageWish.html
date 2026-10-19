@@ -135,7 +135,6 @@
     padding: 5px 3px; border-radius: 6px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
-  /* 탭 네비게이션 스타일 */
   .wish-tab-header {
     display: flex; gap: 6px; margin-bottom: 14px; background: var(--input-bg, #111827);
     padding: 4px; border-radius: 10px; border: 1px solid var(--input-border, #374151);
@@ -159,7 +158,6 @@
     <h6 class="fw-bold mb-0 text-white">아이템 분배 및 N/1 정산</h6>
   </div>
 
-  <!-- 상단 탭 메뉴 (미정산 / 분배 완료 이력) -->
   <div class="wish-tab-header">
     <button type="button" class="wish-tab-btn active" id="tabBtnUnsettled" onclick="switchWishTab('unsettled')">
       <i class="fa-solid fa-gift"></i> 미정산 분배 등록 <span class="badge bg-danger rounded-pill" id="unsettledBadgeCount">0</span>
@@ -169,9 +167,7 @@
     </button>
   </div>
 
-  <!-- 탭 1: 미정산 분배 등록 컨테이너 -->
   <div id="tabContentUnsettled" class="wish-tab-content active">
-    <!-- 1. 보유 대기 아이템 -->
     <div class="wish-section-box">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <span class="small fw-bold text-secondary">📦 분배 대기 아이템 (터치하여 선택)</span>
@@ -184,7 +180,6 @@
       </div>
     </div>
 
-    <!-- 2. 낙찰 및 지원금 설정 -->
     <div class="wish-section-box mb-0">
       <div class="small fw-bold text-white mb-2"><i class="fa-solid fa-gavel me-1 text-info"></i> 낙찰 등록 & N/1 분배</div>
 
@@ -192,7 +187,6 @@
         <div class="text-secondary small">선택된 아이템이 없습니다. 위 목록에서 선택하세요.</div>
       </div>
 
-      <!-- 게임 경매 수수료 토글 -->
       <div class="mb-3 p-2 rounded" style="background: var(--input-bg, #111827); border: 1px solid var(--input-border, #374151);">
         <div class="d-flex justify-content-between align-items-center mb-1">
           <label class="form-label small text-secondary mb-0">⚖️ 게임 시스템 경매 수수료 (5%)</label>
@@ -208,7 +202,6 @@
         </div>
       </div>
 
-      <!-- 가져간 길드원 & 낙찰 금액 -->
       <div class="row g-2 mb-3">
         <div class="col-6">
           <label class="form-label small text-secondary mb-1">가져간 길드원</label>
@@ -222,7 +215,6 @@
         </div>
       </div>
 
-      <!-- 길드비용 적립 비율 & 추가 지원금 -->
       <div class="row g-2 mb-3">
         <div class="col-6">
           <label class="form-label small text-secondary mb-1">🏛️ 길드비용 적립 비율</label>
@@ -240,7 +232,6 @@
         </div>
       </div>
 
-      <!-- 정산 금액 미리보기 인포박스 -->
       <div id="shareCalcNotice" class="p-3 rounded mb-3" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); display: none;">
         <div class="small text-secondary d-flex justify-content-between">
           <span>게임 경매 수수료 (5%):</span>
@@ -270,7 +261,6 @@
     </div>
   </div>
 
-  <!-- 탭 2: 분배 완료 이력 컨테이너 -->
   <div id="tabContentHistory" class="wish-tab-content">
     <div class="wish-section-box mb-0">
       <div class="d-flex justify-content-between align-items-center mb-2">
@@ -291,7 +281,6 @@
   <span id="wishToastMsg">알림</span>
 </div>
 
-<!-- 최근 분배 이력 클릭 시 수령자 확인 모달 -->
 <div id="wishDetailModal" class="wish-modal-backdrop" style="display: none;" onclick="if(event.target===this) window.closeWishDetailModal()">
   <div class="wish-modal-box">
     <div class="d-flex justify-content-between align-items-start mb-3 pb-2 border-bottom border-secondary border-opacity-25 text-start">
@@ -333,7 +322,6 @@
   </div>
 </div>
 
-<!-- 낙찰 완료 결과 모달 -->
 <div id="wishSuccessModal" class="wish-modal-backdrop" style="display: none;">
   <div class="wish-modal-box">
     <div style="width: 52px; height: 52px; border-radius: 50%; background: rgba(56, 189, 248, 0.15); border: 2px solid #38bdf8; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 12px;">
@@ -657,7 +645,6 @@
         throw new Error(res?.error || "트랜잭션 실행 중 오류가 발생했습니다.");
       }
 
-      // 대화방 공유 페이로드 객체 전송
       const chatReportPayload = {
         boss_name: window.currentSelectedItem.bossName,
         item_name: window.currentSelectedItem.itemName,
