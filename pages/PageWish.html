@@ -900,6 +900,7 @@
         date_str: dateStr
       };
 
+      // 🚀 [핵심 수정] msg_type을 명시적으로 "wish_report"로 지정하여 index.html 카드 렌더링 정상 작동
       await apiRequest("guild_chats", "POST", [{
         sender_name: "정산알리미",
         message: JSON.stringify(receiptPayload),
