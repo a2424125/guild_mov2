@@ -1,0 +1,905 @@
+<!-- ==========================================
+     [ECLIPSE 길드관리] 길드 공지사항 모듈
+     경로: pages/PageNotice.html
+     설정창 권한 정책(perm_notice_write) 연동, 커튼형 작성폼,
+     카카오톡 모바일 퍼스트 고대비 다크/라이트 테마
+     ========================================== -->
+<style>
+  /* 🎨 라이트 모드 (기본 :root 및 명시적 body/html.theme-light) */
+  :root,
+  body.theme-light,
+  html.theme-light {
+    --notice-bg: #f8fafc;
+    --notice-card-bg: #ffffff;
+    --notice-card-border: #e2e8f0;
+    --notice-section-bg: #f8fafc;
+    --notice-section-border: #e2e8f0;
+    --notice-input-bg: #ffffff;
+    --notice-input-border: #cbd5e1;
+    --notice-input-text: #0f172a;
+    --notice-placeholder: #64748b;
+    --notice-text-main: #0f172a;
+    --notice-text-sub: #475569;
+    --notice-text-muted: #64748b;
+    --notice-gold-text: #b45309;
+    --notice-gold-bg: rgba(245, 158, 11, 0.12);
+    --notice-gold-border: rgba(245, 158, 11, 0.35);
+    --notice-blue-text: #0284c7;
+    --notice-blue-bg: rgba(2, 132, 199, 0.08);
+    --notice-blue-border: rgba(2, 132, 199, 0.25);
+    --notice-green-text: #059669;
+    --notice-green-bg: rgba(16, 185, 129, 0.12);
+    --notice-green-border: rgba(16, 185, 129, 0.3);
+    --notice-red-text: #dc2626;
+    --notice-red-bg: rgba(239, 68, 68, 0.1);
+    --notice-red-border: rgba(239, 68, 68, 0.3);
+    --notice-purple-text: #7c3aed;
+    --notice-purple-bg: rgba(124, 58, 237, 0.1);
+    --notice-purple-border: rgba(124, 58, 237, 0.3);
+    --notice-row-hover: #f1f5f9;
+  }
+
+  /* 🌙 다크 모드 (body.theme-dark, html.theme-dark) */
+  body.theme-dark,
+  html.theme-dark {
+    --notice-bg: #0f172a;
+    --notice-card-bg: #181d24;
+    --notice-card-border: #282f3a;
+    --notice-section-bg: #1e2530;
+    --notice-section-border: #2c3545;
+    --notice-input-bg: #141922;
+    --notice-input-border: #2c3545;
+    --notice-input-text: #ffffff;
+    --notice-placeholder: #cbd5e1;
+    --notice-text-main: #f3f4f6;
+    --notice-text-sub: #9ca3af;
+    --notice-text-muted: #6b7280;
+    --notice-gold-text: #facc15;
+    --notice-gold-bg: rgba(245, 158, 11, 0.2);
+    --notice-gold-border: rgba(245, 158, 11, 0.4);
+    --notice-blue-text: #38bdf8;
+    --notice-blue-bg: rgba(56, 189, 248, 0.15);
+    --notice-blue-border: rgba(56, 189, 248, 0.35);
+    --notice-green-text: #34d399;
+    --notice-green-bg: rgba(16, 185, 129, 0.2);
+    --notice-green-border: rgba(16, 185, 129, 0.4);
+    --notice-red-text: #f87171;
+    --notice-red-bg: rgba(239, 68, 68, 0.2);
+    --notice-red-border: rgba(239, 68, 68, 0.4);
+    --notice-purple-text: #c084fc;
+    --notice-purple-bg: rgba(192, 132, 252, 0.18);
+    --notice-purple-border: rgba(192, 132, 252, 0.4);
+    --notice-row-hover: #1e293b;
+  }
+
+  .notice-main-card {
+    background: var(--notice-card-bg);
+    border: 1px solid var(--notice-card-border);
+    border-radius: 16px;
+    padding: 13px 14px;
+    color: var(--notice-text-main);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    letter-spacing: -0.2px;
+  }
+
+  /* ⚡ 상단 액션 및 작성 토글 버튼 */
+  .btn-notice-write-toggle {
+    background: #0284c7;
+    border: 1px solid #0284c7;
+    color: #ffffff;
+    font-size: 0.74rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    height: 26px;
+    border-radius: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-notice-write-toggle:hover {
+    background: #0369a1;
+    transform: translateY(-1px);
+  }
+  .btn-notice-write-toggle.active {
+    background: #64748b;
+    border-color: #64748b;
+  }
+
+  /* 📜 커튼형 공지 작성 폼 카드 */
+  .notice-curtain-form-card {
+    display: none;
+    background: var(--notice-section-bg);
+    border: 1px solid var(--notice-section-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    animation: slideDownNotice 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideDownNotice {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .input-notice-custom {
+    background-color: var(--notice-input-bg) !important;
+    border: 1px solid var(--notice-input-border) !important;
+    color: var(--notice-input-text) !important;
+    -webkit-text-fill-color: var(--notice-input-text) !important;
+    font-size: 0.78rem !important;
+    padding: 6px 10px !important;
+    border-radius: 8px !important;
+  }
+  .input-notice-custom:focus {
+    background-color: var(--notice-input-bg) !important;
+    border-color: #0284c7 !important;
+    color: var(--notice-input-text) !important;
+    -webkit-text-fill-color: var(--notice-input-text) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+  }
+
+  .input-notice-custom::placeholder {
+    color: var(--notice-placeholder) !important;
+    -webkit-text-fill-color: var(--notice-placeholder) !important;
+    opacity: 1 !important;
+  }
+  .input-notice-custom::-webkit-input-placeholder {
+    color: var(--notice-placeholder) !important;
+    -webkit-text-fill-color: var(--notice-placeholder) !important;
+    opacity: 1 !important;
+  }
+
+  body.theme-dark input[type="date"],
+  html.theme-dark input[type="date"],
+  body.theme-dark select.input-notice-custom,
+  html.theme-dark select.input-notice-custom {
+    color-scheme: dark !important;
+  }
+
+  /* 📌 최상단 중요 공지 하이라이트 히어로 박스 */
+  .notice-hero-box {
+    background: linear-gradient(135deg, var(--notice-gold-bg) 0%, rgba(245, 158, 11, 0.04) 100%);
+    border: 1px solid var(--notice-gold-border);
+    border-radius: 12px;
+    padding: 11px 13px;
+    margin-bottom: 11px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .notice-hero-box:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 📅 카테고리 캡슐 필터 버튼 그룹 */
+  .notice-filter-group {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    margin-bottom: 9px;
+  }
+  .btn-notice-cat-filter {
+    background: var(--notice-section-bg);
+    border: 1px solid var(--notice-section-border);
+    color: var(--notice-text-sub);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 14px;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-notice-cat-filter:hover {
+    color: var(--notice-text-main);
+    background: var(--notice-row-hover);
+  }
+  .btn-notice-cat-filter.active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+  }
+
+  /* 🔍 검색창 */
+  .search-wrapper-notice {
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .search-input-notice {
+    width: 100%;
+    background-color: var(--notice-input-bg) !important;
+    border: 1px solid var(--notice-input-border) !important;
+    color: var(--notice-input-text) !important;
+    -webkit-text-fill-color: var(--notice-input-text) !important;
+    font-size: 0.76rem;
+    padding: 6px 10px 6px 30px;
+    border-radius: 20px !important;
+    transition: all 0.15s ease;
+  }
+  .search-input-notice:focus {
+    border-color: #0284c7 !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+  }
+
+  /* 📋 공지사항 아코디언 카드 항목 */
+  .notice-item-card {
+    background: var(--notice-card-bg);
+    border: 1px solid var(--notice-card-border);
+    border-radius: 10px;
+    margin-bottom: 7px;
+    overflow: hidden;
+    transition: all 0.15s ease;
+  }
+  .notice-item-card:hover {
+    border-color: #0284c7;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  .notice-header-row {
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    user-select: none;
+  }
+  .notice-header-row:hover {
+    background: var(--notice-row-hover);
+  }
+
+  .badge-notice-cat {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+  }
+  .cat-important { background: var(--notice-red-bg); border: 1px solid var(--notice-red-border); color: var(--notice-red-text); }
+  .cat-boss { background: var(--notice-gold-bg); border: 1px solid var(--notice-gold-border); color: var(--notice-gold-text); }
+  .cat-rule { background: var(--notice-purple-bg); border: 1px solid var(--notice-purple-border); color: var(--notice-purple-text); }
+  .cat-finance { background: var(--notice-green-bg); border: 1px solid var(--notice-green-border); color: var(--notice-green-text); }
+  .cat-general { background: var(--notice-blue-bg); border: 1px solid var(--notice-blue-border); color: var(--notice-blue-text); }
+
+  .notice-title-text {
+    font-size: 0.83rem;
+    font-weight: 700;
+    color: var(--notice-text-main);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .notice-meta-text {
+    font-size: 0.68rem;
+    color: var(--notice-text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  .notice-body-content {
+    display: none;
+    padding: 11px 13px;
+    border-top: 1px dashed var(--notice-card-border);
+    background: var(--notice-section-bg);
+    font-size: 0.8rem;
+    line-height: 1.55;
+    color: var(--notice-text-main);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .notice-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid var(--notice-card-border);
+  }
+  .btn-notice-act {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--notice-card-border);
+    background: var(--notice-card-bg);
+    color: var(--notice-text-sub);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .btn-notice-act:hover {
+    color: var(--notice-text-main);
+    background: var(--notice-row-hover);
+  }
+  .btn-notice-share {
+    background: #fee500 !important;
+    border-color: #e5ce00 !important;
+    color: #191919 !important;
+    font-weight: 800;
+  }
+  .btn-notice-share:hover {
+    background: #fada0a !important;
+  }
+</style>
+
+<div class="notice-main-card mb-4" id="noticeRootCard">
+  <!-- 1. 헤더: 제목 + 총 공지수 + 새 공지 작성 버튼(권한자 전용) -->
+  <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
+    <div class="d-flex align-items-center gap-2">
+      <span style="font-size: 1.15rem;">📢</span>
+      <div>
+        <h6 class="fw-bold mb-0" style="font-size: 0.88rem; color: var(--notice-text-main);">
+          길드 공지사항
+          <span class="badge bg-secondary bg-opacity-25 text-secondary ms-1" style="font-size: 0.65rem;" id="noticeTotalCountBadge">0건</span>
+        </h6>
+        <span class="small text-secondary" style="font-size: 0.65rem;">길드 주요 일정, 규칙 및 실시간 공지사항 피드</span>
+      </div>
+    </div>
+    <!-- 권한자 전용 작성 버튼 (checkNoticeWritePermission() 통과 시 표시) -->
+    <button type="button" class="btn-notice-write-toggle" id="btnToggleNoticeForm" style="display: none;" onclick="toggleNoticeFormCard()">
+      <i class="fa-solid fa-pen-to-square"></i>
+      <span id="txtToggleNoticeBtn">새 공지 작성</span>
+    </button>
+  </div>
+
+  <!-- 2. 📜 [커튼형 아코디언] 공지사항 작성/수정 폼 (권한자 전용) -->
+  <div class="notice-curtain-form-card" id="noticeFormCard">
+    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary border-opacity-10">
+      <span class="small fw-bold" style="font-size: 0.78rem; color: var(--notice-blue-text);" id="noticeFormTitle">
+        <i class="fa-solid fa-pen-nib me-1"></i>새 공지사항 등록
+      </span>
+      <button type="button" class="btn btn-sm btn-link text-secondary p-0" style="font-size: 0.72rem; text-decoration: none;" onclick="toggleNoticeFormCard(false)">
+        <i class="fa-solid fa-xmark me-1"></i>닫기
+      </button>
+    </div>
+
+    <input type="hidden" id="noticeEditId" value="">
+
+    <!-- 카테고리 태그 + 고정 체크박스 한 줄 배치 -->
+    <div class="row g-2 mb-2 align-items-center">
+      <div class="col-7">
+        <select id="noticeCategorySelect" class="form-select input-notice-custom">
+          <option value="중요">📌 [중요] 필수 확인 공지</option>
+          <option value="보스토벌">⚔️ [보스토벌] 토벌/전쟁 일정</option>
+          <option value="길드규칙">📜 [길드규칙] 운영 정책</option>
+          <option value="금고분배">💰 [금고분배] 배당/정산 공지</option>
+          <option value="일반" selected>📢 [일반] 일반 소식</option>
+        </select>
+      </div>
+      <div class="col-5">
+        <div class="form-check form-switch m-0 d-flex align-items-center gap-1">
+          <input class="form-check-input ms-0 me-1" type="checkbox" id="noticeIsPinned" role="switch">
+          <label class="form-check-label small fw-bold" for="noticeIsPinned" style="font-size: 0.7rem; color: var(--notice-gold-text); cursor: pointer;">
+            상단 배너 고정
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 제목 입력창 -->
+    <div class="mb-2">
+      <input type="text" id="inputNoticeTitle" class="form-control input-notice-custom fw-bold" placeholder="공지사항 제목을 입력하세요 (예: 10월 4주차 보스 토벌 규칙 변경)">
+    </div>
+
+    <!-- 본문 입력창 -->
+    <div class="mb-2">
+      <textarea id="inputNoticeContent" class="form-control input-notice-custom" rows="5" placeholder="공지 내용을 상세히 입력하세요. (줄바꿈 서식 지원)"></textarea>
+    </div>
+
+    <!-- 저장/취소 버튼 바 -->
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2 fw-bold" style="border-radius: 8px; font-size: 0.76rem;" onclick="toggleNoticeFormCard(false)">취소</button>
+      <button type="button" class="btn btn-primary btn-sm flex-fill py-2 fw-bold" id="btnSaveNoticeSubmit" style="border-radius: 8px; font-size: 0.76rem;" onclick="executeSaveNotice()">
+        <i class="fa-solid fa-check me-1"></i>공지 등록 확정
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. 📌 최신 중요(고정) 공지 하이라이트 히어로 배너 (고정 공지 존재 시 노출) -->
+  <div class="notice-hero-box" id="noticePinnedHero" style="display: none;" onclick="openPinnedNoticeDetail()">
+    <div class="d-flex align-items-center justify-content-between mb-1">
+      <span class="badge cat-important" style="font-size: 0.65rem;">
+        <i class="fa-solid fa-thumbtack me-1"></i>필독 중요 공지
+      </span>
+      <span class="small" style="font-size: 0.68rem; color: var(--notice-gold-text);" id="pinnedNoticeDateText">-</span>
+    </div>
+    <div class="fw-bold" style="font-size: 0.85rem; color: var(--notice-text-main); margin-bottom: 2px;" id="pinnedNoticeTitleText">
+      중요 공지사항 제목
+    </div>
+    <div class="small text-secondary" style="font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" id="pinnedNoticeContentPreview">
+      본문 요약 내용이 표시됩니다...
+    </div>
+  </div>
+
+  <!-- 4. 🏷️ 카테고리 필터 캡슐 탭 -->
+  <div class="notice-filter-group">
+    <button type="button" class="btn-notice-cat-filter active" onclick="setNoticeFilterCategory('all')">전체</button>
+    <button type="button" class="btn-notice-cat-filter" onclick="setNoticeFilterCategory('중요')">📌 중요</button>
+    <button type="button" class="btn-notice-cat-filter" onclick="setNoticeFilterCategory('보스토벌')">⚔️ 보스토벌</button>
+    <button type="button" class="btn-notice-cat-filter" onclick="setNoticeFilterCategory('길드규칙')">📜 규칙</button>
+    <button type="button" class="btn-notice-cat-filter" onclick="setNoticeFilterCategory('금고분배')">💰 금고분배</button>
+    <button type="button" class="btn-notice-cat-filter" onclick="setNoticeFilterCategory('일반')">📢 일반</button>
+  </div>
+
+  <!-- 5. 🔍 실시간 검색창 -->
+  <div class="search-wrapper-notice">
+    <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 11px; top: 50%; transform: translateY(-50%); color: var(--notice-text-sub); font-size: 0.75rem;"></i>
+    <input type="text" id="noticeSearchInput" class="search-input-notice" placeholder="공지 제목, 본문, 작성자 검색..." oninput="filterNoticesFeed()">
+  </div>
+
+  <!-- 6. 📋 공지사항 아코디언 피드 목록 -->
+  <div id="noticeFeedContainer" style="min-height: 200px;">
+    <div class="text-secondary small text-center py-5">
+      <i class="fa-solid fa-spinner fa-spin me-2"></i>공지사항을 불러오는 중...
+    </div>
+  </div>
+</div>
+
+<script>
+  // ⚡ 재호출 시 식별자 충돌 방지: 모든 최상위 변수 var 선언
+  var rawNoticesList = [];
+  var activeNoticeFilterCat = 'all';
+  var canUserWriteNotice = false;
+  var currentPinnedNoticeItem = null;
+
+  // 🎯 초기화 진입점
+  async function initNoticeModule() {
+    if (typeof window.applyAppTheme === 'function') {
+      window.applyAppTheme();
+    }
+
+    // 1. 설정창 권한 정책 동기화 확인
+    await syncNoticePermissions();
+
+    // 2. 공지사항 데이터 로드
+    await loadNoticesFeedData();
+  }
+
+  // 🔒 설정창 권한(perm_notice_write) 및 관리자 역할 검증
+  async function syncNoticePermissions() {
+    var adminRole = sessionStorage.getItem("admin_role") || "";
+    var myRole = localStorage.getItem("guild_my_role") || "일반";
+    var isSuper = (adminRole === "super");
+    var isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
+
+    if (isSuper) {
+      canUserWriteNotice = true;
+    } else if (isAdmin) {
+      // 일반 관리자 권한 정책 조회 (캐시가 없으면 guild_settings 조회)
+      var permVal = (window.currentSettingsMap && window.currentSettingsMap['perm_notice_write'] !== undefined)
+        ? window.currentSettingsMap['perm_notice_write']
+        : null;
+
+      if (permVal === null) {
+        try {
+          var rows = await apiRequest("guild_settings?key=eq.perm_notice_write");
+          if (rows && rows.length > 0) {
+            permVal = rows[0].value;
+            if (!window.currentSettingsMap) window.currentSettingsMap = {};
+            window.currentSettingsMap['perm_notice_write'] = permVal;
+          }
+        } catch (e) {}
+      }
+      canUserWriteNotice = (permVal === null || permVal === 'true' || permVal === true);
+    } else {
+      canUserWriteNotice = false;
+    }
+
+    // UI에 작성 버튼 노출 여부 반영
+    var btnToggle = document.getElementById('btnToggleNoticeForm');
+    if (btnToggle) {
+      btnToggle.style.display = canUserWriteNotice ? 'inline-flex' : 'none';
+    }
+  }
+
+  // 📂 커튼형 작성 폼 열기/닫기 토글
+  function toggleNoticeFormCard(forceState, isEditMode) {
+    var card = document.getElementById('noticeFormCard');
+    var btn = document.getElementById('btnToggleNoticeForm');
+    var txt = document.getElementById('txtToggleNoticeBtn');
+    var formTitle = document.getElementById('noticeFormTitle');
+    var submitBtn = document.getElementById('btnSaveNoticeSubmit');
+    if (!card) return;
+
+    var isOpening = (forceState !== undefined) ? forceState : (card.style.display === 'none' || !card.style.display);
+
+    if (isOpening) {
+      card.style.display = 'block';
+      if (btn) btn.classList.add('active');
+      if (txt) txt.innerText = '▲ 작성창 닫기';
+
+      if (!isEditMode) {
+        // 새 공지 모드 리셋
+        document.getElementById('noticeEditId').value = "";
+        document.getElementById('inputNoticeTitle').value = "";
+        document.getElementById('inputNoticeContent').value = "";
+        document.getElementById('noticeCategorySelect').value = "일반";
+        document.getElementById('noticeIsPinned').checked = false;
+        if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-pen-nib me-1"></i>새 공지사항 등록';
+        if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i>공지 등록 확정';
+      }
+
+      setTimeout(function() {
+        var input = document.getElementById('inputNoticeTitle');
+        if (input) input.focus();
+      }, 100);
+    } else {
+      card.style.display = 'none';
+      if (btn) btn.classList.remove('active');
+      if (txt) txt.innerText = '새 공지 작성';
+    }
+  }
+
+  // 📊 공지사항 목록 로드
+  async function loadNoticesFeedData() {
+    var container = document.getElementById('noticeFeedContainer');
+    if (container) {
+      container.innerHTML = '<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>공지사항을 불러오는 중...</div>';
+    }
+
+    try {
+      var list = await apiRequest("guild_notices?select=*&order=id.desc");
+      rawNoticesList = list || [];
+
+      // 총 건수 배지
+      var countBadge = document.getElementById('noticeTotalCountBadge');
+      if (countBadge) countBadge.innerText = rawNoticesList.length + "건";
+
+      // 최상단 고정 공지 추출 (is_pinned === true 인 것 중 최신, 없으면 null)
+      currentPinnedNoticeItem = rawNoticesList.find(function(n) {
+        return (n.is_pinned === true || n.is_pinned === 'true' || (n.category === '중요' && !n.is_pinned));
+      }) || (rawNoticesList.length > 0 ? rawNoticesList[0] : null);
+
+      renderPinnedHeroCard();
+      renderNoticesFeed();
+    } catch (err) {
+      if (container) {
+        container.innerHTML = '<div class="text-danger small text-center py-5"><i class="fa-solid fa-circle-exclamation me-1"></i>공지 조회 실패: ' + escapeHtmlNotice(err.message) + '</div>';
+      }
+    }
+  }
+
+  // 📌 고정 공지 배너 렌더링
+  function renderPinnedHeroCard() {
+    var heroBox = document.getElementById('noticePinnedHero');
+    if (!heroBox) return;
+
+    if (!currentPinnedNoticeItem) {
+      heroBox.style.display = 'none';
+      return;
+    }
+
+    heroBox.style.display = 'block';
+    var dateStr = (currentPinnedNoticeItem.created_at || '').slice(0, 10);
+    var dateElem = document.getElementById('pinnedNoticeDateText');
+    var titleElem = document.getElementById('pinnedNoticeTitleText');
+    var previewElem = document.getElementById('pinnedNoticeContentPreview');
+
+    if (dateElem) dateElem.innerText = dateStr;
+    if (titleElem) titleElem.innerText = currentPinnedNoticeItem.title || '제목 없음';
+    if (previewElem) previewElem.innerText = (currentPinnedNoticeItem.content || '').replace(/\n/g, ' ');
+  }
+
+  function openPinnedNoticeDetail() {
+    if (!currentPinnedNoticeItem) return;
+    toggleNoticeAccordion(currentPinnedNoticeItem.id, true);
+  }
+
+  // 🏷️ 카테고리 필터 변경
+  function setNoticeFilterCategory(cat) {
+    activeNoticeFilterCat = cat;
+    document.querySelectorAll('.btn-notice-cat-filter').forEach(function(b) {
+      b.classList.remove('active');
+      if ((cat === 'all' && b.innerText.includes('전체')) || b.innerText.includes(cat)) {
+        b.classList.add('active');
+      }
+    });
+    renderNoticesFeed();
+  }
+
+  function filterNoticesFeed() {
+    renderNoticesFeed();
+  }
+
+  // 📋 공지 피드 렌더링
+  function renderNoticesFeed() {
+    var container = document.getElementById('noticeFeedContainer');
+    if (!container) return;
+
+    var q = document.getElementById('noticeSearchInput') ? document.getElementById('noticeSearchInput').value.trim().toLowerCase() : '';
+
+    var filtered = rawNoticesList.filter(function(n) {
+      // 카테고리 필터
+      var cat = n.category || parseNoticeCatFromTitle(n.title);
+      if (activeNoticeFilterCat !== 'all' && cat !== activeNoticeFilterCat) {
+        return false;
+      }
+      // 검색어 필터
+      if (!q) return true;
+      var text = ((n.title || '') + ' ' + (n.content || '') + ' ' + (n.author || '')).toLowerCase();
+      return text.includes(q);
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-5"><i class="fa-regular fa-folder-open me-2"></i>해당 조건의 공지사항이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(function(n) {
+      var cat = n.category || parseNoticeCatFromTitle(n.title);
+      var badgeCls = getNoticeCatBadgeClass(cat);
+      var cleanTitle = (n.title || '제목 없음').replace(/^\[[^\]]+\]\s*/, '');
+      var dateStr = (n.created_at || '').slice(0, 10);
+      var authorStr = n.author ? (' • ' + escapeHtmlNotice(n.author)) : '';
+      var pinIcon = (n.is_pinned === true || n.is_pinned === 'true') ? '<i class="fa-solid fa-thumbtack text-warning me-1" title="상단 고정 공지"></i>' : '';
+
+      // 관리 액션 버튼 (권한자 전용)
+      var adminActions = '';
+      if (canUserWriteNotice) {
+        adminActions = '<button type="button" class="btn-notice-act" onclick="startEditNotice(' + n.id + ')"><i class="fa-solid fa-pen-to-square"></i>수정</button>' +
+                       '<button type="button" class="btn-notice-act text-danger" onclick="executeDeleteNotice(' + n.id + ')"><i class="fa-solid fa-trash-can"></i>삭제</button>';
+      }
+
+      return '<div class="notice-item-card" id="noticeCard_' + n.id + '">' +
+        '<div class="notice-header-row" onclick="toggleNoticeAccordion(' + n.id + ')">' +
+          '<div style="min-width: 0; flex: 1; padding-right: 8px;">' +
+            '<div class="d-flex align-items-center gap-1 mb-1 flex-wrap">' +
+              '<span class="badge-notice-cat ' + badgeCls + '">' + escapeHtmlNotice(cat) + '</span>' +
+              pinIcon +
+              '<span class="notice-title-text">' + escapeHtmlNotice(cleanTitle) + '</span>' +
+            '</div>' +
+            '<div class="notice-meta-text">' +
+              escapeHtmlNotice(dateStr) + authorStr +
+            '</div>' +
+          '</div>' +
+          '<i class="fa-solid fa-chevron-down text-secondary" id="noticeChevron_' + n.id + '" style="font-size: 0.72rem; transition: transform 0.2s ease;"></i>' +
+        '</div>' +
+
+        '<div class="notice-body-content" id="noticeBody_' + n.id + '">' +
+          '<div>' + escapeHtmlNotice(n.content || '') + '</div>' +
+          '<div class="notice-action-bar">' +
+            '<button type="button" class="btn-notice-act btn-notice-share" onclick="shareNoticeToChat(' + n.id + ')">' +
+              '<i class="fa-solid fa-comment-dots"></i>대화방 공유' +
+            '</button>' +
+            adminActions +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // 🎯 아코디언 본문 펼침/접힘
+  function toggleNoticeAccordion(id, forceOpen) {
+    var body = document.getElementById('noticeBody_' + id);
+    var chevron = document.getElementById('noticeChevron_' + id);
+    if (!body) return;
+
+    var isOpen = (body.style.display === 'block');
+    var shouldOpen = (forceOpen !== undefined) ? forceOpen : !isOpen;
+
+    if (shouldOpen) {
+      body.style.display = 'block';
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+      var card = document.getElementById('noticeCard_' + id);
+      if (card && forceOpen) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    } else {
+      body.style.display = 'none';
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+  }
+
+  // ✏️ 공지 수정 시작 (커튼 폼으로 로드)
+  function startEditNotice(id) {
+    var item = rawNoticesList.find(function(n) { return n.id === id; });
+    if (!item) return;
+
+    toggleNoticeFormCard(true, true);
+
+    document.getElementById('noticeEditId').value = item.id;
+    var cleanTitle = (item.title || '').replace(/^\[[^\]]+\]\s*/, '');
+    document.getElementById('inputNoticeTitle').value = cleanTitle;
+    document.getElementById('inputNoticeContent').value = item.content || '';
+    document.getElementById('noticeCategorySelect').value = item.category || parseNoticeCatFromTitle(item.title);
+    document.getElementById('noticeIsPinned').checked = (item.is_pinned === true || item.is_pinned === 'true');
+
+    var formTitle = document.getElementById('noticeFormTitle');
+    var submitBtn = document.getElementById('btnSaveNoticeSubmit');
+    if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-pen-to-square me-1 text-warning"></i>공지사항 수정';
+    if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i>수정 내용 저장';
+
+    var card = document.getElementById('noticeFormCard');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // 💾 공지 저장 (등록 및 수정)
+  async function executeSaveNotice() {
+    if (!canUserWriteNotice) {
+      return alert("공지사항 작성 권한이 없습니다.");
+    }
+
+    var editId = document.getElementById('noticeEditId').value;
+    var cat = document.getElementById('noticeCategorySelect').value || '일반';
+    var isPinned = document.getElementById('noticeIsPinned').checked;
+    var titleRaw = document.getElementById('inputNoticeTitle').value.trim();
+    var contentRaw = document.getElementById('inputNoticeContent').value.trim();
+
+    if (!titleRaw) {
+      return alert("공지사항 제목을 입력하세요.");
+    }
+    if (!contentRaw) {
+      return alert("공지사항 내용을 입력하세요.");
+    }
+
+    // 제목에 [태그] 규격 자동 부착
+    var fullTitle = '[' + cat + '] ' + titleRaw;
+    var authorNick = localStorage.getItem("guild_my_nickname") || "관리자";
+
+    var submitBtn = document.getElementById('btnSaveNoticeSubmit');
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>저장 중...';
+    }
+
+    try {
+      if (editId) {
+        // 수정 (PATCH) - 테이블 컬럼 스키마 유연 방어
+        try {
+          await apiRequest("guild_notices?id=eq." + editId, "PATCH", {
+            title: fullTitle,
+            content: contentRaw,
+            category: cat,
+            author: authorNick,
+            is_pinned: isPinned
+          });
+        } catch (colErr) {
+          // 컬럼이 없는 스키마일 경우 기본 컬럼(title, content)으로 세이프티 폴백
+          await apiRequest("guild_notices?id=eq." + editId, "PATCH", {
+            title: fullTitle,
+            content: contentRaw
+          });
+        }
+        showToastNoticeMsg("공지사항이 성공적으로 수정되었습니다!", "✏️");
+      } else {
+        // 등록 (POST) - 테이블 컬럼 스키마 유연 방어
+        try {
+          await apiRequest("guild_notices", "POST", [{
+            title: fullTitle,
+            content: contentRaw,
+            category: cat,
+            author: authorNick,
+            is_pinned: isPinned,
+            created_at: new Date().toISOString()
+          }]);
+        } catch (colErr) {
+          // 컬럼이 없는 스키마일 경우 기본 컬럼(title, content)으로 세이프티 폴백
+          await apiRequest("guild_notices", "POST", [{
+            title: fullTitle,
+            content: contentRaw,
+            created_at: new Date().toISOString()
+          }]);
+        }
+        showToastNoticeMsg("새 공지사항이 성공적으로 등록되었습니다!", "📢");
+      }
+
+      // 입력폼 닫기 및 피드 새로고침
+      toggleNoticeFormCard(false);
+      await loadNoticesFeedData();
+
+      // 홈 화면 상단 배너 즉시 동기화
+      if (typeof window.loadTopNoticeHeader === 'function') {
+        window.loadTopNoticeHeader();
+      }
+    } catch (e) {
+      alert("공지 저장 실패: " + e.message);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check me-1"></i>공지 등록 확정';
+      }
+    }
+  }
+
+  // 🗑️ 공지 삭제
+  async function executeDeleteNotice(id) {
+    if (!canUserWriteNotice) {
+      return alert("공지사항 삭제 권한이 없습니다.");
+    }
+
+    if (!confirm("이 공지사항을 정말 삭제하시겠습니까?")) return;
+
+    try {
+      await apiRequest("guild_notices?id=eq." + id, "DELETE");
+      showToastNoticeMsg("공지사항이 삭제되었습니다.", "🗑️");
+      await loadNoticesFeedData();
+
+      // 홈 화면 상단 배너 동기화
+      if (typeof window.loadTopNoticeHeader === 'function') {
+        window.loadTopNoticeHeader();
+      }
+    } catch (e) {
+      alert("공지 삭제 실패: " + e.message);
+    }
+  }
+
+  // 💬 카카오톡 말풍선 최적화 대화방 공유
+  async function shareNoticeToChat(id) {
+    var item = rawNoticesList.find(function(n) { return n.id === id; });
+    if (!item) return;
+
+    var cat = item.category || parseNoticeCatFromTitle(item.title);
+    var cleanTitle = (item.title || '공지사항').replace(/^\[[^\]]+\]\s*/, '');
+    var authorStr = item.author || '길드 관리자';
+    var dateStr = (item.created_at || '').slice(0, 10);
+
+    // 💬 카카오톡 말풍선 최적화 텍스트 포맷 (줄바꿈 서식 지원)
+    var chatMsg = '📢 [' + cat + ' 공지] ' + cleanTitle + '\n' +
+      '📅 ' + dateStr + ' • 작성자: ' + authorStr + '\n' +
+      '──────────────────\n' +
+      (item.content || '');
+
+    try {
+      await apiRequest("guild_chats", "POST", [{
+        sender_name: "공지알리미",
+        message: chatMsg,
+        msg_type: "chat",
+        mentions: []
+      }]);
+
+      showToastNoticeMsg("공지사항이 대화방에 공유되었습니다!", "📢");
+      if (typeof window.closeModuleOverlay === 'function') {
+        window.closeModuleOverlay();
+      }
+    } catch (e) {
+      alert("대화방 공유 실패: " + e.message);
+    }
+  }
+
+  // 헬퍼: 태그 자동 파싱
+  function parseNoticeCatFromTitle(title) {
+    if (!title) return "일반";
+    var m = title.match(/^\[([^\]]+)\]/);
+    if (m && m[1]) return m[1];
+    return "일반";
+  }
+
+  function getNoticeCatBadgeClass(cat) {
+    if (cat === '중요') return 'cat-important';
+    if (cat === '보스토벌') return 'cat-boss';
+    if (cat === '길드규칙') return 'cat-rule';
+    if (cat === '금고분배') return 'cat-finance';
+    return 'cat-general';
+  }
+
+  function showToastNoticeMsg(msg, icon) {
+    if (typeof showKakaoToast === 'function') {
+      showKakaoToast(msg, icon || "✅");
+    } else {
+      alert(msg);
+    }
+  }
+
+  function escapeHtmlNotice(t) {
+    return (t || '').replace(/[&<>"']/g, function(m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+    });
+  }
+
+  // 🚀 자동 기동
+  (function initNotc() {
+    initNoticeModule();
+  })();
+</script>
