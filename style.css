@@ -293,25 +293,14 @@ body.theme-dark .btn-kakao-head:hover, body.theme-dark .btn-kakao-head.active { 
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* 🎯 가로 스크롤 방어 최적화 */
 .chat-messages-container {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden !important;
-  padding: 6px 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0px;
-  width: 100% !important;
-  box-sizing: border-box !important;
+  flex: 1; overflow-y: auto; overflow-x: hidden !important; padding: 6px 8px; display: flex; flex-direction: column; gap: 0px;
 }
 
 /* 🎯 카카오톡 스타일: 서로 다른 닉네임 간 14px 여백, 연속 메시지 2px 바짝 붙임 */
 .chat-item-row {
   display: flex;
   width: 100%;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
   margin-bottom: 14px !important;
   align-items: flex-start !important;
 }
@@ -330,14 +319,7 @@ body.theme-dark .btn-kakao-head:hover, body.theme-dark .btn-kakao-head.active { 
 .chat-sender-avatar.bot { background: #fee2e2 !important; border-color: #ef4444 !important; color: #dc2626 !important; }
 body.theme-dark .chat-sender-avatar.bot { background: #262d37 !important; border-color: #ef4444 !important; color: #ff6b6b !important; }
 
-.chat-msg-body {
-  display: flex;
-  flex-direction: column;
-  max-width: calc(100% - 44px) !important;
-  min-width: 0 !important;
-  width: fit-content !important;
-  box-sizing: border-box !important;
-}
+.chat-msg-body { display: flex; flex-direction: column; max-width: 90%; width: fit-content !important; }
 
 .chat-sender-name {
   font-size: 11.5px;
@@ -348,32 +330,13 @@ body.theme-dark .chat-sender-avatar.bot { background: #262d37 !important; border
 body.theme-dark .chat-sender-name { color: #f3f4f6 !important; font-weight: 700 !important; }
 body.theme-light .chat-sender-name { color: #191919 !important; font-weight: 700 !important; }
 
-.chat-bubble-flex {
-  display: flex;
-  align-items: flex-end !important;
-  gap: 4px;
-  width: fit-content !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
+.chat-bubble-flex { display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important; }
 .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
 .chat-bubble {
-  display: inline-block;
-  width: fit-content;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  line-height: 1.42;
-  font-weight: 400;
-  word-break: break-all;
-  overflow-wrap: break-word;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
-  white-space: pre-wrap;
+  display: inline-block; width: fit-content; max-width: 100%;
+  padding: 8px 12px; border-radius: 6px; font-size: 12px; line-height: 1.42;
+  font-weight: 400; word-break: break-all; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); white-space: pre-wrap;
 }
 .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other) !important; color: var(--kakao-bubble-other-text) !important; }
 .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me) !important; color: var(--kakao-bubble-me-text) !important; }
@@ -489,24 +452,12 @@ body.theme-dark .member-class-desc { color: #38bdf8 !important; }
 body.theme-dark .drawer-boss-name { color: #f3f4f6 !important; }
 body.theme-dark .drawer-card-bottom { color: #94a3b8 !important; }
 
-.raid-msg-body {
-  max-width: calc(100% - 44px) !important;
-  width: fit-content !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
+.raid-msg-body { max-width: 95% !important; width: fit-content !important; }
 .raid-report-card {
-  background: var(--kakao-notice-bg) !important;
-  color: var(--kakao-notice-text) !important;
-  border: 1px solid var(--drawer-card-border) !important;
-  border-radius: 12px !important;
-  padding: 10px 12px !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-  width: 100% !important;
-  max-width: 290px !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
+  background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
+  border: 1px solid var(--drawer-card-border) !important; border-radius: 12px !important;
+  padding: 10px 12px !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  width: 290px !important; max-width: 100% !important;
 }
 .raid-card-header { border-bottom: 1px dashed var(--drawer-card-border) !important; padding-bottom: 6px !important; margin-bottom: 8px !important; }
 .raid-boss-title {
@@ -539,9 +490,8 @@ body.theme-dark .badge-raid-timer.expired { background: #1e2530 !important; colo
   border-radius: 12px !important;
   padding: 10px 11px !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-  width: 100% !important;
-  max-width: 290px !important;
-  min-width: 0 !important;
+  width: 290px !important;
+  max-width: 100% !important;
   letter-spacing: 0;
   transition: background 0.2s ease, border-color 0.2s ease;
   box-sizing: border-box !important;
@@ -732,9 +682,8 @@ body.theme-dark .fin-recent-row { border-bottom-color: rgba(255,255,255,0.04) !i
   border-radius: 12px !important;
   padding: 10px 11px !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-  width: 100% !important;
-  max-width: 275px !important;
-  min-width: 0 !important;
+  width: 275px !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
   letter-spacing: -0.3px !important;
 }
