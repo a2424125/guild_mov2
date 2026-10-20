@@ -312,14 +312,15 @@
     margin-top: 2px;
   }
 
-  /* 탭 2: 길드원별 상세 출석부 (마우스 오버 효과 확실한 카드형 행) */
+  /* 탭 2: 길드원별 상세 출석부 (호버 시 상단 잘림 방지 여백 및 z-index 적용) */
   .member-stat-list {
     display: flex;
     flex-direction: column;
     gap: 6px;
     max-height: 480px;
     overflow-y: auto;
-    padding-right: 2px;
+    padding: 5px 3px 8px 3px !important; /* 🎯 상단 여유 공간 확보로 테두리 잘림 완전 방지 */
+    box-sizing: border-box;
   }
   .member-stat-row {
     background: var(--rec-item-bg);
@@ -330,13 +331,15 @@
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+    position: relative;
+    transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
   .member-stat-row:hover {
     background: var(--rec-item-hover) !important;
     border-color: #0284c7 !important;
     transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    z-index: 2 !important; /* 🎯 다른 요소에 묻히지 않고 최상위로 돋보이게 */
   }
 
   /* 탭 3 & 4: 로그 리스트 */
@@ -346,7 +349,7 @@
     gap: 6px;
     max-height: 480px;
     overflow-y: auto;
-    padding-right: 2px;
+    padding: 4px 2px;
   }
   .raid-log-item {
     background: var(--rec-item-bg);
@@ -567,11 +570,11 @@
     </div>
   </div>
 
-  <!-- 탭 내용 2: 길드원별 상세 출석부 (카카오톡 감성 캡슐형 매립 돋보기 검색창) -->
+  <!-- 탭 내용 2: 길드원별 상세 출석부 (검색창 간격 정돈 및 캡슐형 매립 돋보기) -->
   <div id="tabContentMembers" style="display: none;">
-    <div style="position: relative; margin-bottom: 8px; display: flex; align-items: center; width: 100%;">
-      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; color: var(--rec-text-sub); font-size: 0.82rem; pointer-events: none; z-index: 2;"></i>
-      <input type="text" id="memberSearchInput" placeholder="길드원 닉네임 검색..." oninput="filterMemberStatList()" style="width: 100%; background-color: var(--rec-input-bg); border: 1px solid var(--rec-input-border); color: var(--rec-input-text); border-radius: 20px; padding: 6px 14px 6px 36px; font-size: 0.8rem; outline: none; transition: all 0.2s ease;">
+    <div style="position: relative; margin-bottom: 10px; display: flex; align-items: center; width: 100%;">
+      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--rec-text-sub); font-size: 0.82rem; pointer-events: none; z-index: 2;"></i>
+      <input type="text" id="memberSearchInput" placeholder="길드원 닉네임 검색..." oninput="filterMemberStatList()" style="width: 100%; background-color: var(--rec-input-bg); border: 1px solid var(--rec-input-border); color: var(--rec-input-text); border-radius: 20px; padding: 7px 14px 7px 36px; font-size: 0.8rem; outline: none; transition: all 0.2s ease;">
     </div>
     <div id="memberStatListContainer" class="member-stat-list">
       <div class="text-secondary small text-center py-3">길드원 통계 로딩 중...</div>
@@ -636,7 +639,6 @@
   var recToastTimer = null;
   var liveSettings = { guildName: "불편한사람들", pointRules: {} };
 
-  // 관리자 권한 확인
   function verifyAdminPermission() {
     var role = sessionStorage.getItem("admin_role") || "";
     var nick = localStorage.getItem("guild_my_nickname") || "";
@@ -664,7 +666,6 @@
     });
   }
 
-  // 초기화 진입점
   async function initRecordsPage() {
     try {
       if (typeof window.applyAppTheme === "function") {
@@ -707,7 +708,6 @@
     }
   }
 
-  // 1. 기간 선택 및 날짜 계산 (KST 기준)
   function setStatPeriod(periodType) {
     currentStatPeriod = periodType;
     document.querySelectorAll(".btn-quick-stat").forEach(function(btn) { btn.classList.remove("active"); });
@@ -760,7 +760,6 @@
     return year + "-" + month + "-" + day;
   }
 
-  // 2. 통계 데이터 패치 및 산출
   async function fetchStatsData() {
     var sDate = document.getElementById("filterStartDate")?.value;
     var eDate = document.getElementById("filterEndDate")?.value;
@@ -842,7 +841,6 @@
     rawStatsData.bossStats = bossStats;
   }
 
-  // 3. UI 렌더링 총괄
   function renderAllViews() {
     renderTop5Ranking();
     renderSummaryTab();
@@ -926,7 +924,6 @@
     }).join("");
   }
 
-  // 4대 탭 전환: summary, members, warlog, history
   function switchMainTab(tab) {
     currentMainTab = tab;
     document.querySelectorAll(".btn-rec-tab-4").forEach(function(b) { b.classList.remove("active"); });
@@ -951,7 +948,6 @@
     }
   }
 
-  // 탭 1: 요약 통계 렌더링
   function renderSummaryTab() {
     var records = rawStatsData.records || [];
     var wars = rawStatsData.warRecords || [];
@@ -996,7 +992,6 @@
     }).join("");
   }
 
-  // 탭 2: 길드원별 출석 목록 렌더링 (미설정 뱃지 제거 및 호버 레이아웃)
   function renderMemberStatList() {
     var container = document.getElementById("memberStatListContainer");
     if (!container) return;
@@ -1010,7 +1005,6 @@
     }
 
     container.innerHTML = stats.map(function(s) {
-      // 🎯 '미설정'이거나 비어있으면 뱃지를 아예 띄우지 않고 깔끔하게 이름만 노출
       var jobBadgeHtml = (s.jobClass && s.jobClass !== "미설정")
         ? '<span class="badge bg-secondary" style="font-size: 0.65rem;">' + escapeHtml(s.jobClass) + '</span>'
         : '';
@@ -1039,7 +1033,6 @@
     });
   }
 
-  // 탭 3: 전쟁기록 전용 렌더링 (내전/인터 전쟁만 집계)
   function renderWarLogList() {
     var container = document.getElementById("warLogContainer");
     var countText = document.getElementById("warLogCountText");
@@ -1077,7 +1070,6 @@
     }).join("");
   }
 
-  // 탭 4: 전체 토벌기록 렌더링 (관리자 삭제 지원)
   function renderHistoryList() {
     var container = document.getElementById("raidLogContainer");
     var countText = document.getElementById("logCountText");
@@ -1138,7 +1130,6 @@
     }
   }
 
-  // 토벌 기록 단독 삭제
   async function deleteRaidRecord(raidId, bossName, timeStr) {
     if (!verifyAdminPermission()) {
       return showRecordsToast("기록 삭제 권한이 없습니다. (관리자 전용)", "🔒");
@@ -1159,7 +1150,6 @@
     }
   }
 
-  // 길드원 상세 모달 열기
   function openMemberDetailModal(name) {
     var s = rawStatsData.memberStats[name];
     if (!s) return;
@@ -1202,8 +1192,8 @@
         (bosses.length === 0 ? '<div class="text-secondary small text-center py-2">참여 기록이 없습니다.</div>' :
           bosses.map(function(b) {
             return '<div class="d-flex justify-content-between align-items-center py-1 px-2 rounded" style="background: var(--rec-item-bg); font-size: 0.7rem; border: 1px solid var(--rec-item-border);">' +
-              '<span style="color: var(--rec-text-main);">' + escapeHtml(b) + '</span>' +
-              '<strong class="text-primary">' + bDetails[b] + '회</strong>' +
+              '<span style="color: var(--rec-text-main);">${escapeHtml(b)}</span>' +
+              '<strong class="text-primary">${bDetails[b]}회</strong>' +
             '</div>';
           }).join("")
         ) +
@@ -1217,7 +1207,7 @@
     document.getElementById("memberDetailModal").classList.remove("show");
   }
 
-  /* 💬 대화방 공유 처리 함수 (1줄 슬림 카카오톡 정품 영수증 규격) */
+  /* 💬 대화방 공유 처리 함수 */
   window.shareRecordsReportToChat = async function() {
     var btn = document.getElementById('btnShareRecordsReport');
     var statsObj = rawStatsData.memberStats || {};
@@ -1329,7 +1319,6 @@
 
       showRecordsToast("보스&전쟁 통계가 대화방에 공유되었습니다!", "📜");
 
-      // 🎯 공유 완료 후 모듈 창을 닫고 대화방으로 복귀
       if (typeof closeModuleOverlay === "function") {
         closeModuleOverlay();
       }
@@ -1349,7 +1338,6 @@
     });
   }
 
-  // 🚀 화면 진입 즉시 초기화 실행 (중복 선언 방어 완료)
   (function init() {
     initRecordsPage();
   })();
