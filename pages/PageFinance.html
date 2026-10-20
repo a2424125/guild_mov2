@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (디자인 원본 유지 및 함수명 일치화)
+     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (데이터 로드 및 디자인 원본 유지)
      ========================================== -->
 <style>
   .finance-card {
@@ -315,7 +315,6 @@
     loadFinanceLogs();
   };
 
-  // 🎯 함수명 매칭 오류 수정 (loadFinanceData <-> loadFinanceLogs 통일)
   window.loadFinanceData = function() {
     loadFinanceLogs();
   };
