@@ -1257,7 +1257,7 @@
     }
   }
 
-  // 💬 대화방 공유
+  // 💬 대화방 공유 (style.css 수정 없이도 인라인 이중 보장으로 100% 고대비 출력)
   window.shareFinanceReportToChat = async function() {
     var btn = document.getElementById('btnShareFinanceReport');
     var sDate = document.getElementById('finFilterStart').value;
@@ -1274,15 +1274,30 @@
     var netProfit = incSum - expSum;
     var isNetPositive = netProfit >= 0;
 
+    // 🎨 다크모드 여부 실시간 감지 (style.css에 클래스가 없어도 자체 고대비 색상으로 100% 보장)
+    var isDark = document.body.classList.contains('theme-dark') || document.documentElement.classList.contains('theme-dark');
+
+    var incBg = isDark ? 'rgba(16, 185, 129, 0.16)' : 'rgba(16, 185, 129, 0.1)';
+    var incBorder = isDark ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.3)';
+    var incColor = isDark ? '#34d399' : '#059669';
+
+    var expBg = isDark ? 'rgba(239, 68, 68, 0.16)' : 'rgba(239, 68, 68, 0.1)';
+    var expBorder = isDark ? 'rgba(239, 68, 68, 0.4)' : 'rgba(239, 68, 68, 0.3)';
+    var expColor = isDark ? '#f87171' : '#dc2626';
+
+    var rowBg = isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.02)';
+    var textMain = isDark ? '#f3f4f6' : '#1e293b';
+    var textMuted = isDark ? '#94a3b8' : '#64748b';
+
     var recentItemsHtml = filteredLogs.slice(0, 5).map(function(l) {
       var isInc = (l.tx_type === '입금');
       var sign = isInc ? "+" : "-";
-      var badgeCls = isInc ? 'fin-badge-income' : 'fin-badge-expense';
-      return '<div class="fin-deposit-row">' +
-        '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; margin-right: 6px; color: var(--kakao-notice-text); font-weight: 600;" title="' + escapeHtmlText(l.reason) + '">' +
+      var amtColor = isInc ? incColor : expColor;
+      return '<div class="fin-deposit-row" style="display:flex; justify-content:space-between; align-items:center; padding:4px 7px; background:' + rowBg + '; border-radius:5px; margin-bottom:3px; font-size:11px;">' +
+        '<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0; margin-right:6px; color:' + textMain + '; font-weight:600;" title="' + escapeHtmlText(l.reason) + '">' +
           escapeHtmlText(l.reason) +
         '</span>' +
-        '<span class="' + badgeCls + '" style="border: none !important; background: transparent !important; padding: 0 !important; font-size: 11px !important; font-weight: 800 !important; flex-shrink: 0;">' +
+        '<span style="font-weight:800; color:' + amtColor + '; flex-shrink:0;">' +
           sign + l.amount.toLocaleString() + ' D' +
         '</span>' +
       '</div>';
@@ -1302,7 +1317,7 @@
       '<div class="fin-vault-hero">' +
         '<div>' +
           '<div class="fin-vault-label"><i class="fa-solid fa-coins me-1 text-warning"></i>현재 길드 금고 총액</div>' +
-          '<div class="fin-vault-val">' + currentBalance.toLocaleString() + ' <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">D</span></div>' +
+          '<div class="fin-vault-val">' + currentBalance.toLocaleString() + ' <span style="font-size: 11px; font-weight: 700;">D</span></div>' +
         '</div>' +
         '<div style="font-size: 1.4rem; line-height: 1;">💰</div>' +
       '</div>' +
@@ -1310,34 +1325,34 @@
       '<!-- 집계 기간 및 기간 순수익 요약 박스 (style.css fin-period-box) -->' +
       '<div class="fin-period-box">' +
         '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px dashed var(--drawer-card-border);">' +
-          '<span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>집계 기간</span>' +
-          '<span style="font-weight: 700; font-size: 11px; color: var(--kakao-notice-text);">' + escapeHtmlText(periodLabel) + '</span>' +
+          '<span style="color:' + textMuted + '; font-size: 11px; font-weight: 600;"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>집계 기간</span>' +
+          '<span style="font-weight: 700; font-size: 11px; color:' + textMain + ';">' + escapeHtmlText(periodLabel) + '</span>' +
         '</div>' +
         '<div style="display: flex; justify-content: space-between; align-items: center;">' +
-          '<span style="font-weight: 700; font-size: 11.5px; color: var(--kakao-notice-text);">기간 순수익</span>' +
-          '<span class="' + (isNetPositive ? 'fin-badge-income' : 'fin-badge-expense') + '" style="border: none !important; background: transparent !important; padding: 0 !important; font-size: 12.5px !important; font-weight: 800 !important;">' +
+          '<span style="font-weight: 700; font-size: 11.5px; color:' + textMain + ';">기간 순수익</span>' +
+          '<span style="font-size: 12.5px; font-weight: 900; color:' + (isNetPositive ? incColor : expColor) + ';">' +
             (isNetPositive ? '+' : '') + netProfit.toLocaleString() + ' D' +
           '</span>' +
         '</div>' +
       '</div>' +
 
-      '<!-- 누적 입금 / 누적 지출 2분할 칩 (style.css 정식 클래스 연동) -->' +
+      '<!-- 누적 입금 / 누적 지출 2분할 칩 (인라인+클래스 이중 보장) -->' +
       '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">' +
-        '<div class="fin-badge-income">' +
-          '<div style="font-size: 10px; font-weight: 600;">기간 총 입금</div>' +
-          '<div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">+' + incSum.toLocaleString() + ' D</div>' +
+        '<div class="fin-badge-income" style="background:' + incBg + '; border:1px solid ' + incBorder + '; border-radius:6px; padding:6px 8px; text-align:left;">' +
+          '<div style="font-size: 10px; font-weight: 700; color:' + incColor + ';">기간 총 입금</div>' +
+          '<div style="font-size: 11.5px; font-weight: 900; color:' + incColor + '; margin-top:2px;">+' + incSum.toLocaleString() + ' D</div>' +
         '</div>' +
-        '<div class="fin-badge-expense">' +
-          '<div style="font-size: 10px; font-weight: 600;">기간 총 지출</div>' +
-          '<div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">-' + expSum.toLocaleString() + ' D</div>' +
+        '<div class="fin-badge-expense" style="background:' + expBg + '; border:1px solid ' + expBorder + '; border-radius:6px; padding:6px 8px; text-align:left;">' +
+          '<div style="font-size: 10px; font-weight: 700; color:' + expColor + ';">기간 총 지출</div>' +
+          '<div style="font-size: 11.5px; font-weight: 900; color:' + expColor + '; margin-top:2px;">-' + expSum.toLocaleString() + ' D</div>' +
         '</div>' +
       '</div>' +
 
-      '<!-- 최근 내역 요약 (style.css fin-deposit-row 연동) -->' +
+      '<!-- 최근 내역 요약 (인라인+클래스 이중 보장) -->' +
       (recentItemsHtml ? '<div style="margin-top: 6px;">' +
-        '<div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">' +
+        '<div style="font-size: 11px; font-weight: 700; color:' + textMain + '; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">' +
           '<span><i class="fa-solid fa-receipt me-1 text-primary"></i>최근 내역 (5건)</span>' +
-          '<span style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">총 ' + filteredLogs.length + '건</span>' +
+          '<span style="font-size: 10px; color:' + textMuted + '; font-weight: normal;">총 ' + filteredLogs.length + '건</span>' +
         '</div>' +
         recentItemsHtml +
       '</div>' : '') +
