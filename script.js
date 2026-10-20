@@ -693,8 +693,9 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
     `;
   }
   else if (msg.msg_type === "finance_report") {
-    const isWrapped = cleanMessageText.includes("finance-report-card");
-    const cardContent = isWrapped ? cleanMessageText : `<div class="finance-report-card">${cleanMessageText}</div>`;
+    let cardContent = cleanMessageText.includes("finance-report-card") ? cleanMessageText : `<div class="finance-report-card">${cleanMessageText}</div>`;
+    // 🎯 [길드명] 접두사 제거
+    cardContent = cardContent.replace(/\[[^\]]+\]\s*(길드금고|금고)/g, "$1");
     html = `
       <div class="chat-item-row other" id="${msgKey}">
         <div class="chat-sender-avatar bot" style="background: rgba(251, 191, 36, 0.2) !important; border-color: #f59e0b !important; color: #d97706 !important;">🏛️</div>
@@ -711,17 +712,17 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
       </div>
     `;
   }
-  /* 📊 [통계알리미] 보스참여자 통계 보고서 카드 렌더링 분기 */
-  else if (msg.msg_type === "records_report" || (msg.sender_name === "통계알리미" && cleanMessageText.includes("records-report-card"))) {
-    const isWrapped = cleanMessageText.includes("records-report-card");
-    const cardContent = isWrapped ? cleanMessageText : `<div class="records-report-card">${cleanMessageText}</div>`;
+  else if (msg.msg_type === "records_report" || (msg.sender_name === "통계알리미" || cleanMessageText.includes("records-report-card"))) {
+    let cleanCard = cleanMessageText.includes("records-report-card") ? cleanMessageText : `<div class="records-report-card">${cleanMessageText}</div>`;
+    // 🎯 [길드명] 접두사 제거: "[불편한사람들] 보스&전쟁 통계" -> "보스&전쟁 통계"
+    cleanCard = cleanCard.replace(/\[[^\]]+\]\s*(보스&전쟁|보스 & 전쟁|통계)/g, "$1");
     html = `
       <div class="chat-item-row other" id="${msgKey}">
         <div class="chat-sender-avatar bot" style="background: rgba(14, 165, 233, 0.2) !important; border-color: #0284c7 !important; color: #0284c7 !important;">📊</div>
         <div class="chat-msg-body raid-msg-body">
           <div class="chat-sender-name">통계알리미</div>
           <div class="chat-bubble-flex">
-            ${cardContent}
+            ${cleanCard}
             <div class="chat-meta-box">
               <span class="chat-unread-count">${unreadCount}</span>
               <span class="chat-timestamp">${timeStr}</span>
@@ -756,7 +757,6 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
         </div>
       `;
     } else {
-      const guildName = wishData.guild_name || "길드";
       const bossName = wishData.boss_name || "보스";
       const itemName = wishData.item_name || "아이템";
       const winnerName = wishData.winner_name || "낙찰자";
@@ -777,7 +777,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
                 <div class="fin-card-header">
                   <div class="fin-card-title">
                     <i class="fa-solid fa-gift text-warning"></i>
-                    <span class="text-truncate">[${escapeHtmlText(guildName)}] 아이템 분배 영수증</span>
+                    <span class="text-truncate">아이템 분배 영수증</span>
                   </div>
                   <span class="fin-date-badge">${dateStr}</span>
                 </div>
