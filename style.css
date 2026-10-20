@@ -280,6 +280,8 @@ html, body {
   transform: translateX(-100%);
   transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .app-sidebar-drawer.open {
   transform: translateX(0);
@@ -325,16 +327,22 @@ html, body {
 .sidebar-menu-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 500;
+  gap: 10px;
+  padding: 10px 12px;
   color: var(--drawer-item-text) !important;
+  font-size: 0.85rem;
+  font-weight: 700 !important;
+  border-radius: 7px;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background 0.12s ease;
+  margin-bottom: 2px;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
 }
 .sidebar-menu-item:hover {
   background: var(--drawer-item-hover-bg) !important;
+  color: var(--drawer-title) !important;
 }
 .sidebar-menu-item i {
   font-size: 15px;
@@ -805,7 +813,6 @@ body.theme-dark .boss-alert-mini-card.alert-spawn { background: #262d37 !importa
   display: flex !important; align-items: center !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
 }
 .raid-boss-icon { font-size: 15px !important; margin-right: 5px !important; }
-.raid-header-badges { display: flex !important; align-items: center !important; gap: 4px !important; }
 .badge-raid-type { font-size: 9.5px !important; padding: 2px 6px !important; border-radius: 4px !important; font-weight: 800 !important; }
 .badge-raid-type.normal { background: #e0f2fe !important; color: #0284c7 !important; border: 1px solid #bae6fd !important; }
 .badge-raid-type.war { background: #fee2e2 !important; color: #dc2626 !important; border: 1px solid #fca5a5 !important; }
@@ -1049,3 +1056,15 @@ body.theme-dark .raid-drop-box { color: #fbbf24 !important; border-color: rgba(2
 .class-preset-cell:hover { border-color: #0284c7; background: var(--drawer-item-hover-bg); }
 .class-icon-big { font-size: 1.3rem; }
 .class-title-small { font-size: 0.68rem; font-weight: 700; color: var(--drawer-title); }
+
+.raid-hero-box {
+  background: rgba(0, 0, 0, 0.025);
+  border: 1px solid var(--drawer-card-border);
+  border-radius: 8px;
+  padding: 7px 10px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+body.theme-dark .raid-hero-box {
+  background: rgba(255, 255, 255, 0.03);
+}
