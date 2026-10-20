@@ -1,3 +1,6 @@
+/* ========================================================
+   [기본 테마 변수]
+   ======================================================== */
 :root {
   --kakao-bg: #bacee0;
   --kakao-header-bg: #bacee0;
@@ -754,65 +757,144 @@ body.theme-dark .fin-date-badge { background: rgba(245, 158, 11, 0.2) !important
 .fin-period-box { background: rgba(0,0,0,0.03) !important; border: 1px solid var(--drawer-card-border) !important; border-radius: 8px !important; padding: 7px 9px !important; margin-bottom: 8px !important; font-size: 11.5px !important; }
 body.theme-dark .fin-period-box { background: rgba(255,255,255,0.04) !important; }
 
-/* 📊 [통계알리미] 보스참여자 통계 보고서 카드 전용 스타일 */
+/* ========================================================
+   📊 [통계알리미] 카카오톡 정품 규격 통계 보고서 카드 전용 스타일
+   ======================================================== */
 .records-report-card {
   background: var(--kakao-notice-bg) !important;
   color: var(--kakao-notice-text) !important;
   border: 1px solid var(--drawer-card-border) !important;
   border-radius: 12px !important;
-  padding: 10px 12px !important;
+  padding: 10px 11px !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
-  width: 290px !important;
+  width: 275px !important;
   max-width: 100% !important;
+  box-sizing: border-box !important;
+  letter-spacing: -0.3px !important;
 }
-.rec-card-header {
+
+/* 상단 헤더: 제목과 날짜 배지 한 줄 슬림 정렬 */
+.records-report-card .rec-card-header {
   border-bottom: 1px dashed var(--drawer-card-border) !important;
   padding-bottom: 6px !important;
-  margin-bottom: 8px !important;
+  margin-bottom: 7px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
+  gap: 4px !important;
 }
-.rec-card-title {
-  font-size: 13px !important;
+
+.records-report-card .rec-card-title {
+  font-size: 11.5px !important;
   font-weight: 800 !important;
   color: var(--kakao-notice-text) !important;
   display: flex !important;
   align-items: center !important;
-  gap: 5px !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
-.rec-date-badge {
-  background: rgba(14, 165, 233, 0.15) !important;
+.records-report-card .rec-card-title span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: inline-block !important;
+}
+
+.records-report-card .rec-date-badge {
+  background: rgba(14, 165, 233, 0.12) !important;
   color: #0284c7 !important;
-  border: 1px solid rgba(14, 165, 233, 0.35) !important;
-  font-size: 10px !important;
+  border: 1px solid rgba(14, 165, 233, 0.3) !important;
+  font-size: 9.5px !important;
   font-weight: 700 !important;
-  padding: 2px 6px !important;
-  border-radius: 5px !important;
+  padding: 1.5px 5px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1.2 !important;
 }
-body.theme-dark .rec-date-badge {
+body.theme-dark .records-report-card .rec-date-badge {
   background: rgba(14, 165, 233, 0.2) !important;
   color: #38bdf8 !important;
-  border-color: rgba(14, 165, 233, 0.5) !important;
+  border-color: rgba(14, 165, 233, 0.4) !important;
 }
-.rec-hero-box {
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(14, 165, 233, 0.04) 100%) !important;
-  border: 1px solid rgba(14, 165, 233, 0.3) !important;
-  border-radius: 9px !important;
-  padding: 8px 10px !important;
-  margin-bottom: 8px !important;
+
+/* 1위 MVP 박스 슬림화 */
+.records-report-card .rec-hero-box {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  border-radius: 8px !important;
+  padding: 6px 9px !important;
+  margin-bottom: 7px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
 }
-.rec-hero-label {
-  font-size: 10.5px !important;
+
+.records-report-card .rec-hero-label {
+  font-size: 10px !important;
   color: var(--kakao-time-gray) !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
 }
-.rec-hero-val {
-  font-size: 13px !important;
+
+.records-report-card .rec-hero-val {
+  font-size: 12px !important;
   font-weight: 800 !important;
-  color: var(--kakao-notice-text) !important;
+  color: #f59e0b !important;
   margin-top: 2px !important;
+}
+
+/* 요약 그리드 박스 (총 토벌 횟수, 참여 인원/총점) */
+.records-report-card > div[style*="grid"] {
+  gap: 5px !important;
+  margin-bottom: 7px !important;
+}
+.records-report-card > div[style*="grid"] > div {
+  padding: 5px 7px !important;
+  border-radius: 7px !important;
+}
+.records-report-card > div[style*="grid"] span,
+.records-report-card > div[style*="grid"] div {
+  font-size: 10.5px !important;
+  line-height: 1.3 !important;
+}
+
+/* 랭킹 헤더 */
+.records-report-card div:has(> .fa-chart-simple),
+.records-report-card div:has(> [class*="chart"]) {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  padding-bottom: 3px !important;
+}
+
+/* 랭킹 목록 리스트 슬림 정돈 */
+.records-report-card div:has(> div[style*="font-size: 11px"]),
+.records-report-card div:has(> div[style*="font-size: 12px"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.records-report-card div[style*="border-bottom"] {
+  padding: 3px 0 !important;
+  font-size: 11px !important;
+}
+
+/* 랭킹 각 행의 텍스트 크기 축소 및 단정한 정렬 */
+.records-report-card span[style*="font-size: 13px"],
+.records-report-card span[style*="font-size: 14px"],
+.records-report-card div[style*="font-size: 13px"],
+.records-report-card div[style*="font-size: 14px"] {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+.records-report-card span[style*="color: #f59e0b"],
+.records-report-card span[style*="color: #ea580c"],
+.records-report-card span[style*="color: #d97706"] {
+  font-size: 11px !important;
+  font-weight: 700 !important;
 }
