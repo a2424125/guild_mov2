@@ -23,44 +23,79 @@ function saveNotifiedBossKey(key) {
 
 function showKakaoToast(msg, icon = "💬") {
   const box = document.getElementById("kakaoToastBox");
-  const iconSpan = document.getElementById("kakaoToastIcon");
-  const msgSpan = document.getElementById("kakaoToastMsg");
-
+  const m = document.getElementById("kakaoToastMsg");
+  const ic = document.getElementById("kakaoToastIcon");
   if (!box) return;
 
-  if (kakaoToastTimer) clearTimeout(kakaoToastTimer);
-
-  iconSpan.innerText = icon;
-  msgSpan.innerText = msg;
+  m.innerText = msg;
+  ic.innerText = icon;
   box.classList.add("show");
 
-  kakaoToastTimer = setTimeout(() => {
-    box.classList.remove("show");
-  }, 2300);
+  if (kakaoToastTimer) clearTimeout(kakaoToastTimer);
+  kakaoToastTimer = setTimeout(() => box.classList.remove("show"), 2300);
 }
 
-function toggleThemeMode() {
-  const isLight = document.documentElement.classList.contains("theme-light");
+function formatTime24Hour(dateInput) {
+  if (!dateInput) return "";
+  let d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+  if (isNaN(d.getTime())) d = new Date();
+
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+  return formatter.format(d);
+}
+
+function formatTime24HourWithDate(dateInput) {
+  if (!dateInput) return "";
+  let d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+  if (isNaN(d.getTime())) d = new Date();
+
+  const timeStr = formatTime24Hour(d);
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${timeStr} (${m}/${day})`;
+}
+
+// 🌐 서랍 및 서브 모듈(PageTimer.html 등)과의 100% 호환성을 위한 전역 바인딩
+window.formatTime24Hour = formatTime24Hour;
+window.formatTime24HourWithDate = formatTime24HourWithDate;
+
+function formatKSTChatTime(dateInput) {
+  if (!dateInput) return "";
+  let d;
+  if (typeof dateInput === 'string') {
+    let clean = dateInput.trim();
+    if (clean.includes(' ') && !clean.includes('T')) {
+      clean = clean.replace(' ', 'T');
+    }
+    if (!clean.endsWith('Z') && !clean.includes('+') && !clean.includes('-')) {
+      clean += 'Z';
+    }
+    d = new Date(clean);
+  } else {
+    d = new Date(dateInput);
+  }
+
+  if (isNaN(d.getTime())) d = new Date();
+
+  const formatter = new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+  return formatter.format(d);
+}
+window.formatKSTChatTime = formatKSTChatTime;
+
+window.applyAppTheme = function(mode) {
+  const theme = mode || localStorage.getItem("guild_theme_mode") || "dark";
+  const isLight = (theme === "light");
   if (isLight) {
-    document.documentElement.classList.remove("theme-light");
-    document.documentElement.classList.add("theme-dark");
-    document.body.classList.remove("theme-light");
-    document.body.classList.add("theme-dark");
-    localStorage.setItem("guild_theme_mode", "dark");
-    showKakaoToast("다크 모드로 전환되었습니다.", "🌙");
-  } else {
-    document.documentElement.classList.remove("theme-dark");
-    document.documentElement.classList.add("theme-light");
-    document.body.classList.remove("theme-dark");
-    document.body.classList.add("theme-light");
-    localStorage.setItem("guild_theme_mode", "light");
-    showKakaoToast("라이트 모드로 전환되었습니다.", "☀️");
-  }
-}
-
-window.applyAppTheme = function() {
-  const theme = localStorage.getItem("guild_theme_mode") || "dark";
-  if (theme === "light") {
     document.documentElement.classList.add("theme-light");
     document.documentElement.classList.remove("theme-dark");
     document.body.classList.add("theme-light");
@@ -71,33 +106,19 @@ window.applyAppTheme = function() {
     document.body.classList.add("theme-dark");
     document.body.classList.remove("theme-light");
   }
+  localStorage.setItem("guild_theme_mode", theme);
 };
 
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = document.getElementById("btnPwaInstall");
-  if (btn) {
-    btn.style.display = "inline-flex";
-    btn.onclick = async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          showKakaoToast("앱 설치를 시작합니다.", "📱");
-        }
-        deferredPrompt = null;
-        btn.style.display = "none";
-      }
-    };
+window.addEventListener("storage", function(e) {
+  if (e.key === "guild_theme_mode") {
+    window.applyAppTheme(e.newValue);
   }
 });
 
 async function initApp() {
-  window.applyAppTheme();
-
-  if (typeof supabase !== "undefined" && typeof SUPABASE_CONFIG !== "undefined") {
-    supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+  if (typeof window.applyAppTheme === 'function') window.applyAppTheme();
+  if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+    supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
   }
 
   await loadGuildMetadata();
@@ -149,135 +170,116 @@ async function loadGuildMetadata() {
 }
 
 async function loadTopNoticeHeader() {
+  const elem = document.getElementById("kakaoTopNoticeText");
+  if (!elem) return;
   try {
-    const res = await apiRequest("guild_notices?select=title,content,is_pinned&order=id.desc&limit=5");
+    const res = await apiRequest("guild_notices?order=is_pinned.desc,created_at.desc&limit=1");
     if (res && res.length > 0) {
-      const pinned = res.find(n => n.is_pinned === true || n.is_pinned === 'true') || res[0];
-      const title = (pinned.title || "").replace(/^\[[^\]]+\]\s*/, '');
-      document.getElementById("kakaoTopNoticeText").innerText = title ? `[공지] ${title}` : "공지사항이 등록되었습니다.";
+      const n = res[0];
+      const pinTag = n.is_pinned ? "[공지] " : "";
+      elem.innerText = `${pinTag}${n.title || '등록된 공지사항이 없습니다.'}`;
     } else {
-      document.getElementById("kakaoTopNoticeText").innerText = "등록된 공지사항이 없습니다.";
+      elem.innerText = "등록된 공지사항이 없습니다.";
     }
-  } catch (e) {}
+  } catch (e) {
+    elem.innerText = "등록된 공지사항이 없습니다.";
+  }
 }
 
-async function loadGuildMembersData() {
+window.loadGuildMembersData = async function() {
   try {
-    const res = await apiRequest("guild_members?select=id,name,role,job_class,pin&order=role.asc,name.asc");
-    if (res) {
-      cachedMemberList = res;
-      document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
-      renderDrawerMembersList();
-    }
+    const members = await apiRequest("guild_members?select=*&order=name.asc");
+    cachedMemberList = members || [];
+
+    cachedMemberList.sort((a, b) => {
+      const pA = getRolePriority(a.role);
+      const pB = getRolePriority(b.role);
+      if (pA !== pB) return pA - pB;
+      return a.name.localeCompare(b.name, 'ko');
+    });
+
+    const countElem = document.getElementById("roomMemberCountText");
+    if (countElem) countElem.innerText = cachedMemberList.length;
+
+    renderLoginMemberDropdown("");
   } catch (e) {}
+};
+
+function getRolePriority(role) {
+  const r = String(role || '').trim();
+  if (r === '길드장' || r === '길마') return 1;
+  if (r === '부길드장' || r === '부길마') return 2;
+  if (r === '정예') return 3;
+  return 4;
 }
 
-function renderDrawerMembersList() {
-  const container = document.getElementById("drawerMembersContainer");
-  if (!container) return;
-
-  const rolesOrder = { "길드장": 1, "길마": 1, "부길드장": 2, "부길마": 2, "정예": 3, "일반": 4 };
-
-  const sorted = [...cachedMemberList].sort((a, b) => {
-    const rA = rolesOrder[a.role] || 99;
-    const rB = rolesOrder[b.role] || 99;
-    if (rA !== rB) return rA - rB;
-    return (a.name || "").localeCompare(b.name || "", 'ko');
-  });
-
-  const html = `
-    <div style="padding: 14px; border-bottom: 1px solid var(--drawer-header-border); background: var(--drawer-header-bg); display: flex; justify-content: space-between; align-items: center;">
-      <div style="font-weight: 800; font-size: 0.92rem; color: var(--drawer-title);"><i class="fa-solid fa-users text-primary me-2"></i>길드원 목록 (${sorted.length}명)</div>
-      <button type="button" class="sidebar-close-btn" onclick="toggleMembersDrawer(false)"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div style="flex: 1; overflow-y: auto; padding: 8px 6px;">
-      ${sorted.map(m => {
-        const isMaster = (m.role === "길드장" || m.role === "길마");
-        const isSubMaster = (m.role === "부길드장" || m.role === "부길마");
-        const isElite = (m.role === "정예");
-
-        let roleBadge = '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.65rem;">일반</span>';
-        if (isMaster) roleBadge = '<span class="badge bg-warning bg-opacity-25 text-warning" style="font-size:0.65rem;">길드장</span>';
-        else if (isSubMaster) roleBadge = '<span class="badge bg-primary bg-opacity-25 text-primary" style="font-size:0.65rem;">부길드장</span>';
-        else if (isElite) roleBadge = '<span class="badge bg-info bg-opacity-25 text-info" style="font-size:0.65rem;">정예</span>';
-
-        const avatar = (m.job_class || "👤").split(' ')[0] || "👤";
-        const jobName = (m.job_class || "미설정").replace(/^[^\s]+\s*/, '') || "미설정";
-
-        return `
-          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 8px; margin-bottom: 3px; background: var(--drawer-card-bg); border: 1px solid var(--drawer-card-border);">
-            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-              <div style="width: 30px; height: 30px; border-radius: 10px; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 1rem;">${avatar}</div>
-              <div style="min-width: 0;">
-                <div style="font-weight: 700; font-size: 0.82rem; color: var(--drawer-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtmlText(m.name)}</div>
-                <div style="font-size: 0.68rem; color: var(--drawer-sub-text);">${escapeHtmlText(jobName)}</div>
-              </div>
-            </div>
-            <div>${roleBadge}</div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-  container.innerHTML = html;
-}
-
-async function loadBossTimersList() {
-  try {
-    const res = await apiRequest("boss_timers?select=*&order=id.asc");
-    if (res) {
-      cachedBossList = res;
-      syncAllChatCutButtons();
-    }
-  } catch (e) {}
-}
-
-function toggleMenuDrawer(open) {
+function toggleMenuDrawer(isOpen) {
   const drawer = document.getElementById("menuSidebarDrawer");
   const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (!drawer || !backdrop) return;
-  if (open) {
-    closeAllDrawers();
-    drawer.classList.add("open");
+  if (isOpen) {
+    toggleMembersDrawer(false);
+    toggleBossDrawer(false);
     backdrop.classList.add("show");
+    drawer.classList.add("open");
   } else {
     drawer.classList.remove("open");
     checkBackdropState();
   }
 }
 
-function toggleMembersDrawer(open) {
+async function toggleMembersDrawer(isOpen) {
   const drawer = document.getElementById("membersSidebarDrawer");
   const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (!drawer || !backdrop) return;
-  if (open) {
-    closeAllDrawers();
-    drawer.classList.add("open");
+  if (isOpen) {
+    toggleMenuDrawer(false);
+    toggleBossDrawer(false);
     backdrop.classList.add("show");
+    drawer.classList.add("open");
+
+    const container = document.getElementById("drawerMembersContainer");
+    container.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>길드원을 불러오는 중...</div>`;
+    try {
+      const res = await fetch(`pages/PageMembers.html?_t=${Date.now()}`);
+      if (!res.ok) throw new Error("로드 실패");
+      const html = await res.text();
+      container.innerHTML = html;
+
+      document.querySelectorAll(".drawer-member-script").forEach(s => s.remove());
+      container.querySelectorAll("script").forEach(s => {
+        const sc = document.createElement("script");
+        sc.className = "drawer-member-script";
+        if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
+        document.body.appendChild(sc);
+      });
+    } catch (e) {
+      container.innerHTML = `<div class="text-danger small text-center py-5">로드 실패: ${e.message}</div>`;
+    }
   } else {
     drawer.classList.remove("open");
     checkBackdropState();
   }
 }
 
-function toggleBossDrawer(open) {
+async function toggleBossDrawer(isOpen) {
   const drawer = document.getElementById("bossTimerSidebarDrawer");
   const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (!drawer || !backdrop) return;
-  if (open) {
-    closeAllDrawers();
-    drawer.classList.add("open");
+  if (isOpen) {
+    toggleMenuDrawer(false);
+    toggleMembersDrawer(false);
     backdrop.classList.add("show");
-    loadDrawerPageTimer();
+    drawer.classList.add("open");
+    await loadDrawerPageTimer();
   } else {
     drawer.classList.remove("open");
     checkBackdropState();
+    if (typeof window.__currentModuleCleanup === 'function') {
+      window.__currentModuleCleanup();
+    }
   }
 }
 
 async function loadDrawerPageTimer() {
   const area = document.getElementById("drawerBossListArea");
-  if (!area) return;
   area.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>불러오는 중...</div>`;
   try {
     const res = await fetch(`pages/PageTimer.html?_t=${Date.now()}`);
@@ -320,29 +322,38 @@ function checkBackdropState() {
   const isMenuOpen = document.getElementById("menuSidebarDrawer").classList.contains("open");
   const isMembersOpen = document.getElementById("membersSidebarDrawer").classList.contains("open");
   const isBossOpen = document.getElementById("bossTimerSidebarDrawer").classList.contains("open");
-  const backdrop = document.getElementById("commonDrawerBackdrop");
   if (!isMenuOpen && !isMembersOpen && !isBossOpen) {
-    backdrop.classList.remove("show");
+    document.getElementById("commonDrawerBackdrop").classList.remove("show");
   }
 }
 
 function openProfileEditModal() {
   document.getElementById("modalProfileEdit").style.display = "flex";
 }
-
 function closeProfileEditModal() {
   document.getElementById("modalProfileEdit").style.display = "none";
 }
 
-async function selectClassProfile(icon, jobName) {
+function updateProfileUI(nick) {
+  const nameElem = document.getElementById("sidebarUserNickName");
+  const avatarElem = document.getElementById("sidebarAvatarIcon");
+  const classElem = document.getElementById("sidebarUserClassText");
+
+  if (nameElem) nameElem.innerText = nick || "로그인 필요";
+  if (avatarElem) avatarElem.innerText = myCurrentAvatar || "👤";
+  if (classElem) classElem.innerText = myCurrentClass || "직업 설정하기";
+}
+
+async function selectClassProfile(icon, name) {
   myCurrentAvatar = icon;
-  myCurrentClass = `${icon} ${jobName}`;
-  localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+  myCurrentClass = `${icon} ${name}`;
+  localStorage.setItem("guild_my_avatar", icon);
   localStorage.setItem("guild_my_class", myCurrentClass);
 
-  updateProfileUI(myCurrentNick);
+  document.getElementById("sidebarAvatarIcon").innerText = icon;
+  document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
 
-  if (myCurrentNick && myCurrentNick !== "슈퍼관리자" && myCurrentNick.toLowerCase() !== "admin") {
+  if (myCurrentNick) {
     try {
       await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
         job_class: myCurrentClass
@@ -473,6 +484,12 @@ async function executeGuildLogin() {
   }
 
   const targetMember = cachedMemberList.find(m => m.name.toLowerCase() === selectedName.toLowerCase());
+  if (!targetMember && isSuperId) {
+    document.getElementById("loginPinInput").value = "";
+    document.getElementById("loginPinInput").focus();
+    return showKakaoToast("비밀번호가 올바르지 않습니다!", "❌");
+  }
+
   if (!targetMember) {
     return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
   }
@@ -503,7 +520,10 @@ async function executeGuildLogin() {
   const userRole = targetMember.role || "일반";
   localStorage.setItem("guild_my_role", userRole);
 
-  if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
+  if (userRole === "길드장" || userRole === "길마") {
+    sessionStorage.setItem("admin_auth", "true");
+    sessionStorage.setItem("admin_role", "admin");
+  } else if (userRole === "부길드장" || userRole === "부길마") {
     sessionStorage.setItem("admin_auth", "true");
     sessionStorage.setItem("admin_role", "admin");
   } else if (userRole === "정예") {
@@ -514,49 +534,43 @@ async function executeGuildLogin() {
     sessionStorage.removeItem("admin_role");
   }
 
-  if (targetMember.job_class) {
-    myCurrentClass = targetMember.job_class;
-    myCurrentAvatar = targetMember.job_class.split(' ')[0] || "👤";
-    localStorage.setItem("guild_my_class", myCurrentClass);
-    localStorage.setItem("guild_my_avatar", myCurrentAvatar);
-  }
-
   updateProfileUI(targetMember.name);
   document.getElementById("guildLoginModal").style.display = "none";
-  showKakaoToast(`[${targetMember.name}]님 로그인 완료!`, "👋");
+  showKakaoToast(`[${targetMember.name}] 님 반갑습니다!`, "🎉");
 }
 
 function handleUserLogout() {
-  if (!confirm("정말 로그아웃 하시겠습니까?")) return;
+  if (!confirm("정말로 로그아웃하시겠습니까?")) return;
   localStorage.removeItem("guild_my_nickname");
   localStorage.removeItem("guild_my_pin");
   localStorage.removeItem("guild_my_role");
   sessionStorage.removeItem("admin_auth");
   sessionStorage.removeItem("admin_role");
-
   myCurrentNick = "";
   myCurrentPin = "";
   toggleMenuDrawer(false);
   showGuildLoginModal();
 }
 
-function updateProfileUI(nick) {
-  document.getElementById("sidebarUserNickName").innerText = nick;
-  document.getElementById("sidebarAvatarIcon").innerText = myCurrentAvatar;
-  document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
-}
-
 async function loadPastChatMessages() {
-  const container = document.getElementById("chatMessagesView");
-  if (!container) return;
-
   try {
-    const list = await apiRequest("guild_chats?select=*&order=id.desc&limit=100");
-    if (!list) return;
+    const data = await apiRequest("guild_chats?select=*&order=created_at.asc&limit=100");
+    const container = document.getElementById("chatMessagesView");
+    container.innerHTML = `
+      <div class="text-center my-1">
+        <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
+      </div>
+    `;
 
-    const ordered = list.reverse();
-    renderChatMessagesBatch(ordered);
+    if (data && data.length > 0) {
+      data.forEach((msg, idx) => {
+        const prevMsg = idx > 0 ? data[idx - 1] : null;
+        const isConsecutive = prevMsg && (prevMsg.sender_name === msg.sender_name) && ((new Date(msg.created_at) - new Date(prevMsg.created_at)) < 60000);
+        renderKakaoChatBubble(msg, false, isConsecutive);
+      });
+    }
     scrollChatBottom();
+    syncAllChatCutButtons();
   } catch (e) {}
 }
 
@@ -576,153 +590,79 @@ function listenRealtimeChatMessages() {
       const newMsg = payload.new;
       if (!newMsg) return;
 
-      if (newMsg.sender_name === myCurrentNick && newMsg.msg_type === "chat") {
-        const pendingIdx = pendingOptimisticMessages.findIndex(p => p.text === newMsg.message && (Date.now() - p.time < 15000));
-        if (pendingIdx !== -1) {
-          const pending = pendingOptimisticMessages[pendingIdx];
-          pendingOptimisticMessages.splice(pendingIdx, 1);
-
-          const rowElem = document.getElementById("msg_" + pending.tempId);
-          if (rowElem) {
-            rowElem.id = "msg_" + newMsg.id;
-            rowElem.setAttribute("data-msg-id", newMsg.id);
+      if (newMsg.sender_name === myCurrentNick) {
+        const optimisticIdx = pendingOptimisticMessages.findIndex(m => m.message === newMsg.message);
+        if (optimisticIdx !== -1) {
+          const opt = pendingOptimisticMessages[optimisticIdx];
+          const tempElem = document.getElementById(opt.tmpId);
+          if (tempElem) {
+            tempElem.id = `msg_${newMsg.id}`;
           }
+          pendingOptimisticMessages.splice(optimisticIdx, 1);
           return;
         }
       }
 
-      appendSingleChatMessage(newMsg);
-      scrollChatBottom();
+      const isConsecutive = (lastRenderedSender === newMsg.sender_name);
+      renderKakaoChatBubble(newMsg, true, isConsecutive);
+      lastRenderedSender = newMsg.sender_name;
+
+      if (newMsg.msg_type === "boss_briefing" || newMsg.msg_type === "boss_alert") {
+        syncAllChatCutButtons();
+      }
     })
-    .subscribe();
-}
-
-function listenRealtimeBossTimers() {
-  if (!supabaseClient) return;
-
-  supabaseClient
-    .channel("public:boss_timers")
-    .on("postgres_changes", { event: "*", schema: "public", table: "boss_timers" }, async () => {
-      await loadBossTimersList();
-      const isBossDrawerOpen = document.getElementById("bossTimerSidebarDrawer").classList.contains("open");
-      if (isBossDrawerOpen) {
-        await loadDrawerPageTimer();
+    .on("postgres_changes", { event: "DELETE", schema: "public", table: "guild_chats" }, (payload) => {
+      const oldId = payload.old?.id;
+      if (oldId) {
+        const elem = document.getElementById(`msg_${oldId}`);
+        if (elem) elem.remove();
       }
     })
     .subscribe();
 }
 
-function listenRealtimeBossParticipations() {
-  if (!supabaseClient) return;
+function syncAllChatCutButtons() {
+  const buttons = document.querySelectorAll(".btn-msg-sub-cut");
+  buttons.forEach(btn => {
+    const bossName = btn.getAttribute("data-boss-name");
+    if (!bossName) return;
 
-  supabaseClient
-    .channel("public:boss_participations")
-    .on("postgres_changes", { event: "*", schema: "public", table: "boss_participations" }, () => {})
-    .subscribe();
-}
-
-function startLocalBossWatchTimer() {
-  if (bossWatcherInterval) clearInterval(bossWatcherInterval);
-
-  bossWatcherInterval = setInterval(async () => {
-    if (!cachedBossList || cachedBossList.length === 0) return;
-
-    const now = Date.now();
-    for (let boss of cachedBossList) {
-      if (!boss.next_spawn_time) continue;
-
-      const spawnTime = new Date(boss.next_spawn_time).getTime();
-      const diffSec = Math.floor((spawnTime - now) / 1000);
-
-      const spawnTimeKey = new Date(boss.next_spawn_time).toISOString().slice(0, 16);
-      const key7m = `${boss.id}_7m_${spawnTimeKey}`;
-      const key3m = `${boss.id}_3m_${spawnTimeKey}`;
-      const keySpawn = `${boss.id}_spawn_${spawnTimeKey}`;
-
-      if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7m)) {
-        saveNotifiedBossKey(key7m);
-        await sendBossAlertMessage(boss.boss_name, "7분 전", boss.location);
-      } else if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3m)) {
-        saveNotifiedBossKey(key3m);
-        await sendBossAlertMessage(boss.boss_name, "3분 전", boss.location);
-      } else if (diffSec <= 0 && diffSec > -120 && !notifiedBossSpawnMap.has(keySpawn)) {
-        saveNotifiedBossKey(keySpawn);
-        await sendBossAlertMessage(boss.boss_name, "출현", boss.location);
+    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+    if (boss && boss.next_spawn_time) {
+      const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - Date.now()) / 1000);
+      if (diffSec > 0) {
+        btn.classList.add("disabled");
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-check"></i> 완료`;
+      } else {
+        btn.classList.remove("disabled");
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`;
       }
     }
-  }, 1000);
-}
-
-function startRaidReportCountdowns() {
-  setInterval(() => {
-    updateActiveRaidTimers();
-  }, 1000);
-}
-
-function renderChatMessagesBatch(messages) {
-  const container = document.getElementById("chatMessagesView");
-  if (!container) return;
-
-  let fullHtml = `
-    <div class="text-center my-1">
-      <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
-    </div>
-  `;
-
-  let prevSender = null;
-  messages.forEach(c => {
-    const isConsecutive = (c.sender_name === prevSender && c.msg_type === "chat");
-    fullHtml += buildMessageRowHtml(c, isConsecutive);
-    prevSender = c.msg_type === "chat" ? c.sender_name : null;
   });
-
-  lastRenderedSender = prevSender;
-  container.innerHTML = fullHtml;
-  syncAllChatCutButtons();
 }
 
-function appendSingleChatMessage(newMsg) {
+function extractBossNameFromMessage(text) {
+  if (!text) return "";
+  const match = text.match(/\[([^\]]+)\]/);
+  return match ? match[1].trim() : "";
+}
+
+function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
-  if (!container) return;
-
-  const isConsecutive = (newMsg.sender_name === lastRenderedSender && newMsg.msg_type === "chat");
-  const msgHtml = buildMessageRowHtml(newMsg, isConsecutive);
-
-  lastRenderedSender = newMsg.msg_type === "chat" ? newMsg.sender_name : null;
-
-  const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = msgHtml;
-  const child = tempDiv.firstElementChild;
-  if (child) {
-    container.appendChild(child);
-  }
-
-  syncAllChatCutButtons();
-}
-
-function buildMessageRowHtml(msg, isConsecutive = false) {
   const isMe = (msg.sender_name === myCurrentNick);
-  const msgKey = "msg_" + msg.id;
+  const isMentioned = Array.isArray(msg.mentions) && msg.mentions.includes(myCurrentNick);
+  const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
+  
+  const timeStr = formatKSTChatTime(msg.created_at);
+  const totalMembers = cachedMemberList.length || 52;
+  const unreadCount = Math.max(1, totalMembers - 14);
 
-  const dt = msg.created_at ? new Date(msg.created_at) : new Date();
-  let hours = dt.getHours();
-  const minutes = String(dt.getMinutes()).padStart(2, '0');
-  const ampm = hours >= 12 ? '오후' : '오전';
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const timeStr = `${ampm} ${hours}:${minutes}`;
+  let html = "";
+  const cleanMessageText = (msg.message || '').trim();
 
-  const cleanMessageText = msg.message || "";
-  const isMentioned = myCurrentNick && cleanMessageText.includes(`@${myCurrentNick}`);
-
-  let unreadCount = 0;
-  if (isMe) {
-    unreadCount = 1;
-  } else {
-    unreadCount = Math.max(1, (cachedMemberList.length || 2) - 1);
-  }
-
-  let senderAvatarIcon = "👤";
+  let senderAvatarIcon = (msg.sender_name || '?').charAt(0);
   const matchedSender = cachedMemberList.find(m => m.name === msg.sender_name);
   if (matchedSender && matchedSender.job_class) {
     senderAvatarIcon = matchedSender.job_class.split(' ')[0] || senderAvatarIcon;
@@ -731,16 +671,16 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
     senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
   }
 
-  let html = "";
-
   if (msg.msg_type === "boss_briefing") {
     html = `
       <div class="chat-item-row other" id="${msgKey}">
-        <div class="chat-sender-avatar bot">🕒</div>
+        <div class="chat-sender-avatar bot">⏰</div>
         <div class="chat-msg-body">
           <div class="chat-sender-name">보스알리미</div>
           <div class="chat-bubble-flex">
-            ${cleanMessageText}
+            <div class="boss-brief-bubble">
+              ${cleanMessageText}
+            </div>
             <div class="chat-meta-box">
               <span class="chat-unread-count">${unreadCount}</span>
               <span class="chat-timestamp">${timeStr}</span>
@@ -770,14 +710,15 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
     `;
   }
   else if (msg.msg_type === "records_report" || (msg.sender_name === "통계알리미" || cleanMessageText.includes("records-report-card"))) {
-    let cardContent = cleanMessageText.includes("records-report-card") ? cleanMessageText : `<div class="records-report-card">${cleanMessageText}</div>`;
+    let cleanCard = cleanMessageText.includes("records-report-card") ? cleanMessageText : `<div class="records-report-card">${cleanMessageText}</div>`;
+    cleanCard = cleanCard.replace(/\[[^\]]+\]\s*(보스&전쟁|보스 & 전쟁|통계)/g, "$1");
     html = `
       <div class="chat-item-row other" id="${msgKey}">
-        <div class="chat-sender-avatar bot" style="background: rgba(14, 165, 233, 0.2) !important; border-color: #0ea5e9 !important; color: #0284c7 !important;">📊</div>
+        <div class="chat-sender-avatar bot" style="background: rgba(14, 165, 233, 0.2) !important; border-color: #0284c7 !important; color: #0284c7 !important;">📊</div>
         <div class="chat-msg-body raid-msg-body">
           <div class="chat-sender-name">통계알리미</div>
           <div class="chat-bubble-flex">
-            ${cardContent}
+            ${cleanCard}
             <div class="chat-meta-box">
               <span class="chat-unread-count">${unreadCount}</span>
               <span class="chat-timestamp">${timeStr}</span>
@@ -813,16 +754,14 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
       `;
     } else {
       const bossName = wishData.boss_name || "보스";
-      const totalAmount = Number(wishData.total_amount || 0).toLocaleString();
-      const perMember = Number(wishData.per_member_amount || 0).toLocaleString();
-      const members = wishData.members || [];
-      const memberCount = members.length;
-      const formattedItems = wishData.drop_items || "";
-
-      let memberTagsHtml = "";
-      if (members.length > 0) {
-        memberTagsHtml = members.map(m => `<span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size: 10px; border-radius: 4px;">${escapeHtmlText(m)}</span>`).join(' ');
-      }
+      const itemName = wishData.item_name || "아이템";
+      const winnerName = wishData.winner_name || "낙찰자";
+      const price = Number(wishData.price || 0).toLocaleString();
+      const perShare = Number(wishData.per_share || 0).toLocaleString();
+      const memberCount = wishData.member_count || 0;
+      const membersList = Array.isArray(wishData.members) ? wishData.members : [];
+      const dateStr = wishData.date_str || "10/20";
+      const reportTime = wishData.created_at ? formatKSTChatTime(wishData.created_at) : timeStr;
 
       html = `
         <div class="chat-item-row other" id="${msgKey}">
@@ -830,52 +769,50 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
           <div class="chat-msg-body raid-msg-body">
             <div class="chat-sender-name">정산알리미</div>
             <div class="chat-bubble-flex">
-              <div class="settle-wish-chat-card">
-                <div class="settle-card-header">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <strong style="font-size: 12px; color: var(--kakao-notice-text);"><i class="fa-solid fa-gift text-warning me-1"></i>[${escapeHtmlText(bossName)}] 분배 정산 보고</strong>
-                    <span class="badge bg-success bg-opacity-25 text-success" style="font-size: 10px;">정산완료</span>
+              <div class="finance-report-card">
+                <div class="fin-card-header">
+                  <div class="fin-card-title">
+                    <i class="fa-solid fa-gift text-warning"></i>
+                    <span class="text-truncate">아이템 분배 영수증</span>
                   </div>
-                  <div class="text-secondary small mt-1" style="font-size: 10px;">
-                    <i class="fa-regular fa-clock me-1"></i>${timeStr}
+                  <span class="fin-date-badge">${dateStr}</span>
+                </div>
+
+                <div class="fin-vault-hero" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0.04) 100%) !important; border-color: rgba(56, 189, 248, 0.3) !important;">
+                  <div style="min-width: 0; flex: 1; padding-right: 4px;">
+                    <div class="fin-vault-label"><i class="fa-solid fa-box-open me-1 text-info"></i>낙찰 아이템</div>
+                    <div class="fin-vault-val text-truncate" style="color: #38bdf8 !important; font-size: 12px !important;">[${escapeHtmlText(bossName)}] ${escapeHtmlText(itemName)}</div>
+                  </div>
+                  <div style="font-size: 1.2rem; flex-shrink: 0;">🎁</div>
+                </div>
+
+                <div class="fin-period-box" style="margin-bottom: 6px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👑 낙찰자:</span>
+                    <strong style="color: #fbbf24; font-size: 11.5px;">${escapeHtmlText(winnerName)} (${price} D)</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px dashed var(--drawer-card-border);">
+                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👥 분배 대상:</span>
+                    <strong style="color: var(--kakao-notice-text); font-size: 11px;">참여자 ${memberCount}명</strong>
                   </div>
                 </div>
 
-                <div class="settle-card-body">
-                  <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span style="font-size: 11px; color: var(--kakao-time-gray);">총 분배 다이아:</span>
-                    <strong style="color: #f59e0b; font-size: 12.5px;">${totalAmount} D</strong>
-                  </div>
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span style="font-size: 11px; color: var(--kakao-time-gray);">분배 대상 인원:</span>
-                    <strong style="color: var(--kakao-notice-text); font-size: 11px;">참여자 ${memberCount}명</strong>
-                  </div>
+                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 7px; padding: 6px 9px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">💵 1인당 최종 배당금:</span>
+                  <strong style="font-size: 12px; font-weight: 900; color: #059669;">+${perShare} D</strong>
+                </div>
 
-                  <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 6px 8px; margin-bottom: 7px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">💵 1인당 최종 배당금:</span>
-                    <strong style="font-size: 13.5px; color: #10b981;">+${perMember} D</strong>
-                  </div>
-
-                  ${formattedItems ? `
-                    <div style="margin-bottom: 6px; padding: 5px 7px; background: rgba(0,0,0,0.03); border-radius: 5px;">
-                      <div style="font-size: 10px; color: var(--kakao-time-gray); margin-bottom: 2px;"><i class="fa-solid fa-coins text-warning me-1"></i>아이템 판매 정보:</div>
-                      <div style="font-size: 10.5px; color: var(--kakao-notice-text); line-height: 1.4; word-break: break-all;">
-                        ${escapeHtmlText(formattedItems).replace(/\n/g, '<br>')}
-                      </div>
-                    </div>
-                  ` : ''}
-
-                  <div style="margin-top: 5px;">
-                    <div style="font-size: 10px; color: var(--kakao-time-gray); margin-bottom: 3px;">👥 배당 대상자 명단:</div>
-                    <div class="d-flex flex-wrap gap-1">
-                      ${memberTagsHtml}
-                    </div>
+                <div style="background: rgba(0, 0, 0, 0.03); border: 1px solid var(--drawer-card-border); border-radius: 6px; padding: 5px 8px; max-height: 75px; overflow-y: auto;">
+                  <div style="font-size: 10px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 2px;">수령자 명단 (${memberCount}명):</div>
+                  <div style="font-size: 10.5px; color: var(--kakao-notice-text); line-height: 1.4; word-break: break-all;">
+                    ${membersList.map(m => escapeHtmlText(m)).join(', ')}
                   </div>
                 </div>
               </div>
+
               <div class="chat-meta-box">
                 <span class="chat-unread-count">${unreadCount}</span>
-                <span class="chat-timestamp">${timeStr}</span>
+                <span class="chat-timestamp">${reportTime}</span>
               </div>
             </div>
           </div>
@@ -910,34 +847,32 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
     } else {
       const raidId = raidData.raid_id || msg.id;
       const bossName = raidData.boss_name || "보스";
+      const raidTimeDisplay = raidData.raid_time || timeStr;
       const warType = raidData.war_type || "일반";
       const score = raidData.score || 1;
-      const dropItems = raidData.drop_items || "";
-      const raidTimeDisplay = raidData.raid_time_display || timeStr;
+      const members = Array.isArray(raidData.members) ? raidData.members : [];
+      const memberCount = members.length;
+      const dropItems = (raidData.drop_items || "").trim();
       const createdAtIso = msg.created_at || new Date().toISOString();
 
-      const members = raidData.members || [];
-      const memberCount = members.length;
+      const diffSec = Math.floor((Date.now() - new Date(createdAtIso).getTime()) / 1000);
+      const remainingSec = 180 - diffSec;
+      const isExpired = remainingSec <= 0;
 
-      const createdTimeMs = new Date(createdAtIso).getTime();
-      const elapsedSec = Math.floor((Date.now() - createdTimeMs) / 1000);
-      const remainingSec = Math.max(0, 180 - elapsedSec);
-      const isExpired = (remainingSec <= 0);
-
-      const activeNick = localStorage.getItem("guild_my_nickname") || "";
+      const activeNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
       const currentAdminRole = sessionStorage.getItem("admin_role") || "";
       const isSuperAdminAccount = (activeNick === "슈퍼관리자" || activeNick.toLowerCase() === "admin" || currentAdminRole === "super");
       const isAlreadyJoined = !isSuperAdminAccount && members.includes(activeNick);
 
       let btnDisabledAttr = "";
-      let btnClassState = "active";
+      let btnClassState = "";
       let btnIconClass = "fa-user-plus";
-      let btnTextLabel = "나도참여";
+      let btnTextLabel = "추가참여";
 
       if (isSuperAdminAccount) {
-        btnDisabledAttr = "";
-        btnClassState = "admin-mode";
-        btnIconClass = "fa-pen-to-square";
+        btnDisabledAttr = "disabled";
+        btnClassState = "disabled";
+        btnIconClass = "fa-user-shield";
         btnTextLabel = "관리자";
       } else if (isAlreadyJoined) {
         btnDisabledAttr = "disabled";
@@ -960,70 +895,58 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
         initialTimerText = `${m}:${s}`;
       }
 
-      let warBadgeClass = "badge-war-normal";
-      if (warType === "내전") warBadgeClass = "badge-war-internal";
-      else if (warType === "인터") warBadgeClass = "badge-war-inter";
-
-      let dropItemsHtml = "";
-      if (dropItems) {
-        dropItemsHtml = `
-          <div class="raid-card-item-row">
-            <span class="raid-row-label"><i class="fa-solid fa-gift text-warning me-1"></i>획득 아이템:</span>
-            <span class="raid-item-val">${escapeHtmlText(dropItems)}</span>
-          </div>
-        `;
-      }
-
       html = `
         <div class="chat-item-row other" id="${msgKey}">
           <div class="chat-sender-avatar bot">⚔️</div>
           <div class="chat-msg-body raid-msg-body">
             <div class="chat-sender-name">토벌알리미</div>
             <div class="chat-bubble-flex">
-              <div class="raid-report-card" id="raidCard_${raidId}">
+              <div class="raid-report-card">
                 <div class="raid-card-header">
-                  <div class="d-flex align-items-center justify-content-between gap-2">
-                    <div class="raid-boss-title">
-                      <i class="fa-solid fa-shield-halved text-warning me-1"></i>
-                      <span>[${escapeHtmlText(bossName)}] 토벌 보고</span>
-                    </div>
-                    <span class="badge ${warBadgeClass}">${escapeHtmlText(warType)} (+${score}점)</span>
+                  <div class="raid-boss-title">
+                    <span class="raid-boss-icon">⚔️</span>
+                    <span class="raid-boss-name">[${escapeHtmlText(bossName)}] 토벌 집결</span>
                   </div>
-                  <div class="raid-time-sub">
-                    <i class="fa-regular fa-clock me-1"></i>${escapeHtmlText(raidTimeDisplay)}
+                  <div class="raid-header-badges">
+                    <span class="badge-raid-type ${warType === '쟁' ? 'war' : 'normal'}">${escapeHtmlText(warType)}</span>
+                    <span class="badge-raid-timer ${isExpired ? 'expired' : 'active'}" id="raidTimer_${raidId}" data-created-at="${createdAtIso}">
+                      <i class="fa-regular fa-clock me-1"></i><span class="time-text">${initialTimerText}</span>
+                    </span>
                   </div>
                 </div>
 
-                <div class="raid-card-content">
-                  ${dropItemsHtml}
-                  
-                  <div class="raid-members-box">
-                    <div class="raid-members-header">
-                      <span><i class="fa-solid fa-users me-1 text-primary"></i>참여자 (<span id="raid_mcount_${raidId}">${memberCount}</span>명)</span>
-                    </div>
-                    <div class="raid-members-tags" id="raid_mlist_${raidId}">
-                      ${members.map(m => `<span class="raid-member-pill">${escapeHtmlText(m)}</span>`).join('')}
-                    </div>
-                  </div>
+                <div class="raid-info-row">
+                  <span class="raid-info-label">토벌 시각</span>
+                  <span class="raid-info-val">${raidTimeDisplay}</span>
+                </div>
+                <div class="raid-info-row">
+                  <span class="raid-info-label">획득 점수</span>
+                  <span class="raid-info-val font-weight-bold" style="color: #0284c7;">+${score}점</span>
+                </div>
 
-                  <div class="raid-action-row">
-                    <button type="button" 
-                            id="btnRaidAdd_${raidId}" 
-                            class="btn-raid-self-add ${btnClassState}" 
-                            ${btnDisabledAttr} 
-                            onclick="handleQuickRaidSelfAdd('${raidId}', '${escapeHtmlText(bossName)}')">
-                      <i class="fa-solid ${btnIconClass} me-1"></i>
-                      <span class="btn-text">${btnTextLabel}</span>
-                    </button>
-
-                    <div class="badge-raid-timer ${isExpired ? 'expired' : 'active'}" 
-                         id="timer_raid_${raidId}" 
-                         data-raid-id="${raidId}" 
-                         data-created-at="${createdAtIso}">
-                          <i class="fa-regular fa-clock me-1"></i>
-                          <span class="time-text">${initialTimerText}</span>
-                    </div>
+                ${dropItems ? `
+                  <div class="raid-drop-box">
+                    <span class="drop-icon">🎁</span>
+                    <span class="drop-text">${escapeHtmlText(dropItems)}</span>
                   </div>
+                ` : ''}
+
+                <div class="raid-members-section">
+                  <div class="raid-members-header">
+                    <span>참여 길드원 (<strong id="raid_mcount_${raidId}">${memberCount}</strong>명)</span>
+                    <span class="raid-share-guide">3분 이내 참여 버튼 클릭</span>
+                  </div>
+                  <div class="raid-members-list" id="raid_mlist_${raidId}">
+                    ${members.map(m => `<span class="raid-member-pill ${m === activeNick ? 'me-pill' : ''}">${escapeHtmlText(m)}</span>`).join('')}
+                  </div>
+                </div>
+
+                <div class="raid-card-actions">
+                  <button type="button" class="btn-raid-add-member ${btnClassState}" id="btnRaidAdd_${raidId}" 
+                          ${btnDisabledAttr} 
+                          onclick="handleRaidJoinAction(${raidId}, '${escapeHtmlText(bossName)}')">
+                    <i class="fa-solid ${btnIconClass} me-1"></i><span class="btn-text">${btnTextLabel}</span>
+                  </button>
                 </div>
               </div>
 
@@ -1061,33 +984,27 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
         if (diffSec > 0) isAlreadyCut = true;
       }
 
-      if (isAlreadyCut) {
-        subCutButtonHtml = `
-          <button type="button" class="btn-sub-cut completed" disabled>
-            <i class="fa-solid fa-check me-1"></i>컷 완료됨
+      subCutButtonHtml = `
+        <div class="spawn-msg-action-row">
+          <button type="button" id="${btnId}" data-boss-name="${escapeHtmlText(spawnedBossName)}" class="btn-msg-sub-cut ${isAlreadyCut ? 'disabled' : ''}" 
+                  ${isAlreadyCut ? 'disabled' : ''} 
+                  onclick="triggerQuickCutAction('${escapeHtmlText(spawnedBossName)}', '${btnId}')">
+            <i class="fa-solid fa-${isAlreadyCut ? 'check' : 'skull'}"></i> ${isAlreadyCut ? '완료' : '컷 처리'}
           </button>
-        `;
-      } else {
-        subCutButtonHtml = `
-          <button type="button" 
-                  id="${btnId}" 
-                  class="btn-sub-cut" 
-                  data-boss-name="${escapeHtmlText(spawnedBossName)}" 
-                  onclick="handleQuickBossCutAction(this, '${escapeHtmlText(spawnedBossName)}')">
-            <i class="fa-solid fa-crosshairs me-1"></i>즉시 컷하기
-          </button>
-        `;
-      }
+        </div>
+      `;
     }
 
     html = `
       <div class="chat-item-row other" id="${msgKey}">
-        <div class="chat-sender-avatar bot">⏰</div>
+        <div class="chat-sender-avatar bot">📢</div>
         <div class="chat-msg-body">
-          <div class="chat-sender-name">보스알리미</div>
+          <div class="chat-sender-name">${escapeHtmlText(msg.sender_name)}</div>
           <div class="chat-bubble-flex">
-            <div class="boss-alert-card ${cardTypeClass}">
-              <div class="alert-text-body">${formatMessageWithMentions(cleanMessageText)}</div>
+            <div class="spawn-card-wrapper">
+              <div class="boss-alert-mini-card ${cardTypeClass}">
+                ${cleanMessageText}
+              </div>
               ${subCutButtonHtml}
             </div>
             <div class="chat-meta-box">
@@ -1136,27 +1053,60 @@ function buildMessageRowHtml(msg, isConsecutive = false) {
     `;
   }
 
-  return html;
+  container.insertAdjacentHTML('beforeend', html);
+
+  while (container.children.length > 120) {
+    container.removeChild(container.firstChild);
+  }
+
+  scrollChatBottom();
+
+  if (isRealtime && !isMe) {
+    triggerBeepSound(isMentioned || msg.msg_type === "boss_alert");
+  }
 }
 
-function syncAllChatCutButtons() {
-  const now = Date.now();
-  const buttons = document.querySelectorAll(".btn-sub-cut");
+function formatMessageWithMentions(text) {
+  if (!text) return "";
+  let esc = escapeHtmlText(text);
 
-  buttons.forEach(btn => {
-    const bossName = btn.getAttribute("data-boss-name");
-    if (!bossName) return;
-
-    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
-    if (boss && boss.next_spawn_time) {
-      const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - now) / 1000);
-      if (diffSec > 0) {
-        btn.disabled = true;
-        btn.classList.add("completed");
-        btn.innerHTML = `<i class="fa-solid fa-check me-1"></i>컷 완료됨`;
-      }
-    }
+  esc = esc.replace(/@([^\s@]+)/g, (match, p1) => {
+    const isTargetMe = (p1 === myCurrentNick);
+    const highlightClass = isTargetMe ? "mention-pill highlight-me" : "mention-pill";
+    return `<span class="${highlightClass}">@${p1}</span>`;
   });
+
+  return esc.replace(/\n/g, "<br>");
+}
+
+function escapeHtmlText(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function handleInputState(textarea) {
+  const btn = document.getElementById("btnKakaoSend");
+  if (!textarea || !btn) return;
+
+  if (textarea.value.trim().length > 0) {
+    btn.classList.add("active");
+  } else {
+    btn.classList.remove("active");
+  }
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+}
+
+function checkEnterKey(event) {
+  if (event.keyCode === 13 && !event.shiftKey) {
+    event.preventDefault();
+    handleSendMessage();
+  }
 }
 
 async function handleSendMessage() {
@@ -1165,7 +1115,6 @@ async function handleSendMessage() {
   if (!rawText) return;
 
   if (!myCurrentNick) {
-    showKakaoToast("로그인 후 메시지를 전송할 수 있습니다.", "⚠️");
     showGuildLoginModal();
     return;
   }
@@ -1173,364 +1122,378 @@ async function handleSendMessage() {
   textarea.value = "";
   handleInputState(textarea);
 
-  const matchedCut = rawText.match(/^!컷\s+([^\s]+)(?:\s+(\d{1,2}:\d{2}))?$/i);
-  if (matchedCut) {
-    const bName = matchedCut[1];
-    const cutTime = matchedCut[2] || "";
-    await executeBossCutCommand(bName, cutTime);
-    return;
+  if (rawText.startsWith("!")) {
+    const isHandled = await handleBossChatCommands(rawText);
+    if (isHandled) return;
   }
 
-  const matchedReserve = rawText.match(/^!예약\s+([^\s]+)\s+(\d{1,2}:\d{2})$/i);
-  if (matchedReserve) {
-    const bName = matchedReserve[1];
-    const resTime = matchedReserve[2];
-    await executeBossReserveCommand(bName, resTime);
-    return;
+  const mentions = [];
+  const mentionMatches = rawText.match(/@([^\s@]+)/g);
+  if (mentionMatches) {
+    mentionMatches.forEach(m => {
+      const name = m.substring(1);
+      if (cachedMemberList.some(mem => mem.name === name)) {
+        mentions.push(name);
+      }
+    });
   }
 
-  const tempId = "temp_" + Date.now();
+  const tmpId = "msg_tmp_" + Date.now();
   const optimisticMsg = {
-    id: tempId,
+    id: null,
+    tmpId: tmpId,
     sender_name: myCurrentNick,
     message: rawText,
     msg_type: "chat",
+    mentions: mentions,
     created_at: new Date().toISOString()
   };
 
-  pendingOptimisticMessages.push({ tempId, text: rawText, time: Date.now() });
-  appendSingleChatMessage(optimisticMsg);
-  scrollChatBottom();
+  pendingOptimisticMessages.push(optimisticMsg);
+  const isConsecutive = (lastRenderedSender === myCurrentNick);
+  renderKakaoChatBubble(optimisticMsg, false, isConsecutive);
+  lastRenderedSender = myCurrentNick;
 
   try {
     await apiRequest("guild_chats", "POST", [{
       sender_name: myCurrentNick,
       message: rawText,
       msg_type: "chat",
-      mentions: []
+      mentions: mentions
     }]);
   } catch (e) {
-    showKakaoToast("전송 실패: " + e.message, "❌");
+    showKakaoToast("메시지 전송 실패: " + e.message, "❌");
   }
 }
 
-async function executeBossCutCommand(bossName, customTime) {
-  const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
-  if (!boss) {
-    showKakaoToast(`'${bossName}' 보스를 찾을 수 없습니다.`, "❌");
-    return;
+async function loadBossTimersList() {
+  try {
+    const data = await apiRequest("boss_timers?select=*&order=id.asc");
+    cachedBossList = data || [];
+  } catch (e) {}
+}
+
+function listenRealtimeBossTimers() {
+  if (!supabaseClient) return;
+
+  supabaseClient
+    .channel("public:boss_timers")
+    .on("postgres_changes", { event: "*", schema: "public", table: "boss_timers" }, async () => {
+      await loadBossTimersList();
+      syncAllChatCutButtons();
+      if (typeof window.updateDrawerTimerValuesOnly === 'function') {
+        window.updateDrawerTimerValuesOnly();
+      }
+    })
+    .subscribe();
+}
+
+async function postBossBriefingToChat() {
+  await loadBossTimersList();
+  if (!cachedBossList || cachedBossList.length === 0) {
+    return showKakaoToast("등록된 보스타임 데이터가 없습니다.", "⚠️");
   }
 
-  let cutBaseDate = new Date();
-  if (customTime) {
-    const [h, m] = customTime.split(":").map(Number);
-    cutBaseDate.setHours(h, m, 0, 0);
-  }
+  const now = Date.now();
+  const sorted = [...cachedBossList].sort((a, b) => {
+    const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
+    const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
+    return tA - tB;
+  });
 
-  const cycleMinutes = Number(boss.cycle_minutes) || 120;
-  const nextSpawnDate = new Date(cutBaseDate.getTime() + cycleMinutes * 60 * 1000);
-  const nextSpawnIso = nextSpawnDate.toISOString();
+  const currentKstFormatted = formatTime24Hour(new Date());
+
+  let briefingText = `<div class="boss-brief-title"><i class="fa-solid fa-clock-rotate-left me-1"></i>[보스타임 현황 브리핑] (${currentKstFormatted} 기준)</div>`;
+  briefingText += `<div class="boss-brief-divider"></div>`;
+
+  sorted.forEach(b => {
+    let stateBadge = `<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:10px; padding:2px 5px; border-radius:4px;">컷 대기</span>`;
+    let timeDisplay = "-";
+
+    if (b.next_spawn_time) {
+      const nextDate = new Date(b.next_spawn_time);
+      const diffSec = Math.floor((nextDate.getTime() - now) / 1000);
+      timeDisplay = formatTime24Hour(nextDate);
+
+      if (diffSec <= 0) {
+        const passM = Math.floor(Math.abs(diffSec) / 60);
+        stateBadge = `<span class="badge bg-danger text-white fw-bold" style="font-size:10px; padding:2px 5px; border-radius:4px; animation: pulseBlink 1.4s infinite;">🚨 젠 완료 (+${passM}분)</span>`;
+      } else if (diffSec <= 3600) {
+        const m = Math.floor(diffSec / 60);
+        stateBadge = `<span class="badge bg-warning text-dark fw-bold" style="font-size:10px; padding:2px 5px; border-radius:4px;">⏳ ${m}분 남음</span>`;
+      } else {
+        const h = Math.floor(diffSec / 3600);
+        const m = Math.floor((diffSec % 3600) / 60);
+        stateBadge = `<span class="badge bg-info text-dark" style="font-size:10px; padding:2px 5px; border-radius:4px;">💤 ${h}시간 ${m}분</span>`;
+      }
+    }
+
+    briefingText += `
+      <div class="boss-brief-row">
+        <span class="boss-name-part">${escapeHtmlText(b.boss_name)}</span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="boss-time-part">${timeDisplay}</span>
+          ${stateBadge}
+        </div>
+      </div>
+    `;
+  });
+
+  briefingText += `<div class="boss-brief-footer">※ !컷 [보스명] [시간] 입력 시 빠른 컷 등록 가능</div>`;
 
   try {
-    await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
-      next_spawn_time: nextSpawnIso,
-      last_cut_time: cutBaseDate.toISOString()
-    });
-
-    const m = String(nextSpawnDate.getMinutes()).padStart(2, '0');
-    const h = String(nextSpawnDate.getHours()).padStart(2, '0');
-    const alertMsg = `⚔️ [${boss.boss_name}] ${myCurrentNick}님이 컷 등록 완료! 다음 젠: ${h}:${m}`;
-
     await apiRequest("guild_chats", "POST", [{
       sender_name: "보스알리미",
-      message: alertMsg,
-      msg_type: "boss_alert",
+      message: briefingText,
+      msg_type: "boss_briefing",
       mentions: []
     }]);
-
-    await loadBossTimersList();
-    showKakaoToast(`[${boss.boss_name}] 컷 완료! 다음 젠: ${h}:${m}`, "⚔️");
+    showKakaoToast("보스타임 브리핑이 대화방에 공유되었습니다.", "📢");
   } catch (e) {
-    showKakaoToast("컷 처리 실패: " + e.message, "❌");
+    showKakaoToast("브리핑 전송 실패: " + e.message, "❌");
   }
 }
 
-async function executeBossReserveCommand(bossName, targetTime) {
-  const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
-  if (!boss) {
-    showKakaoToast(`'${bossName}' 보스를 찾을 수 없습니다.`, "❌");
-    return;
-  }
-
-  const [h, m] = targetTime.split(":").map(Number);
-  const targetDate = new Date();
-  targetDate.setHours(h, m, 0, 0);
-
-  if (targetDate.getTime() < Date.now() - 60000) {
-    targetDate.setDate(targetDate.getDate() + 1);
-  }
-
-  const nextSpawnIso = targetDate.toISOString();
-
-  try {
-    await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
-      next_spawn_time: nextSpawnIso
-    });
-
-    const hStr = String(targetDate.getHours()).padStart(2, '0');
-    const mStr = String(targetDate.getMinutes()).padStart(2, '0');
-    const alertMsg = `📌 [${boss.boss_name}] ${myCurrentNick}님이 젠 시간 예약: ${hStr}:${mStr}`;
-
-    await apiRequest("guild_chats", "POST", [{
-      sender_name: "보스알리미",
-      message: alertMsg,
-      msg_type: "boss_alert",
-      mentions: []
-    }]);
-
-    await loadBossTimersList();
-    showKakaoToast(`[${boss.boss_name}] ${hStr}:${mStr} 예약 완료!`, "📌");
-  } catch (e) {
-    showKakaoToast("예약 실패: " + e.message, "❌");
-  }
-}
-
-async function handleQuickBossCutAction(btnElem, bossName) {
-  if (!myCurrentNick) {
-    showKakaoToast("로그인 후 이용 가능합니다.", "⚠️");
-    return;
-  }
-
-  const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
-  if (!boss) {
-    showKakaoToast(`'${bossName}' 보스 정보를 찾을 수 없습니다.`, "❌");
-    return;
-  }
-
-  const now = new Date();
-  const cycleMinutes = Number(boss.cycle_minutes) || 120;
-  const nextSpawnDate = new Date(now.getTime() + cycleMinutes * 60 * 1000);
-  const nextSpawnIso = nextSpawnDate.toISOString();
-
-  btnElem.disabled = true;
-  btnElem.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i>처리중...`;
-
-  try {
-    await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
-      next_spawn_time: nextSpawnIso,
-      last_cut_time: now.toISOString()
-    });
-
-    const m = String(nextSpawnDate.getMinutes()).padStart(2, '0');
-    const h = String(nextSpawnDate.getHours()).padStart(2, '0');
-    const alertMsg = `⚔️ [${boss.boss_name}] ${myCurrentNick}님이 즉시 컷 완료! 다음 젠: ${h}:${m}`;
-
-    await apiRequest("guild_chats", "POST", [{
-      sender_name: "보스알리미",
-      message: alertMsg,
-      msg_type: "boss_alert",
-      mentions: []
-    }]);
-
-    btnElem.classList.add("completed");
-    btnElem.innerHTML = `<i class="fa-solid fa-check me-1"></i>컷 완료됨`;
-
-    await loadBossTimersList();
-    showKakaoToast(`[${boss.boss_name}] 컷 완료! (${h}:${m})`, "⚔️");
-  } catch (e) {
-    btnElem.disabled = false;
-    btnElem.innerHTML = `<i class="fa-solid fa-crosshairs me-1"></i>즉시 컷하기`;
-    showKakaoToast("컷 처리 오류: " + e.message, "❌");
-  }
-}
-
-async function handleQuickRaidSelfAdd(raidId, bossName) {
-  if (!myCurrentNick) {
-    showKakaoToast("로그인 후 참여 등록이 가능합니다.", "⚠️");
-    showGuildLoginModal();
-    return;
-  }
-
-  const activeNick = localStorage.getItem("guild_my_nickname") || "";
-  const currentAdminRole = sessionStorage.getItem("admin_role") || "";
-  const isSuperAdminAccount = (activeNick === "슈퍼관리자" || activeNick.toLowerCase() === "admin" || currentAdminRole === "super");
-
-  if (isSuperAdminAccount) {
-    openModulePage("PageRecords");
-    return;
-  }
-
-  const btn = document.getElementById("btnRaidAdd_" + raidId);
+async function triggerQuickCutAction(bossName, btnElementId) {
+  const btn = document.getElementById(btnElementId);
   if (btn) {
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i>등록중`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 처리 중`;
   }
+
+  const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
+  if (!boss) {
+    showKakaoToast(`[${bossName}] 보스 정보를 찾을 수 없습니다.`, "⚠️");
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  const cutDate = new Date();
+  const cycleMin = boss.cycle_min || 120;
+  const nextSpawn = new Date(cutDate.getTime() + (cycleMin * 60 * 1000));
 
   try {
-    const list = await apiRequest(`guild_chats?id=eq.${raidId}`);
-    if (!list || list.length === 0) {
-      showKakaoToast("토벌 보고 메시지를 찾을 수 없습니다.", "❌");
-      if (btn) btn.disabled = false;
-      return;
-    }
-
-    const targetRow = list[0];
-    let raidData = null;
-    try {
-      raidData = typeof targetRow.message === "object" ? targetRow.message : JSON.parse(targetRow.message);
-    } catch (e) {
-      raidData = null;
-    }
-
-    if (!raidData) {
-      showKakaoToast("토벌 데이터 형식이 올바르지 않습니다.", "❌");
-      if (btn) btn.disabled = false;
-      return;
-    }
-
-    const members = raidData.members || [];
-    if (members.includes(activeNick)) {
-      showKakaoToast("이미 참여 등록된 토벌입니다.", "ℹ️");
-      if (btn) {
-        btn.classList.remove("active");
-        btn.classList.add("joined");
-        btn.innerHTML = `<i class="fa-solid fa-check me-1"></i>참여완료`;
-      }
-      return;
-    }
-
-    members.push(activeNick);
-    raidData.members = members;
-
-    await apiRequest(`guild_chats?id=eq.${raidId}`, "PATCH", {
-      message: JSON.stringify(raidData)
+    await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+      last_cut_time: cutDate.toISOString(),
+      next_spawn_time: nextSpawn.toISOString()
     });
 
-    const countElem = document.getElementById(`raid_mcount_${raidId}`);
-    const listElem = document.getElementById(`raid_mlist_${raidId}`);
+    const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
 
-    if (countElem) countElem.innerText = members.length;
-    if (listElem) {
-      const newPill = document.createElement("span");
-      newPill.className = "raid-member-pill";
-      newPill.innerText = activeNick;
-      listElem.appendChild(newPill);
-    }
+    await apiRequest("guild_chats", "POST", [{
+      sender_name: "보스알리미",
+      message: alertMessage,
+      msg_type: "boss_alert",
+      mentions: []
+    }]);
 
-    if (btn) {
-      btn.disabled = true;
-      btn.classList.remove("active");
-      btn.classList.add("joined");
-      btn.innerHTML = `<i class="fa-solid fa-check me-1"></i>참여완료`;
-    }
-
-    showKakaoToast(`[${bossName}] 토벌 참여가 성공적으로 등록되었습니다!`, "🎉");
-  } catch (e) {
+    showKakaoToast(`[${boss.boss_name}] 컷 완료 처리되었습니다.`, "⚔️");
+    await loadBossTimersList();
+    syncAllChatCutButtons();
+  } catch (err) {
     if (btn) btn.disabled = false;
-    showKakaoToast("참여 등록 실패: " + e.message, "❌");
+    showKakaoToast("컷 처리 실패: " + err.message, "❌");
   }
 }
 
-function startBossSpawnWatcher() {
-  if (bossWatcherInterval) clearInterval(bossWatcherInterval);
+async function handleBossChatCommands(rawText) {
+  const parts = rawText.split(/\s+/);
+  const cmd = parts[0];
 
-  bossWatcherInterval = setInterval(async () => {
-    if (!cachedBossList || cachedBossList.length === 0) return;
+  if (cmd === "!컷" || cmd === "!cut") {
+    if (parts.length < 2) {
+      showKakaoToast("사용법: !컷 [보스명] [선택: 시각(예: 1420)]", "⚠️");
+      return true;
+    }
+    const bName = parts[1];
+    const timeParam = parts[2] || "";
 
-    const now = Date.now();
-    for (let boss of cachedBossList) {
-      if (!boss.next_spawn_time) continue;
+    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bName.toLowerCase());
+    if (!boss) {
+      showKakaoToast(`[${bName}] 보스를 찾을 수 없습니다.`, "⚠️");
+      return true;
+    }
 
-      const spawnTime = new Date(boss.next_spawn_time).getTime();
-      const diffSec = Math.floor((spawnTime - now) / 1000);
-
-      const spawnTimeKey = new Date(boss.next_spawn_time).toISOString().slice(0, 16);
-      const key7m = `${boss.id}_7m_${spawnTimeKey}`;
-      const key3m = `${boss.id}_3m_${spawnTimeKey}`;
-      const keySpawn = `${boss.id}_spawn_${spawnTimeKey}`;
-
-      if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7m)) {
-        saveNotifiedBossKey(key7m);
-        await sendBossAlertMessage(boss.boss_name, "7분 전", boss.location);
-      } else if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3m)) {
-        saveNotifiedBossKey(key3m);
-        await sendBossAlertMessage(boss.boss_name, "3분 전", boss.location);
-      } else if (diffSec <= 0 && diffSec > -120 && !notifiedBossSpawnMap.has(keySpawn)) {
-        saveNotifiedBossKey(keySpawn);
-        await sendBossAlertMessage(boss.boss_name, "출현", boss.location);
+    let cutDate = new Date();
+    if (timeParam && /^\d{3,4}$/.test(timeParam)) {
+      const padded = timeParam.padStart(4, '0');
+      const hh = parseInt(padded.slice(0, 2), 10);
+      const mm = parseInt(padded.slice(2, 4), 10);
+      if (hh < 24 && mm < 60) {
+        cutDate.setHours(hh, mm, 0, 0);
+        if (cutDate.getTime() > Date.now() + 60000) {
+          cutDate.setDate(cutDate.getDate() - 1);
+        }
       }
     }
 
-    updateActiveRaidTimers();
-  }, 1000);
+    const cycleMin = boss.cycle_min || 120;
+    const nextSpawn = new Date(cutDate.getTime() + (cycleMin * 60 * 1000));
+
+    try {
+      await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+        last_cut_time: cutDate.toISOString(),
+        next_spawn_time: nextSpawn.toISOString()
+      });
+
+      const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
+
+      await apiRequest("guild_chats", "POST", [{
+        sender_name: "보스알리미",
+        message: alertMessage,
+        msg_type: "boss_alert",
+        mentions: []
+      }]);
+
+      showKakaoToast(`[${boss.boss_name}] 컷 등록 완료!`, "⚔️");
+      await loadBossTimersList();
+      syncAllChatCutButtons();
+    } catch (e) {
+      showKakaoToast("컷 처리 오류: " + e.message, "❌");
+    }
+    return true;
+  }
+
+  if (cmd === "!예약" || cmd === "!reserve") {
+    if (parts.length < 3) {
+      showKakaoToast("사용법: !예약 [보스명] [젠시각(예: 1530)]", "⚠️");
+      return true;
+    }
+    const bName = parts[1];
+    const timeParam = parts[2];
+
+    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bName.toLowerCase());
+    if (!boss) {
+      showKakaoToast(`[${bName}] 보스를 찾을 수 없습니다.`, "⚠️");
+      return true;
+    }
+
+    if (!/^\d{3,4}$/.test(timeParam)) {
+      showKakaoToast("올바른 시각(3~4자리 숫자, 예: 1420)을 입력하세요.", "⚠️");
+      return true;
+    }
+
+    const padded = timeParam.padStart(4, '0');
+    const hh = parseInt(padded.slice(0, 2), 10);
+    const mm = parseInt(padded.slice(2, 4), 10);
+    if (hh >= 24 || mm >= 60) {
+      showKakaoToast("유효하지 않은 시간 형식입니다.", "⚠️");
+      return true;
+    }
+
+    const spawnDate = new Date();
+    spawnDate.setHours(hh, mm, 0, 0);
+    if (spawnDate.getTime() < Date.now() - 3600000) {
+      spawnDate.setDate(spawnDate.getDate() + 1);
+    }
+
+    try {
+      await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+        next_spawn_time: spawnDate.toISOString()
+      });
+
+      const spawnTimeStr = formatTime24HourWithDate(spawnDate);
+      const alertMessage = `⏰ [${escapeHtmlText(boss.boss_name)}] 젠 시간 수동 예약 완료!<br>• 예정 젠: ${spawnTimeStr}`;
+
+      await apiRequest("guild_chats", "POST", [{
+        sender_name: "보스알리미",
+        message: alertMessage,
+        msg_type: "boss_alert",
+        mentions: []
+      }]);
+
+      showKakaoToast(`[${boss.boss_name}] 젠 시간 예약 완료!`, "⏰");
+      await loadBossTimersList();
+      syncAllChatCutButtons();
+    } catch (e) {
+      showKakaoToast("예약 등록 오류: " + e.message, "❌");
+    }
+    return true;
+  }
+
+  if (cmd === "!보스타임" || cmd === "!보스") {
+    await postBossBriefingToChat();
+    return true;
+  }
+
+  return false;
 }
 
-function updateActiveRaidTimers() {
-  const timerBadges = document.querySelectorAll(".badge-raid-timer.active");
-  const now = Date.now();
+function bindMentionInputEvents() {
+  const textarea = document.getElementById("inputChatMessage");
+  if (!textarea) return;
 
-  timerBadges.forEach(badge => {
-    const createdAtIso = badge.getAttribute("data-created-at");
-    const raidId = badge.getAttribute("data-raid-id");
-    if (!createdAtIso) return;
+  textarea.addEventListener("keyup", (e) => {
+    const val = textarea.value;
+    const cursorPos = textarea.selectionStart;
+    const textBeforeCursor = val.slice(0, cursorPos);
+    const atIndex = textBeforeCursor.lastIndexOf("@");
 
-    const createdMs = new Date(createdAtIso).getTime();
-    const elapsedSec = Math.floor((now - createdMs) / 1000);
-    const remainSec = Math.max(0, 180 - elapsedSec);
-
-    const timeSpan = badge.querySelector(".time-text");
-
-    if (remainSec <= 0) {
-      badge.classList.remove("active");
-      badge.classList.add("expired");
-      if (timeSpan) timeSpan.innerText = "마감";
-
-      const btn = document.getElementById("btnRaidAdd_" + raidId);
-      if (btn && !btn.classList.contains("joined") && !btn.classList.contains("admin-mode")) {
-        btn.disabled = true;
-        btn.classList.remove("active");
-        btn.classList.add("disabled");
-        const btnText = btn.querySelector(".btn-text");
-        if (btnText) btnText.innerText = "마감됨";
+    if (atIndex !== -1 && (atIndex === 0 || /\s/.test(textBeforeCursor[atIndex - 1]))) {
+      const query = textBeforeCursor.slice(atIndex + 1);
+      if (!/\s/.test(query)) {
+        showMentionPopup(query, atIndex);
+        return;
       }
-    } else {
-      const m = String(Math.floor(remainSec / 60)).padStart(2, '0');
-      const s = String(remainSec % 60).padStart(2, '0');
-      if (timeSpan) timeSpan.innerText = `${m}:${s}`;
+    }
+    closeMentionPopup();
+  });
+
+  textarea.addEventListener("keydown", (e) => {
+    const popup = document.getElementById("mentionPopupBox");
+    if (popup.style.display === "block" && (e.key === "Escape" || e.key === "ArrowUp" || e.key === "ArrowDown")) {
+      e.preventDefault();
+      closeMentionPopup();
     }
   });
 }
 
-async function sendBossAlertMessage(bossName, alertType, location = "") {
-  try {
-    const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
-    const checkRes = await apiRequest(`guild_chats?sender_name=eq.보스알리미&created_at=gte.${threeMinAgo}&message=like.*[${encodeURIComponent(bossName)}]*${encodeURIComponent(alertType)}*&limit=1`);
+function showMentionPopup(query, atIndex) {
+  const popup = document.getElementById("mentionPopupBox");
+  if (!popup) return;
 
-    if (checkRes && checkRes.length > 0) return;
+  const q = query.toLowerCase();
+  const matched = cachedMemberList.filter(m => m.name.toLowerCase().includes(q) && m.name !== myCurrentNick);
 
-    let alertText = "";
-    if (alertType === "7분 전") {
-      alertText = `⏳ [${bossName}] 보스 출현 7분 전입니다! 준비하세요. (${location || '위치 미지정'})`;
-    } else if (alertType === "3분 전") {
-      alertText = `⚡ [${bossName}] 보스 출현 3분 전! 집결지로 이동하세요! (${location || '위치 미지정'})`;
-    } else if (alertType === "출현") {
-      alertText = `🚨 [${bossName}] 보스가 출현했습니다! 즉시 토벌을 시작하세요! (${location || '위치 미지정'})`;
-    }
+  if (matched.length === 0) {
+    closeMentionPopup();
+    return;
+  }
 
-    await apiRequest("guild_chats", "POST", [{
-      sender_name: "보스알리미",
-      message: alertText,
-      msg_type: "boss_alert",
-      mentions: []
-    }]);
-  } catch (e) {}
+  popup.innerHTML = matched.slice(0, 5).map(m => `
+    <div class="mention-item-row" onclick="applyMentionNick('${escapeHtmlText(m.name)}', ${atIndex})">
+      <div class="mention-avatar">${(m.job_class ? m.job_class.split(' ')[0] : (m.avatar || '👤'))}</div>
+      <div class="mention-name">${escapeHtmlText(m.name)}</div>
+      <div class="mention-role">${escapeHtmlText(m.role || '일반')}</div>
+    </div>
+  `).join('');
+
+  popup.style.display = "block";
 }
 
-function extractBossNameFromMessage(text) {
-  if (!text) return "";
-  const match = text.match(/\[([^\]]+)\]/);
-  return match ? match[1] : "";
+function applyMentionNick(nick, atIndex) {
+  const textarea = document.getElementById("inputChatMessage");
+  if (!textarea) return;
+
+  const val = textarea.value;
+  const cursorPos = textarea.selectionStart;
+  const beforeAt = val.slice(0, atIndex);
+  const afterCursor = val.slice(cursorPos);
+
+  textarea.value = `${beforeAt}@${nick} ${afterCursor}`;
+  closeMentionPopup();
+  textarea.focus();
+  const nextPos = beforeAt.length + nick.length + 2;
+  textarea.setSelectionRange(nextPos, nextPos);
+  handleInputState(textarea);
 }
+
+function closeMentionPopup() {
+  document.getElementById("mentionPopupBox").style.display = "none";
+}
+
+// ⚡ 모듈 페이지 인메모리 템플릿 캐시 (재호출 시 80KB 다운로드 방지 및 즉시 전환)
+var modulePageHtmlCache = {};
 
 window.openModulePage = async function(pageName) {
   closeAllDrawers();
@@ -1568,88 +1531,304 @@ window.openModulePage = async function(pageName) {
   navTitle.innerText = titleMap[pageName] || "기능 화면";
   if (typeof window.applyAppTheme === "function") window.applyAppTheme();
   overlay.style.display = "flex";
-  body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
 
   try {
-    const res = await fetch(`pages/${pageName}.html`);
-    if (!res.ok) throw new Error("페이지 파일을 불러오지 못했습니다.");
-    const htmlText = await res.text();
-
-    body.innerHTML = htmlText;
-
-    const scripts = body.querySelectorAll("script");
-    scripts.forEach(oldScript => {
-      const newScript = document.createElement("script");
-      Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-      newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-      oldScript.parentNode.replaceChild(newScript, oldScript);
-    });
-
-    if (pageName === "PageSettings" && typeof window.initSettingsModule === "function") {
-      window.initSettingsModule();
+    let html = modulePageHtmlCache[pageName];
+    if (!html) {
+      body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
+      let res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
+      if (!res.ok) {
+        res = await fetch(`pages/${pageName}.htm?_t=${Date.now()}`);
+      }
+      if (!res.ok) throw new Error("로드 실패");
+      html = await res.text();
+      modulePageHtmlCache[pageName] = html;
     }
-  } catch (err) {
-    body.innerHTML = `
-      <div class="text-danger small text-center py-5">
-        <i class="fa-solid fa-triangle-exclamation mb-2" style="font-size: 1.5rem;"></i>
-        <div>${err.message}</div>
-      </div>
-    `;
+    body.innerHTML = html;
+
+    document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
+    body.querySelectorAll("script").forEach(s => {
+      const sc = document.createElement("script");
+      sc.className = "module-dynamic-script";
+      if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
+      document.body.appendChild(sc);
+    });
+  } catch (e) {
+    body.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${e.message}</div>`;
   }
 };
 
 window.closeModuleOverlay = function() {
   document.getElementById("moduleOverlay").style.display = "none";
   document.getElementById("overlayBodyContent").innerHTML = "";
+  document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
+  if (typeof window.applyAppTheme === "function") window.applyAppTheme();
 };
 
-function checkEnterKey(e) {
-  if (e.keyCode === 13 && !e.shiftKey) {
-    e.preventDefault();
-    handleSendMessage();
-  }
+var raidCountdownInterval = null;
+
+function startRaidReportCountdowns() {
+  if (raidCountdownInterval) clearInterval(raidCountdownInterval);
+
+  raidCountdownInterval = setInterval(() => {
+    const timerBadges = document.querySelectorAll(".badge-raid-timer");
+    const now = Date.now();
+
+    timerBadges.forEach(badge => {
+      const createdAtStr = badge.getAttribute("data-created-at");
+      if (!createdAtStr) return;
+
+      const diffSec = Math.floor((now - new Date(createdAtStr).getTime()) / 1000);
+      const remainingSec = 180 - diffSec;
+
+      const timeSpan = badge.querySelector(".time-text");
+      const raidCard = badge.closest(".raid-report-card");
+      const raidIdMatch = badge.id.match(/\d+/);
+      const raidId = raidIdMatch ? raidIdMatch[0] : null;
+
+      if (remainingSec <= 0) {
+        if (badge.classList.contains("active")) {
+          badge.classList.remove("active");
+          badge.classList.add("expired");
+          if (timeSpan) timeSpan.innerText = "마감";
+
+          if (raidCard && raidId) {
+            const btn = document.getElementById(`btnRaidAdd_${raidId}`);
+            if (btn && !btn.classList.contains("joined")) {
+              btn.disabled = true;
+              btn.classList.add("disabled");
+              const btnSpan = btn.querySelector(".btn-text");
+              if (btnSpan) btnSpan.innerText = "마감됨";
+            }
+          }
+        }
+      } else {
+        const m = String(Math.floor(remainingSec / 60)).padStart(2, '0');
+        const s = String(remainingSec % 60).padStart(2, '0');
+        if (timeSpan) timeSpan.innerText = `${m}:${s}`;
+      }
+    });
+  }, 1000);
 }
 
-function handleInputState(textarea) {
-  const btn = document.getElementById("btnKakaoSend");
-  if (textarea.value.trim().length > 0) {
-    btn.classList.add("active");
-  } else {
-    btn.classList.remove("active");
+window.handleRaidJoinAction = async function(raidId, bossName) {
+  const btn = document.getElementById(`btnRaidAdd_${raidId}`);
+  const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
+  const currentAdminRole = sessionStorage.getItem("admin_role") || "";
+
+  if (myNick === "슈퍼관리자" || myNick.toLowerCase() === "admin" || currentAdminRole === "super") {
+    return showKakaoToast("👑 슈퍼관리자는 토벌 집결에 직접 참여하지 않습니다.", "ℹ️");
   }
+
+  if (!myNick) {
+    showKakaoToast("로그인이 필요합니다!", "⚠️");
+    return showGuildLoginModal();
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    const btnSpan = btn.querySelector(".btn-text");
+    if (btnSpan) btnSpan.innerText = "참여 중...";
+  }
+
+  try {
+    const res = await apiRequest(`boss_participations?id=eq.${raidId}&select=*`);
+    if (!res || res.length === 0) {
+      if (btn) btn.disabled = false;
+      return showKakaoToast("토벌 정보를 찾을 수 없습니다.", "❌");
+    }
+
+    const raid = res[0];
+    const createdAt = new Date(raid.created_at || raid.raid_time).getTime();
+    const diffSec = Math.floor((Date.now() - createdAt) / 1000);
+
+    if (diffSec > 180) {
+      const timerBadge = document.getElementById(`raidTimer_${raidId}`);
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add("disabled");
+        const btnSpan = btn.querySelector(".btn-text");
+        if (btnSpan) btnSpan.innerText = "마감됨";
+      }
+      if (timerBadge) {
+        timerBadge.classList.remove("active");
+        timerBadge.classList.add("expired");
+        const timeText = timerBadge.querySelector(".time-text");
+        if (timeText) timeText.innerText = "마감";
+      }
+      return showKakaoToast("참여 가능 시간(3분)이 종료되었습니다.", "⚠️");
+    }
+
+    let members = Array.isArray(raid.members) ? raid.members : [];
+    if (members.includes(myNick)) {
+      if (btn) {
+        btn.disabled = true;
+        btn.classList.add("joined");
+        btn.innerHTML = `<i class="fa-solid fa-check me-1"></i><span class="btn-text">참여완료</span>`;
+      }
+      return showKakaoToast("이미 참여 명단에 등록되어 있습니다!", "ℹ️");
+    }
+
+    members.push(myNick);
+    const newCount = members.length;
+
+    await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
+      members: members,
+      member_count: newCount
+    });
+
+    const countElem = document.getElementById(`raid_mcount_${raidId}`);
+    if (countElem) countElem.innerText = newCount;
+
+    const listElem = document.getElementById(`raid_mlist_${raidId}`);
+    if (listElem) {
+      const newPill = document.createElement("span");
+      newPill.className = "raid-member-pill new-joined";
+      newPill.innerText = myNick;
+      listElem.appendChild(newPill);
+    }
+
+    if (btn) {
+      btn.disabled = true;
+      btn.classList.add("joined");
+      btn.innerHTML = `<i class="fa-solid fa-check me-1"></i><span class="btn-text">참여완료</span>`;
+    }
+
+    await apiRequest("guild_chats", "POST", [{
+      sender_name: "토벌알리미",
+      message: `🎉 [${myNick}] 님이 [${bossName}] 토벌에 추가 참여하였습니다! (현재 총 ${newCount}명)`,
+      msg_type: "chat",
+      mentions: []
+    }]);
+
+    showKakaoToast(`[${bossName}] 토벌에 추가 참여 완료!`, "🎉");
+  } catch (err) {
+    if (btn) {
+      btn.disabled = false;
+      const btnSpan = btn.querySelector(".btn-text");
+      if (btnSpan) btnSpan.innerText = "추가참여";
+    }
+    showKakaoToast("참여 실패: " + err.message, "❌");
+  }
+};
+
+function listenRealtimeBossParticipations() {
+  if (!supabaseClient) return;
+
+  supabaseClient
+    .channel("public:boss_participations")
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "boss_participations" }, (payload) => {
+      const updated = payload.new;
+      if (!updated) return;
+
+      const countElem = document.getElementById(`raid_mcount_${updated.id}`);
+      if (countElem) countElem.innerText = updated.member_count;
+
+      const listElem = document.getElementById(`raid_mlist_${updated.id}`);
+      if (listElem && Array.isArray(updated.members)) {
+        listElem.innerHTML = updated.members.map(m => `<span class="raid-member-pill">${escapeHtmlText(m)}</span>`).join('');
+      }
+
+      if (Array.isArray(updated.members) && updated.members.includes(myCurrentNick)) {
+        const btn = document.getElementById(`btnRaidAdd_${updated.id}`);
+        if (btn) {
+          btn.disabled = true;
+          btn.classList.add("joined");
+          btn.innerHTML = `<i class="fa-solid fa-check me-1"></i><span class="btn-text">참여완료</span>`;
+        }
+      }
+    })
+    .subscribe();
+}
+
+function startLocalBossWatchTimer() {
+  if (bossWatcherInterval) clearInterval(bossWatcherInterval);
+
+  bossWatcherInterval = setInterval(async () => {
+    const now = Date.now();
+
+    for (const b of (cachedBossList || [])) {
+      if (!b.next_spawn_time) continue;
+      const diffSec = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
+
+      const key7Min = `${b.id}_7m_${b.next_spawn_time}`;
+      if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7Min)) {
+        saveNotifiedBossKey(key7Min);
+        await sendBossAlertBroadcast(`⏳ [${b.boss_name}] 젠 7분 전입니다! 출동 준비하세요!`, key7Min);
+      }
+
+      const key3Min = `${b.id}_3m_${b.next_spawn_time}`;
+      if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3Min)) {
+        saveNotifiedBossKey(key3Min);
+        await sendBossAlertBroadcast(`🚨 [${b.boss_name}] 젠 3분 전 임박! 보스 위치로 집결하세요!`, key3Min);
+      }
+
+      const keySpawned = `${b.id}_spawn_${b.next_spawn_time}`;
+      if (diffSec <= 0 && diffSec > -600 && !notifiedBossSpawnMap.has(keySpawned)) {
+        saveNotifiedBossKey(keySpawned);
+        await sendBossAlertBroadcast(`🔥 [${b.boss_name}] 젠 완료! 출현했습니다! 즉시 처치 바랍니다!`, keySpawned);
+      }
+    }
+  }, 1000);
+}
+
+async function sendBossAlertBroadcast(msgText, uniqueKey = "") {
+  try {
+    const match = msgText.match(/\[([^\]]+)\]/);
+    const bossName = match ? match[1] : "";
+    const alertType = msgText.includes("젠 완료") ? "젠 완료" : (msgText.includes("7분 전") ? "7분 전" : "3분 전");
+
+    if (bossName) {
+      const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+      const checkRes = await apiRequest(`guild_chats?sender_name=eq.보스알리미&created_at=gte.${threeMinAgo}&message=like.*[${encodeURIComponent(bossName)}]*${encodeURIComponent(alertType)}*&limit=1`);
+      if (checkRes && checkRes.length > 0) {
+        if (uniqueKey) saveNotifiedBossKey(uniqueKey);
+        return;
+      }
+    }
+
+    await apiRequest("guild_chats", "POST", [{
+      sender_name: "보스알리미",
+      message: msgText.trim(),
+      msg_type: "boss_alert",
+      mentions: []
+    }]);
+
+    if (uniqueKey) saveNotifiedBossKey(uniqueKey);
+  } catch (e) {}
+}
+
+function setupPwaInstallation() {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.getElementById('btnPwaInstall');
+    if (btn) {
+      btn.style.display = 'inline-flex';
+      btn.addEventListener('click', () => {
+        btn.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          deferredPrompt = null;
+        });
+      });
+    }
+  });
 }
 
 function scrollChatBottom() {
-  const box = document.getElementById("chatMessagesView");
-  box.scrollTop = box.scrollHeight;
+  const container = document.getElementById("chatMessagesView");
+  if (!container) return;
+  container.scrollTop = container.scrollHeight;
 }
 
-function escapeHtmlText(t) {
-  return (t || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
-}
-
-function formatMessageWithMentions(text) {
-  let safeText = escapeHtmlText(text);
-  cachedMemberList.forEach(m => {
-    const name = m.name;
-    const mentionTarget = `@${name}`;
-    if (safeText.includes(mentionTarget)) {
-      safeText = safeText.replaceAll(mentionTarget, `<span class="badge bg-light text-primary" style="font-size:0.75rem;">@${name}</span>`);
-    }
-  });
-  return safeText.replace(/\n/g, '<br>');
-}
-
-// ==========================================
-// 🔍 [카카오톡 대화 검색 (선택지 A: 7일 보관 안내)]
-// ==========================================
 window.toggleChatSearchBar = function(forceState) {
   const bar = document.getElementById('chatSearchBarArea');
   const btn = document.getElementById('btnToggleChatSearch');
   if (!bar) return;
 
-  const isOpen = (bar.style.display !== 'none');
-  const shouldOpen = (forceState !== undefined) ? forceState : !isOpen;
+  const isCurrentlyOpen = bar.style.display === 'block';
+  const shouldOpen = (typeof forceState === 'boolean') ? forceState : !isCurrentlyOpen;
 
   if (shouldOpen) {
     bar.style.display = 'block';
@@ -1657,7 +1836,7 @@ window.toggleChatSearchBar = function(forceState) {
     setTimeout(() => {
       const input = document.getElementById('chatSearchKeywordInput');
       if (input) input.focus();
-    }, 100);
+    }, 80);
   } else {
     bar.style.display = 'none';
     if (btn) btn.classList.remove('active');
@@ -1744,11 +1923,11 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+window.addEventListener("DOMContentLoaded", initApp);
+
 // 모달 열기/닫기 전역 호환 별칭
 window.openGuildLoginModal = showGuildLoginModal;
 window.closeGuildLoginModal = function() {
   const m = document.getElementById("guildLoginModal");
   if (m) m.style.display = "none";
 };
-
-window.addEventListener("DOMContentLoaded", initApp);
