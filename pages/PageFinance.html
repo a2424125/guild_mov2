@@ -38,6 +38,7 @@
     --fin-modal-text: #0f172a;
     --fin-modal-input-bg: #f8fafc;
     --fin-modal-input-border: #cbd5e1;
+    --fin-placeholder: #64748b;
   }
 
   /* 🌙 다크 모드 (body.theme-dark, html.theme-dark) */
@@ -73,6 +74,7 @@
     --fin-modal-text: #f3f4f6;
     --fin-modal-input-bg: #141922;
     --fin-modal-input-border: #2c3545;
+    --fin-placeholder: #cbd5e1;
   }
 
   .finance-main-card {
@@ -170,17 +172,65 @@
   }
 
   .input-fin-custom {
-    background: var(--fin-input-bg) !important;
+    background-color: var(--fin-input-bg) !important;
     border: 1px solid var(--fin-input-border) !important;
     color: var(--fin-input-text) !important;
+    -webkit-text-fill-color: var(--fin-input-text) !important;
     font-size: 0.75rem !important;
     padding: 5px 8px !important;
     border-radius: 7px !important;
   }
   .input-fin-custom:focus {
+    background-color: var(--fin-input-bg) !important;
     border-color: #0284c7 !important;
+    color: var(--fin-input-text) !important;
+    -webkit-text-fill-color: var(--fin-input-text) !important;
     outline: none !important;
-    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
+  }
+
+  /* 🏷️ 인풋 플레이스홀더 (예시 글 / 사유창 안내문구) 고대비 가독성 강화 */
+  .input-fin-custom::placeholder,
+  .search-input-fin::placeholder,
+  .kakao-modal-card input::placeholder,
+  #financeRootCard input::placeholder,
+  #financeRootCard textarea::placeholder {
+    color: var(--fin-placeholder) !important;
+    -webkit-text-fill-color: var(--fin-placeholder) !important;
+    opacity: 1 !important;
+  }
+  .input-fin-custom::-webkit-input-placeholder,
+  .search-input-fin::-webkit-input-placeholder,
+  .kakao-modal-card input::-webkit-input-placeholder,
+  #financeRootCard input::-webkit-input-placeholder,
+  #financeRootCard textarea::-webkit-input-placeholder {
+    color: var(--fin-placeholder) !important;
+    -webkit-text-fill-color: var(--fin-placeholder) !important;
+    opacity: 1 !important;
+  }
+  .input-fin-custom::-moz-placeholder,
+  .search-input-fin::-moz-placeholder,
+  .kakao-modal-card input::-moz-placeholder,
+  #financeRootCard input::-moz-placeholder {
+    color: var(--fin-placeholder) !important;
+    opacity: 1 !important;
+  }
+  .input-fin-custom:-ms-input-placeholder,
+  .search-input-fin:-ms-input-placeholder,
+  .kakao-modal-card input:-ms-input-placeholder,
+  #financeRootCard input:-ms-input-placeholder {
+    color: var(--fin-placeholder) !important;
+    opacity: 1 !important;
+  }
+
+  /* 📅 날짜 선택기(Date Picker) & 셀렉트 다크모드 캘린더 아이콘/색상 동기화 */
+  body.theme-dark input[type="date"],
+  html.theme-dark input[type="date"],
+  body.theme-dark .input-fin-custom[type="date"],
+  html.theme-dark .input-fin-custom[type="date"],
+  body.theme-dark select.input-fin-custom,
+  html.theme-dark select.input-fin-custom {
+    color-scheme: dark !important;
   }
 
   /* 💬 대화방 공유 버튼 */
@@ -274,16 +324,20 @@
   }
   .search-input-fin {
     width: 100%;
-    background: var(--fin-input-bg) !important;
+    background-color: var(--fin-input-bg) !important;
     border: 1px solid var(--fin-input-border) !important;
     color: var(--fin-input-text) !important;
+    -webkit-text-fill-color: var(--fin-input-text) !important;
     font-size: 0.76rem;
     padding: 6px 10px 6px 30px;
     border-radius: 20px !important;
     transition: all 0.15s ease;
   }
   .search-input-fin:focus {
+    background-color: var(--fin-input-bg) !important;
     border-color: #0284c7 !important;
+    color: var(--fin-input-text) !important;
+    -webkit-text-fill-color: var(--fin-input-text) !important;
     outline: none;
     box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
   }
@@ -610,13 +664,13 @@
     </select>
 
     <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">금액 (다이아)</div>
-    <input type="text" id="editLogAmount" class="form-control input-fin-custom mb-2 fw-bold" onkeyup="window.formatCommaInput(this)">
+    <input type="text" id="editLogAmount" class="form-control input-fin-custom mb-2 fw-bold" placeholder="금액 입력" onkeyup="window.formatCommaInput(this)">
 
     <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">내역 / 사유</div>
-    <input type="text" id="editLogReason" class="form-control input-fin-custom mb-2">
+    <input type="text" id="editLogReason" class="form-control input-fin-custom mb-2" placeholder="예: 보스 토벌 수익금">
 
     <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">비고 / 전달자</div>
-    <input type="text" id="editLogMemo" class="form-control input-fin-custom mb-3">
+    <input type="text" id="editLogMemo" class="form-control input-fin-custom mb-3" placeholder="예: 전달자 닉네임">
 
     <div class="d-flex gap-2 mb-2">
       <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;" onclick="closeEditFinanceModal()">취소</button>
