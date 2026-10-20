@@ -117,6 +117,65 @@ body.theme-dark {
   --kakao-scroll-thumb-hover: rgba(255, 255, 255, 0.42);
 }
 
+html.theme-light,
+body.theme-light {
+  --kakao-bg: #bacee0;
+  --kakao-header-bg: #bacee0;
+  --kakao-header-text: #191919;
+  --kakao-header-subtext: #556677;
+  --kakao-header-icon-btn: #3b4b59;
+  --kakao-header-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #ffeb3b;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #ffffff;
+  --kakao-bubble-other-text: #000000;
+  --kakao-time-gray: #556677;
+
+  --kakao-notice-bg: #ffffff;
+  --kakao-notice-text: #000000;
+  --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-input-bg: #ffffff;
+  --kakao-input-border: #d4d4d4;
+  --kakao-input-text: #000000;
+  --kakao-input-placeholder: #94a3b8;
+  --kakao-input-icon: #64748b;
+
+  --drawer-width: 260px;
+  --drawer-bg: #ffffff;
+  --drawer-border: #dcdcdc;
+  --drawer-header-bg: #f7f7f7;
+  --drawer-header-border: #ececec;
+  --drawer-title: #191919;
+  --drawer-item-text: #333333;
+  --drawer-item-hover-bg: #f0f0f0;
+  --drawer-footer-bg: #fafafa;
+  --drawer-footer-border: #ececec;
+  --drawer-sub-text: #64748b;
+
+  --drawer-card-bg: #ffffff;
+  --drawer-card-border: #e2e8f0;
+
+  --modal-bg: #ffffff;
+  --modal-text: #191919;
+  --modal-input-bg: #f7f7f7;
+  --modal-input-border: #e2e8f0;
+  --modal-input-text: #191919;
+
+  --overlay-bg: #f1f5f9;
+  --overlay-header-bg: #ffffff;
+  --overlay-header-border: #e2e8f0;
+  --overlay-header-title: #191919;
+  --overlay-back-btn-color: #334155;
+  --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+  --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
+}
+
 *, *::before, *::after {
   box-sizing: border-box !important;
   -webkit-tap-highlight-color: transparent;
@@ -183,6 +242,7 @@ html, body {
   -moz-osx-font-smoothing: auto !important;
   text-rendering: auto !important;
   height: 100vh;
+  max-height: 100vh;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -380,7 +440,8 @@ body.theme-dark .user-sub-class { color: #38bdf8 !important; }
 .app-main-layout {
   flex: 1;
   width: 100%;
-  height: 100vh;
+  height: 100%;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -452,7 +513,7 @@ body.theme-dark .btn-kakao-head:hover { background: rgba(255, 255, 255, 0.08); }
 }
 
 .chat-messages-container {
-  flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 0px;
+  flex: 1; overflow-y: auto; padding: 10px 8px 12px 8px !important; display: flex; flex-direction: column; gap: 0px;
 }
 
 .chat-item-row {
@@ -502,7 +563,6 @@ body.theme-light .chat-sender-name { color: #191919 !important; font-weight: 700
 .chat-unread-count { color: var(--kakao-unread-yellow); font-size: 10px; font-weight: 700; margin-bottom: 1px; }
 .chat-timestamp { font-size: 10px; color: var(--kakao-time-gray) !important; white-space: nowrap; font-weight: 400; }
 
-/* 길드금고 보고서 카드 (제목 잘림 현상 해결: white-space 및 overflow 수정) */
 .finance-report-card {
   background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
   border: 1px solid var(--drawer-card-border) !important; border-radius: 12px !important;
@@ -514,7 +574,7 @@ body.theme-light .chat-sender-name { color: #191919 !important; font-weight: 700
 }
 .fin-card-title {
   font-size: 12px !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
-  display: flex !important; align-items: center !important; gap: 5px !important; white-space: nowrap !important; overflow: visible !important; flex: 1 1 auto !important;
+  display: flex !important; align-items: center !important; gap: 4px !important; white-space: nowrap !important; overflow: visible !important; flex: 1 1 auto !important; min-width: 0 !important;
 }
 .fin-card-title span {
   white-space: nowrap !important; overflow: visible !important; text-overflow: clip !important;
@@ -533,3 +593,146 @@ body.theme-dark .fin-date-badge { background: rgba(245, 158, 11, 0.2) !important
 .fin-vault-val { font-size: 16px !important; font-weight: 900 !important; color: #f59e0b !important; line-height: 1.2 !important; margin-top: 2px !important; }
 .fin-period-box { background: rgba(0,0,0,0.03) !important; border: 1px solid var(--drawer-card-border) !important; border-radius: 8px !important; padding: 7px 9px !important; margin-bottom: 8px !important; font-size: 11.5px !important; }
 body.theme-dark .fin-period-box { background: rgba(255,255,255,0.04) !important; }
+
+/* ========================================================
+   📊 [통계알리미] 카카오톡 정품 규격 통계 보고서 카드 전용 스타일
+   ======================================================== */
+.records-report-card {
+  background: var(--kakao-notice-bg) !important;
+  color: var(--kakao-notice-text) !important;
+  border: 1px solid var(--drawer-card-border) !important;
+  border-radius: 12px !important;
+  padding: 10px 11px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  width: 275px !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  letter-spacing: -0.3px !important;
+}
+
+/* 상단 헤더: 제목과 날짜 배지 한 줄 슬림 정렬 */
+.records-report-card .rec-card-header {
+  border-bottom: 1px dashed var(--drawer-card-border) !important;
+  padding-bottom: 6px !important;
+  margin-bottom: 7px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+}
+
+.records-report-card .rec-card-title {
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  color: var(--kakao-notice-text) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+}
+.records-report-card .rec-card-title span {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  display: inline-block !important;
+}
+
+.records-report-card .rec-date-badge {
+  background: rgba(14, 165, 233, 0.12) !important;
+  color: #0284c7 !important;
+  border: 1px solid rgba(14, 165, 233, 0.3) !important;
+  font-size: 9.5px !important;
+  font-weight: 700 !important;
+  padding: 1.5px 5px !important;
+  border-radius: 4px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  line-height: 1.2 !important;
+}
+body.theme-dark .records-report-card .rec-date-badge {
+  background: rgba(14, 165, 233, 0.2) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(14, 165, 233, 0.4) !important;
+}
+
+/* 1위 MVP 박스 슬림화 */
+.records-report-card .rec-hero-box {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%) !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  border-radius: 8px !important;
+  padding: 6px 9px !important;
+  margin-bottom: 7px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.records-report-card .rec-hero-label {
+  font-size: 10px !important;
+  color: var(--kakao-time-gray) !important;
+  font-weight: 700 !important;
+}
+
+.records-report-card .rec-hero-val {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #f59e0b !important;
+  margin-top: 2px !important;
+}
+
+/* 요약 그리드 박스 (총 토벌 횟수, 참여 인원/총점) */
+.records-report-card > div[style*="grid"] {
+  gap: 5px !important;
+  margin-bottom: 7px !important;
+}
+.records-report-card > div[style*="grid"] > div {
+  padding: 5px 7px !important;
+  border-radius: 7px !important;
+}
+.records-report-card > div[style*="grid"] span,
+.records-report-card > div[style*="grid"] div {
+  font-size: 10.5px !important;
+  line-height: 1.3 !important;
+}
+
+/* 랭킹 헤더 */
+.records-report-card div:has(> .fa-chart-simple),
+.records-report-card div:has(> [class*="chart"]) {
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  padding-bottom: 3px !important;
+}
+
+/* 랭킹 목록 리스트 슬림 정돈 */
+.records-report-card div:has(> div[style*="font-size: 11px"]),
+.records-report-card div:has(> div[style*="font-size: 12px"]) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.records-report-card div[style*="border-bottom"] {
+  padding: 3px 0 !important;
+  font-size: 11px !important;
+}
+
+/* 랭킹 각 행의 텍스트 크기 축소 및 단정한 정렬 */
+.records-report-card span[style*="font-size: 13px"],
+.records-report-card span[style*="font-size: 14px"],
+.records-report-card div[style*="font-size: 13px"],
+.records-report-card div[style*="font-size: 14px"] {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+}
+
+.records-report-card span[style*="color: #f59e0b"],
+.records-report-card span[style*="color: #ea580c"],
+.records-report-card span[style*="color: #d97706"] {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+```[file-tag: code-generated-file-0d9bb4b9-c65e-4234-a199-b7d9f5c6a301]
