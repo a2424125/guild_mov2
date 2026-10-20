@@ -303,33 +303,6 @@
     margin-top: 2px;
   }
 
-  /* 탭 2: 길드원별 상세 출석부 */
-  .member-stat-search-box {
-    margin-bottom: 8px;
-  }
-  .member-stat-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 480px;
-    overflow-y: auto;
-    padding-right: 2px;
-  }
-  .member-stat-row {
-    background: var(--rec-item-bg);
-    border: 1px solid var(--rec-item-border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  .member-stat-row:hover {
-    background: var(--rec-item-hover);
-  }
-
   /* 탭 3: 토벌 로그 리스트 (관리자 삭제 지원) */
   .raid-log-list {
     display: flex;
@@ -550,17 +523,13 @@
     </div>
   </div>
 
-  <!-- 탭 내용 2: 길드원별 상세 출석부 -->
+  <!-- 탭 내용 2: 길드원별 상세 출석부 (카카오톡 감성 캡슐형 매립 돋보기 검색창) -->
   <div id="tabContentMembers" style="display: none;">
-    <div class="member-stat-search-box">
-      <div class="input-group input-group-sm">
-        <span class="input-group-text bg-transparent border-secondary text-secondary" style="font-size: 0.75rem;">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </span>
-        <input type="text" id="memberSearchInput" class="form-control input-custom-stat" placeholder="길드원 닉네임 검색..." oninput="filterMemberStatList()">
-      </div>
+    <div class="search-wrapper-stat mb-2" style="position: relative; width: 100%;">
+      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--rec-text-sub); font-size: 0.8rem; pointer-events: none; z-index: 2;"></i>
+      <input type="text" id="memberSearchInput" placeholder="길드원 닉네임 검색..." oninput="filterMemberStatList()" style="width: 100%; background: var(--rec-input-bg); border: 1px solid var(--rec-input-border); color: var(--rec-input-text); border-radius: 20px; padding: 6px 14px 6px 36px; font-size: 0.78rem; outline: none; transition: all 0.2s ease;">
     </div>
-    <div id="memberStatListContainer" class="member-stat-list">
+    <div id="memberStatListContainer" class="member-stat-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto; padding-right: 2px;">
       <div class="text-secondary small text-center py-3">길드원 통계 로딩 중...</div>
     </div>
   </div>
@@ -692,9 +661,9 @@
     const statusText = document.getElementById("filterStatusText");
 
     const now = new Date();
-    // KST 기준 요일/시간
+    // KST 기준 요일/시간 (월요일 시작)
     const currentDay = now.getDay(); // 0(일) ~ 6(토)
-    const diffToMonday = (currentDay === 0 ? -6 : 1) - currentDay; // 월요일 기준
+    const diffToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
 
     let start = new Date(now);
     let end = new Date(now);
@@ -872,7 +841,6 @@
       stats.sort((a, b) => b.warCount - a.warCount || b.totalScore - a.totalScore);
     }
 
-    // 점수가 0인 경우 제외하고 상위 5명
     const top5 = stats.filter(s => (currentBestTab === "total" ? s.totalScore : (currentBestTab === "boss" ? s.bossCount : s.warCount)) > 0).slice(0, 5);
 
     if (top5.length === 0) {
@@ -1101,7 +1069,6 @@
     try {
       await apiRequest(`boss_participations?id=eq.${raidId}`, "DELETE");
       showRecordsToast(`[${bossName}] 토벌 기록이 삭제되었습니다.`, "🗑️");
-      // 목록 새로고침
       fetchStatsData();
     } catch (e) {
       console.error("토벌 기록 삭제 에러:", e);
@@ -1167,7 +1134,7 @@
     document.getElementById("memberDetailModal").classList.remove("show");
   }
 
-  /* 💬 대화방 공유 처리 함수 */
+  /* 💬 대화방 공유 처리 함수 (카카오톡 정품 1줄 슬림 규격) */
   window.shareRecordsReportToChat = async function() {
     const btn = document.getElementById('btnShareRecordsReport');
     const statsObj = rawStatsData.memberStats || {};
@@ -1180,7 +1147,6 @@
 
     const sDate = document.getElementById('filterStartDate').value || '';
     const eDate = document.getElementById('filterEndDate').value || '';
-    const gName = liveSettings.guildName || "길드";
 
     members.sort((a, b) => statsObj[b].totalScore - statsObj[a].totalScore);
 
@@ -1206,19 +1172,21 @@
 
     const rankListHtml = top5.map((name, i) => {
       const d = statsObj[name];
-      const rankNum = i + 1;
-      let rankClass = 'rec-rank-other';
-      if (rankNum === 1) rankClass = 'rec-rank-1';
-      else if (rankNum === 2) rankClass = 'rec-rank-2';
-      else if (rankNum === 3) rankClass = 'rec-rank-3';
+      let rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:rgba(0,0,0,0.06); font-size:9.5px; font-weight:800; color:var(--kakao-time-gray); margin-right:5px; flex-shrink:0;">${i + 1}</span>`;
+      if (i === 0) rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#f59e0b; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0; box-shadow:0 1px 3px rgba(245,158,11,0.35);">1</span>`;
+      else if (i === 1) rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#94a3b8; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0;">2</span>`;
+      else if (i === 2) rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#d97706; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0;">3</span>`;
 
       return `
-        <div class="rec-rank-row">
-          <div style="display: flex; align-items: center; min-width: 0;">
-            <span class="rec-rank-badge ${rankClass}">${rankNum}</span>
-            <span style="font-weight: 700; color: var(--kakao-notice-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">${escapeHtml(name)}</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:3.5px 6px; margin-bottom:3px; border-radius:6px; background:rgba(0,0,0,0.02); border:1px solid var(--drawer-card-border); font-size:11px; line-height:1.2;">
+          <div style="display:flex; align-items:center; min-width:0; gap:2px;">
+            ${rankBadge}
+            <span style="font-weight:700; color:var(--kakao-notice-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px;">${escapeHtml(name)}</span>
           </div>
-          <span style="font-weight: 800; color: #d97706; flex-shrink: 0;">${d.totalScore}점 <small style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">(${d.bossCount}회)</small></span>
+          <div style="text-align:right; flex-shrink:0; white-space:nowrap;">
+            <strong style="color:#d97706; font-size:11px;">${d.totalScore}점</strong>
+            <span style="font-size:9.5px; color:var(--kakao-time-gray); margin-left:2px;">(${d.bossCount}회)</span>
+          </div>
         </div>
       `;
     }).join('');
@@ -1228,42 +1196,41 @@
         <div class="rec-card-header">
           <div class="rec-card-title">
             <i class="fa-solid fa-scroll text-warning"></i>
-            <span>[${escapeHtml(gName)}] 보스&전쟁 통계</span>
+            <span>보스&전쟁 통계 보고</span>
           </div>
-          <span class="rec-date-badge">
-            <i class="fa-regular fa-clock me-1"></i>${periodLabel}
-          </span>
+          <span class="rec-date-badge">${periodLabel}</span>
         </div>
 
         <div class="rec-hero-box">
           <div>
-            <div class="rec-hero-label">
-              <i class="fa-solid fa-trophy text-warning me-1"></i>종합 참여 1위 MVP
-            </div>
-            <div class="rec-hero-val">
-              🥇 ${escapeHtml(top5[0] || '없음')} <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">(${statsObj[top5[0]]?.totalScore || 0}점)</span>
-            </div>
+            <div class="rec-hero-label"><i class="fa-solid fa-trophy text-warning me-1"></i>종합 참여 1위 MVP</div>
+            <div class="rec-hero-val">🥇 ${escapeHtml(top5[0] || '없음')} <span style="font-size:11px; font-weight:700; color:var(--kakao-notice-text);">(${statsObj[top5[0]]?.totalScore || 0}점)</span></div>
           </div>
           <div style="font-size: 1.55rem; line-height: 1;">👑</div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">
-          <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 5px 8px; color: #0284c7;">
-            <div style="font-size: 10px; font-weight: 600;">총 토벌 횟수</div>
-            <div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">⚔️ ${totalRaidsCount}회 <small style="font-size: 10px; opacity: 0.8;">(전쟁 ${totalWarCount}회)</small></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 7px;">
+          <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--drawer-card-border); border-radius: 7px; padding: 5px 7px;">
+            <div style="font-size: 10px; color: var(--kakao-time-gray); font-weight: 700;">총 토벌 횟수</div>
+            <div style="font-size: 11.5px; font-weight: 800; color: var(--kakao-notice-text); margin-top: 1px;">⚔️ ${totalRaidsCount}회 <small style="font-size: 9.5px; color: var(--kakao-time-gray); font-weight: normal;">(전쟁 ${totalWarCount}회)</small></div>
           </div>
-          <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 5px 8px; color: #d97706;">
-            <div style="font-size: 10px; font-weight: 600;">참여 인원 / 총점</div>
-            <div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">👥 ${members.length}명 / ${totalScoreSum}점</div>
+          <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--drawer-card-border); border-radius: 7px; padding: 5px 7px;">
+            <div style="font-size: 10px; color: var(--kakao-time-gray); font-weight: 700;">참여 인원 / 총점</div>
+            <div style="font-size: 11.5px; font-weight: 800; color: #0284c7; margin-top: 1px;">👥 ${members.length}명 / ${totalScoreSum}점</div>
           </div>
         </div>
 
-        <div style="margin-top: 6px;">
-          <div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
-            <span><i class="fa-solid fa-ranking-star me-1 text-primary"></i>TOP 5 랭킹</span>
-            <span style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">총 ${members.length}명 참여</span>
-          </div>
+        <div style="font-size: 10.5px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 4px; display:flex; justify-content:space-between; align-items:center;">
+          <span><i class="fa-solid fa-ranking-star text-primary me-1"></i>TOP 5 랭킹</span>
+          <span style="font-size: 9.5px; font-weight: normal;">총 ${members.length}명 참여</span>
+        </div>
+
+        <div style="margin-bottom: 6px;">
           ${rankListHtml}
+        </div>
+
+        <div style="font-size: 9.5px; color: var(--kakao-time-gray); text-align: center; margin-top: 4px;">
+          보스 토벌 및 전쟁 참여 누적 활동 집계 완료
         </div>
       </div>
     `;
@@ -1295,4 +1262,9 @@
   function escapeHtml(t) {
     return (t || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
   }
+
+  // 🚀 화면 진입 즉시 이번 주(월~일) 날짜 자동 입력 및 데이터 렌더링 실행
+  (function init() {
+    initRecordsPage();
+  })();
 </script>
