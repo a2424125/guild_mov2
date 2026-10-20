@@ -21,9 +21,9 @@
     --rec-item-bg: #ffffff;
     --rec-item-border: #e2e8f0;
     --rec-item-hover: #f1f5f9;
-    --rec-chip-bg: #f1f5f9;
+    --rec-chip-bg: #ffffff;
     --rec-chip-border: #cbd5e1;
-    --rec-chip-text: #334155;
+    --rec-chip-text: #0f172a;
     --rec-score-text: #b45309;
     --rec-score-badge-bg: #fffbeb;
     --rec-score-badge-border: #f59e0b;
@@ -572,19 +572,32 @@
   .badge-score-normal { background: rgba(2, 132, 199, 0.12); border: 1px solid #0284c7; color: #0284c7; }
   body.theme-dark .badge-score-normal { background: rgba(2, 132, 199, 0.2); color: #38bdf8; border-color: #0284c7; }
 
+  /* 🏷️ 토벌 참여자 닉네임 뱃지 (선명하고 뚜렷한 고대비 볼드 스타일) */
   .members-chip-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 3px;
-    margin-top: 5px;
+    gap: 4px;
+    margin-top: 6px;
   }
   .member-chip-stat {
-    font-size: 0.65rem;
-    padding: 2px 5px;
-    border-radius: 4px;
-    background: var(--rec-chip-bg);
-    border: 1px solid var(--rec-chip-border);
-    color: var(--rec-chip-text);
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 2.5px 7px;
+    border-radius: 5px;
+    background: var(--rec-chip-bg) !important;
+    border: 1px solid var(--rec-chip-border) !important;
+    color: var(--rec-chip-text) !important;
+    display: inline-flex;
+    align-items: center;
+    line-height: 1.25;
+    letter-spacing: -0.2px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  }
+  .history-item-subtext {
+    font-size: 0.71rem;
+    color: var(--rec-text-sub);
+    font-weight: 600;
+    margin-bottom: 5px;
   }
 
   .btn-record-action {
@@ -1141,12 +1154,12 @@
   </div>
 </div>
 
-<!-- 🔝 [최상단 배치] 커스텀 확인 및 경고 모달 (다른 모달 위에 항상 최상단 노출) -->
+<!-- 🔝 [최상단 배치] 커스텀 확인 및 경고 모달 (선명하고 굵은 고대비 텍스트 적용) -->
 <div id="customConfirmModal" class="rec-modal-backdrop" style="display: none;">
   <div class="rec-modal-card" style="max-width: 330px; text-align: center; padding: 20px 16px;">
     <div style="font-size: 2rem; margin-bottom: 8px;" id="confirmModalIconEmoji">⚠️</div>
     <h6 class="fw-bold mb-2" id="confirmModalTitle" style="font-size: 0.95rem; color: var(--rec-modal-text);">확인</h6>
-    <p class="small text-secondary mb-3" id="confirmModalMsg" style="font-size: 0.78rem; line-height: 1.45; word-break: keep-all; white-space: pre-line;"></p>
+    <div class="mb-3" id="confirmModalMsg" style="font-size: 0.88rem; font-weight: 600; line-height: 1.5; color: var(--rec-modal-text) !important; word-break: keep-all; white-space: pre-line;"></div>
     <div class="d-flex gap-2">
       <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" id="btnConfirmCancel" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;">취소</button>
       <button type="button" class="btn btn-danger btn-sm flex-fill py-2" id="btnConfirmOk" style="border-radius: 8px; font-weight: 800; font-size: 0.78rem;">확인</button>
@@ -1233,7 +1246,7 @@
     return new Promise(function(resolve) {
       var modal = document.getElementById('customConfirmModal');
       if (!modal) {
-        resolve(confirm(msg));
+        resolve(confirm(msg.replace(/<[^>]+>/g, '')));
         return;
       }
       var tElem = document.getElementById('confirmModalTitle');
@@ -1243,7 +1256,13 @@
       var cancelBtn = document.getElementById('btnConfirmCancel');
 
       if (tElem) tElem.innerText = title;
-      if (mElem) mElem.innerText = msg;
+      if (mElem) {
+        if (msg.indexOf('<') !== -1) {
+          mElem.innerHTML = msg;
+        } else {
+          mElem.innerText = msg;
+        }
+      }
       if (eElem) eElem.innerText = emoji;
 
       modal.style.display = 'flex';
@@ -1688,7 +1707,7 @@
             '배점 ' + r.totalScore + '점' +
           '</span>' +
         '</div>' +
-        '<div class="text-secondary" style="font-size: 0.68rem; margin-bottom: 4px;">' +
+        '<div class="history-item-subtext">' +
           r.dateTime + ' &bull; 참여 ' + r.count + '명' +
         '</div>' +
         '<div class="members-chip-container">' + membersHtml + '</div>' +
@@ -1730,7 +1749,7 @@
             '<button type="button" class="btn-record-action btn-record-del" onclick="triggerDeleteRecord(' + r.id + ', \'' + escapeHtml(r.bossName) + '\')">삭제</button>' +
           '</div>' +
         '</div>' +
-        '<div class="text-secondary" style="font-size: 0.68rem; margin-bottom: 4px;">' +
+        '<div class="history-item-subtext">' +
           r.dateTime + ' &bull; 참여 ' + r.count + '명' +
         '</div>' +
         '<div class="members-chip-container">' + membersHtml + '</div>' +
@@ -1897,11 +1916,11 @@
 
     var confirmMsg = "";
     if (added.length > 0 && removed.length === 0) {
-      confirmMsg = "[" + added.join(", ") + "] 을(를) 추가하시겠습니까?\n(총 " + selected.length + "명 참여)";
+      confirmMsg = '<strong style="color: #0284c7; font-size: 0.94rem;">[' + escapeHtml(added.join(", ")) + ']</strong> 을(를) 추가하시겠습니까?<br><span style="font-size: 0.78rem; color: var(--rec-modal-subtext); font-weight: normal;">(총 ' + selected.length + '명 참여)</span>';
     } else if (removed.length > 0 && added.length === 0) {
-      confirmMsg = "[" + removed.join(", ") + "] 을(를) 제외하시겠습니까?\n(총 " + selected.length + "명 참여)";
+      confirmMsg = '<strong style="color: #dc2626; font-size: 0.94rem;">[' + escapeHtml(removed.join(", ")) + ']</strong> 을(를) 제외하시겠습니까?<br><span style="font-size: 0.78rem; color: var(--rec-modal-subtext); font-weight: normal;">(총 ' + selected.length + '명 참여)</span>';
     } else {
-      confirmMsg = "추가: [" + added.join(", ") + "]\n제외: [" + removed.join(", ") + "]\n위 변경 사항을 저장하시겠습니까?\n(총 " + selected.length + "명 참여)";
+      confirmMsg = '추가: <strong style="color: #0284c7;">[' + escapeHtml(added.join(", ")) + ']</strong><br>제외: <strong style="color: #dc2626;">[' + escapeHtml(removed.join(", ")) + ']</strong><br>위 변경 사항을 저장하시겠습니까?<br><span style="font-size: 0.78rem; color: var(--rec-modal-subtext); font-weight: normal;">(총 ' + selected.length + '명 참여)</span>';
     }
 
     var confirmed = await openCustomConfirm(
