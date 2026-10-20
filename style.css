@@ -726,36 +726,171 @@ body.theme-dark .badge-raid-timer.active { background: rgba(245, 158, 11, 0.2) !
 .badge-raid-timer.expired { background: #f1f5f9 !important; color: #94a3b8 !important; border: 1px solid #cbd5e1 !important; }
 body.theme-dark .badge-raid-timer.expired { background: #1e2530 !important; color: #64748b !important; border-color: #2c3545 !important; }
 
+/* ========================================================
+   💰 [금고알리미] 카카오톡 대화방 공유 금고 정산 리포트 카드 전용 스타일
+   ======================================================== */
 .finance-report-card {
-  background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
-  border: 1px solid var(--drawer-card-border) !important; border-radius: 12px !important;
-  padding: 10px 12px !important; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important; width: 290px !important; max-width: 100% !important;
+  background: var(--kakao-notice-bg) !important;
+  color: var(--kakao-notice-text) !important;
+  border: 1px solid var(--drawer-card-border) !important;
+  border-radius: 12px !important;
+  padding: 10px 11px !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+  width: 290px !important;
+  max-width: 100% !important;
+  letter-spacing: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  box-sizing: border-box !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', Pretendard, Roboto, 'Noto Sans KR', sans-serif !important;
 }
+
 .fin-card-header {
-  border-bottom: 1px dashed var(--drawer-card-border) !important; padding-bottom: 6px !important; margin-bottom: 8px !important;
-  display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 6px !important;
+  border-bottom: 1px dashed var(--drawer-card-border) !important;
+  padding-bottom: 6px !important;
+  margin-bottom: 8px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 .fin-card-title {
-  font-size: 12px !important; font-weight: 800 !important; color: var(--kakao-notice-text) !important;
-  display: flex !important; align-items: center !important; gap: 4px !important; white-space: nowrap !important; overflow: visible !important; flex: 1 1 auto !important; min-width: 0 !important;
+  font-size: 11.5px !important;
+  font-weight: 800 !important;
+  color: var(--kakao-notice-text) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+  letter-spacing: -0.5px !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
 }
 .fin-card-title span {
-  white-space: nowrap !important; overflow: visible !important; text-overflow: clip !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  letter-spacing: -0.5px !important;
+  display: inline-block !important;
 }
+
+/* 📅 날짜 배지 (은은하고 조화로운 캡슐) */
 .fin-date-badge {
-  background: rgba(245, 158, 11, 0.15) !important; color: #d97706 !important; border: 1px solid rgba(245, 158, 11, 0.35) !important;
-  font-size: 9.5px !important; font-weight: 700 !important; padding: 2px 6px !important; border-radius: 5px !important; white-space: nowrap !important; flex-shrink: 0 !important;
+  background: rgba(245, 158, 11, 0.15) !important;
+  color: #d97706 !important;
+  border: 1px solid rgba(245, 158, 11, 0.35) !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  padding: 1.5px 5px !important;
+  border-radius: 5px !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  letter-spacing: -0.4px !important;
+  line-height: 1.2 !important;
 }
-body.theme-dark .fin-date-badge { background: rgba(245, 158, 11, 0.2) !important; color: #facc15 !important; border-color: rgba(245, 158, 11, 0.5) !important; }
+body.theme-dark .fin-date-badge,
+html.theme-dark .fin-date-badge {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #facc15 !important;
+  border-color: rgba(245, 158, 11, 0.5) !important;
+}
+
+/* 🏛️ 금고 잔액 히어로 박스 */
 .fin-vault-hero {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.04) 100%) !important;
-  border: 1px solid rgba(245, 158, 11, 0.3) !important; border-radius: 9px !important; padding: 8px 10px !important; margin-bottom: 8px !important;
-  display: flex !important; align-items: center !important; justify-content: space-between !important;
+  border: 1px solid rgba(245, 158, 11, 0.3) !important;
+  border-radius: 9px !important;
+  padding: 8px 10px !important;
+  margin-bottom: 7px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 }
-.fin-vault-label { font-size: 10.5px !important; color: var(--kakao-time-gray) !important; font-weight: 600 !important; }
-.fin-vault-val { font-size: 16px !important; font-weight: 900 !important; color: #f59e0b !important; line-height: 1.2 !important; margin-top: 2px !important; }
-.fin-period-box { background: rgba(0,0,0,0.03) !important; border: 1px solid var(--drawer-card-border) !important; border-radius: 8px !important; padding: 7px 9px !important; margin-bottom: 8px !important; font-size: 11.5px !important; }
-body.theme-dark .fin-period-box { background: rgba(255,255,255,0.04) !important; }
+body.theme-dark .fin-vault-hero,
+html.theme-dark .fin-vault-hero {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(245, 158, 11, 0.05) 100%) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+}
+.fin-vault-label {
+  font-size: 10.5px !important;
+  color: #854d0e !important;
+  font-weight: 700 !important;
+}
+body.theme-dark .fin-vault-label,
+html.theme-dark .fin-vault-label {
+  color: #fde047 !important;
+}
+.fin-vault-val {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  color: #b45309 !important;
+  line-height: 1.2 !important;
+  margin-top: 1px !important;
+}
+body.theme-dark .fin-vault-val,
+html.theme-dark .fin-vault-val {
+  color: #facc15 !important;
+}
+
+/* 집계 기간 및 순수익 요약 박스 */
+.fin-period-box {
+  background: rgba(0, 0, 0, 0.03) !important;
+  border: 1px solid var(--drawer-card-border) !important;
+  border-radius: 8px !important;
+  padding: 7px 9px !important;
+  margin-bottom: 7px !important;
+  font-size: 11.5px !important;
+}
+body.theme-dark .fin-period-box,
+html.theme-dark .fin-period-box {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 기간 입금 칩 (다크모드 #34d399) */
+.fin-badge-income {
+  background: rgba(16, 185, 129, 0.1) !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+  color: #059669 !important;
+  border-radius: 6px !important;
+  padding: 5px 8px !important;
+}
+body.theme-dark .fin-badge-income,
+html.theme-dark .fin-badge-income {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #34d399 !important;
+}
+
+/* 기간 지출 칩 (다크모드 #f87171 코랄레드) */
+.fin-badge-expense {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  color: #dc2626 !important;
+  border-radius: 6px !important;
+  padding: 5px 8px !important;
+}
+body.theme-dark .fin-badge-expense,
+html.theme-dark .fin-badge-expense {
+  background: rgba(239, 68, 68, 0.18) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #f87171 !important;
+}
+
+/* 최근 내역 정렬 행 */
+.fin-deposit-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  font-size: 11px !important;
+  padding: 3px 6px !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  border-radius: 4px !important;
+  margin-bottom: 2px !important;
+}
+body.theme-dark .fin-deposit-row,
+html.theme-dark .fin-deposit-row {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
 
 /* ========================================================
    📊 [통계알리미] 카카오톡 정품 규격 통계 보고서 카드 전용 스타일
@@ -872,7 +1007,7 @@ body.theme-dark .records-report-card .rec-date-badge {
 
 /* 랭킹 목록 리스트 슬림 정돈 */
 .records-report-card div:has(> div[style*="font-size: 11px"]),
-.records-report-card div:has(> div[style*="font-size: 12px"])) {
+.records-report-card div:has(> div[style*="font-size: 12px"]) {
   display: flex !important;
   flex-direction: column !important;
   gap: 3px !important;
@@ -897,4 +1032,127 @@ body.theme-dark .records-report-card .rec-date-badge {
 .records-report-card span[style*="color: #d97706"] {
   font-size: 11px !important;
   font-weight: 700 !important;
+}
+
+/* 랭킹 목록 가로 정렬 및 배지 스타일 (통계알리미 전용 보강) */
+.records-report-card .rec-rank-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3.5px !important;
+  margin-top: 5px !important;
+}
+
+.records-report-card .rec-rank-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 3.5px 6px !important;
+  border-radius: 6px !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  border: 1px solid rgba(0, 0, 0, 0.04) !important;
+  font-size: 11px !important;
+  line-height: 1.2 !important;
+  box-sizing: border-box !important;
+}
+body.theme-dark .records-report-card .rec-rank-row {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.records-report-card .rec-rank-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 17px !important;
+  height: 17px !important;
+  border-radius: 4px !important;
+  font-size: 9.5px !important;
+  font-weight: 800 !important;
+  margin-right: 5px !important;
+  flex-shrink: 0 !important;
+  line-height: 1 !important;
+}
+
+.records-report-card .rec-rank-badge.rec-rank-1 {
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.35) !important;
+}
+.records-report-card .rec-rank-badge.rec-rank-2 {
+  background: #94a3b8 !important;
+  color: #ffffff !important;
+}
+.records-report-card .rec-rank-badge.rec-rank-3 {
+  background: #d97706 !important;
+  color: #ffffff !important;
+}
+.records-report-card .rec-rank-badge.rec-rank-other {
+  background: rgba(148, 163, 184, 0.2) !important;
+  color: var(--kakao-time-gray) !important;
+}
+
+/* ========================================================
+   🔍 [대화방 상단 슬라이드 검색 바 (선택지 A)]
+   ======================================================== */
+.chat-search-bar-wrap {
+  background: var(--kakao-chat-bg) !important;
+  border-bottom: 1px solid var(--drawer-card-border) !important;
+  padding: 8px 12px 6px 12px !important;
+  animation: slideDownChatSearch 0.18s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+@keyframes slideDownChatSearch {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.chat-search-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-bar-icon {
+  position: absolute;
+  left: 11px;
+  color: var(--kakao-time-gray) !important;
+  font-size: 0.8rem;
+}
+.chat-search-input {
+  width: 100%;
+  background: var(--drawer-card-bg) !important;
+  border: 1px solid var(--drawer-card-border) !important;
+  color: var(--kakao-notice-text) !important;
+  font-size: 0.78rem !important;
+  padding: 6px 30px 6px 32px !important;
+  border-radius: 18px !important;
+}
+.chat-search-input:focus {
+  border-color: #0284c7 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+}
+.btn-search-clear {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--kakao-time-gray) !important;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 0;
+}
+.chat-search-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 5px;
+  padding: 0 4px;
+}
+.search-retention-text {
+  font-size: 0.68rem;
+  color: var(--kakao-time-gray) !important;
+}
+.search-match-count {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #0284c7 !important;
 }
