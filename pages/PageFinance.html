@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (원본 디자인 복원 및 DB 에러 해결)
+     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (디자인 원본 유지 및 버그 수정)
      ========================================== -->
 <style>
   .finance-card {
@@ -116,7 +116,7 @@
 
     <div id="incomeBoxTotalMode" class="mb-2">
       <label class="form-label text-secondary mb-1" style="font-size: 0.72rem; font-weight: 700;">인게임 금고 총 보유액 (다이아)</label>
-      <input type="number" id="incomeTotalInput" class="form-control form-control-sm" placeholder="금고 총액 입력" oninput="calculateIncomeDiff()">
+      <input type="text" id="incomeTotalInput" class="form-control form-control-sm" placeholder="금고 총액 입력" onkeyup="window.formatCommaInput(this); calculateIncomeDiff()">
       <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.68rem;">
         <span id="incomePrevVaultText">직전 금고 잔액: 0 D</span>
         <span id="incomeInputSumText">입력 총액: 0 D</span>
@@ -126,7 +126,7 @@
 
     <div id="incomeBoxDirectMode" class="mb-2" style="display: none;">
       <label class="form-label text-secondary mb-1" style="font-size: 0.72rem; font-weight: 700;">추가 입금할 금액 (다이아)</label>
-      <input type="number" id="incomeDirectInput" class="form-control form-control-sm" placeholder="예: 5000">
+      <input type="text" id="incomeDirectInput" class="form-control form-control-sm" placeholder="예: 5,000" onkeyup="window.formatCommaInput(this)">
     </div>
 
     <div class="mb-2">
@@ -169,7 +169,7 @@
   <div class="kakao-modal-card">
     <h6 class="fw-bold mb-3"><i class="fa-solid fa-vault text-warning me-1"></i>길드 금고 잔액 직접 설정</h6>
     <div class="small text-secondary mb-2">현재 인게임 금고 총 보유액(다이아)을 입력하세요.</div>
-    <input type="number" id="inputVaultNewTotal" class="form-control form-control-sm mb-3" placeholder="예: 1500000">
+    <input type="text" id="inputVaultNewTotal" class="form-control form-control-sm mb-3" placeholder="예: 1,500,000" onkeyup="window.formatCommaInput(this)">
     <div class="d-flex gap-2">
       <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="closeVaultEditModal()">취소</button>
       <button type="button" class="btn btn-sm btn-warning flex-fill fw-bold text-dark" onclick="saveVaultNewTotal()">저장</button>
@@ -186,7 +186,7 @@
     <input type="date" id="expenseDate" class="form-control form-control-sm mb-2">
 
     <div class="text-start small fw-bold text-secondary mb-1">지출 금액 (다이아)</div>
-    <input type="number" id="expenseAmount" class="form-control form-control-sm mb-2" placeholder="예: 10000">
+    <input type="text" id="expenseAmount" class="form-control form-control-sm mb-2" placeholder="예: 10,000" onkeyup="window.formatCommaInput(this)">
 
     <div class="text-start small fw-bold text-secondary mb-1">지출 사유 / 용도</div>
     <input type="text" id="expenseReason" class="form-control form-control-sm mb-2" placeholder="예: 공용 쟁 포션비 지원, 이벤트 보상">
@@ -213,11 +213,11 @@
     <div class="text-start small fw-bold text-secondary mb-1">구분</div>
     <select id="editLogType" class="form-select form-select-sm mb-2">
       <option value="입금">입금</option>
-      <option value="지출">지출</option>
+      <option value="출금">출금</option>
     </select>
 
     <div class="text-start small fw-bold text-secondary mb-1">금액 (다이아)</div>
-    <input type="number" id="editLogAmount" class="form-control form-control-sm mb-2">
+    <input type="text" id="editLogAmount" class="form-control form-control-sm mb-2" onkeyup="window.formatCommaInput(this)">
 
     <div class="text-start small fw-bold text-secondary mb-1">내역 / 사유</div>
     <input type="text" id="editLogReason" class="form-control form-control-sm mb-2">
@@ -238,6 +238,21 @@
   let currentVaultBalance = 0;
   let incomeCalcMode = 'total';
   let lastFetchedPrevVault = 0;
+
+  window.formatCommaInput = function(input) {
+    let val = input.value.replace(/[^0-9]/g, '');
+    if (!val) {
+      input.value = '';
+      return;
+    }
+    input.value = Number(val).toLocaleString();
+  };
+
+  window.parseCommaNumber = function(str) {
+    if (!str) return 0;
+    let clean = String(str).replace(/[^0-9]/g, '');
+    return parseInt(clean, 10) || 0;
+  };
 
   async function initFinanceModule() {
     await loadConfiguredGuildName();
@@ -309,22 +324,21 @@
       const rawRows = rows || [];
 
       rawFinanceLogs = rawRows.map(r => {
-        const typeStr = (r.tx_type === '출금' || r.tx_type === '지출') ? '지출' : '입금';
+        const typeStr = (r.tx_type === '출금' || r.tx_type === '지출') ? '출금' : '입금';
         let dateStr = new Date().toISOString().split('T')[0];
         if (r.created_at) {
           dateStr = new Date(r.created_at).toISOString().split('T')[0];
         }
-        const reasonStr = r.reason || r.category || '사유 없음';
-        const memoStr = r.category || '';
+        const reasonStr = r.reason || '사유 없음';
+        const categoryStr = r.category || '';
 
         return {
           id: r.id,
           log_date: dateStr,
-          log_type: typeStr === '입금' ? '수익금입금' : '길드지출',
-          display_type: typeStr,
+          tx_type: typeStr,
           amount: Number(r.amount || 0),
           reason: reasonStr,
-          memo: memoStr,
+          category: categoryStr,
           created_at: r.created_at
         };
       });
@@ -334,8 +348,8 @@
 
       rawFinanceLogs.forEach(l => {
         const amt = Number(l.amount || 0);
-        if (l.display_type === '입금') totalInc += amt;
-        else if (l.display_type === '지출') totalExp += amt;
+        if (l.tx_type === '입금') totalInc += amt;
+        else if (l.tx_type === '출금') totalExp += amt;
       });
 
       currentVaultBalance = totalInc - totalExp;
@@ -361,8 +375,8 @@
       let periodNet = 0;
       filtered.forEach(l => {
         const amt = Number(l.amount || 0);
-        if (l.display_type === '입금') periodNet += amt;
-        else if (l.display_type === '지출') periodNet -= amt;
+        if (l.tx_type === '입금') periodNet += amt;
+        else if (l.tx_type === '출금') periodNet -= amt;
       });
       document.getElementById('finPeriodNetProfit').innerText = `기간 순수익: ${periodNet.toLocaleString()} D`;
 
@@ -375,11 +389,11 @@
       }
 
       container.innerHTML = filtered.map(l => {
-        const isInc = (l.display_type === '입금');
+        const isInc = (l.tx_type === '입금');
         const badgeClass = isInc ? 'badge-income' : 'badge-expense';
         const signStr = isInc ? '+' : '-';
         const amtStr = Number(l.amount || 0).toLocaleString();
-        const memoSub = l.memo ? `<span class="text-muted ms-1">(${escapeHtmlText(l.memo)})</span>` : '';
+        const catBadge = l.category ? `<span class="badge ${badgeClass}" style="font-size: 0.68rem; padding: 2px 5px;">${escapeHtmlText(l.category)}</span>` : '';
 
         return `
           <div class="p-2 mb-2 rounded border bg-white shadow-sm d-flex align-items-center justify-content-between" 
@@ -387,11 +401,11 @@
                onclick="openFinanceEditModal('${l.id}')">
             <div style="min-width: 0; flex: 1; padding-right: 6px;">
               <div class="d-flex align-items-center gap-2 mb-1">
-                <span class="badge ${badgeClass}" style="font-size: 0.68rem; padding: 2px 5px;">${escapeHtmlText(l.reason)}</span>
-                <span class="small fw-bold text-dark text-truncate">${escapeHtmlText(l.memo || l.reason)}</span>
+                ${catBadge}
+                <span class="small fw-bold text-dark text-truncate">${escapeHtmlText(l.reason)}</span>
               </div>
               <div class="text-muted" style="font-size: 0.68rem;">
-                ${escapeHtmlText(l.log_date)} • ${escapeHtmlText(l.log_type)}
+                ${escapeHtmlText(l.log_date)} • ${escapeHtmlText(l.category || l.tx_type)}
               </div>
             </div>
             <div class="text-end fw-black ${isInc ? 'text-success' : 'text-danger'}" style="font-size: 0.88rem; white-space: nowrap;">
@@ -407,14 +421,14 @@
   };
 
   window.openVaultEditModal = function() {
-    document.getElementById('inputVaultNewTotal').value = currentVaultBalance;
+    document.getElementById('inputVaultNewTotal').value = currentVaultBalance.toLocaleString();
     document.getElementById('modalVaultEdit').style.display = 'flex';
   };
   window.closeVaultEditModal = function() {
     document.getElementById('modalVaultEdit').style.display = 'none';
   };
   window.saveVaultNewTotal = async function() {
-    const val = parseInt(document.getElementById('inputVaultNewTotal').value, 10);
+    const val = window.parseCommaNumber(document.getElementById('inputVaultNewTotal').value);
     if (isNaN(val)) return showKakaoToast("올바른 금액을 입력하세요.", "⚠️");
 
     const diff = val - currentVaultBalance;
@@ -440,8 +454,6 @@
     }
   };
 
-  window.openIncomeModal = function() {};
-
   window.setIncomeCalcMode = function(mode) {
     incomeCalcMode = mode;
     const btnTot = document.getElementById('btnIncModeTotal');
@@ -464,7 +476,7 @@
 
   window.calculateIncomeDiff = function() {
     if (incomeCalcMode === 'total') {
-      const val = parseInt(document.getElementById('incomeTotalInput').value, 10) || 0;
+      const val = window.parseCommaNumber(document.getElementById('incomeTotalInput').value);
       const diff = val - lastFetchedPrevVault;
       document.getElementById('incomeInputSumText').innerText = `입력 총액: ${val.toLocaleString()} D`;
       const sign = diff >= 0 ? "+" : "";
@@ -479,12 +491,12 @@
 
     let amount = 0;
     if (incomeCalcMode === 'total') {
-      const totalVal = parseInt(document.getElementById('incomeTotalInput').value, 10);
+      const totalVal = window.parseCommaNumber(document.getElementById('incomeTotalInput').value);
       if (isNaN(totalVal)) return showKakaoToast("금고 총액을 올바르게 입력하세요.", "⚠️");
       amount = totalVal - lastFetchedPrevVault;
       if (amount <= 0) return showKakaoToast("입력한 총액이 직전 잔액보다 적거나 같습니다.", "⚠️");
     } else {
-      amount = parseInt(document.getElementById('incomeDirectInput').value, 10);
+      amount = window.parseCommaNumber(document.getElementById('incomeDirectInput').value);
       if (isNaN(amount) || amount <= 0) return showKakaoToast("유효한 입금 금액을 입력하세요.", "⚠️");
     }
 
@@ -494,8 +506,8 @@
       await apiRequest("guild_finances", "POST", [{
         tx_type: "입금",
         amount: amount,
-        category: reason,
-        reason: memo || reason,
+        category: "수익금입금",
+        reason: memo ? `${reason} (${memo})` : reason,
         created_at: customCreatedAt
       }]);
       showKakaoToast(`+${amount.toLocaleString()} D 수익금 입금 완료!`, "🎉");
@@ -523,7 +535,7 @@
 
   window.executeAddExpense = async function() {
     const dt = document.getElementById('expenseDate').value;
-    const amount = parseInt(document.getElementById('expenseAmount').value, 10);
+    const amount = window.parseCommaNumber(document.getElementById('expenseAmount').value);
     const reason = document.getElementById('expenseReason').value.trim() || "길드 지출";
     const receiver = document.getElementById('expenseReceiver').value.trim();
 
@@ -535,8 +547,8 @@
       await apiRequest("guild_finances", "POST", [{
         tx_type: "출금",
         amount: amount,
-        category: reason,
-        reason: receiver || reason,
+        category: "길드지출",
+        reason: receiver ? `${reason} (${receiver})` : reason,
         created_at: customCreatedAt
       }]);
       closeExpenseModal();
@@ -553,14 +565,14 @@
 
     document.getElementById('editLogId').value = log.id;
     document.getElementById('editLogDate').value = log.log_date;
-    document.getElementById('editLogType').value = log.display_type;
-    document.getElementById('editLogAmount').value = log.amount;
+    document.getElementById('editLogType').value = log.tx_type;
+    document.getElementById('editLogAmount').value = Number(log.amount).toLocaleString();
     document.getElementById('editLogReason').value = log.reason;
-    document.getElementById('editLogMemo').value = log.memo;
+    document.getElementById('editLogMemo').value = log.category;
 
     document.getElementById('modalFinanceEdit').style.display = 'flex';
   };
-  window.closeFinanceEditModal = function() {
+  window.closeEditFinanceModal = function() {
     document.getElementById('modalFinanceEdit').style.display = 'none';
   };
 
@@ -568,22 +580,22 @@
     const id = document.getElementById('editLogId').value;
     const dt = document.getElementById('editLogDate').value;
     const logType = document.getElementById('editLogType').value;
-    const amount = parseInt(document.getElementById('editLogAmount').value, 10);
+    const amount = window.parseCommaNumber(document.getElementById('editLogAmount').value);
     const reason = document.getElementById('editLogReason').value.trim();
-    const memo = document.getElementById('editLogMemo').value.trim();
+    const category = document.getElementById('editLogMemo').value.trim();
 
     if (isNaN(amount) || amount <= 0) return showKakaoToast("올바른 금액을 입력하세요.", "⚠️");
     const customCreatedAt = dt ? new Date(`${dt}T12:00:00`).toISOString() : new Date().toISOString();
 
     try {
       await apiRequest(`guild_finances?id=eq.${id}`, "PATCH", {
-        tx_type: logType === '입금' ? '입금' : '출금',
+        tx_type: logType,
         amount: amount,
-        category: reason,
-        reason: memo || reason,
+        category: category || (logType === '입금' ? '수익금입금' : '길드지출'),
+        reason: reason,
         created_at: customCreatedAt
       });
-      closeFinanceEditModal();
+      closeEditFinanceModal();
       showKakaoToast("내역이 수정되었습니다.", "✏️");
       loadFinanceLogs();
     } catch(err) {
@@ -597,7 +609,7 @@
 
     try {
       await apiRequest(`guild_finances?id=eq.${id}`, "DELETE");
-      closeFinanceEditModal();
+      closeEditFinanceModal();
       showKakaoToast("내역이 삭제되었습니다.", "🗑️");
       loadFinanceLogs();
     } catch(err) {
@@ -620,8 +632,8 @@
     let expSum = 0;
     filtered.forEach(l => {
       const amt = Number(l.amount || 0);
-      if (l.display_type === '입금') incSum += amt;
-      else if (l.display_type === '지출') expSum += amt;
+      if (l.tx_type === '입금') incSum += amt;
+      else if (l.tx_type === '출금') expSum += amt;
     });
     const netSum = incSum - expSum;
 
