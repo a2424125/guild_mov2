@@ -59,8 +59,6 @@ function formatTime24HourWithDate(dateInput) {
   const day = String(d.getDate()).padStart(2, '0');
   return `${timeStr} (${m}/${day})`;
 }
-
-// 🌐 서랍 및 서브 모듈(PageTimer.html 등)과의 100% 호환성을 위한 전역 바인딩
 window.formatTime24Hour = formatTime24Hour;
 window.formatTime24HourWithDate = formatTime24HourWithDate;
 
@@ -780,31 +778,31 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
 
                 <div class="fin-vault-hero" style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(56, 189, 248, 0.04) 100%) !important; border-color: rgba(56, 189, 248, 0.3) !important;">
                   <div style="min-width: 0; flex: 1; padding-right: 4px;">
-                    <div class="fin-vault-label"><i class="fa-solid fa-box-open me-1 text-info"></i>낙찰 아이템</div>
-                    <div class="fin-vault-val text-truncate" style="color: #38bdf8 !important; font-size: 12px !important;">[${escapeHtmlText(bossName)}] ${escapeHtmlText(itemName)}</div>
+                    <div class="fin-vault-label" style="font-weight:700; color:#0369a1;"><i class="fa-solid fa-box-open me-1 text-info"></i>낙찰 아이템</div>
+                    <div class="fin-vault-val text-truncate" style="color: #0284c7 !important; font-size: 13px !important; font-weight: 800 !important;">[${escapeHtmlText(bossName)}] ${escapeHtmlText(itemName)}</div>
                   </div>
                   <div style="font-size: 1.2rem; flex-shrink: 0;">🎁</div>
                 </div>
 
                 <div class="fin-period-box" style="margin-bottom: 6px;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👑 낙찰자:</span>
-                    <strong style="color: #fbbf24; font-size: 11.5px;">${escapeHtmlText(winnerName)} (${price} D)</strong>
+                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 700;">👑 낙찰자:</span>
+                    <strong style="color: #d97706; font-size: 12px; font-weight: 800;">${escapeHtmlText(winnerName)} (${price} D)</strong>
                   </div>
                   <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px dashed var(--drawer-card-border);">
-                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;">👥 분배 대상:</span>
-                    <strong style="color: var(--kakao-notice-text); font-size: 11px;">참여자 ${memberCount}명</strong>
+                    <span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 700;">👥 분배 대상:</span>
+                    <strong style="color: var(--kakao-notice-text); font-size: 11.5px; font-weight: 800;">참여자 ${memberCount}명</strong>
                   </div>
                 </div>
 
                 <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 7px; padding: 6px 9px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">💵 1인당 최종 배당금:</span>
-                  <strong style="font-size: 12px; font-weight: 900; color: #059669;">+${perShare} D</strong>
+                  <strong style="font-size: 13px; font-weight: 900; color: #059669;">+${perShare} D</strong>
                 </div>
 
                 <div style="background: rgba(0, 0, 0, 0.03); border: 1px solid var(--drawer-card-border); border-radius: 6px; padding: 5px 8px; max-height: 75px; overflow-y: auto;">
-                  <div style="font-size: 10px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 2px;">수령자 명단 (${memberCount}명):</div>
-                  <div style="font-size: 10.5px; color: var(--kakao-notice-text); line-height: 1.4; word-break: break-all;">
+                  <div style="font-size: 10.5px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 2px;">수령자 명단 (${memberCount}명):</div>
+                  <div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); line-height: 1.4; word-break: break-all;">
                     ${membersList.map(m => escapeHtmlText(m)).join(', ')}
                   </div>
                 </div>
@@ -895,58 +893,82 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
         initialTimerText = `${m}:${s}`;
       }
 
+      let warBadgeClass = "badge-war-normal";
+      if (warType === "내전") warBadgeClass = "badge-war-internal";
+      else if (warType === "인터") warBadgeClass = "badge-war-inter";
+
+      let dropItemsHtml = "";
+      if (dropItems) {
+        dropItemsHtml = `
+          <div class="raid-card-item-row" style="margin-bottom:6px; font-size:11px;">
+            <span class="raid-row-label" style="font-weight:700;"><i class="fa-solid fa-gift text-warning me-1"></i>획득 아이템:</span>
+            <span class="raid-item-val" style="font-weight:800; color:#d97706;">${escapeHtmlText(dropItems)}</span>
+          </div>
+        `;
+      }
+
       html = `
         <div class="chat-item-row other" id="${msgKey}">
           <div class="chat-sender-avatar bot">⚔️</div>
           <div class="chat-msg-body raid-msg-body">
             <div class="chat-sender-name">토벌알리미</div>
             <div class="chat-bubble-flex">
-              <div class="raid-report-card">
-                <div class="raid-card-header">
-                  <div class="raid-boss-title">
-                    <span class="raid-boss-icon">⚔️</span>
-                    <span class="raid-boss-name">[${escapeHtmlText(bossName)}] 토벌 집결</span>
-                  </div>
-                  <div class="raid-header-badges">
-                    <span class="badge-raid-type ${warType === '쟁' ? 'war' : 'normal'}">${escapeHtmlText(warType)}</span>
-                    <span class="badge-raid-timer ${isExpired ? 'expired' : 'active'}" id="raidTimer_${raidId}" data-created-at="${createdAtIso}">
-                      <i class="fa-regular fa-clock me-1"></i><span class="time-text">${initialTimerText}</span>
-                    </span>
+              <div class="raid-report-card" id="raidCard_${raidId}">
+                <div class="raid-card-header" style="border-bottom:1px dashed var(--drawer-card-border); padding-bottom:6px; margin-bottom:8px;">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div class="raid-boss-title" style="font-size:13px; font-weight:800; color:var(--kakao-notice-text); display:flex; align-items:center;">
+                      <span class="raid-boss-icon" style="margin-right:5px;">⚔️</span>
+                      <span>[${escapeHtmlText(bossName)}] 토벌 집결</span>
+                    </div>
+                    <span class="badge ${warBadgeClass}">${escapeHtmlText(warType)}</span>
                   </div>
                 </div>
 
-                <div class="raid-info-row">
-                  <span class="raid-info-label">토벌 시각</span>
-                  <span class="raid-info-val">${raidTimeDisplay}</span>
-                </div>
-                <div class="raid-info-row">
-                  <span class="raid-info-label">획득 점수</span>
-                  <span class="raid-info-val font-weight-bold" style="color: #0284c7;">+${score}점</span>
-                </div>
-
-                ${dropItems ? `
-                  <div class="raid-drop-box">
-                    <span class="drop-icon">🎁</span>
-                    <span class="drop-text">${escapeHtmlText(dropItems)}</span>
+                <!-- 🎯 토벌 시각 / 점수 / 보스명 단정화 Hero 레이아웃 박스 -->
+                <div class="raid-hero-box" style="background:rgba(0,0,0,0.025); border:1px solid var(--drawer-card-border); border-radius:8px; padding:7px 10px; margin-bottom:8px;">
+                  <div style="font-size:13px; font-weight:800; color:var(--kakao-notice-text); margin-bottom:5px; display:flex; align-items:center; justify-content:space-between;">
+                    <span><i class="fa-solid fa-crosshairs text-danger me-1"></i>${escapeHtmlText(bossName)}</span>
+                    <span style="font-size:11.5px; font-weight:800; color:#0284c7;">+${score}점</span>
                   </div>
-                ` : ''}
-
-                <div class="raid-members-section">
-                  <div class="raid-members-header">
-                    <span>참여 길드원 (<strong id="raid_mcount_${raidId}">${memberCount}</strong>명)</span>
-                    <span class="raid-share-guide">3분 이내 참여 버튼 클릭</span>
-                  </div>
-                  <div class="raid-members-list" id="raid_mlist_${raidId}">
-                    ${members.map(m => `<span class="raid-member-pill ${m === activeNick ? 'me-pill' : ''}">${escapeHtmlText(m)}</span>`).join('')}
+                  <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; border-top:1px dashed var(--drawer-card-border); padding-top:4px;">
+                    <span style="color:var(--kakao-time-gray); font-weight:700;">토벌 시각</span>
+                    <span style="color:var(--kakao-notice-text); font-weight:700;">${escapeHtmlText(raidTimeDisplay)}</span>
                   </div>
                 </div>
 
-                <div class="raid-card-actions">
-                  <button type="button" class="btn-raid-add-member ${btnClassState}" id="btnRaidAdd_${raidId}" 
-                          ${btnDisabledAttr} 
-                          onclick="handleRaidJoinAction(${raidId}, '${escapeHtmlText(bossName)}')">
-                    <i class="fa-solid ${btnIconClass} me-1"></i><span class="btn-text">${btnTextLabel}</span>
-                  </button>
+                <div class="raid-card-content">
+                  ${dropItemsHtml}
+                  
+                  <div class="raid-members-box">
+                    <div class="raid-members-header" style="display:flex; justify-content:space-between; font-size:10px; font-weight:700; color:var(--kakao-time-gray); margin-bottom:4px;">
+                      <span><i class="fa-solid fa-users me-1 text-primary"></i>참여 길드원 (<span id="raid_mcount_${raidId}">${memberCount}</span>명)</span>
+                      <span class="raid-share-guide" style="color:#f59e0b;">3분 이내 참여 버튼 클릭</span>
+                    </div>
+                    <div class="raid-members-tags" id="raid_mlist_${raidId}">
+                      ${members.map(m => `<span class="raid-member-pill ${m === activeNick ? 'me-pill' : ''}">${escapeHtmlText(m)}</span>`).join('')}
+                    </div>
+                  </div>
+
+                  <!-- 🎯 추가참여 버튼 옆에 남은 시간(타이머) 나란히 배치 -->
+                  <div class="raid-action-row" style="display:flex; gap:6px; align-items:center; margin-top:8px;">
+                    <button type="button" 
+                            id="btnRaidAdd_${raidId}" 
+                            class="btn-raid-self-add ${btnClassState}" 
+                            ${btnDisabledAttr} 
+                            style="flex:1;"
+                            onclick="handleQuickRaidSelfAdd('${raidId}', '${escapeHtmlText(bossName)}')">
+                      <i class="fa-solid ${btnIconClass} me-1"></i>
+                      <span class="btn-text">${btnTextLabel}</span>
+                    </button>
+
+                    <div class="badge-raid-timer ${isExpired ? 'expired' : 'active'}" 
+                         id="timer_raid_${raidId}" 
+                         data-raid-id="${raidId}" 
+                         data-created-at="${createdAtIso}">
+                      <i class="fa-regular fa-clock me-1"></i>
+                      <span class="time-text">${initialTimerText}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1188,26 +1210,33 @@ function listenRealtimeBossTimers() {
     .subscribe();
 }
 
-async function postBossBriefingToChat() {
-  await loadBossTimersList();
-  if (!cachedBossList || cachedBossList.length === 0) {
-    return showKakaoToast("등록된 보스타임 데이터가 없습니다.", "⚠️");
+window.postBossBriefingToChat = async function() {
+  if (cachedBossList.length === 0) {
+    await loadBossTimersList();
+  }
+  if (cachedBossList.length === 0) {
+    return showKakaoToast("등록된 보스 타이머가 없습니다.", "⚠️");
   }
 
   const now = Date.now();
-  const sorted = [...cachedBossList].sort((a, b) => {
+  const sorted = [...cachedBossList].sort((a,b) => {
     const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
     const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
     return tA - tB;
   });
 
   const currentKstFormatted = formatTime24Hour(new Date());
+  let briefingHtml = `<div class="boss-brief-title" style="font-size:12.5px; font-weight:800; color:#0284c7; margin-bottom:4px; display:flex; align-items:center;">
+    <i class="fa-solid fa-clock-rotate-left me-1"></i>[보스타임 현황 브리핑] <span style="font-size:11px; color:var(--kakao-time-gray); font-weight:600; margin-left:4px;">(${currentKstFormatted} 기준)</span>
+  </div>`;
+  briefingHtml += `<div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:700; color:var(--kakao-time-gray); padding:3px 0; border-bottom:1px dashed var(--drawer-card-border); margin-bottom:5px;">
+    <span>보스명</span>
+    <span style="margin-left:auto; margin-right:16px;">젠 예정</span>
+    <span>상태 (남은시간)</span>
+  </div>`;
 
-  let briefingText = `<div class="boss-brief-title"><i class="fa-solid fa-clock-rotate-left me-1"></i>[보스타임 현황 브리핑] (${currentKstFormatted} 기준)</div>`;
-  briefingText += `<div class="boss-brief-divider"></div>`;
-
-  sorted.forEach(b => {
-    let stateBadge = `<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:10px; padding:2px 5px; border-radius:4px;">컷 대기</span>`;
+  sorted.forEach((b) => {
+    let stateBadge = `<span style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px; white-space:nowrap;">컷 대기</span>`;
     let timeDisplay = "-";
 
     if (b.next_spawn_time) {
@@ -1217,60 +1246,64 @@ async function postBossBriefingToChat() {
 
       if (diffSec <= 0) {
         const passM = Math.floor(Math.abs(diffSec) / 60);
-        stateBadge = `<span class="badge bg-danger text-white fw-bold" style="font-size:10px; padding:2px 5px; border-radius:4px; animation: pulseBlink 1.4s infinite;">🚨 젠 완료 (+${passM}분)</span>`;
+        stateBadge = `<span style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap;">🎉 젠 완료 (+${passM}분)</span>`;
       } else if (diffSec <= 3600) {
         const m = Math.floor(diffSec / 60);
-        stateBadge = `<span class="badge bg-warning text-dark fw-bold" style="font-size:10px; padding:2px 5px; border-radius:4px;">⏳ ${m}분 남음</span>`;
+        stateBadge = `<span style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap;">⏳ ${m}분 남음</span>`;
       } else {
         const h = Math.floor(diffSec / 3600);
         const m = Math.floor((diffSec % 3600) / 60);
-        stateBadge = `<span class="badge bg-info text-dark" style="font-size:10px; padding:2px 5px; border-radius:4px;">💤 ${h}시간 ${m}분</span>`;
+        stateBadge = `<span style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap;">💤 ${h}시간 ${m}분</span>`;
       }
     }
 
-    briefingText += `
-      <div class="boss-brief-row">
-        <span class="boss-name-part">${escapeHtmlText(b.boss_name)}</span>
-        <div class="d-flex align-items-center gap-2">
-          <span class="boss-time-part">${timeDisplay}</span>
-          ${stateBadge}
-        </div>
+    briefingHtml += `
+      <div class="boss-brief-row" style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; padding:2.5px 0; white-space:nowrap; gap:6px;">
+        <span style="font-weight:700; color:var(--kakao-notice-text); min-width:65px; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlText(b.boss_name)}</span>
+        <span style="font-weight:800; color:#0284c7; min-width:45px; text-align:center; font-size:11.5px;">${timeDisplay}</span>
+        ${stateBadge}
       </div>
     `;
   });
 
-  briefingText += `<div class="boss-brief-footer">※ !컷 [보스명] [시간] 입력 시 빠른 컷 등록 가능</div>`;
+  briefingHtml += `<div style="font-size:10px; color:var(--kakao-time-gray); margin-top:6px; border-top:1px dashed var(--drawer-card-border); padding-top:4px;">※ !컷 [보스명] [시간] 입력 시 빠른 컷 등록 가능</div>`;
 
   try {
     await apiRequest("guild_chats", "POST", [{
       sender_name: "보스알리미",
-      message: briefingText,
+      message: briefingHtml,
       msg_type: "boss_briefing",
       mentions: []
     }]);
-    showKakaoToast("보스타임 브리핑이 대화방에 공유되었습니다.", "📢");
-  } catch (e) {
-    showKakaoToast("브리핑 전송 실패: " + e.message, "❌");
+    showKakaoToast("보스타임이 브리핑되었습니다!", "⏰");
+  } catch (err) {
+    showKakaoToast("브리핑 전송 실패: " + err.message, "❌");
   }
-}
+};
 
-async function triggerQuickCutAction(bossName, btnElementId) {
-  const btn = document.getElementById(btnElementId);
-  if (btn) {
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 처리 중`;
-  }
-
+window.triggerQuickCutAction = async function(bossName, btnId) {
+  const btn = document.getElementById(btnId);
+  
   const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
   if (!boss) {
-    showKakaoToast(`[${bossName}] 보스 정보를 찾을 수 없습니다.`, "⚠️");
-    if (btn) btn.disabled = false;
-    return;
+    return showKakaoToast("보스 정보를 찾을 수 없습니다.", "❌");
+  }
+
+  if (boss.next_spawn_time) {
+    const diffSec = Math.floor((new Date(boss.next_spawn_time).getTime() - Date.now()) / 1000);
+    if (diffSec > 0) {
+      return showKakaoToast(`[${boss.boss_name}] 이미 컷 처리된 상태입니다!`, "ℹ️");
+    }
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.classList.add("disabled");
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 처리중`;
   }
 
   const cutDate = new Date();
-  const cycleMin = boss.cycle_min || 120;
-  const nextSpawn = new Date(cutDate.getTime() + (cycleMin * 60 * 1000));
+  const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
 
   try {
     await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
@@ -1287,188 +1320,178 @@ async function triggerQuickCutAction(bossName, btnElementId) {
       mentions: []
     }]);
 
-    showKakaoToast(`[${boss.boss_name}] 컷 완료 처리되었습니다.`, "⚔️");
+    showKakaoToast(`[${boss.boss_name}] 컷 완료!`, "⚔️");
     await loadBossTimersList();
     syncAllChatCutButtons();
   } catch (err) {
-    if (btn) btn.disabled = false;
+    if (btn) {
+      btn.disabled = false;
+      btn.classList.remove("disabled");
+      btn.innerHTML = `<i class="fa-solid fa-skull"></i> 컷 처리`;
+    }
     showKakaoToast("컷 처리 실패: " + err.message, "❌");
   }
-}
+};
 
 async function handleBossChatCommands(rawText) {
-  const parts = rawText.split(/\s+/);
-  const cmd = parts[0];
+  const trimmed = rawText.trim();
+  if (!trimmed.startsWith('!')) return false;
 
-  if (cmd === "!컷" || cmd === "!cut") {
+  if (trimmed === '!보스타임' || trimmed === '!보스') {
+    postBossBriefingToChat();
+    return true;
+  }
+
+  if (trimmed.startsWith('!컷')) {
+    const parts = trimmed.split(/\s+/);
     if (parts.length < 2) {
-      showKakaoToast("사용법: !컷 [보스명] [선택: 시각(예: 1420)]", "⚠️");
+      showKakaoToast("!컷 [보스명] [시간] 형식으로 입력하세요", "⚠️");
       return true;
     }
-    const bName = parts[1];
-    const timeParam = parts[2] || "";
 
-    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bName.toLowerCase());
+    const bossName = parts[1];
+    const timeInput = parts[2];
+
+    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
     if (!boss) {
-      showKakaoToast(`[${bName}] 보스를 찾을 수 없습니다.`, "⚠️");
+      showKakaoToast(`[${bossName}] 보스를 찾을 수 없습니다.`, "❌");
       return true;
     }
 
     let cutDate = new Date();
-    if (timeParam && /^\d{3,4}$/.test(timeParam)) {
-      const padded = timeParam.padStart(4, '0');
-      const hh = parseInt(padded.slice(0, 2), 10);
-      const mm = parseInt(padded.slice(2, 4), 10);
-      if (hh < 24 && mm < 60) {
-        cutDate.setHours(hh, mm, 0, 0);
-        if (cutDate.getTime() > Date.now() + 60000) {
-          cutDate.setDate(cutDate.getDate() - 1);
-        }
+    if (timeInput) {
+      const parsed = parseCustomTimeString(timeInput);
+      if (!parsed) {
+        showKakaoToast("시간 형식이 올바르지 않습니다 (예: 1100, 2000)", "⚠️");
+        return true;
       }
+      cutDate = parsed;
     }
 
-    const cycleMin = boss.cycle_min || 120;
-    const nextSpawn = new Date(cutDate.getTime() + (cycleMin * 60 * 1000));
+    const nextSpawn = new Date(cutDate.getTime() + (boss.cycle_min * 60 * 1000));
+    await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+      last_cut_time: cutDate.toISOString(),
+      next_spawn_time: nextSpawn.toISOString()
+    });
 
-    try {
-      await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
-        last_cut_time: cutDate.toISOString(),
-        next_spawn_time: nextSpawn.toISOString()
-      });
+    const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
 
-      const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 컷 완료!<br>• 컷 시각: ${formatTime24Hour(cutDate)}<br>• 다음 젠: ${formatTime24HourWithDate(nextSpawn)}`;
-
-      await apiRequest("guild_chats", "POST", [{
-        sender_name: "보스알리미",
-        message: alertMessage,
-        msg_type: "boss_alert",
-        mentions: []
-      }]);
-
-      showKakaoToast(`[${boss.boss_name}] 컷 등록 완료!`, "⚔️");
-      await loadBossTimersList();
-      syncAllChatCutButtons();
-    } catch (e) {
-      showKakaoToast("컷 처리 오류: " + e.message, "❌");
-    }
+    await apiRequest("guild_chats", "POST", [{
+      sender_name: "보스알리미",
+      message: alertMessage,
+      msg_type: "boss_alert",
+      mentions: []
+    }]);
+    syncAllChatCutButtons();
     return true;
   }
 
-  if (cmd === "!예약" || cmd === "!reserve") {
+  if (trimmed.startsWith('!예약')) {
+    const parts = trimmed.split(/\s+/);
     if (parts.length < 3) {
-      showKakaoToast("사용법: !예약 [보스명] [젠시각(예: 1530)]", "⚠️");
+      showKakaoToast("!예약 [보스명] [시간] 형식으로 입력하세요", "⚠️");
       return true;
     }
-    const bName = parts[1];
-    const timeParam = parts[2];
 
-    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bName.toLowerCase());
+    const bossName = parts[1];
+    const timeInput = parts[2];
+
+    const boss = cachedBossList.find(b => b.boss_name.toLowerCase() === bossName.toLowerCase());
     if (!boss) {
-      showKakaoToast(`[${bName}] 보스를 찾을 수 없습니다.`, "⚠️");
+      showKakaoToast(`[${bossName}] 보스를 찾을 수 없습니다.`, "❌");
       return true;
     }
 
-    if (!/^\d{3,4}$/.test(timeParam)) {
-      showKakaoToast("올바른 시각(3~4자리 숫자, 예: 1420)을 입력하세요.", "⚠️");
+    const parsed = parseCustomTimeString(timeInput);
+    if (!parsed) {
+      showKakaoToast("시간 형식이 올바르지 않습니다 (예: 1100, 2000)", "⚠️");
       return true;
     }
 
-    const padded = timeParam.padStart(4, '0');
-    const hh = parseInt(padded.slice(0, 2), 10);
-    const mm = parseInt(padded.slice(2, 4), 10);
-    if (hh >= 24 || mm >= 60) {
-      showKakaoToast("유효하지 않은 시간 형식입니다.", "⚠️");
-      return true;
-    }
+    await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+      next_spawn_time: parsed.toISOString()
+    });
 
-    const spawnDate = new Date();
-    spawnDate.setHours(hh, mm, 0, 0);
-    if (spawnDate.getTime() < Date.now() - 3600000) {
-      spawnDate.setDate(spawnDate.getDate() + 1);
-    }
+    const alertMessage = `[${escapeHtmlText(boss.boss_name)}] 젠 시간 예약 완료!<br>• 예정 젠: ${formatTime24HourWithDate(parsed)}`;
 
-    try {
-      await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
-        next_spawn_time: spawnDate.toISOString()
-      });
-
-      const spawnTimeStr = formatTime24HourWithDate(spawnDate);
-      const alertMessage = `⏰ [${escapeHtmlText(boss.boss_name)}] 젠 시간 수동 예약 완료!<br>• 예정 젠: ${spawnTimeStr}`;
-
-      await apiRequest("guild_chats", "POST", [{
-        sender_name: "보스알리미",
-        message: alertMessage,
-        msg_type: "boss_alert",
-        mentions: []
-      }]);
-
-      showKakaoToast(`[${boss.boss_name}] 젠 시간 예약 완료!`, "⏰");
-      await loadBossTimersList();
-      syncAllChatCutButtons();
-    } catch (e) {
-      showKakaoToast("예약 등록 오류: " + e.message, "❌");
-    }
-    return true;
-  }
-
-  if (cmd === "!보스타임" || cmd === "!보스") {
-    await postBossBriefingToChat();
+    await apiRequest("guild_chats", "POST", [{
+      sender_name: "보스알리미",
+      message: alertMessage,
+      msg_type: "boss_alert",
+      mentions: []
+    }]);
+    syncAllChatCutButtons();
     return true;
   }
 
   return false;
 }
 
+function parseCustomTimeString(str) {
+  if (!str) return null;
+  const clean = str.replace(/[^0-9]/g, '');
+  if (clean.length < 3 || clean.length > 4) return null;
+
+  let hour = 0;
+  let min = 0;
+
+  if (clean.length === 3) {
+    hour = parseInt(clean.slice(0, 1), 10);
+    min = parseInt(clean.slice(1, 3), 10);
+  } else {
+    hour = parseInt(clean.slice(0, 2), 10);
+    min = parseInt(clean.slice(2, 4), 10);
+  }
+
+  if (hour > 23 || min > 59) return null;
+
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hour, min, 0, 0);
+
+  return target;
+}
+
 function bindMentionInputEvents() {
   const textarea = document.getElementById("inputChatMessage");
   if (!textarea) return;
 
-  textarea.addEventListener("keyup", (e) => {
+  textarea.addEventListener("input", () => {
     const val = textarea.value;
-    const cursorPos = textarea.selectionStart;
-    const textBeforeCursor = val.slice(0, cursorPos);
-    const atIndex = textBeforeCursor.lastIndexOf("@");
-
-    if (atIndex !== -1 && (atIndex === 0 || /\s/.test(textBeforeCursor[atIndex - 1]))) {
-      const query = textBeforeCursor.slice(atIndex + 1);
-      if (!/\s/.test(query)) {
-        showMentionPopup(query, atIndex);
-        return;
-      }
-    }
-    closeMentionPopup();
-  });
-
-  textarea.addEventListener("keydown", (e) => {
-    const popup = document.getElementById("mentionPopupBox");
-    if (popup.style.display === "block" && (e.key === "Escape" || e.key === "ArrowUp" || e.key === "ArrowDown")) {
-      e.preventDefault();
+    const atIdx = val.lastIndexOf("@");
+    if (atIdx === -1) {
       closeMentionPopup();
+      return;
     }
+
+    const query = val.slice(atIdx + 1).trim();
+    if (query.includes(" ")) {
+      closeMentionPopup();
+      return;
+    }
+    showMentionPopup(query, atIdx);
   });
 }
 
 function showMentionPopup(query, atIndex) {
-  const popup = document.getElementById("mentionPopupBox");
-  if (!popup) return;
+  const box = document.getElementById("mentionPopupBox");
+  if (!box) return;
 
-  const q = query.toLowerCase();
-  const matched = cachedMemberList.filter(m => m.name.toLowerCase().includes(q) && m.name !== myCurrentNick);
-
-  if (matched.length === 0) {
-    closeMentionPopup();
+  const filtered = cachedMemberList.filter(m => m.name.toLowerCase().includes(query.toLowerCase()));
+  if (filtered.length === 0) {
+    box.style.display = "none";
     return;
   }
 
-  popup.innerHTML = matched.slice(0, 5).map(m => `
+  box.innerHTML = filtered.slice(0, 5).map(m => `
     <div class="mention-item-row" onclick="applyMentionNick('${escapeHtmlText(m.name)}', ${atIndex})">
-      <div class="mention-avatar">${(m.job_class ? m.job_class.split(' ')[0] : (m.avatar || '👤'))}</div>
+      <div class="mention-avatar">${m.job_class ? m.job_class.split(' ')[0] : '👤'}</div>
       <div class="mention-name">${escapeHtmlText(m.name)}</div>
       <div class="mention-role">${escapeHtmlText(m.role || '일반')}</div>
     </div>
   `).join('');
 
-  popup.style.display = "block";
+  box.style.display = "block";
 }
 
 function applyMentionNick(nick, atIndex) {
@@ -1476,24 +1499,16 @@ function applyMentionNick(nick, atIndex) {
   if (!textarea) return;
 
   const val = textarea.value;
-  const cursorPos = textarea.selectionStart;
-  const beforeAt = val.slice(0, atIndex);
-  const afterCursor = val.slice(cursorPos);
-
-  textarea.value = `${beforeAt}@${nick} ${afterCursor}`;
+  const before = val.slice(0, atIndex);
+  textarea.value = `${before}@${nick} `;
   closeMentionPopup();
   textarea.focus();
-  const nextPos = beforeAt.length + nick.length + 2;
-  textarea.setSelectionRange(nextPos, nextPos);
-  handleInputState(textarea);
 }
 
 function closeMentionPopup() {
-  document.getElementById("mentionPopupBox").style.display = "none";
+  const box = document.getElementById("mentionPopupBox");
+  if (box) box.style.display = "none";
 }
-
-// ⚡ 모듈 페이지 인메모리 템플릿 캐시 (재호출 시 80KB 다운로드 방지 및 즉시 전환)
-var modulePageHtmlCache = {};
 
 window.openModulePage = async function(pageName) {
   closeAllDrawers();
@@ -1531,19 +1546,15 @@ window.openModulePage = async function(pageName) {
   navTitle.innerText = titleMap[pageName] || "기능 화면";
   if (typeof window.applyAppTheme === "function") window.applyAppTheme();
   overlay.style.display = "flex";
+  body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
 
   try {
-    let html = modulePageHtmlCache[pageName];
-    if (!html) {
-      body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
-      let res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
-      if (!res.ok) {
-        res = await fetch(`pages/${pageName}.htm?_t=${Date.now()}`);
-      }
-      if (!res.ok) throw new Error("로드 실패");
-      html = await res.text();
-      modulePageHtmlCache[pageName] = html;
+    let res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
+    if (!res.ok) {
+      res = await fetch(`pages/${pageName}.htm?_t=${Date.now()}`);
     }
+    if (!res.ok) throw new Error("로드 실패");
+    const html = await res.text();
     body.innerHTML = html;
 
     document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
@@ -1611,8 +1622,7 @@ function startRaidReportCountdowns() {
   }, 1000);
 }
 
-window.handleRaidJoinAction = async function(raidId, bossName) {
-  const btn = document.getElementById(`btnRaidAdd_${raidId}`);
+window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
   const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   const currentAdminRole = sessionStorage.getItem("admin_role") || "";
 
@@ -1625,6 +1635,7 @@ window.handleRaidJoinAction = async function(raidId, bossName) {
     return showGuildLoginModal();
   }
 
+  const btn = document.getElementById(`btnRaidAdd_${raidId}`);
   if (btn) {
     btn.disabled = true;
     const btnSpan = btn.querySelector(".btn-text");
@@ -1643,7 +1654,7 @@ window.handleRaidJoinAction = async function(raidId, bossName) {
     const diffSec = Math.floor((Date.now() - createdAt) / 1000);
 
     if (diffSec > 180) {
-      const timerBadge = document.getElementById(`raidTimer_${raidId}`);
+      const timerBadge = document.getElementById(`timer_raid_${raidId}`);
       if (btn) {
         btn.disabled = true;
         btn.classList.add("disabled");
