@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (데이터 연동 ID 완벽 일치화)
+     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (currentBalance 전역 변수 선언 오류 해결)
      ========================================== -->
 <style>
   .finance-card {
@@ -234,7 +234,11 @@
 </div>
 
 <script>
-  window.lastFinanceData = { logs: [], currentBalance: 0, filteredIncome: 0, totalIncome: 0, totalExpense: 0 };
+  let rawFinanceLogs = [];
+  let currentBalance = 0;
+  let currentVaultBalance = 0;
+  let incomeCalcMode = 'total';
+  let lastFetchedPrevVault = 0;
 
   window.formatCommaInput = function(input) {
     let val = input.value.replace(/[^0-9]/g, '');
@@ -364,8 +368,10 @@
         }
       });
 
-      currentVaultBalance = totalInc - totalExp;
-      document.getElementById('finCurrentVaultTotal').innerText = currentVaultBalance.toLocaleString() + " D";
+      currentBalance = totalInc - totalExp;
+      currentVaultBalance = currentBalance;
+
+      document.getElementById('finCurrentVaultTotal').innerText = currentBalance.toLocaleString() + " D";
       document.getElementById('finTotalIncomeSum').innerText = "+" + totalInc.toLocaleString();
       document.getElementById('finTotalExpenseSum').innerText = "-" + totalExp.toLocaleString();
 
@@ -379,7 +385,7 @@
       const periodNet = filteredInc - filteredExp;
       document.getElementById('finPeriodNetProfit').innerText = `기간 순수익: ${periodNet.toLocaleString()} D`;
 
-      lastFetchedPrevVault = currentVaultBalance;
+      lastFetchedPrevVault = currentBalance;
       document.getElementById('incomePrevVaultText').innerText = `직전 금고 잔액: ${lastFetchedPrevVault.toLocaleString()} D`;
 
       window.lastFinanceData = {
@@ -432,7 +438,7 @@
   };
 
   window.openVaultEditModal = function() {
-    document.getElementById('inputVaultNewTotal').value = currentVaultBalance.toLocaleString();
+    document.getElementById('inputVaultNewTotal').value = currentBalance.toLocaleString();
     document.getElementById('modalVaultEdit').style.display = 'flex';
   };
   window.closeVaultEditModal = function() {
@@ -442,7 +448,7 @@
     const val = window.parseCommaNumber(document.getElementById('inputVaultNewTotal').value);
     if (isNaN(val)) return showKakaoToast("올바른 금액을 입력하세요.", "⚠️");
 
-    const diff = val - currentVaultBalance;
+    const diff = val - currentBalance;
     if (diff === 0) {
       closeVaultEditModal();
       return;
@@ -658,7 +664,7 @@
         <div class="fin-vault-hero">
           <div>
             <div class="fin-vault-label">현재 금고 총 잔액</div>
-            <div class="fin-vault-val">${currentVaultBalance.toLocaleString()} D</div>
+            <div class="fin-vault-val">${currentBalance.toLocaleString()} D</div>
           </div>
           <div style="font-size: 1.5rem;">🏛️</div>
         </div>
