@@ -1,10 +1,9 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 정산 및 자금 배분 (카카오톡 모달 & 라운드 검색창 & 정독성 최적화)
+     [ECLIPSE 길드관리] 길드 정산 및 자금 배분
      경로: pages/PageSettle.html
      ========================================== -->
 <style>
-  /* 🎨 다크/라이트 모드 고대비 정독성 테마 변수 */
-  .settle-theme-root {
+  :root {
     --st-bg: #f8fafc;
     --st-card-bg: #ffffff;
     --st-card-border: #e2e8f0;
@@ -32,7 +31,7 @@
     --st-modal-item-border: #e2e8f0;
   }
 
-  body.theme-dark .settle-theme-root {
+  body.theme-dark {
     --st-bg: #0f172a;
     --st-card-bg: #1e293b;
     --st-card-border: #334155;
@@ -68,32 +67,29 @@
     padding-bottom: 24px;
   }
 
-  /* 상단 카드 */
   .st-main-card {
     background: var(--st-card-bg);
     border: 1px solid var(--st-card-border);
     border-radius: 18px;
-    padding: 16px 14px;
+    padding: 14px 12px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   }
 
-  /* 서브 섹션 박스 */
   .st-section-box {
     background: var(--st-box-bg);
     border: 1px solid var(--st-box-border);
-    border-radius: 14px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
   }
 
-  /* 인풋 스타일 */
   .st-input {
     background-color: var(--st-input-bg) !important;
     border: 1px solid var(--st-input-border) !important;
     color: var(--st-text-main) !important;
     border-radius: 8px !important;
-    padding: 7px 10px !important;
-    font-size: 0.82rem !important;
+    padding: 6px 8px !important;
+    font-size: 0.8rem !important;
     outline: none;
     transition: border-color 0.15s ease;
   }
@@ -106,10 +102,9 @@
     cursor: pointer;
   }
 
-  /* 🎯 카카오톡 스타일 라운드 검색창 (내부 돋보기 아이콘 일체형) */
   .search-wrapper-settle {
     position: relative;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     width: 100%;
@@ -128,7 +123,7 @@
     border: 1px solid var(--st-card-border);
     color: var(--st-text-main);
     border-radius: 20px;
-    padding: 8px 14px 8px 36px;
+    padding: 7px 14px 7px 36px;
     font-size: 0.82rem;
     outline: none;
     transition: all 0.2s ease;
@@ -142,15 +137,14 @@
     box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
   }
 
-  /* 기간 퀵버튼 */
   .st-quick-btn {
     background: var(--st-input-bg);
     border: 1px solid var(--st-input-border);
     color: var(--st-text-sub);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    padding: 6px 8px;
-    border-radius: 8px;
+    padding: 5px 6px;
+    border-radius: 7px;
     cursor: pointer;
     transition: all 0.15s;
     text-align: center;
@@ -167,47 +161,45 @@
     box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
   }
 
-  /* 3-KPI 요약 대시보드 */
   .st-kpi-banner {
     background: var(--st-blue-bg);
     border: 1px solid var(--st-card-border);
-    border-radius: 14px;
-    padding: 12px 16px;
+    border-radius: 12px;
+    padding: 10px 14px;
     display: grid;
     grid-template-columns: 1.3fr 1fr;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
   .st-kpi-label {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 700;
     color: var(--st-text-muted);
-    margin-bottom: 2px;
+    margin-bottom: 1px;
   }
   .st-kpi-gold {
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 900;
     color: var(--st-gold-text);
     line-height: 1.15;
   }
   .st-kpi-blue {
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 900;
     color: var(--st-blue-text);
     line-height: 1.15;
   }
 
-  /* 탭 버튼 */
   .st-tab-btn {
     flex: 1;
     background: var(--st-input-bg);
     border: 1px solid var(--st-input-border);
     color: var(--st-text-muted);
-    padding: 8px 12px;
+    padding: 7px 10px;
     font-weight: 800;
-    font-size: 0.82rem;
-    border-radius: 10px;
+    font-size: 0.8rem;
+    border-radius: 9px;
     transition: all 0.2s ease;
     cursor: pointer;
     white-space: nowrap;
@@ -220,13 +212,12 @@
     box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
   }
 
-  /* 길드원 카드 */
   .st-payout-row {
     background: var(--st-card-bg);
     border: 1px solid var(--st-card-border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin-bottom: 7px;
+    border-radius: 11px;
+    padding: 9px 12px;
+    margin-bottom: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -263,7 +254,7 @@
     color: var(--st-gold-text);
     font-size: 0.68rem;
     font-weight: 800;
-    padding: 1px 6px;
+    padding: 1px 5px;
     border-radius: 5px;
   }
 
@@ -273,28 +264,26 @@
     color: var(--st-blue-text);
     font-size: 0.68rem;
     font-weight: 700;
-    padding: 1px 6px;
+    padding: 1px 5px;
     border-radius: 5px;
   }
 
   .st-row-gold {
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 900;
     color: var(--st-gold-text);
     white-space: nowrap;
   }
 
-  /* 분배 폼 컨테이너 */
   .st-dist-card {
     background: var(--st-card-bg);
     border: 2px solid #f59e0b;
-    border-radius: 16px;
-    padding: 14px;
-    margin-bottom: 14px;
+    border-radius: 14px;
+    padding: 12px;
+    margin-bottom: 12px;
     box-shadow: 0 4px 18px rgba(245, 158, 11, 0.1);
   }
 
-  /* 관리원 태그 */
   .st-mgr-tag {
     display: inline-flex;
     align-items: center;
@@ -313,15 +302,14 @@
     color: #ef4444;
   }
 
-  /* 임의 분배 길드원 칩셋 */
   .st-member-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 5px;
-    max-height: 140px;
+    max-height: 130px;
     overflow-y: auto;
     background: var(--st-box-bg);
-    padding: 8px 6px;
+    padding: 6px;
     border-radius: 8px;
     border: 1px solid var(--st-card-border);
   }
@@ -330,11 +318,11 @@
   }
 
   .st-member-chip {
-    padding: 6px 4px;
-    font-size: 0.74rem;
+    padding: 5px 3px;
+    font-size: 0.72rem;
     background: var(--st-card-bg);
     border: 1px solid var(--st-card-border);
-    border-radius: 7px;
+    border-radius: 6px;
     cursor: pointer;
     color: var(--st-text-sub);
     text-align: center;
@@ -354,19 +342,17 @@
     font-weight: 800;
   }
 
-  /* 실시간 견적 박스 */
   .st-calc-preview {
     background: var(--st-box-bg);
     border: 1px solid var(--st-box-border);
-    border-radius: 12px;
-    padding: 11px 13px;
+    border-radius: 11px;
+    padding: 10px 12px;
   }
 
-  /* 🎯 카카오톡 정품 규격 모달 스타일 (다크/라이트 완벽 호환) */
   .st-modal-backdrop {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.65) !important;
     z-index: 99999;
     display: flex;
     align-items: center;
@@ -382,7 +368,7 @@
     max-width: 380px;
     max-height: 85vh;
     overflow-y: auto;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4) !important;
     display: flex;
     flex-direction: column;
   }
@@ -411,8 +397,8 @@
     background: var(--st-modal-item-bg);
     border: 1px solid var(--st-modal-item-border);
     border-radius: 10px;
-    padding: 9px 12px;
-    margin-bottom: 7px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
   }
 
   .btn-kakao-modal-confirm {
@@ -457,23 +443,21 @@
 
 <div class="settle-theme-root">
   <div class="st-main-card">
-    <!-- 1. 헤더 바 -->
-    <div class="d-flex align-items-center justify-content-between mb-3 gap-2 flex-wrap">
+    <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
       <div class="d-flex align-items-center gap-2">
         <span style="font-size: 1.25rem;">💰</span>
-        <h6 class="fw-bold mb-0" style="color: var(--st-text-main); font-size: 1rem;">길드 정산 및 자금 배분</h6>
+        <h6 class="fw-bold mb-0" style="color: var(--st-text-main); font-size: 0.95rem;">길드 정산 및 자금 배분</h6>
       </div>
       <div class="d-flex gap-1 align-items-center flex-shrink-0">
-        <button class="btn btn-warning btn-sm py-1 px-3 fw-bold shadow-sm" style="font-size: 0.78rem; background: #f59e0b; color: #1e293b; border: none;" onclick="window.toggleDirectDistForm()">
+        <button class="btn btn-warning btn-sm py-1 px-2 fw-bold shadow-sm" id="btnToggleDistMenu" style="font-size: 0.75rem; background: #f59e0b; color: #1e293b; border: none;" onclick="window.toggleDirectDistForm()">
           <i class="fa-solid fa-hand-holding-dollar me-1"></i>길드자금 분배
         </button>
-        <button class="btn btn-outline-danger btn-sm py-1 px-2 fw-bold" id="btnAdminSettleManage" style="font-size: 0.75rem; display: none;" onclick="window.toggleAdminManageBox()">
+        <button class="btn btn-outline-danger btn-sm py-1 px-2 fw-bold" id="btnAdminSettleManage" style="font-size: 0.72rem; display: none;" onclick="window.toggleAdminManageBox()">
           <i class="fa-solid fa-gear me-1"></i>수정/삭제
         </button>
       </div>
     </div>
 
-    <!-- 슈퍼관리자 패널 -->
     <div class="st-section-box border-danger border-opacity-50" id="adminManageBox" style="display: none; background: rgba(239, 68, 68, 0.05);">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <span class="small fw-bold text-danger"><i class="fa-solid fa-trash-can me-1"></i> [슈퍼관리자] 정산 기록 삭제 관리</span>
@@ -503,14 +487,12 @@
       </div>
     </div>
 
-    <!-- 2. 길드 자금 분배 설정 폼 (🎯 1, 2, 3, 4번 동그라미 표기 완전 제거) -->
     <div class="st-dist-card" id="directDistBox" style="display: none;">
       <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
-        <span class="small fw-bold" style="color: var(--st-gold-text); font-size: 0.88rem;"><i class="fa-solid fa-coins me-1"></i> 길드 자금 정산 분배 설정</span>
-        <span class="text-secondary" style="font-size: 0.72rem;">현재 금고 잔액: <strong id="boxVaultBalance" style="color: var(--st-gold-text);">0</strong> D</span>
+        <span class="small fw-bold" style="color: var(--st-gold-text); font-size: 0.85rem;"><i class="fa-solid fa-coins me-1"></i> 길드 자금 정산 분배 설정</span>
+        <span class="text-secondary" style="font-size: 0.72rem;">현재 금고: <strong id="boxVaultBalance" style="color: var(--st-gold-text);">0</strong> D</span>
       </div>
 
-      <!-- 모드 선택 -->
       <div class="d-flex gap-2 mb-2">
         <button type="button" class="st-tab-btn active" id="btnModeScore" onclick="window.switchDistMode('score')">
           🏆 주간 점수 차등 분배
@@ -520,7 +502,6 @@
         </button>
       </div>
 
-      <!-- 날짜 퀵 필터 -->
       <div class="mb-2">
         <div class="d-flex gap-1 mb-1 flex-wrap">
           <button class="st-quick-btn flex-fill" id="dBtnThisWeek" onclick="window.setDistQuickRange('thisWeek')">이번 주</button>
@@ -539,39 +520,36 @@
         </div>
       </div>
 
-      <!-- 정산 원금 입력 (1번 표기 제거) -->
       <div class="mb-2">
-        <div class="d-flex justify-content-between text-secondary mb-1" style="font-size: 0.74rem;">
+        <div class="d-flex justify-content-between text-secondary mb-1" style="font-size: 0.72rem;">
           <span class="fw-bold" style="color: var(--st-text-sub);">정산 대상 순수익금 (100% 원금):</span>
           <span class="fw-bold" id="distSourceLabel" style="color: var(--st-gold-text);">직접 입력 또는 기간 선택</span>
         </div>
         <input type="text" id="weeklyTotalAmount" class="form-control st-input" placeholder="금액 직접 입력 또는 상단 기간 선택" onkeyup="window.formatCommaInput(this); window.calcWeeklyDistributionPreview();">
       </div>
 
-      <!-- 조건 드롭다운 (2번 표기 제거) -->
       <div id="areaScoreCutConditions" class="mb-2 p-2 rounded" style="background: var(--st-box-bg); border: 1px solid var(--st-box-border);">
-        <div class="small fw-bold mb-1" style="font-size: 0.74rem; color: var(--st-text-sub);">
-          분배 참여 자격 조건 설정 <span style="font-size: 0.68rem; color: var(--st-blue-text); font-weight: normal;">(조건 미달 시 자동 제외)</span>
+        <div class="small fw-bold mb-1" style="font-size: 0.72rem; color: var(--st-text-sub);">
+          분배 참여 자격 조건 설정 <span style="font-size: 0.68rem; color: var(--st-blue-text); font-weight: normal;">(조건 미달 시 제외)</span>
         </div>
-        <div class="row g-2">
+        <div class="row g-1">
           <div class="col-6">
-            <label class="form-label text-secondary mb-1" style="font-size: 0.68rem;">최소 활동 점수</label>
+            <label class="form-label text-secondary mb-0" style="font-size: 0.68rem;">최소 활동 점수</label>
             <select id="selectMinScoreCut" class="form-select st-input" onchange="window.calcWeeklyDistributionPreview()"></select>
           </div>
           <div class="col-6">
-            <label class="form-label text-secondary mb-1" style="font-size: 0.68rem;">최소 인터쟁 횟수</label>
+            <label class="form-label text-secondary mb-0" style="font-size: 0.68rem;">최소 인터쟁 횟수</label>
             <select id="selectMinInterCut" class="form-select st-input" onchange="window.calcWeeklyDistributionPreview()"></select>
           </div>
         </div>
       </div>
 
-      <!-- 분배율 선택 (3번 표기 제거) -->
       <div class="mb-2">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <label class="form-label text-secondary mb-0 fw-bold" style="font-size: 0.74rem; color: var(--st-text-sub);">
+          <label class="form-label text-secondary mb-0 fw-bold" style="font-size: 0.72rem; color: var(--st-text-sub);">
             총 분배 지급 비율:
           </label>
-          <span class="fw-bold" id="lblDistRateStatus" style="font-size: 0.72rem; color: var(--st-gold-text);">비율을 선택하세요</span>
+          <span class="fw-bold" id="lblDistRateStatus" style="font-size: 0.7rem; color: var(--st-gold-text);">선택하세요</span>
         </div>
         <div class="d-flex flex-wrap gap-1">
           <button class="st-quick-btn flex-fill" id="dRate40" onclick="window.setDistRate(40)">40%</button>
@@ -584,10 +562,9 @@
         </div>
       </div>
 
-      <!-- 시트 관리원 및 비율 (4번 표기 제거) -->
       <div class="mb-2 p-2 rounded" style="background: var(--st-box-bg); border: 1px solid var(--st-box-border);">
         <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="small fw-bold" style="font-size: 0.74rem; color: var(--st-text-sub);">
+          <span class="small fw-bold" style="font-size: 0.72rem; color: var(--st-text-sub);">
             시트 관리원 (<strong id="lblMgrRatePreview" style="color: var(--st-gold-text);">10%</strong> 수고비):
           </span>
           <button type="button" class="btn btn-link btn-xs p-0 text-secondary" id="btnToggleManagerFee" style="font-size: 0.72rem; text-decoration: none;" onclick="window.toggleManagerFeeMode()">[관리비 제외]</button>
@@ -595,22 +572,22 @@
         
         <div class="row g-1 align-items-center mb-1">
           <div class="col-8">
-            <select id="managerDropdown" class="form-select st-input" style="padding: 4px 8px !important; font-size: 0.78rem !important;">
+            <select id="managerDropdown" class="form-select st-input" style="padding: 4px 8px !important; font-size: 0.76rem !important;">
               <option value="">길드원 선택 후 추가...</option>
             </select>
           </div>
           <div class="col-4">
-            <button type="button" class="btn btn-outline-info btn-sm w-100 py-1" style="font-size: 0.75rem;" onclick="window.addManagerFromDropdown()">
+            <button type="button" class="btn btn-outline-info btn-sm w-100 py-1" style="font-size: 0.72rem;" onclick="window.addManagerFromDropdown()">
               <i class="fa-solid fa-plus me-1"></i>추가
             </button>
           </div>
         </div>
 
-        <div id="managerTagsContainer" class="d-flex flex-wrap align-items-center mb-2" style="min-height: 24px;">
-          <span class="text-secondary" style="font-size: 0.72rem;">지정된 관리원 없음</span>
+        <div id="managerTagsContainer" class="d-flex flex-wrap align-items-center mb-1" style="min-height: 22px;">
+          <span class="text-secondary" style="font-size: 0.7rem;">지정된 관리원 없음</span>
         </div>
 
-        <div id="areaManagerRateButtons" class="pt-2 border-top" style="border-color: var(--st-card-border) !important;">
+        <div id="areaManagerRateButtons" class="pt-1 border-top" style="border-color: var(--st-card-border) !important;">
           <div class="d-flex flex-wrap gap-1">
             <button class="st-quick-btn flex-fill" id="mRate5" onclick="window.setManagerRate(5)">5%</button>
             <button class="st-quick-btn active flex-fill" id="mRate10" onclick="window.setManagerRate(10)">10%</button>
@@ -623,7 +600,6 @@
         </div>
       </div>
 
-      <!-- 임의 분배 대상 선택 -->
       <div id="areaCustomMembers" class="mb-2" style="display: none;">
         <div class="d-flex justify-content-between align-items-center mb-1">
           <span class="text-secondary small" style="font-size: 0.72rem;">👥 분배 대상: <strong id="selectedCustomMemberCount" style="color: var(--st-blue-text);">0</strong>명</span>
@@ -632,21 +608,20 @@
         <div id="customMembersContainer" class="st-member-grid"></div>
       </div>
 
-      <!-- 실시간 견적 요약 카드 -->
       <div class="st-calc-preview mb-2">
-        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem;">
+        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.74rem;">
           <span class="fw-bold" style="color: var(--st-text-muted);">🏛️ 금고 잔여 적립금 (<span id="previewReserveRate">0%</span>):</span>
           <strong class="fs-6" id="previewReserve" style="color: var(--st-blue-text);">0 D</strong>
         </div>
-        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.75rem;">
+        <div class="d-flex justify-content-between align-items-center mb-1" style="font-size: 0.74rem;">
           <span class="fw-bold" style="color: var(--st-text-muted);">💰 총 분배 집행액 (<span id="previewTotalDistRate">0%</span>):</span>
           <strong class="fs-6" id="previewTotalDistAmount" style="color: var(--st-gold-text);">0 D</strong>
         </div>
-        <div class="d-flex justify-content-between align-items-center ps-2 mb-1 text-secondary" style="font-size: 0.72rem;">
+        <div class="d-flex justify-content-between align-items-center ps-2 mb-1 text-secondary" style="font-size: 0.7rem;">
           <span>├ 👥 길드원 배당 풀 (<span id="previewMemberRate">0%</span>):</span>
           <strong class="text-success" id="previewMemberPool">0 D</strong>
         </div>
-        <div class="d-flex justify-content-between align-items-center ps-2 text-secondary" style="font-size: 0.72rem;">
+        <div class="d-flex justify-content-between align-items-center ps-2 text-secondary" style="font-size: 0.7rem;">
           <span>└ 📋 관리원 수고비 (<span id="previewManagerRate">0%</span>):</span>
           <strong class="text-warning" id="previewManagerTotal">0 D</strong>
         </div>
@@ -657,9 +632,8 @@
       </button>
     </div>
 
-    <!-- 3. 메인 기간 필터 -->
     <div class="st-section-box">
-      <div class="d-flex gap-1 mb-2 flex-wrap">
+      <div class="d-flex gap-1 mb-1 flex-wrap">
         <button class="st-quick-btn flex-fill" id="sBtnThisWeek" onclick="window.setQuickRange('thisWeek')">이번 주</button>
         <button class="st-quick-btn flex-fill" id="sBtnLastWeek" onclick="window.setQuickRange('lastWeek')">지난 주</button>
         <button class="st-quick-btn flex-fill" id="sBtnThisMonth" onclick="window.setQuickRange('thisMonth')">이번 달</button>
@@ -675,27 +649,25 @@
           <input type="date" id="settleEndDate" class="form-control st-input text-center">
         </div>
         <div class="col-12 mt-1">
-          <button class="btn btn-outline-info btn-sm w-100 fw-bold py-1" onclick="window.fetchSettlementData()">
+          <button class="btn btn-outline-info btn-sm w-100 fw-bold py-1" style="font-size: 0.76rem;" onclick="window.fetchSettlementData()">
             <i class="fa-solid fa-calculator me-1"></i> 정산 데이터 집계
           </button>
         </div>
       </div>
     </div>
 
-    <!-- 4. 고대비 3-KPI 요약 배너 -->
     <div class="st-kpi-banner">
       <div>
         <div class="st-kpi-label">기간 총 분배 풀</div>
-        <div class="st-kpi-gold"><span id="totalPoolText">0</span> <small style="font-size: 0.8rem; color: var(--st-text-muted);">다이아</small></div>
+        <div class="st-kpi-gold"><span id="totalPoolText">0</span> <small style="font-size: 0.75rem; color: var(--st-text-muted);">다이아</small></div>
       </div>
       <div class="text-end">
         <div class="st-kpi-label">정산 수령 인원</div>
-        <div class="st-kpi-blue"><span id="totalMembersText">0</span> <small style="font-size: 0.8rem; color: var(--st-text-muted);">명</small></div>
+        <div class="st-kpi-blue"><span id="totalMembersText">0</span> <small style="font-size: 0.75rem; color: var(--st-text-muted);">명</small></div>
       </div>
     </div>
 
-    <!-- 5. 탭 버튼 -->
-    <div class="d-flex gap-2 mb-3">
+    <div class="d-flex gap-2 mb-2">
       <button type="button" class="st-tab-btn active" id="tabBtnPayout" onclick="window.switchSettleTab('payout')">
         <i class="fa-solid fa-users-line me-1"></i> 길드원별 수령액
       </button>
@@ -704,15 +676,13 @@
       </button>
     </div>
 
-    <!-- 6. 길드원별 수령액 뷰 -->
     <div id="viewPayout">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <span class="small fw-bold" style="color: var(--st-text-sub);">
-          길드원별 최종 합산 수령액 <small style="color: var(--st-blue-text); font-weight: normal;">(활동 점수 순위순 / 클릭 시 상세)</small>
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="small fw-bold" style="color: var(--st-text-sub); font-size: 0.78rem;">
+          길드원별 최종 합산 수령액 <small style="color: var(--st-blue-text); font-weight: normal;">(활동 순위순 / 클릭 시 상세)</small>
         </span>
       </div>
 
-      <!-- 🎯 카카오톡 스타일 라운드 검색창 (내부 돋보기 아이콘 쏙 들어간 깔끔한 디자인) -->
       <div class="search-wrapper-settle">
         <i class="fa-solid fa-magnifying-glass"></i>
         <input type="text" id="searchSettleMember" class="search-input-settle" placeholder="길드원 닉네임 검색..." onkeyup="window.filterPayoutMembers()">
@@ -722,66 +692,55 @@
         <div class="text-secondary small text-center py-4">데이터를 집계하는 중...</div>
       </div>
 
-      <div class="d-flex gap-2 mt-3">
-        <button type="button" class="btn btn-outline-secondary btn-sm py-2 px-3 fw-bold flex-shrink-0" onclick="window.copySettlementForKakao()">
-          <i class="fa-solid fa-copy me-1"></i> 클립보드 복사
-        </button>
-        <button type="button" class="btn btn-warning btn-sm py-2 flex-fill fw-bold shadow-sm text-dark" onclick="window.shareSettlementToChat()">
+      <div class="mt-2">
+        <button type="button" class="btn btn-warning btn-sm w-100 py-2 fw-bold shadow-sm text-dark" style="font-size: 0.85rem;" onclick="window.shareSettlementToChat()">
           <i class="fa-solid fa-paper-plane me-1"></i> 대화방에 정산 결과 공유
         </button>
       </div>
     </div>
 
-    <!-- 7. 전체 정산 상세 로그 뷰 -->
     <div id="viewLogs" style="display: none;">
       <div id="settleLogsContainer">
         <div class="text-secondary small text-center py-4">기록을 불러오는 중...</div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- 🎯 카카오톡 정품 규격 모달 (다크/라이트 모드 완벽 호환 및 세련된 카드 디자인) -->
-<div id="memberDetailModal" class="st-modal-backdrop" style="display: none;" onclick="if(event.target===this) window.closeMemberDetailModal()">
-  <div class="st-modal-card">
-    <!-- 모달 상단 헤더 -->
-    <div class="st-modal-header">
-      <div class="d-flex align-items-center gap-2 min-width-0">
-        <span class="fw-bold fs-6 text-truncate" id="modalMemberName" style="color: var(--st-text-main);">닉네임</span>
-        <span id="modalMemberBadges"></span>
-      </div>
-      <button type="button" class="btn-close" style="font-size: 0.8rem;" onclick="window.closeMemberDetailModal()"></button>
-    </div>
-    
-    <!-- 모달 본문 -->
-    <div class="p-3">
-      <!-- 총 합산 수령액 배너 -->
-      <div class="st-modal-hero-box">
-        <div>
-          <div style="font-size: 0.72rem; font-weight: 700; color: var(--st-text-muted);">총 합산 수령액</div>
-          <strong class="fs-5" style="color: var(--st-modal-hero-text); line-height: 1.2;" id="modalTotalAmount">0 다이아</strong>
+  <div id="memberDetailModal" class="st-modal-backdrop" style="display: none;" onclick="if(event.target===this) window.closeMemberDetailModal()">
+    <div class="st-modal-card">
+      <div class="st-modal-header">
+        <div class="d-flex align-items-center gap-2 min-width-0">
+          <span class="fw-bold fs-6 text-truncate" id="modalMemberName" style="color: var(--st-text-main);">닉네임</span>
+          <span id="modalMemberBadges"></span>
         </div>
-        <div style="font-size: 1.5rem;">💎</div>
-      </div>
-
-      <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="small fw-bold" style="color: var(--st-text-sub);"><i class="fa-solid fa-list-check me-1 text-primary"></i> 수령 항목 상세 내역</span>
+        <button type="button" class="btn-close" style="font-size: 0.75rem;" onclick="window.closeMemberDetailModal()"></button>
       </div>
       
-      <!-- 상세 리스트 -->
-      <div id="modalBreakdownList" style="max-height: 240px; overflow-y: auto;"></div>
-    </div>
+      <div class="p-3">
+        <div class="st-modal-hero-box">
+          <div>
+            <div style="font-size: 0.72rem; font-weight: 700; color: var(--st-text-muted);">총 합산 수령액</div>
+            <strong class="fs-5" style="color: var(--st-modal-hero-text); line-height: 1.2;" id="modalTotalAmount">0 다이아</strong>
+          </div>
+          <div style="font-size: 1.4rem;">💎</div>
+        </div>
 
-    <!-- 모달 하단 버튼 (카카오톡 확인 버튼) -->
-    <div class="p-3 pt-0">
-      <button type="button" class="btn-kakao-modal-confirm" onclick="window.closeMemberDetailModal()">
-        확인
-      </button>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="small fw-bold" style="color: var(--st-text-sub);"><i class="fa-solid fa-list-check me-1 text-primary"></i> 수령 항목 상세 내역</span>
+        </div>
+        
+        <div id="modalBreakdownList" style="max-height: 240px; overflow-y: auto;"></div>
+      </div>
+
+      <div class="p-3 pt-0">
+        <button type="button" class="btn-kakao-modal-confirm" onclick="window.closeMemberDetailModal()">
+          확인
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- 플로팅 토스트 -->
 <div id="settleToastBox" class="st-toast">
   <span id="settleToastIcon">✅</span>
   <span id="settleToastMsg">알림</span>
@@ -814,7 +773,6 @@
     window.settleToastTimer = setTimeout(() => toast.classList.remove("show"), 2200);
   };
 
-  /* 🎯 탭 전환 함수 (길드원별 수령액 <-> 전체 정산 상세 로그 즉시 전환) */
   window.switchSettleTab = function(tab) {
     const viewPayout = document.getElementById('viewPayout');
     const viewLogs = document.getElementById('viewLogs');
@@ -988,8 +946,21 @@
     }
 
     const box = document.getElementById('directDistBox');
+    const btn = document.getElementById('btnToggleDistMenu');
     const isOpening = (box.style.display === 'none' || !box.style.display);
     box.style.display = isOpening ? 'block' : 'none';
+
+    if (btn) {
+      if (isOpening) {
+        btn.innerHTML = '<i class="fa-solid fa-chevron-up me-1"></i>분배창 닫기';
+        btn.style.background = '#d97706';
+        btn.style.color = '#ffffff';
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-hand-holding-dollar me-1"></i>길드자금 분배';
+        btn.style.background = '#f59e0b';
+        btn.style.color = '#1e293b';
+      }
+    }
 
     if (isOpening) {
       window.clearDistFormState();
@@ -1020,7 +991,7 @@
       const btn = document.getElementById('dRate' + r);
       if (btn) btn.classList.remove('active');
     });
-    document.getElementById('lblDistRateStatus').innerText = '비율을 선택하세요';
+    document.getElementById('lblDistRateStatus').innerText = '선택하세요';
 
     window.setManagerRate(10);
     const scoreSel = document.getElementById('selectMinScoreCut');
@@ -1077,7 +1048,7 @@
   function renderManagerTags() {
     const container = document.getElementById('managerTagsContainer');
     if (window.selectedManagers.size === 0) {
-      container.innerHTML = '<span class="text-secondary" style="font-size: 0.72rem;">지정된 관리원 없음</span>';
+      container.innerHTML = '<span class="text-secondary" style="font-size: 0.7rem;">지정된 관리원 없음</span>';
       return;
     }
     container.innerHTML = Array.from(window.selectedManagers).map(m => `
@@ -1317,18 +1288,18 @@
     if (window.currentDistMode === 'score') {
       const sDesc = minScore > 0 ? `${minScore}점 이상` : '제한 없음';
       const iDesc = minInterCount > 0 ? `${minInterCount}회 이상` : '제한 없음';
-      condText = `• 참여 조건: 활동점수 [${sDesc}] / 인터쟁 [${iDesc}]\\n`;
+      condText = `• 참여 조건: 활동점수 [${sDesc}] / 인터쟁 [${iDesc}]\n`;
     }
 
-    const confirmMsg = `[💰 길드 자금 정산 분배 실행]\\n` +
-      `• 대상 기간: ${start || '전체'} ~ ${end || '현재'}\\n` +
-      `• 기준 순수익: ${totalVal.toLocaleString()} 다이아\\n` +
-      `• 총 분배율: ${window.currentDistRate}% (${distAmt.toLocaleString()} D)\\n` +
-      `• 금고 잔여 적립금: ${reserve.toLocaleString()} 다이아\\n` +
-      `• 시트 관리원: ${managerNames.length > 0 ? managerNames.join(', ') + ' (' + managerNames.length + '명)' : '없음'}\\n` +
-      `• 분배 방식: ${window.currentDistMode === 'score' ? '🏆 활동 점수 비례 차등 배당' : '👥 선택 길드원 균등 분배'}\\n` +
+    const confirmMsg = `[💰 길드 자금 정산 분배 실행]\n` +
+      `• 대상 기간: ${start || '전체'} ~ ${end || '현재'}\n` +
+      `• 기준 순수익: ${totalVal.toLocaleString()} 다이아\n` +
+      `• 총 분배율: ${window.currentDistRate}% (${distAmt.toLocaleString()} D)\n` +
+      `• 금고 잔여 적립금: ${reserve.toLocaleString()} 다이아\n` +
+      `• 시트 관리원: ${managerNames.length > 0 ? managerNames.join(', ') + ' (' + managerNames.length + '명)' : '없음'}\n` +
+      `• 분배 방식: ${window.currentDistMode === 'score' ? '🏆 활동 점수 비례 차등 배당' : '👥 선택 길드원 균등 분배'}\n` +
       condText +
-      `\\n해당 내역으로 정산을 집행하시겠습니까?`;
+      `\n해당 내역으로 정산을 집행하시겠습니까?`;
 
     if (!confirm(confirmMsg)) return;
 
@@ -1669,7 +1640,6 @@
     }).join('');
   };
 
-  /* 🎯 카카오톡 정품 규격 모달 렌더링 */
   window.openMemberDetailModal = function(memberName, rankPct, isMgr) {
     const p = window.currentSettlementData.memberPayouts[memberName];
     if (!p) return;
@@ -1756,50 +1726,6 @@
     `).join('');
   };
 
-  window.copySettlementForKakao = function() {
-    const start = document.getElementById('settleStartDate').value || '시작';
-    const end = document.getElementById('settleEndDate').value || '현재';
-    const payouts = window.currentSettlementData.memberPayouts || {};
-    const partMemberStats = window.currentParticipationStats.memberStats || {};
-    const weeklyPaidMembers = Object.keys(payouts).filter(m => (payouts[m].weeklyDistAmount || 0) > 0);
-
-    if (Object.keys(payouts).length === 0 && weeklyPaidMembers.length === 0) {
-      return window.showSettleToast("공유할 정산 데이터가 없습니다!", "⚠️");
-    }
-
-    weeklyPaidMembers.sort((a, b) => {
-      const scoreDiff = (payouts[b].score || 0) - (payouts[a].score || 0);
-      if (scoreDiff !== 0) return scoreDiff;
-      return (payouts[b].totalAmount || 0) - (payouts[a].totalAmount || 0);
-    });
-
-    let rankCounter = 1;
-    let mainLines = weeklyPaidMembers.map(m => {
-      const p = payouts[m];
-      const isMgr = p.isManager || window.selectedManagers.has(m);
-      const mgrLabel = isMgr ? "(관리자)" : "";
-      const scoreVal = p.score || 0;
-      const interCount = (partMemberStats[m] && partMemberStats[m].interCount !== undefined) ? partMemberStats[m].interCount : (p.interCount || 0);
-      const rankText = `${rankCounter++}위`;
-      const totD = (p.totalAmount || 0).toLocaleString();
-      return `${rankText} ${m}${mgrLabel} [활동 ${scoreVal}점 / 인터 ${interCount}회] ${totD} 다이아`;
-    }).join('\\n');
-
-    const shareText = `[💰 길드 정산 결과 보고]\\n` +
-      `- 정산 기간: ${start} ~ ${end}\\n` +
-      `- 총 분배 금액: ${window.currentSettlementData.totalPool.toLocaleString()} 다이아\\n` +
-      `- 주간 정산 수령: ${weeklyPaidMembers.length}명\\n\\n` +
-      `[길드원별 활동 순위 및 지급액]\\n${mainLines || '해당 기간 주간 자금 분배 내역 없음'}\\n\\n` +
-      `※ 활동 점수 순위 기준으로 정렬되었습니다.\\n` +
-      `- ※ 수령 확인 후 이상이 있으신 분은 문의 바랍니다. ⚔️`;
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareText);
-      window.showSettleToast("정산 결과가 클립보드에 복사되었습니다!", "📋");
-    }
-  };
-
-  /* 🎯 대화방 공유 */
   window.shareSettlementToChat = async function() {
     const start = document.getElementById('settleStartDate').value || '시작';
     const end = document.getElementById('settleEndDate').value || '현재';
