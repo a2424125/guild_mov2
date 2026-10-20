@@ -654,8 +654,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
   
   const timeStr = formatKSTChatTime(msg.created_at);
-  const totalMembers = cachedMemberList.length || 52;
-  const unreadCount = Math.max(1, totalMembers - 14);
+  const unreadCount = 1;
 
   let html = "";
   const cleanMessageText = (msg.message || '').trim();
@@ -797,7 +796,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
 
                 <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 7px; padding: 6px 9px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">💵 1인당 최종 배당금:</span>
-                  <strong style="font-size: 13px; font-weight: 900; color: #059669;">+${perShare} D</strong>
+                  <strong style="font-size: 12px; font-weight: 900; color: #059669;">+${perShare} D</strong>
                 </div>
 
                 <div style="background: rgba(0, 0, 0, 0.03); border: 1px solid var(--drawer-card-border); border-radius: 6px; padding: 5px 8px; max-height: 75px; overflow-y: auto;">
@@ -949,13 +948,13 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
                     </div>
                   </div>
 
-                  <!-- 🎯 추가참여 버튼 옆에 남은 시간(타이머) 나란히 배치 -->
+                  <!-- 🎯 추가참여 버튼 옆에 남은 시간(타이머) 나란히 배치 및 선명한 관리자 폰트 -->
                   <div class="raid-action-row" style="display:flex; gap:6px; align-items:center; margin-top:8px;">
                     <button type="button" 
                             id="btnRaidAdd_${raidId}" 
                             class="btn-raid-self-add ${btnClassState}" 
                             ${btnDisabledAttr} 
-                            style="flex:1;"
+                            style="flex:1; font-weight:800; color:#1e293b;"
                             onclick="handleQuickRaidSelfAdd('${raidId}', '${escapeHtmlText(bossName)}')">
                       <i class="fa-solid ${btnIconClass} me-1"></i>
                       <span class="btn-text">${btnTextLabel}</span>
@@ -1226,17 +1225,17 @@ window.postBossBriefingToChat = async function() {
   });
 
   const currentKstFormatted = formatTime24Hour(new Date());
-  let briefingHtml = `<div class="boss-brief-title" style="font-size:12.5px; font-weight:800; color:#0284c7; margin-bottom:4px; display:flex; align-items:center;">
+  let briefingHtml = `<div class="boss-brief-title" style="font-size:12.5px; font-weight:800; color:#0284c7; margin-bottom:5px; display:flex; align-items:center;">
     <i class="fa-solid fa-clock-rotate-left me-1"></i>[보스타임 현황 브리핑] <span style="font-size:11px; color:var(--kakao-time-gray); font-weight:600; margin-left:4px;">(${currentKstFormatted} 기준)</span>
   </div>`;
-  briefingHtml += `<div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:700; color:var(--kakao-time-gray); padding:3px 0; border-bottom:1px dashed var(--drawer-card-border); margin-bottom:5px;">
-    <span>보스명</span>
-    <span style="margin-left:auto; margin-right:16px;">젠 예정</span>
-    <span>상태 (남은시간)</span>
+  briefingHtml += `<div style="display:grid; grid-template-columns: 78px 52px 1fr; align-items:center; font-size:10.5px; font-weight:700; color:var(--kakao-time-gray); padding:3px 0 4px 0; border-bottom:1px dashed var(--drawer-card-border); margin-bottom:4px;">
+    <span style="text-align:left;">보스명</span>
+    <span style="text-align:center;">젠 예정</span>
+    <span style="text-align:right;">상태 (남은시간)</span>
   </div>`;
 
   sorted.forEach((b) => {
-    let stateBadge = `<span style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px; white-space:nowrap;">컷 대기</span>`;
+    let stateBadge = `<span style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; font-size:10px; font-weight:700; padding:2px 6px; border-radius:5px; white-space:nowrap; display:inline-block;">컷 대기</span>`;
     let timeDisplay = "-";
 
     if (b.next_spawn_time) {
@@ -1246,22 +1245,22 @@ window.postBossBriefingToChat = async function() {
 
       if (diffSec <= 0) {
         const passM = Math.floor(Math.abs(diffSec) / 60);
-        stateBadge = `<span style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap;">🎉 젠 완료 (+${passM}분)</span>`;
+        stateBadge = `<span style="background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap; display:inline-block;">🎉 젠 완료 (+${passM}분)</span>`;
       } else if (diffSec <= 3600) {
         const m = Math.floor(diffSec / 60);
-        stateBadge = `<span style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap;">⏳ ${m}분 남음</span>`;
+        stateBadge = `<span style="background:#fef3c7; color:#d97706; border:1px solid #fde68a; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap; display:inline-block;">⏳ ${m}분 남음</span>`;
       } else {
         const h = Math.floor(diffSec / 3600);
         const m = Math.floor((diffSec % 3600) / 60);
-        stateBadge = `<span style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap;">💤 ${h}시간 ${m}분</span>`;
+        stateBadge = `<span style="background:#e0f2fe; color:#0284c7; border:1px solid #bae6fd; font-size:10px; font-weight:800; padding:2px 6px; border-radius:5px; white-space:nowrap; display:inline-block;">💤 ${h}시간 ${m}분</span>`;
       }
     }
 
     briefingHtml += `
-      <div class="boss-brief-row" style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; padding:2.5px 0; white-space:nowrap; gap:6px;">
-        <span style="font-weight:700; color:var(--kakao-notice-text); min-width:65px; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlText(b.boss_name)}</span>
-        <span style="font-weight:800; color:#0284c7; min-width:45px; text-align:center; font-size:11.5px;">${timeDisplay}</span>
-        ${stateBadge}
+      <div class="boss-brief-row" style="display:grid; grid-template-columns: 78px 52px 1fr; align-items:center; font-size:11.5px; padding:3px 0; white-space:nowrap;">
+        <span style="font-weight:700; color:var(--kakao-notice-text); text-align:left; overflow:hidden; text-overflow:ellipsis;">${escapeHtmlText(b.boss_name)}</span>
+        <span style="font-weight:800; color:#0284c7; text-align:center; font-size:11.5px;">${timeDisplay}</span>
+        <span style="text-align:right;">${stateBadge}</span>
       </div>
     `;
   });
