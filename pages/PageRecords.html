@@ -1208,25 +1208,17 @@
       const d = statsObj[name];
       const rankNum = i + 1;
       let rankClass = 'rec-rank-other';
-      let rankBadgeColor = 'background: rgba(148, 163, 184, 0.2); color: var(--kakao-time-gray);';
-      if (rankNum === 1) {
-        rankClass = 'rec-rank-1';
-        rankBadgeColor = 'background: #f59e0b; color: #ffffff; box-shadow: 0 1px 3px rgba(245, 158, 11, 0.35);';
-      } else if (rankNum === 2) {
-        rankClass = 'rec-rank-2';
-        rankBadgeColor = 'background: #94a3b8; color: #ffffff;';
-      } else if (rankNum === 3) {
-        rankClass = 'rec-rank-3';
-        rankBadgeColor = 'background: #d97706; color: #ffffff;';
-      }
+      if (rankNum === 1) rankClass = 'rec-rank-1';
+      else if (rankNum === 2) rankClass = 'rec-rank-2';
+      else if (rankNum === 3) rankClass = 'rec-rank-3';
 
       return `
-        <div class="rec-rank-row" style="display: flex; align-items: center; justify-content: space-between; padding: 3px 6px; border-radius: 6px; background: rgba(0,0,0,0.02); font-size: 11px; line-height: 1.2;">
-          <div style="display: flex; align-items: center; min-width: 0; gap: 5px;">
-            <span class="rec-rank-badge ${rankClass}" style="display: inline-flex; align-items: center; justify-content: center; width: 17px; height: 17px; border-radius: 4px; font-size: 9.5px; font-weight: 800; flex-shrink: 0; line-height: 1; ${rankBadgeColor}">${rankNum}</span>
-            <span style="font-weight: 700; color: var(--kakao-notice-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 125px;">${escapeHtml(name)}</span>
+        <div class="rec-rank-row">
+          <div style="display: flex; align-items: center; min-width: 0;">
+            <span class="rec-rank-badge ${rankClass}">${rankNum}</span>
+            <span style="font-weight: 700; color: var(--kakao-notice-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">${escapeHtml(name)}</span>
           </div>
-          <span style="font-weight: 800; color: #d97706; flex-shrink: 0; font-size: 11px; white-space: nowrap;">${d.totalScore}점 <small style="font-size: 9.5px; color: var(--kakao-time-gray); font-weight: normal;">(${d.bossCount}회)</small></span>
+          <span style="font-weight: 800; color: #d97706; flex-shrink: 0;">${d.totalScore}점 <small style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">(${d.bossCount}회)</small></span>
         </div>
       `;
     }).join('');
@@ -1267,13 +1259,11 @@
         </div>
 
         <div style="margin-top: 6px;">
-          <div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
             <span><i class="fa-solid fa-ranking-star me-1 text-primary"></i>TOP 5 랭킹</span>
             <span style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">총 ${members.length}명 참여</span>
           </div>
-          <div class="rec-rank-list" style="display: flex; flex-direction: column; gap: 3.5px;">
-            ${rankListHtml}
-          </div>
+          ${rankListHtml}
         </div>
       </div>
     `;
