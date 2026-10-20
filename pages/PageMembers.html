@@ -1,28 +1,90 @@
 <!-- ==========================================
-     [길드 메신저] 길드원 친구 서랍 모듈 (원본 스타일 100% 일치)
+     [길드 메신저] 길드원 친구 서랍 모듈
      경로: pages/PageMembers.html
+     다크/라이트 모드 완벽 지원 & 뱃지 잘림 방지 최적화
      ========================================== -->
 <style>
+  /* 🎨 라이트 모드 (기본 :root 및 명시적 body/html.theme-light) */
+  :root,
+  body.theme-light,
+  html.theme-light {
+    --pm-bg: #ffffff;
+    --pm-header-bg: #ffffff;
+    --pm-border: #ececec;
+    --pm-text-main: #191919;
+    --pm-text-sub: #64748b;
+    --pm-search-bg: #f4f5f7;
+    --pm-search-border: #e2e8f0;
+    --pm-search-input: #191919;
+    --pm-row-hover: #f8fafc;
+    --pm-avatar-bg: #f1f5f9;
+    --pm-avatar-border: #cbd5e1;
+    --pm-btn-bg: #ffffff;
+    --pm-btn-border: #e2e8f0;
+    --pm-btn-text: #475569;
+    --pm-modal-bg: #ffffff;
+    --pm-modal-border: #e2e8f0;
+    --pm-modal-text: #191919;
+    --pm-modal-input-bg: #f8fafc;
+    --pm-modal-input-border: #cbd5e1;
+    --pm-modal-input-text: #0f172a;
+    --pm-blue: #0284c7;
+    --pm-del-text: #f43f5e;
+    --pm-del-border: #fecdd3;
+    --pm-del-hover-bg: #fff1f2;
+  }
+
+  /* 🌙 다크 모드 (body.theme-dark, html.theme-dark) */
+  body.theme-dark,
+  html.theme-dark {
+    --pm-bg: #181d24;
+    --pm-header-bg: #13171d;
+    --pm-border: #282f3a;
+    --pm-text-main: #f3f4f6;
+    --pm-text-sub: #9ca3af;
+    --pm-search-bg: #262d37;
+    --pm-search-border: #374151;
+    --pm-search-input: #f3f4f6;
+    --pm-row-hover: #262d37;
+    --pm-avatar-bg: #1e2530;
+    --pm-avatar-border: #374151;
+    --pm-btn-bg: #262d37;
+    --pm-btn-border: #374151;
+    --pm-btn-text: #e5e7eb;
+    --pm-modal-bg: #1e2530;
+    --pm-modal-border: #374151;
+    --pm-modal-text: #f3f4f6;
+    --pm-modal-input-bg: #141922;
+    --pm-modal-input-border: #2c3545;
+    --pm-modal-input-text: #ffffff;
+    --pm-blue: #38bdf8;
+    --pm-del-text: #fb7185;
+    --pm-del-border: #881337;
+    --pm-del-hover-bg: #3f121d;
+  }
+
   .members-drawer-container {
-    background: #ffffff;
+    background: var(--pm-bg);
     height: 100vh;
     display: flex;
     flex-direction: column;
-    color: #191919;
+    color: var(--pm-text-main);
     font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
     overflow: hidden;
+    transition: background 0.2s ease, color 0.2s ease;
   }
 
   /* 상단 헤더 바 (높이 50px, 수평 일자 정렬) */
   .members-top-bar {
     height: 50px;
-    padding: 0 14px;
+    padding: 0 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #ececec;
-    background: #ffffff;
+    border-bottom: 1px solid var(--pm-border);
+    background: var(--pm-header-bg);
     flex-shrink: 0;
+    transition: background 0.2s ease, border-color 0.2s ease;
   }
   .members-title-area {
     display: flex;
@@ -30,12 +92,16 @@
     gap: 6px;
     font-size: 0.95rem;
     font-weight: 800;
-    color: #191919;
+    color: var(--pm-text-main);
   }
   .members-title-area i {
     color: #2563eb;
     font-size: 1rem;
   }
+  body.theme-dark .members-title-area i {
+    color: #38bdf8;
+  }
+
   .members-top-tools {
     display: flex;
     align-items: center;
@@ -54,11 +120,14 @@
     justify-content: center;
     transition: background 0.15s ease;
   }
+  body.theme-dark .btn-member-tool-icon {
+    color: #38bdf8;
+  }
   .btn-member-tool-icon:hover {
-    background: #f1f5f9;
+    background: var(--pm-row-hover);
   }
   .btn-member-tool-icon.btn-gray-icon {
-    color: #475569;
+    color: var(--pm-text-sub);
   }
   .btn-member-tool-icon.rotating i {
     animation: spinMemberAnim 0.6s ease-in-out;
@@ -70,24 +139,29 @@
 
   /* 검색 입력창 */
   .members-search-box {
-    padding: 6px 12px;
-    background: #ffffff;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 6px 10px;
+    background: var(--pm-bg);
+    border-bottom: 1px solid var(--pm-border);
     flex-shrink: 0;
     position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
   }
   .members-search-input {
     width: 100%;
-    background: #f4f5f7;
-    border: none;
+    background: var(--pm-search-bg);
+    border: 1px solid var(--pm-search-border);
     border-radius: 14px;
-    padding: 6px 12px 6px 30px;
+    padding: 6px 10px 6px 30px;
     font-size: 0.78rem;
     outline: none;
-    color: #191919;
+    color: var(--pm-search-input);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
   .members-search-input::placeholder {
-    color: #94a3b8;
+    color: var(--pm-text-sub);
+  }
+  .members-search-input:focus {
+    border-color: #0284c7;
   }
 
   /* 길드원 목록 스크롤 영역 */
@@ -95,30 +169,34 @@
     flex: 1;
     overflow-y: auto;
     padding: 4px 0;
-    background: #ffffff;
+    background: var(--pm-bg);
+    transition: background 0.2s ease;
   }
   .members-scroll-area::-webkit-scrollbar { width: 4px; }
   .members-scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  body.theme-dark .members-scroll-area::-webkit-scrollbar-thumb { background: #374151; }
 
-  /* 길드원 프로필 행 */
+  /* 👥 길드원 프로필 행 (가로폭 최적화 & 뱃지 잘림 원천 차단) */
   .member-profile-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    padding: 7px 10px;
     cursor: pointer;
-    transition: background 0.12s;
+    transition: background 0.12s ease;
+    gap: 4px;
   }
   .member-profile-row:hover {
-    background: #f8fafc;
+    background: var(--pm-row-hover);
   }
 
   .member-left-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     min-width: 0;
     flex: 1;
+    overflow: hidden;
   }
 
   .avatar-wrapper-relative {
@@ -126,23 +204,30 @@
     flex-shrink: 0;
   }
   .member-avatar-round {
-    width: 36px;
-    height: 36px;
-    border-radius: 13px;
-    background: #f1f5f9;
-    border: 1.5px solid #cbd5e1;
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background: var(--pm-avatar-bg);
+    border: 1.5px solid var(--pm-avatar-border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     color: #3b82f6;
+    flex-shrink: 0;
   }
-  /* 스크린샷과 정확히 일치하는 직급별 아바타 테두리 */
+  /* 직급별 아바타 테두리 (라이트 모드) */
   .member-avatar-round.master { background: #fffbeb; border-color: #f59e0b; color: #b45309; }
   .member-avatar-round.sub { background: #faf5ff; border-color: #c084fc; color: #7e22ce; }
   .member-avatar-round.elite { background: #f0f9ff; border-color: #38bdf8; color: #0284c7; }
   .member-avatar-round.normal { background: #f8fafc; border-color: #cbd5e1; color: #475569; }
+
+  /* 직급별 아바타 테두리 (다크 모드) */
+  body.theme-dark .member-avatar-round.master { background: #262015; border-color: #f59e0b; color: #fbbf24; }
+  body.theme-dark .member-avatar-round.sub { background: #231c2d; border-color: #c084fc; color: #d8b4fe; }
+  body.theme-dark .member-avatar-round.elite { background: #142232; border-color: #38bdf8; color: #38bdf8; }
+  body.theme-dark .member-avatar-round.normal { background: #1e2530; border-color: #374151; color: #94a3b8; }
 
   .mini-badge-me-tag {
     position: absolute;
@@ -154,7 +239,7 @@
     font-weight: 900;
     padding: 1px 3.5px;
     border-radius: 7px;
-    border: 1px solid #ffffff;
+    border: 1px solid var(--pm-bg);
     line-height: 1;
     pointer-events: none;
   }
@@ -163,89 +248,127 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    flex: 1;
+    overflow: hidden;
   }
+
+  /* 닉네임과 직급 뱃지 행 */
   .member-name-line {
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: #191919;
+    color: var(--pm-text-main);
     display: flex;
     align-items: center;
     gap: 4px;
+    min-width: 0;
+    line-height: 1.25;
+  }
+  .member-name-text {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+    flex-shrink: 1;
+    letter-spacing: -0.3px;
   }
+
   .member-class-desc {
     font-size: 0.68rem;
     font-weight: 600;
-    color: #0284c7;
+    color: var(--pm-blue);
     margin-top: 1px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  /* 직급 뱃지 */
+  /* 🏷️ 직급 뱃지 (절대 잘리지 않도록 flex-shrink: 0 고정) */
   .role-badge-tag {
-    font-size: 0.62rem;
+    font-size: 0.60rem;
     font-weight: 700;
     padding: 1px 4px;
     border-radius: 4px;
     white-space: nowrap;
+    flex-shrink: 0 !important;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
   }
-  .role-tag-master { background: #fef3c7; color: #b45309; }
-  .role-tag-sub { background: #f3e8ff; color: #7e22ce; }
-  .role-tag-elite { background: #e0f2fe; color: #0284c7; }
-  .role-tag-normal { background: #f1f5f9; color: #64748b; }
+  .role-tag-master { background: #fef3c7; color: #b45309; border: 1px solid #fde047; }
+  .role-tag-sub { background: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; }
+  .role-tag-elite { background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; }
+  .role-tag-normal { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
 
-  /* 우측 수정 / 삭제 버튼 */
+  body.theme-dark .role-tag-master { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: #f59e0b; }
+  body.theme-dark .role-tag-sub { background: rgba(192, 132, 252, 0.2); color: #d8b4fe; border-color: #c084fc; }
+  body.theme-dark .role-tag-elite { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-color: #0284c7; }
+  body.theme-dark .role-tag-normal { background: #262d37; color: #94a3b8; border-color: #374151; }
+
+  /* 우측 수정 / 삭제 버튼 (가로폭 절약 및 테마 연동) */
   .member-action-tools {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     flex-shrink: 0;
+    margin-left: 4px;
   }
   .btn-action-pill {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #475569;
-    font-size: 0.68rem;
-    padding: 2px 6px;
+    background: var(--pm-btn-bg);
+    border: 1px solid var(--pm-btn-border);
+    color: var(--pm-btn-text);
+    font-size: 0.66rem;
+    padding: 2px 5px;
     border-radius: 4px;
     cursor: pointer;
-    font-weight: 600;
-    transition: all 0.12s;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: all 0.12s ease;
   }
-  .btn-action-pill:hover { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
-  .btn-action-pill.btn-pill-del { color: #f43f5e; border-color: #fecdd3; }
-  .btn-action-pill.btn-pill-del:hover { background: #fff1f2; border-color: #fda4af; }
+  .btn-action-pill:hover {
+    background: var(--pm-row-hover);
+    color: var(--pm-text-main);
+  }
+  .btn-action-pill.btn-pill-del {
+    color: var(--pm-del-text);
+    border-color: var(--pm-del-border);
+  }
+  .btn-action-pill.btn-pill-del:hover {
+    background: var(--pm-del-hover-bg);
+  }
 
-  /* 모달 다이얼로그 */
+  /* 🔔 모달 다이얼로그 (다크/라이트 완벽 지원) */
   .pm-modal-backdrop {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
     z-index: 9999999;
     display: flex; align-items: center; justify-content: center;
     padding: 16px;
   }
   .pm-modal-card {
-    background: #ffffff;
+    background: var(--pm-modal-bg);
+    border: 1px solid var(--pm-modal-border);
     border-radius: 12px;
     width: 100%; max-width: 310px;
     padding: 18px 16px;
     text-align: center;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    color: var(--pm-modal-text);
   }
   .pm-modal-card input, .pm-modal-card select {
     width: 100%;
-    background: #f7f7f7;
-    border: 1px solid #e2e8f0;
+    background: var(--pm-modal-input-bg);
+    border: 1px solid var(--pm-modal-input-border);
     border-radius: 7px;
     padding: 7px 10px;
     font-size: 0.82rem;
     outline: none;
     margin-bottom: 8px;
+    color: var(--pm-modal-input-text);
+  }
+  .pm-modal-card input:focus, .pm-modal-card select:focus {
+    border-color: #0284c7;
   }
 </style>
 
@@ -271,7 +394,7 @@
 
   <!-- 검색창 -->
   <div class="members-search-box">
-    <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 22px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.75rem;"></i>
+    <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 20px; top: 50%; transform: translateY(-50%); color: var(--pm-text-sub); font-size: 0.75rem;"></i>
     <input type="text" id="pmSearchInput" class="members-search-input" placeholder="길드원 검색..." onkeyup="pmFilterMemberList()">
   </div>
 
@@ -284,7 +407,7 @@
 <!-- 모달 1: 신규 등록 -->
 <div id="pmModalAdd" class="pm-modal-backdrop" style="display: none;">
   <div class="pm-modal-card">
-    <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>신규 길드원 등록</h6>
+    <h6 class="fw-bold mb-1" style="font-size: 0.95rem; color: var(--pm-modal-text);"><i class="fa-solid fa-user-plus text-primary me-1"></i>신규 길드원 등록</h6>
     <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임과 직급을 설정하세요.</p>
     
     <input type="text" id="pmNewNick" placeholder="길드원 닉네임 입력" autocomplete="off">
@@ -296,8 +419,8 @@
     </select>
 
     <div class="d-flex gap-2 mt-2">
-      <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="pmCloseAddModal()">취소</button>
-      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="pmSubmitAddMember()">등록하기</button>
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-1" onclick="pmCloseAddModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none; color:#191919;" onclick="pmSubmitAddMember()">등록하기</button>
     </div>
   </div>
 </div>
@@ -305,7 +428,7 @@
 <!-- 모달 2: 정보 수정 -->
 <div id="pmModalEdit" class="pm-modal-backdrop" style="display: none;">
   <div class="pm-modal-card">
-    <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-user-pen text-info me-1"></i>길드원 정보 수정</h6>
+    <h6 class="fw-bold mb-1" style="font-size: 0.95rem; color: var(--pm-modal-text);"><i class="fa-solid fa-user-pen text-info me-1"></i>길드원 정보 수정</h6>
     <p class="text-secondary small mb-3" style="font-size: 0.72rem;">닉네임 변경 시 과거 토벌 기록도 자동 동기화됩니다.</p>
     
     <input type="hidden" id="pmEditId">
@@ -319,8 +442,8 @@
     </select>
 
     <div class="d-flex gap-2 mt-2">
-      <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="pmCloseEditModal()">취소</button>
-      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="pmSubmitEditMember()">저장</button>
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-1" onclick="pmCloseEditModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none; color:#191919;" onclick="pmSubmitEditMember()">저장</button>
     </div>
   </div>
 </div>
@@ -328,25 +451,26 @@
 <!-- 모달 3: 비밀번호 변경 -->
 <div id="pmModalPin" class="pm-modal-backdrop" style="display: none;">
   <div class="pm-modal-card">
-    <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
+    <h6 class="fw-bold mb-1" style="font-size: 0.95rem; color: var(--pm-modal-text);"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
     <p class="text-secondary small mb-3" id="pmPinNotice" style="font-size: 0.72rem;">기존 비밀번호와 새 비밀번호를 입력하세요.</p>
     
     <input type="password" id="pmOldPin" class="text-center" placeholder="기존 비밀번호 (초기값 0000)" maxlength="16" inputmode="numeric">
     <input type="password" id="pmNewPin" class="text-center" placeholder="새 비밀번호 (숫자 6자리 이상)" maxlength="16" inputmode="numeric">
 
     <div class="d-flex gap-2 mt-2">
-      <button type="button" class="btn btn-light btn-sm flex-fill py-1" onclick="pmClosePinModal()">취소</button>
-      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none;" onclick="pmSubmitPinChange()">변경 완료</button>
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-1" onclick="pmClosePinModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-1" style="background:#fee500; border:none; color:#191919;" onclick="pmSubmitPinChange()">변경 완료</button>
     </div>
   </div>
 </div>
 
 <script>
+  // ⚡ 재호출 시 Identifier already declared 충돌 방지: 모든 변수 var 선언
   var pmMemberListData = [];
   var pmTargetPinMember = null;
 
   function pmGetRolePriority(role) {
-    const r = String(role || '').trim();
+    var r = String(role || '').trim();
     if (r === '길드장' || r === '길마') return 1;
     if (r === '부길드장' || r === '부길마') return 2;
     if (r === '정예') return 3;
@@ -354,35 +478,35 @@
   }
 
   async function pmLoadMemberList() {
-    const container = document.getElementById("pmMemberListArea");
+    var container = document.getElementById("pmMemberListArea");
     if (!container) return;
 
     try {
-      const data = await apiRequest("guild_members?select=*");
+      var data = await apiRequest("guild_members?select=*");
       pmMemberListData = data || [];
 
-      pmMemberListData.sort((a, b) => {
-        const pA = pmGetRolePriority(a.role);
-        const pB = pmGetRolePriority(b.role);
+      pmMemberListData.sort(function(a, b) {
+        var pA = pmGetRolePriority(a.role);
+        var pB = pmGetRolePriority(b.role);
         if (pA !== pB) return pA - pB;
-        return a.name.localeCompare(b.name, 'ko');
+        return (a.name || '').localeCompare(b.name || '', 'ko');
       });
 
-      const countElem = document.getElementById("pmMemberCountText");
+      var countElem = document.getElementById("pmMemberCountText");
       if (countElem) countElem.innerText = pmMemberListData.length;
 
       // index.html 상단 카운트도 함께 동기화
-      const topCount = document.getElementById("roomMemberCountText");
+      var topCount = document.getElementById("roomMemberCountText");
       if (topCount) topCount.innerText = pmMemberListData.length;
 
       pmRenderMemberList(pmMemberListData);
     } catch (err) {
-      container.innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${err.message}</div>`;
+      container.innerHTML = '<div class="text-danger small text-center py-4">조회 실패: ' + err.message + '</div>';
     }
   }
 
   function pmRenderMemberList(list) {
-    const container = document.getElementById("pmMemberListArea");
+    var container = document.getElementById("pmMemberListArea");
     if (!container) return;
 
     if (!list || list.length === 0) {
@@ -390,14 +514,14 @@
       return;
     }
 
-    const myNick = localStorage.getItem("guild_my_nickname") || "";
-    const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-    const myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
+    var myNick = localStorage.getItem("guild_my_nickname") || "";
+    var myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+    var myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
 
-    container.innerHTML = list.map(m => {
-      const roleStr = String(m.role || '일반').trim();
-      let roleTagClass = "role-tag-normal";
-      let avatarClass = "normal";
+    container.innerHTML = list.map(function(m) {
+      var roleStr = String(m.role || '일반').trim();
+      var roleTagClass = "role-tag-normal";
+      var avatarClass = "normal";
 
       if (roleStr === "길드장" || roleStr === "길마") {
         roleTagClass = "role-tag-master";
@@ -410,49 +534,52 @@
         avatarClass = "elite";
       }
 
-      const isMe = (m.name === myNick);
-      const displayAvatar = isMe ? myAvatar : (m.avatar || m.name.charAt(0));
-      const displayClass = isMe ? myClass : (m.job_class || '직업 미지정');
+      var isMe = (m.name === myNick);
+      var displayAvatar = isMe ? myAvatar : (m.avatar || (m.name ? m.name.charAt(0) : '👤'));
+      var displayClass = isMe ? myClass : (m.job_class || '직업 미지정');
 
-      return `
-        <div class="member-profile-row">
-          <div class="member-left-info" onclick="pmOpenPinModal(${m.id})">
-            <div class="avatar-wrapper-relative">
-              <div class="member-avatar-round ${avatarClass}">${displayAvatar}</div>
-              ${isMe ? '<div class="mini-badge-me-tag">나</div>' : ''}
-            </div>
-            <div class="member-meta-text">
-              <div class="member-name-line">
-                <span>${m.name}</span>
-                <span class="role-badge-tag ${roleTagClass}">${roleStr}</span>
-              </div>
-              <div class="member-class-desc">
-                <span>${displayClass}</span>
-              </div>
-            </div>
-          </div>
-          <div class="member-action-tools">
-            <button type="button" class="btn-action-pill" onclick="pmOpenEditModal(${m.id}, '${m.name}', '${roleStr}')">수정</button>
-            <button type="button" class="btn-action-pill btn-pill-del" onclick="pmDeleteMember(${m.id}, '${m.name}')">삭제</button>
-          </div>
-        </div>
-      `;
+      var safeName = escapeHtml(m.name);
+      var safeClass = escapeHtml(displayClass);
+
+      return '<div class="member-profile-row">' +
+        '<div class="member-left-info" onclick="pmOpenPinModal(' + m.id + ')">' +
+          '<div class="avatar-wrapper-relative">' +
+            '<div class="member-avatar-round ' + avatarClass + '">' + displayAvatar + '</div>' +
+            (isMe ? '<div class="mini-badge-me-tag">나</div>' : '') +
+          '</div>' +
+          '<div class="member-meta-text">' +
+            '<div class="member-name-line">' +
+              '<span class="member-name-text" title="' + safeName + '">' + safeName + '</span>' +
+              '<span class="role-badge-tag ' + roleTagClass + '">' + roleStr + '</span>' +
+            '</div>' +
+            '<div class="member-class-desc">' +
+              '<span>' + safeClass + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="member-action-tools">' +
+          '<button type="button" class="btn-action-pill" onclick="pmOpenEditModal(' + m.id + ', \'' + safeName + '\', \'' + roleStr + '\')">수정</button>' +
+          '<button type="button" class="btn-action-pill btn-pill-del" onclick="pmDeleteMember(' + m.id + ', \'' + safeName + '\')">삭제</button>' +
+        '</div>' +
+      '</div>';
     }).join('');
   }
 
   function pmFilterMemberList() {
-    const q = document.getElementById("pmSearchInput").value.trim().toLowerCase();
-    const filtered = pmMemberListData.filter(m => m.name.toLowerCase().includes(q) || (m.role || "").toLowerCase().includes(q));
+    var q = document.getElementById("pmSearchInput").value.trim().toLowerCase();
+    var filtered = pmMemberListData.filter(function(m) {
+      return (m.name || '').toLowerCase().includes(q) || (m.role || '').toLowerCase().includes(q) || (m.job_class || '').toLowerCase().includes(q);
+    });
     pmRenderMemberList(filtered);
   }
 
   async function pmHandleRefresh() {
-    const btn = document.getElementById("pmBtnRefresh");
+    var btn = document.getElementById("pmBtnRefresh");
     if (btn) btn.classList.add("rotating");
 
     await pmLoadMemberList();
 
-    setTimeout(() => {
+    setTimeout(function() {
       if (btn) btn.classList.remove("rotating");
       if (typeof showKakaoToast === 'function') showKakaoToast("길드원 목록이 갱신되었습니다.", "👥");
     }, 400);
@@ -462,24 +589,24 @@
     document.getElementById("pmNewNick").value = "";
     document.getElementById("pmNewRole").value = "일반";
     document.getElementById("pmModalAdd").style.display = "flex";
-    setTimeout(() => document.getElementById("pmNewNick").focus(), 100);
+    setTimeout(function() { document.getElementById("pmNewNick").focus(); }, 100);
   }
   function pmCloseAddModal() {
     document.getElementById("pmModalAdd").style.display = "none";
   }
 
   async function pmSubmitAddMember() {
-    const name = document.getElementById("pmNewNick").value.trim();
-    const role = document.getElementById("pmNewRole").value;
+    var name = document.getElementById("pmNewNick").value.trim();
+    var role = document.getElementById("pmNewRole").value;
 
     if (!name) return (typeof showKakaoToast === 'function') ? showKakaoToast("닉네임을 입력하세요!", "⚠️") : alert("닉네임 입력 필요");
-    if (pmMemberListData.some(m => m.name === name)) {
+    if (pmMemberListData.some(function(m) { return m.name === name; })) {
       return (typeof showKakaoToast === 'function') ? showKakaoToast("이미 존재하는 닉네임입니다!", "⚠️") : alert("이미 존재하는 닉네임");
     }
 
     try {
-      await apiRequest("guild_members", "POST", [{ name, role, pin: "0000" }]);
-      if (typeof showKakaoToast === 'function') showKakaoToast(`[${name}] 길드원 등록 완료!`, "🎉");
+      await apiRequest("guild_members", "POST", [{ name: name, role: role, pin: "0000" }]);
+      if (typeof showKakaoToast === 'function') showKakaoToast("[" + name + "] 길드원 등록 완료!", "🎉");
       pmCloseAddModal();
       await pmLoadMemberList();
     } catch (e) {
@@ -493,17 +620,17 @@
     document.getElementById("pmEditNewName").value = name;
     document.getElementById("pmEditRole").value = role;
     document.getElementById("pmModalEdit").style.display = "flex";
-    setTimeout(() => document.getElementById("pmEditNewName").focus(), 100);
+    setTimeout(function() { document.getElementById("pmEditNewName").focus(); }, 100);
   }
   function pmCloseEditModal() {
     document.getElementById("pmModalEdit").style.display = "none";
   }
 
   async function pmSubmitEditMember() {
-    const id = document.getElementById("pmEditId").value;
-    const oldName = document.getElementById("pmEditOldName").value.trim();
-    const newName = document.getElementById("pmEditNewName").value.trim();
-    const role = document.getElementById("pmEditRole").value;
+    var id = document.getElementById("pmEditId").value;
+    var oldName = document.getElementById("pmEditOldName").value.trim();
+    var newName = document.getElementById("pmEditNewName").value.trim();
+    var role = document.getElementById("pmEditRole").value;
 
     if (!newName) return alert("닉네임을 입력하세요!");
 
@@ -511,9 +638,9 @@
       if (oldName !== newName) {
         await apiRequest("rpc/update_member_nickname", "POST", { old_name: oldName, new_name: newName });
       }
-      await apiRequest(`guild_members?id=eq.${id}`, "PATCH", { role, name: newName });
+      await apiRequest("guild_members?id=eq." + id, "PATCH", { role: role, name: newName });
 
-      if (typeof showKakaoToast === 'function') showKakaoToast(`[${newName}] 정보 수정 완료!`, "✅");
+      if (typeof showKakaoToast === 'function') showKakaoToast("[" + newName + "] 정보 수정 완료!", "✅");
       pmCloseEditModal();
       await pmLoadMemberList();
     } catch (e) {
@@ -522,11 +649,11 @@
   }
 
   async function pmDeleteMember(id, name) {
-    if (!confirm(`[${name}] 길드원을 정말 삭제하시겠습니까?`)) return;
+    if (!confirm("[" + name + "] 길드원을 정말 삭제하시겠습니까?")) return;
 
     try {
-      await apiRequest(`guild_members?id=eq.${id}`, "DELETE");
-      if (typeof showKakaoToast === 'function') showKakaoToast(`[${name}] 길드원이 삭제되었습니다.`, "🗑️");
+      await apiRequest("guild_members?id=eq." + id, "DELETE");
+      if (typeof showKakaoToast === 'function') showKakaoToast("[" + name + "] 길드원이 삭제되었습니다.", "🗑️");
       await pmLoadMemberList();
     } catch (e) {
       alert("삭제 실패: " + e.message);
@@ -534,19 +661,19 @@
   }
 
   function pmOpenPinModal(memberId) {
-    const target = pmMemberListData.find(m => m.id === memberId);
+    var target = pmMemberListData.find(function(m) { return m.id === memberId; });
     if (!target) return;
 
     pmTargetPinMember = target;
-    const isDefault = (!target.pin || target.pin === "0000");
+    var isDefault = (!target.pin || target.pin === "0000");
     document.getElementById("pmPinNotice").innerText = isDefault
-      ? `[${target.name}] 초기 상태입니다. 기존 비번에 0000을 입력하세요.`
-      : `[${target.name}] 현재 비밀번호와 새 비밀번호를 입력하세요.`;
+      ? "[" + target.name + "] 초기 상태입니다. 기존 비번에 0000을 입력하세요."
+      : "[" + target.name + "] 현재 비밀번호와 새 비밀번호를 입력하세요.";
 
     document.getElementById("pmOldPin").value = "";
     document.getElementById("pmNewPin").value = "";
     document.getElementById("pmModalPin").style.display = "flex";
-    setTimeout(() => document.getElementById("pmOldPin").focus(), 100);
+    setTimeout(function() { document.getElementById("pmOldPin").focus(); }, 100);
   }
   function pmClosePinModal() {
     document.getElementById("pmModalPin").style.display = "none";
@@ -556,9 +683,9 @@
   async function pmSubmitPinChange() {
     if (!pmTargetPinMember) return;
 
-    const oldPin = document.getElementById("pmOldPin").value.trim();
-    const newPin = document.getElementById("pmNewPin").value.trim();
-    const currentPin = (pmTargetPinMember.pin || "0000").trim();
+    var oldPin = document.getElementById("pmOldPin").value.trim();
+    var newPin = document.getElementById("pmNewPin").value.trim();
+    var currentPin = (pmTargetPinMember.pin || "0000").trim();
 
     if (oldPin !== currentPin) {
       return (typeof showKakaoToast === 'function') ? showKakaoToast("기존 비밀번호 불일치 (기본값: 0000)", "❌") : alert("비밀번호 불일치");
@@ -571,8 +698,8 @@
     }
 
     try {
-      await apiRequest(`guild_members?id=eq.${pmTargetPinMember.id}`, "PATCH", { pin: newPin });
-      if (typeof showKakaoToast === 'function') showKakaoToast(`[${pmTargetPinMember.name}] 비밀번호 변경 완료!`, "🎉");
+      await apiRequest("guild_members?id=eq." + pmTargetPinMember.id, "PATCH", { pin: newPin });
+      if (typeof showKakaoToast === 'function') showKakaoToast("[" + pmTargetPinMember.name + "] 비밀번호 변경 완료!", "🎉");
       pmClosePinModal();
       await pmLoadMemberList();
     } catch (e) {
@@ -580,7 +707,16 @@
     }
   }
 
+  function escapeHtml(t) {
+    return (t || '').replace(/[&<>"']/g, function(m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+    });
+  }
+
   (function pmInit() {
+    if (typeof window.applyAppTheme === 'function') {
+      window.applyAppTheme();
+    }
     pmLoadMemberList();
   })();
 </script>
