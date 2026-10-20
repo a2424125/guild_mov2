@@ -630,6 +630,11 @@
     to { opacity: 1; }
   }
 
+  /* 🔝 최상위 확인/경고 팝업: 다른 모든 모달보다 항상 위에 노출 (뒤에 가려짐 방지) */
+  #customConfirmModal {
+    z-index: 12500 !important;
+  }
+
   .rec-modal-card {
     background: var(--rec-modal-bg) !important;
     border: 1px solid var(--rec-modal-border) !important;
@@ -1013,19 +1018,6 @@
   <span id="recordsToastMsg">알림 내용</span>
 </div>
 
-<!-- 커스텀 확인 및 경고 모달 -->
-<div id="customConfirmModal" class="rec-modal-backdrop" style="display: none;">
-  <div class="rec-modal-card" style="max-width: 330px; text-align: center; padding: 20px 16px;">
-    <div style="font-size: 2rem; margin-bottom: 8px;" id="confirmModalIconEmoji">⚠️</div>
-    <h6 class="fw-bold mb-2" id="confirmModalTitle" style="font-size: 0.95rem; color: var(--rec-modal-text);">확인</h6>
-    <p class="small text-secondary mb-3" id="confirmModalMsg" style="font-size: 0.78rem; line-height: 1.45; word-break: keep-all; white-space: pre-line;"></p>
-    <div class="d-flex gap-2">
-      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" id="btnConfirmCancel" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;">취소</button>
-      <button type="button" class="btn btn-danger btn-sm flex-fill py-2" id="btnConfirmOk" style="border-radius: 8px; font-weight: 800; font-size: 0.78rem;">확인</button>
-    </div>
-  </div>
-</div>
-
 <!-- 📊 [개인별 세부 통계 모달] (데이터 정상 렌더링 & 완벽 테마 연동) -->
 <div id="modalMemberDetail" class="rec-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeMemberDetailModal()">
   <div class="rec-modal-card" onclick="event.stopPropagation()">
@@ -1145,6 +1137,19 @@
         <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeMemberBossManagerModal()" style="font-size: 0.78rem; border-radius: 6px;">취소</button>
         <button type="button" class="btn btn-primary btn-sm px-3 fw-bold" onclick="saveMemberBossSelection()" style="font-size: 0.78rem; border-radius: 6px;">저장</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🔝 [최상단 배치] 커스텀 확인 및 경고 모달 (다른 모달 위에 항상 최상단 노출) -->
+<div id="customConfirmModal" class="rec-modal-backdrop" style="display: none;">
+  <div class="rec-modal-card" style="max-width: 330px; text-align: center; padding: 20px 16px;">
+    <div style="font-size: 2rem; margin-bottom: 8px;" id="confirmModalIconEmoji">⚠️</div>
+    <h6 class="fw-bold mb-2" id="confirmModalTitle" style="font-size: 0.95rem; color: var(--rec-modal-text);">확인</h6>
+    <p class="small text-secondary mb-3" id="confirmModalMsg" style="font-size: 0.78rem; line-height: 1.45; word-break: keep-all; white-space: pre-line;"></p>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" id="btnConfirmCancel" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;">취소</button>
+      <button type="button" class="btn btn-danger btn-sm flex-fill py-2" id="btnConfirmOk" style="border-radius: 8px; font-weight: 800; font-size: 0.78rem;">확인</button>
     </div>
   </div>
 </div>
@@ -1881,9 +1886,27 @@
     var selected = [];
     checkboxes.forEach(function(c) { selected.push(c.value); });
 
+    var original = currentEditingOriginalMembers || [];
+    var added = selected.filter(function(m) { return !original.includes(m); });
+    var removed = original.filter(function(m) { return !selected.includes(m); });
+
+    if (added.length === 0 && removed.length === 0) {
+      showRecordsToast("변경된 참여 인원이 없습니다.", "ℹ️");
+      return;
+    }
+
+    var confirmMsg = "";
+    if (added.length > 0 && removed.length === 0) {
+      confirmMsg = "[" + added.join(", ") + "] 을(를) 추가하시겠습니까?\n(총 " + selected.length + "명 참여)";
+    } else if (removed.length > 0 && added.length === 0) {
+      confirmMsg = "[" + removed.join(", ") + "] 을(를) 제외하시겠습니까?\n(총 " + selected.length + "명 참여)";
+    } else {
+      confirmMsg = "추가: [" + added.join(", ") + "]\n제외: [" + removed.join(", ") + "]\n위 변경 사항을 저장하시겠습니까?\n(총 " + selected.length + "명 참여)";
+    }
+
     var confirmed = await openCustomConfirm(
-      "참여 인원 수정 확인",
-      "[" + bossName + "] 토벌 참여 인원을 총 " + selected.length + "명으로 변경하시겠습니까?",
+      "[" + bossName + "] 참여 인원 변경",
+      confirmMsg,
       "👥"
     );
     if (!confirmed) return;
