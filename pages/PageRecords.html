@@ -36,7 +36,7 @@
     --rec-modal-input-text: #ffffff;
   }
 
-  /* ☀️ 라이트 모드 고대비(High-Contrast) 스타일 완벽 일치 */
+  /* ☀️ 라이트 모드 고대비(High-Contrast) 스타일 */
   html.theme-light .records-card,
   body.theme-light .records-card,
   .records-card.light-mode {
@@ -235,7 +235,15 @@
     border: 1px solid var(--rec-item-border);
     border-radius: 6px;
     font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
   }
+  .top5-item:hover {
+    background: var(--rec-item-hover);
+    transform: translateY(-1px);
+    border-color: #0284c7;
+  }
+
   .top5-rank-badge {
     display: inline-flex;
     align-items: center;
@@ -252,26 +260,27 @@
   .top5-rank-3 { background: #d97706; color: #fff; }
   .top5-rank-other { background: var(--rec-chip-bg); color: var(--rec-text-sub); border: 1px solid var(--rec-chip-border); }
 
-  /* 3대 메인 탭바 */
-  .rec-main-tabs {
+  /* 4대 메인 탭바: [요약통계][길드원별통계][전쟁기록][토벌기록] */
+  .rec-main-tabs-4 {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 4px;
     margin-bottom: 12px;
   }
-  .btn-rec-tab {
+  .btn-rec-tab-4 {
     background: var(--rec-chip-bg);
     border: 1px solid var(--rec-chip-border);
     color: var(--rec-chip-text);
-    font-size: 0.74rem;
+    font-size: 0.71rem;
     font-weight: 700;
-    padding: 7px 0;
+    padding: 7px 2px;
     border-radius: 8px;
     text-align: center;
     cursor: pointer;
     transition: all 0.15s ease;
+    white-space: nowrap;
   }
-  .btn-rec-tab.active {
+  .btn-rec-tab-4.active {
     background: #0284c7;
     color: #ffffff;
     border-color: #0284c7;
@@ -303,7 +312,34 @@
     margin-top: 2px;
   }
 
-  /* 탭 3: 토벌 로그 리스트 (관리자 삭제 지원) */
+  /* 탭 2: 길드원별 상세 출석부 (마우스 오버 효과 확실한 카드형 행) */
+  .member-stat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+  .member-stat-row {
+    background: var(--rec-item-bg);
+    border: 1px solid var(--rec-item-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+  }
+  .member-stat-row:hover {
+    background: var(--rec-item-hover) !important;
+    border-color: #0284c7 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+
+  /* 탭 3 & 4: 로그 리스트 */
   .raid-log-list {
     display: flex;
     flex-direction: column;
@@ -317,6 +353,11 @@
     border: 1px solid var(--rec-item-border);
     border-radius: 8px;
     padding: 8px 10px;
+    transition: all 0.15s ease;
+  }
+  .raid-log-item:hover {
+    background: var(--rec-item-hover);
+    border-color: #38bdf8;
   }
   .raid-log-header {
     display: flex;
@@ -478,16 +519,19 @@
     </div>
   </div>
 
-  <!-- 3. 하단 3대 메인 탭 -->
-  <div class="rec-main-tabs">
-    <button type="button" class="btn-rec-tab active" id="tabBtnSummary" onclick="switchMainTab('summary')">
-      📊 요약 통계
+  <!-- 3. 하단 4대 메인 탭: [요약통계] [길드원별통계] [전쟁기록] [토벌기록] -->
+  <div class="rec-main-tabs-4">
+    <button type="button" class="btn-rec-tab-4 active" id="tabBtnSummary" onclick="switchMainTab('summary')">
+      📊 요약통계
     </button>
-    <button type="button" class="btn-rec-tab" id="tabBtnMembers" onclick="switchMainTab('members')">
-      👥 길드원별 통계
+    <button type="button" class="btn-rec-tab-4" id="tabBtnMembers" onclick="switchMainTab('members')">
+      👥 길드원별통계
     </button>
-    <button type="button" class="btn-rec-tab" id="tabBtnLogs" onclick="switchMainTab('logs')">
-      📜 토벌 로그
+    <button type="button" class="btn-rec-tab-4" id="tabBtnWarLog" onclick="switchMainTab('warlog')">
+      🛡️ 전쟁기록
+    </button>
+    <button type="button" class="btn-rec-tab-4" id="tabBtnHistory" onclick="switchMainTab('history')">
+      📜 토벌기록
     </button>
   </div>
 
@@ -512,7 +556,7 @@
       </div>
     </div>
 
-    <!-- 보스별 토벌 횟수 차트/통계 목록 -->
+    <!-- 보스별 처치 통계 목록 -->
     <div class="stat-filter-box mb-2">
       <div class="small fw-bold mb-2" style="font-size: 0.74rem; color: var(--rec-text-main);">
         <i class="fa-solid fa-dragon me-1 text-danger"></i>보스별 처치 통계
@@ -525,17 +569,28 @@
 
   <!-- 탭 내용 2: 길드원별 상세 출석부 (카카오톡 감성 캡슐형 매립 돋보기 검색창) -->
   <div id="tabContentMembers" style="display: none;">
-    <div class="search-wrapper-stat mb-2" style="position: relative; width: 100%;">
-      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--rec-text-sub); font-size: 0.8rem; pointer-events: none; z-index: 2;"></i>
-      <input type="text" id="memberSearchInput" placeholder="길드원 닉네임 검색..." oninput="filterMemberStatList()" style="width: 100%; background: var(--rec-input-bg); border: 1px solid var(--rec-input-border); color: var(--rec-input-text); border-radius: 20px; padding: 6px 14px 6px 36px; font-size: 0.78rem; outline: none; transition: all 0.2s ease;">
+    <div style="position: relative; margin-bottom: 8px; display: flex; align-items: center; width: 100%;">
+      <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; color: var(--rec-text-sub); font-size: 0.82rem; pointer-events: none; z-index: 2;"></i>
+      <input type="text" id="memberSearchInput" placeholder="길드원 닉네임 검색..." oninput="filterMemberStatList()" style="width: 100%; background-color: var(--rec-input-bg); border: 1px solid var(--rec-input-border); color: var(--rec-input-text); border-radius: 20px; padding: 6px 14px 6px 36px; font-size: 0.8rem; outline: none; transition: all 0.2s ease;">
     </div>
-    <div id="memberStatListContainer" class="member-stat-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 480px; overflow-y: auto; padding-right: 2px;">
+    <div id="memberStatListContainer" class="member-stat-list">
       <div class="text-secondary small text-center py-3">길드원 통계 로딩 중...</div>
     </div>
   </div>
 
-  <!-- 탭 내용 3: 토벌 로그 리스트 (관리자 삭제/롤백 가능) -->
-  <div id="tabContentLogs" style="display: none;">
+  <!-- 탭 내용 3: 전쟁기록 (내전 / 인터쟁 전용 뷰) -->
+  <div id="tabContentWarLog" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+      <span class="small text-danger fw-bold" style="font-size: 0.72rem;" id="warLogCountText">총 0건의 전쟁 참여 기록</span>
+      <span class="small text-secondary" style="font-size: 0.65rem;">내전 / 인터쟁 집계</span>
+    </div>
+    <div id="warLogContainer" class="raid-log-list">
+      <div class="text-secondary small text-center py-3">전쟁 기록 로딩 중...</div>
+    </div>
+  </div>
+
+  <!-- 탭 내용 4: 전체 토벌기록 (관리자 삭제/롤백 가능) -->
+  <div id="tabContentHistory" style="display: none;">
     <div class="d-flex justify-content-between align-items-center mb-2 px-1">
       <span class="small text-secondary" style="font-size: 0.68rem;" id="logCountText">총 0건의 토벌 기록</span>
       <span class="small text-danger fw-bold" style="font-size: 0.65rem;" id="adminNoticeText"></span>
@@ -571,38 +626,40 @@
 <script>
   /* ========================================================
      [ECLIPSE 길드 통계 핵심 자바스크립트 엔진]
+     - 재선언 에러 방지를 위한 안전한 var 전역 구조
      ======================================================== */
-  let currentStatPeriod = "thisWeek";
-  let currentBestTab = "total";
-  let currentMainTab = "summary";
-  let rawStatsData = { records: [], warRecords: [], memberStats: {}, bossStats: {} };
-  let allMemberListCached = [];
-  let recToastTimer = null;
-  let liveSettings = { guildName: "불편한사람들", pointRules: {} };
+  var currentStatPeriod = "thisWeek";
+  var currentBestTab = "total";
+  var currentMainTab = "summary";
+  var rawStatsData = { records: [], warRecords: [], memberStats: {}, bossStats: {} };
+  var allMemberListCached = [];
+  var recToastTimer = null;
+  var liveSettings = { guildName: "불편한사람들", pointRules: {} };
 
-  // 관리자 권한 확인 (슈퍼관리자 또는 일반관리자)
+  // 관리자 권한 확인
   function verifyAdminPermission() {
-    const role = sessionStorage.getItem("admin_role") || "";
-    const nick = localStorage.getItem("guild_my_nickname") || "";
+    var role = sessionStorage.getItem("admin_role") || "";
+    var nick = localStorage.getItem("guild_my_nickname") || "";
     return role === "super" || role === "admin" || nick === "슈퍼관리자";
   }
 
-  function showRecordsToast(msg, icon = "📊") {
-    const box = document.getElementById("recToastBox");
-    const m = document.getElementById("recToastMsg");
-    const ic = document.getElementById("recToastIcon");
+  function showRecordsToast(msg, icon) {
+    if (!icon) icon = "📊";
+    var box = document.getElementById("recToastBox");
+    var m = document.getElementById("recToastMsg");
+    var ic = document.getElementById("recToastIcon");
     if (!box) return;
     m.innerText = msg;
     ic.innerText = icon;
     box.classList.add("show");
     if (recToastTimer) clearTimeout(recToastTimer);
-    recToastTimer = setTimeout(() => box.classList.remove("show"), 2200);
+    recToastTimer = setTimeout(function() { box.classList.remove("show"); }, 2200);
   }
 
-  // 커스텀 확인 다이얼로그 (window.confirm 대체)
-  function openCustomConfirm(msg, title = "기록 삭제 확인") {
-    return new Promise((resolve) => {
-      const confirmed = window.confirm(`[${title}]\n\n${msg}`);
+  function openCustomConfirm(msg, title) {
+    if (!title) title = "기록 삭제 확인";
+    return new Promise(function(resolve) {
+      var confirmed = window.confirm("[" + title + "]\n\n" + msg);
       resolve(confirmed);
     });
   }
@@ -613,21 +670,20 @@
       if (typeof window.applyAppTheme === "function") {
         window.applyAppTheme();
       }
-      loadSettingsInfo();
-      setStatPeriod("thisWeek");
+      await loadSettingsInfo();
       await loadGuildMembersForStats();
-      await fetchStatsData();
+      setStatPeriod("thisWeek");
     } catch (e) {
-      console.error("통계 페이지 초기화 에러:", e);
+      console.error("통계 초기화 에러:", e);
     }
   }
 
   async function loadSettingsInfo() {
     try {
       if (typeof apiRequest === "function") {
-        const rows = await apiRequest("guild_settings?select=*");
+        var rows = await apiRequest("guild_settings?select=*");
         if (rows && rows.length > 0) {
-          rows.forEach(r => {
+          rows.forEach(function(r) {
             if (r.setting_key === "guild_name" && r.setting_value) liveSettings.guildName = r.setting_value;
             if (r.setting_key === "point_rules" && r.setting_value) {
               try { liveSettings.pointRules = JSON.parse(r.setting_value); } catch(err){}
@@ -641,32 +697,31 @@
   async function loadGuildMembersForStats() {
     try {
       if (typeof apiRequest === "function") {
-        const members = await apiRequest("guild_members?select=name,job_class,role&order=name.asc");
+        var members = await apiRequest("guild_members?select=name,job_class,role&order=name.asc");
         if (members && Array.isArray(members)) {
           allMemberListCached = members;
         }
       }
     } catch (e) {
-      console.warn("길드원 목록 로드 실패 (통계):", e);
+      console.warn("길드원 목록 로드 예외:", e);
     }
   }
 
   // 1. 기간 선택 및 날짜 계산 (KST 기준)
   function setStatPeriod(periodType) {
     currentStatPeriod = periodType;
-    document.querySelectorAll(".btn-quick-stat").forEach(btn => btn.classList.remove("active"));
+    document.querySelectorAll(".btn-quick-stat").forEach(function(btn) { btn.classList.remove("active"); });
 
-    const sInput = document.getElementById("filterStartDate");
-    const eInput = document.getElementById("filterEndDate");
-    const statusText = document.getElementById("filterStatusText");
+    var sInput = document.getElementById("filterStartDate");
+    var eInput = document.getElementById("filterEndDate");
+    var statusText = document.getElementById("filterStatusText");
 
-    const now = new Date();
-    // KST 기준 요일/시간 (월요일 시작)
-    const currentDay = now.getDay(); // 0(일) ~ 6(토)
-    const diffToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
+    var now = new Date();
+    var currentDay = now.getDay();
+    var diffToMonday = (currentDay === 0 ? -6 : 1) - currentDay;
 
-    let start = new Date(now);
-    let end = new Date(now);
+    var start = new Date(now);
+    var end = new Date(now);
 
     if (periodType === "thisWeek") {
       document.getElementById("btnFilterWeek")?.classList.add("active");
@@ -699,27 +754,26 @@
 
   function formatDateToYYYYMMDD(d) {
     if (!d || isNaN(d.getTime())) return "";
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    var year = d.getFullYear();
+    var month = String(d.getMonth() + 1).padStart(2, "0");
+    var day = String(d.getDate()).padStart(2, "0");
+    return year + "-" + month + "-" + day;
   }
 
   // 2. 통계 데이터 패치 및 산출
   async function fetchStatsData() {
-    const sDate = document.getElementById("filterStartDate")?.value;
-    const eDate = document.getElementById("filterEndDate")?.value;
+    var sDate = document.getElementById("filterStartDate")?.value;
+    var eDate = document.getElementById("filterEndDate")?.value;
     if (!sDate || !eDate) return;
 
-    const startIso = `${sDate}T00:00:00.000Z`;
-    const endIso = `${eDate}T23:59:59.999Z`;
+    var startIso = sDate + "T00:00:00.000Z";
+    var endIso = eDate + "T23:59:59.999Z";
 
     try {
-      let endpoint = `boss_participations?select=*&raid_time=gte.${encodeURIComponent(startIso)}&raid_time=lte.${encodeURIComponent(endIso)}&order=raid_time.desc`;
-      let res = await apiRequest(endpoint, "GET");
+      var endpoint = "boss_participations?select=*&raid_time=gte." + encodeURIComponent(startIso) + "&raid_time=lte." + encodeURIComponent(endIso) + "&order=raid_time.desc";
+      var res = await apiRequest(endpoint, "GET");
       if (!res || !Array.isArray(res)) res = [];
 
-      // 데이터 가공 및 집계
       processStats(res);
       renderAllViews();
     } catch (e) {
@@ -730,16 +784,15 @@
 
   function processStats(records) {
     rawStatsData.records = records;
-    rawStatsData.warRecords = records.filter(r => r.war_type && r.war_type !== "일반");
+    rawStatsData.warRecords = records.filter(function(r) { return r.war_type && r.war_type !== "일반"; });
 
-    const memberStats = {};
-    const bossStats = {};
+    var memberStats = {};
+    var bossStats = {};
 
-    // 길드원 기본 뼈대
-    allMemberListCached.forEach(m => {
+    allMemberListCached.forEach(function(m) {
       memberStats[m.name] = {
         name: m.name,
-        jobClass: m.job_class || "미설정",
+        jobClass: (m.job_class && m.job_class !== "미설정") ? m.job_class : "",
         totalScore: 0,
         bossCount: 0,
         warCount: 0,
@@ -747,29 +800,27 @@
       };
     });
 
-    records.forEach(r => {
-      const boss = r.boss_name || "미지정";
-      const isWar = r.war_type && r.war_type !== "일반";
-      const scoreWeight = Number(r.score || (1 + (r.extra_score || 0)));
+    records.forEach(function(r) {
+      var boss = r.boss_name || "미지정";
+      var isWar = r.war_type && r.war_type !== "일반";
+      var scoreWeight = Number(r.score || (1 + (r.extra_score || 0)));
 
-      // 보스별 집계
       if (!bossStats[boss]) bossStats[boss] = { count: 0, wars: 0 };
       bossStats[boss].count += 1;
       if (isWar) bossStats[boss].wars += 1;
 
-      // 참여 길드원 집계
-      let participants = [];
+      var participants = [];
       if (Array.isArray(r.members)) {
         participants = r.members;
       } else if (typeof r.members === "string") {
         try { participants = JSON.parse(r.members); } catch(e){}
       }
 
-      participants.forEach(nick => {
+      participants.forEach(function(nick) {
         if (!memberStats[nick]) {
           memberStats[nick] = {
             name: nick,
-            jobClass: "미설정",
+            jobClass: "",
             totalScore: 0,
             bossCount: 0,
             warCount: 0,
@@ -796,15 +847,15 @@
     renderTop5Ranking();
     renderSummaryTab();
     renderMemberStatList();
-    renderRaidLogList();
+    renderWarLogList();
+    renderHistoryList();
   }
 
-  // TOP 5 랭킹 렌더링 (직업 배제)
   function switchBestTab(tabKey) {
     currentBestTab = tabKey;
-    document.querySelectorAll(".btn-best-tab").forEach(b => b.classList.remove("active"));
-    const title = document.getElementById("top5TitleText");
-    const sub = document.getElementById("top5SubText");
+    document.querySelectorAll(".btn-best-tab").forEach(function(b) { b.classList.remove("active"); });
+    var title = document.getElementById("top5TitleText");
+    var sub = document.getElementById("top5SubText");
 
     if (tabKey === "total") {
       document.getElementById("bestTabTotal")?.classList.add("active");
@@ -817,72 +868,73 @@
     } else if (tabKey === "war") {
       document.getElementById("bestTabWar")?.classList.add("active");
       if (title) title.innerText = "⚔️ 전쟁참여 베스트 TOP 5";
-      if (sub) sub.innerText = "인터쟁/월드전쟁 참여 횟수 기준";
+      if (sub) sub.innerText = "인터쟁/내전 참여 횟수 기준";
     }
     renderTop5Ranking();
   }
 
   function renderTop5Ranking() {
-    const listEl = document.getElementById("top5RankingList");
+    var listEl = document.getElementById("top5RankingList");
     if (!listEl) return;
 
-    const stats = Object.values(rawStatsData.memberStats || {});
+    var stats = Object.values(rawStatsData.memberStats || {});
     if (stats.length === 0) {
-      listEl.innerHTML = `<div class="text-secondary text-center py-2" style="font-size: 0.72rem;">집계된 기록이 없습니다.</div>`;
+      listEl.innerHTML = '<div class="text-secondary text-center py-2" style="font-size: 0.72rem;">집계된 기록이 없습니다.</div>';
       return;
     }
 
-    // 정렬 기준
     if (currentBestTab === "total") {
-      stats.sort((a, b) => b.totalScore - a.totalScore || b.bossCount - a.bossCount);
+      stats.sort(function(a, b) { return (b.totalScore - a.totalScore) || (b.bossCount - a.bossCount); });
     } else if (currentBestTab === "boss") {
-      stats.sort((a, b) => b.bossCount - a.bossCount || b.totalScore - a.totalScore);
+      stats.sort(function(a, b) { return (b.bossCount - a.bossCount) || (b.totalScore - a.totalScore); });
     } else if (currentBestTab === "war") {
-      stats.sort((a, b) => b.warCount - a.warCount || b.totalScore - a.totalScore);
+      stats.sort(function(a, b) { return (b.warCount - a.warCount) || (b.totalScore - a.totalScore); });
     }
 
-    const top5 = stats.filter(s => (currentBestTab === "total" ? s.totalScore : (currentBestTab === "boss" ? s.bossCount : s.warCount)) > 0).slice(0, 5);
+    var top5 = stats.filter(function(s) {
+      return (currentBestTab === "total" ? s.totalScore : (currentBestTab === "boss" ? s.bossCount : s.warCount)) > 0;
+    }).slice(0, 5);
 
     if (top5.length === 0) {
-      listEl.innerHTML = `<div class="text-secondary text-center py-2" style="font-size: 0.72rem;">해당 부문 참여 기록이 없습니다.</div>`;
+      listEl.innerHTML = '<div class="text-secondary text-center py-2" style="font-size: 0.72rem;">해당 부문 참여 기록이 없습니다.</div>';
       return;
     }
 
-    listEl.innerHTML = top5.map((s, idx) => {
-      const rank = idx + 1;
-      let badgeClass = "top5-rank-other";
+    listEl.innerHTML = top5.map(function(s, idx) {
+      var rank = idx + 1;
+      var badgeClass = "top5-rank-other";
       if (rank === 1) badgeClass = "top5-rank-1";
       else if (rank === 2) badgeClass = "top5-rank-2";
       else if (rank === 3) badgeClass = "top5-rank-3";
 
-      let valText = "";
+      var valText = "";
       if (currentBestTab === "total") {
-        valText = `<strong style="color: #f59e0b;">${s.totalScore}점</strong> <span class="text-secondary" style="font-size: 0.65rem;">(${s.bossCount}회)</span>`;
+        valText = '<strong style="color: #f59e0b;">' + s.totalScore + '점</strong> <span class="text-secondary" style="font-size: 0.65rem;">(' + s.bossCount + '회)</span>';
       } else if (currentBestTab === "boss") {
-        valText = `<strong style="color: #0284c7;">${s.bossCount}회</strong> <span class="text-secondary" style="font-size: 0.65rem;">(${s.totalScore}점)</span>`;
+        valText = '<strong style="color: #0284c7;">' + s.bossCount + '회</strong> <span class="text-secondary" style="font-size: 0.65rem;">(' + s.totalScore + '점)</span>';
       } else {
-        valText = `<strong style="color: #ef4444;">${s.warCount}회</strong> <span class="text-secondary" style="font-size: 0.65rem;">(전쟁)</span>`;
+        valText = '<strong style="color: #ef4444;">' + s.warCount + '회</strong> <span class="text-secondary" style="font-size: 0.65rem;">(전쟁)</span>';
       }
 
-      return `
-        <div class="top5-item" onclick="openMemberDetailModal('${escapeHtml(s.name)}')">
-          <div class="d-flex align-items-center">
-            <span class="top5-rank-badge ${badgeClass}">${rank}</span>
-            <span class="fw-bold" style="color: var(--rec-text-main); font-size: 0.76rem;">${escapeHtml(s.name)}</span>
-          </div>
-          <div>${valText}</div>
-        </div>
-      `;
+      return '<div class="top5-item" onclick="openMemberDetailModal(\'' + escapeHtml(s.name) + '\')">' +
+        '<div class="d-flex align-items-center">' +
+          '<span class="top5-rank-badge ' + badgeClass + '">' + rank + '</span>' +
+          '<span class="fw-bold" style="color: var(--rec-text-main); font-size: 0.76rem;">' + escapeHtml(s.name) + '</span>' +
+        '</div>' +
+        '<div>' + valText + '</div>' +
+      '</div>';
     }).join("");
   }
 
-  // 메인 탭 전환
+  // 4대 탭 전환: summary, members, warlog, history
   function switchMainTab(tab) {
     currentMainTab = tab;
-    document.querySelectorAll(".btn-rec-tab").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".btn-rec-tab-4").forEach(function(b) { b.classList.remove("active"); });
+    
     document.getElementById("tabContentSummary").style.display = "none";
     document.getElementById("tabContentMembers").style.display = "none";
-    document.getElementById("tabContentLogs").style.display = "none";
+    document.getElementById("tabContentWarLog").style.display = "none";
+    document.getElementById("tabContentHistory").style.display = "none";
 
     if (tab === "summary") {
       document.getElementById("tabBtnSummary")?.classList.add("active");
@@ -890,241 +942,272 @@
     } else if (tab === "members") {
       document.getElementById("tabBtnMembers")?.classList.add("active");
       document.getElementById("tabContentMembers").style.display = "block";
-    } else if (tab === "logs") {
-      document.getElementById("tabBtnLogs")?.classList.add("active");
-      document.getElementById("tabContentLogs").style.display = "block";
+    } else if (tab === "warlog") {
+      document.getElementById("tabBtnWarLog")?.classList.add("active");
+      document.getElementById("tabContentWarLog").style.display = "block";
+    } else if (tab === "history") {
+      document.getElementById("tabBtnHistory")?.classList.add("active");
+      document.getElementById("tabContentHistory").style.display = "block";
     }
   }
 
-  // 탭 1 렌더링
+  // 탭 1: 요약 통계 렌더링
   function renderSummaryTab() {
-    const records = rawStatsData.records || [];
-    const wars = rawStatsData.warRecords || [];
-    let scoreSum = 0;
-    const activeMemberSet = new Set();
+    var records = rawStatsData.records || [];
+    var wars = rawStatsData.warRecords || [];
+    var scoreSum = 0;
+    var activeMemberSet = new Set();
 
-    records.forEach(r => {
+    records.forEach(function(r) {
       scoreSum += Number(r.score || (1 + (r.extra_score || 0)));
-      let members = [];
+      var members = [];
       if (Array.isArray(r.members)) members = r.members;
       else if (typeof r.members === "string") {
         try { members = JSON.parse(r.members); } catch(e){}
       }
-      members.forEach(m => activeMemberSet.add(m));
+      members.forEach(function(m) { activeMemberSet.add(m); });
     });
 
-    document.getElementById("kpiTotalRaids").innerText = `${records.length}회`;
-    document.getElementById("kpiTotalWars").innerText = `${wars.length}회`;
-    document.getElementById("kpiTotalScores").innerText = `${scoreSum}점`;
-    document.getElementById("kpiActiveMembers").innerText = `${activeMemberSet.size}명`;
+    document.getElementById("kpiTotalRaids").innerText = records.length + "회";
+    document.getElementById("kpiTotalWars").innerText = wars.length + "회";
+    document.getElementById("kpiTotalScores").innerText = scoreSum + "점";
+    document.getElementById("kpiActiveMembers").innerText = activeMemberSet.size + "명";
 
-    // 보스별 집계
-    const bList = document.getElementById("bossFrequencyList");
-    const bStats = rawStatsData.bossStats || {};
-    const bKeys = Object.keys(bStats);
+    var bList = document.getElementById("bossFrequencyList");
+    var bStats = rawStatsData.bossStats || {};
+    var bKeys = Object.keys(bStats);
 
     if (bKeys.length === 0) {
-      bList.innerHTML = `<div class="text-secondary small text-center py-2">토벌 기록이 없습니다.</div>`;
+      bList.innerHTML = '<div class="text-secondary small text-center py-2">토벌 기록이 없습니다.</div>';
       return;
     }
 
-    bKeys.sort((a, b) => bStats[b].count - bStats[a].count);
+    bKeys.sort(function(a, b) { return bStats[b].count - bStats[a].count; });
 
-    bList.innerHTML = bKeys.map(boss => {
-      const item = bStats[boss];
-      return `
-        <div class="d-flex justify-content-between align-items-center py-1 px-2 rounded" style="background: var(--rec-item-bg); font-size: 0.72rem; border: 1px solid var(--rec-item-border);">
-          <span class="fw-bold" style="color: var(--rec-text-main);">${escapeHtml(boss)}</span>
-          <div class="d-flex align-items-center gap-2">
-            ${item.wars > 0 ? `<span class="badge bg-danger" style="font-size: 0.6rem;">전쟁 ${item.wars}</span>` : ""}
-            <span class="text-secondary">총 <strong class="text-primary">${item.count}회</strong></span>
-          </div>
-        </div>
-      `;
+    bList.innerHTML = bKeys.map(function(boss) {
+      var item = bStats[boss];
+      return '<div class="d-flex justify-content-between align-items-center py-1 px-2 rounded" style="background: var(--rec-item-bg); font-size: 0.72rem; border: 1px solid var(--rec-item-border);">' +
+        '<span class="fw-bold" style="color: var(--rec-text-main);">' + escapeHtml(boss) + '</span>' +
+        '<div class="d-flex align-items-center gap-2">' +
+          (item.wars > 0 ? '<span class="badge bg-danger" style="font-size: 0.6rem;">전쟁 ' + item.wars + '</span>' : '') +
+          '<span class="text-secondary">총 <strong class="text-primary">' + item.count + '회</strong></span>' +
+        '</div>' +
+      '</div>';
     }).join("");
   }
 
-  // 탭 2 렌더링: 길드원별 출석 목록
+  // 탭 2: 길드원별 출석 목록 렌더링 (미설정 뱃지 제거 및 호버 레이아웃)
   function renderMemberStatList() {
-    const container = document.getElementById("memberStatListContainer");
+    var container = document.getElementById("memberStatListContainer");
     if (!container) return;
 
-    const stats = Object.values(rawStatsData.memberStats || {});
-    stats.sort((a, b) => b.totalScore - a.totalScore || b.bossCount - a.bossCount);
+    var stats = Object.values(rawStatsData.memberStats || {});
+    stats.sort(function(a, b) { return (b.totalScore - a.totalScore) || (b.bossCount - a.bossCount); });
 
     if (stats.length === 0) {
-      container.innerHTML = `<div class="text-secondary small text-center py-3">길드원 데이터가 없습니다.</div>`;
+      container.innerHTML = '<div class="text-secondary small text-center py-3">길드원 데이터가 없습니다.</div>';
       return;
     }
 
-    container.innerHTML = stats.map(s => {
-      return `
-        <div class="member-stat-row" data-name="${escapeHtml(s.name)}" onclick="openMemberDetailModal('${escapeHtml(s.name)}')">
-          <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-secondary" style="font-size: 0.65rem;">${escapeHtml(s.jobClass)}</span>
-            <strong style="font-size: 0.76rem; color: var(--rec-text-main);">${escapeHtml(s.name)}</strong>
-          </div>
-          <div class="d-flex align-items-center gap-2" style="font-size: 0.72rem;">
-            <span>토벌: <strong class="text-primary">${s.bossCount}회</strong></span>
-            <span>전쟁: <strong class="text-danger">${s.warCount}회</strong></span>
-            <span class="badge" style="background: var(--rec-score-badge-bg); border: 1px solid var(--rec-score-badge-border); color: var(--rec-score-badge-text); font-size: 0.7rem;">
-              ${s.totalScore}점
-            </span>
-          </div>
-        </div>
-      `;
+    container.innerHTML = stats.map(function(s) {
+      // 🎯 '미설정'이거나 비어있으면 뱃지를 아예 띄우지 않고 깔끔하게 이름만 노출
+      var jobBadgeHtml = (s.jobClass && s.jobClass !== "미설정")
+        ? '<span class="badge bg-secondary" style="font-size: 0.65rem;">' + escapeHtml(s.jobClass) + '</span>'
+        : '';
+
+      return '<div class="member-stat-row" data-name="' + escapeHtml(s.name) + '" onclick="openMemberDetailModal(\'' + escapeHtml(s.name) + '\')">' +
+        '<div class="d-flex align-items-center gap-2">' +
+          jobBadgeHtml +
+          '<strong style="font-size: 0.78rem; color: var(--rec-text-main);">' + escapeHtml(s.name) + '</strong>' +
+        '</div>' +
+        '<div class="d-flex align-items-center gap-2" style="font-size: 0.72rem;">' +
+          '<span>토벌: <strong class="text-primary">' + s.bossCount + '회</strong></span>' +
+          '<span>전쟁: <strong class="text-danger">' + s.warCount + '회</strong></span>' +
+          '<span class="badge" style="background: var(--rec-score-badge-bg); border: 1px solid var(--rec-score-badge-border); color: var(--rec-score-badge-text); font-size: 0.72rem; font-weight:800;">' +
+            s.totalScore + '점' +
+          '</span>' +
+        '</div>' +
+      '</div>';
     }).join("");
   }
 
   function filterMemberStatList() {
-    const q = (document.getElementById("memberSearchInput")?.value || "").toLowerCase().trim();
-    document.querySelectorAll(".member-stat-row").forEach(row => {
-      const name = (row.getAttribute("data-name") || "").toLowerCase();
-      if (!q || name.includes(q)) {
-        row.style.display = "flex";
-      } else {
-        row.style.display = "none";
-      }
+    var q = (document.getElementById("memberSearchInput")?.value || "").toLowerCase().trim();
+    document.querySelectorAll(".member-stat-row").forEach(function(row) {
+      var name = (row.getAttribute("data-name") || "").toLowerCase();
+      row.style.display = (!q || name.includes(q)) ? "flex" : "none";
     });
   }
 
-  // 탭 3 렌더링: 토벌 로그 (개별 삭제 지원)
-  function renderRaidLogList() {
-    const container = document.getElementById("raidLogContainer");
-    const countText = document.getElementById("logCountText");
-    const adminText = document.getElementById("adminNoticeText");
-    const records = rawStatsData.records || [];
+  // 탭 3: 전쟁기록 전용 렌더링 (내전/인터 전쟁만 집계)
+  function renderWarLogList() {
+    var container = document.getElementById("warLogContainer");
+    var countText = document.getElementById("warLogCountText");
+    var wars = rawStatsData.warRecords || [];
 
-    if (countText) countText.innerText = `총 ${records.length}건의 토벌 기록`;
-    const isAdmin = verifyAdminPermission();
-    if (adminText) adminText.innerText = isAdmin ? "🛡️ 관리자: 오등록 건 개별 삭제 가능" : "";
+    if (countText) countText.innerText = "총 " + wars.length + "건의 전쟁 참여 기록";
 
-    if (records.length === 0) {
-      container.innerHTML = `<div class="text-secondary small text-center py-3">조회된 기간 내 토벌 기록이 없습니다.</div>`;
+    if (!container) return;
+    if (wars.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-4">조회된 기간 내 전쟁(내전/인터) 기록이 없습니다.</div>';
       return;
     }
 
-    container.innerHTML = records.map(r => {
-      let members = [];
+    container.innerHTML = wars.map(function(r) {
+      var members = [];
+      if (Array.isArray(r.members)) members = r.members;
+      else if (typeof r.members === "string") {
+        try { members = JSON.parse(r.members); } catch(e){}
+      }
+      var timeStr = formatKstTimeDisplay(r.raid_time);
+
+      return '<div class="raid-log-item" id="warRow_' + r.id + '">' +
+        '<div class="raid-log-header">' +
+          '<div class="d-flex align-items-center gap-1">' +
+            '<span class="badge bg-danger" style="font-size: 0.65rem;">' + escapeHtml(r.war_type || "전쟁") + '</span>' +
+            '<strong style="color: var(--rec-text-main);">' + escapeHtml(r.boss_name) + '</strong>' +
+            '<span class="text-secondary" style="font-size: 0.65rem;">(' + timeStr + ')</span>' +
+          '</div>' +
+          '<span class="fw-bold" style="color: #ef4444; font-size: 0.74rem;">+' + (r.score || 1) + '점</span>' +
+        '</div>' +
+        '<div class="raid-log-members">' +
+          '<i class="fa-solid fa-users me-1 text-danger"></i>참여 (' + members.length + '명): ' + escapeHtml(members.join(", ")) +
+        '</div>' +
+      '</div>';
+    }).join("");
+  }
+
+  // 탭 4: 전체 토벌기록 렌더링 (관리자 삭제 지원)
+  function renderHistoryList() {
+    var container = document.getElementById("raidLogContainer");
+    var countText = document.getElementById("logCountText");
+    var adminText = document.getElementById("adminNoticeText");
+    var records = rawStatsData.records || [];
+
+    if (countText) countText.innerText = "총 " + records.length + "건의 토벌 기록";
+    var isAdmin = verifyAdminPermission();
+    if (adminText) adminText.innerText = isAdmin ? "🛡️ 관리자: 오등록 건 개별 삭제 가능" : "";
+
+    if (!container) return;
+    if (records.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-4">조회된 기간 내 토벌 기록이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = records.map(function(r) {
+      var members = [];
       if (Array.isArray(r.members)) members = r.members;
       else if (typeof r.members === "string") {
         try { members = JSON.parse(r.members); } catch(e){}
       }
 
-      const isWar = r.war_type && r.war_type !== "일반";
-      const timeStr = formatKstTimeDisplay(r.raid_time);
+      var isWar = r.war_type && r.war_type !== "일반";
+      var timeStr = formatKstTimeDisplay(r.raid_time);
 
-      return `
-        <div class="raid-log-item" id="raidRow_${r.id}">
-          <div class="raid-log-header">
-            <div class="d-flex align-items-center gap-1">
-              <strong style="color: var(--rec-text-main);">${escapeHtml(r.boss_name)}</strong>
-              ${isWar ? `<span class="badge bg-danger" style="font-size: 0.6rem;">${escapeHtml(r.war_type)}</span>` : ""}
-              <span class="text-secondary" style="font-size: 0.65rem;">(${timeStr})</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span class="fw-bold" style="color: #f59e0b; font-size: 0.72rem;">${r.score || 1}점</span>
-              ${isAdmin ? `
-                <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1" style="font-size: 0.62rem;" onclick="deleteRaidRecord(${r.id}, '${escapeHtml(r.boss_name)}', '${timeStr}')">
-                  <i class="fa-solid fa-trash-can"></i> 삭제
-                </button>
-              ` : ""}
-            </div>
-          </div>
-          <div class="raid-log-members">
-            <i class="fa-solid fa-users me-1 text-secondary"></i>참여 (${members.length}명): ${escapeHtml(members.join(", "))}
-          </div>
-        </div>
-      `;
+      return '<div class="raid-log-item" id="raidRow_' + r.id + '">' +
+        '<div class="raid-log-header">' +
+          '<div class="d-flex align-items-center gap-1">' +
+            '<strong style="color: var(--rec-text-main);">' + escapeHtml(r.boss_name) + '</strong>' +
+            (isWar ? '<span class="badge bg-danger" style="font-size: 0.6rem;">' + escapeHtml(r.war_type) + '</span>' : '') +
+            '<span class="text-secondary" style="font-size: 0.65rem;">(' + timeStr + ')</span>' +
+          '</div>' +
+          '<div class="d-flex align-items-center gap-2">' +
+            '<span class="fw-bold" style="color: #f59e0b; font-size: 0.72rem;">' + (r.score || 1) + '점</span>' +
+            (isAdmin ? '<button type="button" class="btn btn-outline-danger btn-sm py-0 px-1" style="font-size: 0.62rem;" onclick="deleteRaidRecord(' + r.id + ', \'' + escapeHtml(r.boss_name) + '\', \'' + timeStr + '\')"><i class="fa-solid fa-trash-can"></i> 삭제</button>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div class="raid-log-members">' +
+          '<i class="fa-solid fa-users me-1 text-secondary"></i>참여 (' + members.length + '명): ' + escapeHtml(members.join(", ")) +
+        '</div>' +
+      '</div>';
     }).join("");
   }
 
   function formatKstTimeDisplay(isoStr) {
     if (!isoStr) return "";
     try {
-      const d = new Date(isoStr);
+      var d = new Date(isoStr);
       if (isNaN(d.getTime())) return isoStr;
-      const m = d.getMonth() + 1;
-      const day = d.getDate();
-      const h = String(d.getHours()).padStart(2, "0");
-      const min = String(d.getMinutes()).padStart(2, "0");
-      return `${m}/${day} ${h}:${min}`;
+      var m = d.getMonth() + 1;
+      var day = d.getDate();
+      var h = String(d.getHours()).padStart(2, "0");
+      var min = String(d.getMinutes()).padStart(2, "0");
+      return m + "/" + day + " " + h + ":" + min;
     } catch(e) {
       return isoStr;
     }
   }
 
-  // 토벌 기록 단독 삭제 (관리자 권한)
+  // 토벌 기록 단독 삭제
   async function deleteRaidRecord(raidId, bossName, timeStr) {
     if (!verifyAdminPermission()) {
       return showRecordsToast("기록 삭제 권한이 없습니다. (관리자 전용)", "🔒");
     }
 
-    const ok = await openCustomConfirm(
-      `[${bossName}] (${timeStr}) 토벌 기록을 삭제하시겠습니까?\n\n※ 삭제 시 해당 토벌 건의 모든 길드원 점수 및 횟수가 즉시 차감됩니다.`,
+    var ok = await openCustomConfirm(
+      "[" + bossName + "] (" + timeStr + ") 토벌 기록을 삭제하시겠습니까?\n\n※ 삭제 시 해당 토벌 건의 모든 길드원 점수 및 횟수가 즉시 차감됩니다.",
       "토벌 기록 삭제"
     );
     if (!ok) return;
 
     try {
-      await apiRequest(`boss_participations?id=eq.${raidId}`, "DELETE");
-      showRecordsToast(`[${bossName}] 토벌 기록이 삭제되었습니다.`, "🗑️");
+      await apiRequest("boss_participations?id=eq." + raidId, "DELETE");
+      showRecordsToast("[" + bossName + "] 토벌 기록이 삭제되었습니다.", "🗑️");
       fetchStatsData();
     } catch (e) {
-      console.error("토벌 기록 삭제 에러:", e);
       showRecordsToast("삭제 중 오류가 발생했습니다: " + e.message, "❌");
     }
   }
 
   // 길드원 상세 모달 열기
   function openMemberDetailModal(name) {
-    const s = rawStatsData.memberStats[name];
+    var s = rawStatsData.memberStats[name];
     if (!s) return;
 
-    document.getElementById("detailModalTitle").innerText = `[${s.name}] 활동 세부 통계`;
-    const bDetails = s.bossDetails || {};
-    const bosses = Object.keys(bDetails);
-    bosses.sort((a, b) => bDetails[b] - bDetails[a]);
+    document.getElementById("detailModalTitle").innerText = "[" + s.name + "] 활동 세부 통계";
+    var bDetails = s.bossDetails || {};
+    var bosses = Object.keys(bDetails);
+    bosses.sort(function(a, b) { return bDetails[b] - bDetails[a]; });
 
-    let detailHtml = `
-      <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded" style="background: var(--rec-item-bg); border: 1px solid var(--rec-item-border);">
-        <div>
-          <span class="badge bg-secondary mb-1" style="font-size: 0.65rem;">${escapeHtml(s.jobClass)}</span>
-          <div class="fw-bold" style="font-size: 0.9rem; color: var(--rec-text-main);">${escapeHtml(s.name)}</div>
-        </div>
-        <div class="text-end">
-          <div style="font-size: 0.68rem; color: var(--rec-text-sub);">누적 활동 총점</div>
-          <div class="fw-bold fs-5" style="color: #f59e0b;">${s.totalScore}점</div>
-        </div>
-      </div>
+    var jobBadgeHtml = (s.jobClass && s.jobClass !== "미설정")
+      ? '<span class="badge bg-secondary mb-1" style="font-size: 0.65rem;">' + escapeHtml(s.jobClass) + '</span>'
+      : '';
 
-      <div class="row g-2 text-center mb-3">
-        <div class="col-6">
-          <div class="p-2 rounded" style="background: var(--rec-item-bg); border: 1px solid var(--rec-item-border);">
-            <div style="font-size: 0.65rem; color: var(--rec-text-sub);">보스 토벌 참여</div>
-            <div class="fw-bold text-primary" style="font-size: 0.85rem;">${s.bossCount}회</div>
-          </div>
-        </div>
-        <div class="col-6">
-          <div class="p-2 rounded" style="background: var(--rec-item-bg); border: 1px solid var(--rec-item-border);">
-            <div style="font-size: 0.65rem; color: var(--rec-text-sub);">전쟁/인터 참여</div>
-            <div class="fw-bold text-danger" style="font-size: 0.85rem;">${s.warCount}회</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="small fw-bold mb-1" style="font-size: 0.72rem; color: var(--rec-text-main);">보스별 상세 토벌 횟수</div>
-      <div class="d-flex flex-column gap-1" style="max-height: 220px; overflow-y: auto;">
-        ${bosses.length === 0 ? `<div class="text-secondary small text-center py-2">참여 기록이 없습니다.</div>` :
-          bosses.map(b => `
-            <div class="d-flex justify-content-between align-items-center py-1 px-2 rounded" style="background: var(--rec-item-bg); font-size: 0.7rem; border: 1px solid var(--rec-item-border);">
-              <span style="color: var(--rec-text-main);">${escapeHtml(b)}</span>
-              <strong class="text-primary">${bDetails[b]}회</strong>
-            </div>
-          `).join("")
-        }
-      </div>
-    `;
+    var detailHtml = '<div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded" style="background: var(--rec-item-bg); border: 1px solid var(--rec-item-border);">' +
+        '<div>' +
+          jobBadgeHtml +
+          '<div class="fw-bold" style="font-size: 0.9rem; color: var(--rec-text-main);">' + escapeHtml(s.name) + '</div>' +
+        '</div>' +
+        '<div class="text-end">' +
+          '<div style="font-size: 0.68rem; color: var(--rec-text-sub);">누적 활동 총점</div>' +
+          '<div class="fw-bold fs-5" style="color: #f59e0b;">' + s.totalScore + '점</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="row g-2 text-center mb-3">' +
+        '<div class="col-6">' +
+          '<div class="p-2 rounded" style="background: var(--rec-item-bg); border: 1px solid var(--rec-item-border);">' +
+            '<div style="font-size: 0.65rem; color: var(--rec-text-sub);">보스 토벌 참여</div>' +
+            '<div class="fw-bold text-primary" style="font-size: 0.85rem;">' + s.bossCount + '회</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="col-6">' +
+          '<div class="p-2 rounded" style="background: var(--rec-item-bg); border: 1px solid var(--rec-item-border);">' +
+            '<div style="font-size: 0.65rem; color: var(--rec-text-sub);">전쟁/인터 참여</div>' +
+            '<div class="fw-bold text-danger" style="font-size: 0.85rem;">' + s.warCount + '회</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="small fw-bold mb-1" style="font-size: 0.72rem; color: var(--rec-text-main);">보스별 상세 토벌 횟수</div>' +
+      '<div class="d-flex flex-column gap-1" style="max-height: 220px; overflow-y: auto;">' +
+        (bosses.length === 0 ? '<div class="text-secondary small text-center py-2">참여 기록이 없습니다.</div>' :
+          bosses.map(function(b) {
+            return '<div class="d-flex justify-content-between align-items-center py-1 px-2 rounded" style="background: var(--rec-item-bg); font-size: 0.7rem; border: 1px solid var(--rec-item-border);">' +
+              '<span style="color: var(--rec-text-main);">' + escapeHtml(b) + '</span>' +
+              '<strong class="text-primary">' + bDetails[b] + '회</strong>' +
+            '</div>';
+          }).join("")
+        ) +
+      '</div>';
 
     document.getElementById("detailModalBody").innerHTML = detailHtml;
     document.getElementById("memberDetailModal").classList.add("show");
@@ -1134,110 +1217,106 @@
     document.getElementById("memberDetailModal").classList.remove("show");
   }
 
-  /* 💬 대화방 공유 처리 함수 (카카오톡 정품 1줄 슬림 규격) */
+  /* 💬 대화방 공유 처리 함수 (1줄 슬림 카카오톡 정품 영수증 규격) */
   window.shareRecordsReportToChat = async function() {
-    const btn = document.getElementById('btnShareRecordsReport');
-    const statsObj = rawStatsData.memberStats || {};
-    const allMembers = Object.keys(statsObj);
-    const members = allMembers.filter(m => (statsObj[m].totalScore || 0) > 0);
+    var btn = document.getElementById('btnShareRecordsReport');
+    var statsObj = rawStatsData.memberStats || {};
+    var allMembers = Object.keys(statsObj);
+    var members = allMembers.filter(function(m) { return (statsObj[m].totalScore || 0) > 0; });
 
     if (members.length === 0) {
       return showRecordsToast('공유할 참여 내역 데이터가 없습니다.', '⚠️');
     }
 
-    const sDate = document.getElementById('filterStartDate').value || '';
-    const eDate = document.getElementById('filterEndDate').value || '';
+    var sDate = document.getElementById('filterStartDate').value || '';
+    var eDate = document.getElementById('filterEndDate').value || '';
 
-    members.sort((a, b) => statsObj[b].totalScore - statsObj[a].totalScore);
+    members.sort(function(a, b) { return statsObj[b].totalScore - statsObj[a].totalScore; });
 
-    const totalRaidsCount = rawStatsData.records.length;
-    const totalWarCount = rawStatsData.warRecords.length;
-    let totalScoreSum = 0;
-    members.forEach(m => { totalScoreSum += (statsObj[m].totalScore || 0); });
+    var totalRaidsCount = rawStatsData.records.length;
+    var totalWarCount = rawStatsData.warRecords.length;
+    var totalScoreSum = 0;
+    members.forEach(function(m) { totalScoreSum += (statsObj[m].totalScore || 0); });
 
-    const top5 = members.slice(0, 5);
+    var top5 = members.slice(0, 5);
 
     function formatCleanDate(dStr) {
       if (!dStr) return '';
       try {
-        const parts = dStr.split('-');
-        if (parts.length === 3) return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
+        var parts = dStr.split('-');
+        if (parts.length === 3) return parseInt(parts[1], 10) + '/' + parseInt(parts[2], 10);
       } catch (e) {}
       return dStr;
     }
 
-    const sClean = sDate ? formatCleanDate(sDate) : '시작';
-    const eClean = eDate ? formatCleanDate(eDate) : '현재';
-    const periodLabel = `${sClean} ~ ${eClean}`;
+    var sClean = sDate ? formatCleanDate(sDate) : '시작';
+    var eClean = eDate ? formatCleanDate(eDate) : '현재';
+    var periodLabel = sClean + " ~ " + eClean;
 
-    const rankListHtml = top5.map((name, i) => {
-      const d = statsObj[name];
-      let rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:rgba(0,0,0,0.06); font-size:9.5px; font-weight:800; color:var(--kakao-time-gray); margin-right:5px; flex-shrink:0;">${i + 1}</span>`;
-      if (i === 0) rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#f59e0b; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0; box-shadow:0 1px 3px rgba(245,158,11,0.35);">1</span>`;
-      else if (i === 1) rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#94a3b8; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0;">2</span>`;
-      else if (i === 2) rankBadge = `<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#d97706; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0;">3</span>`;
+    var rankListHtml = top5.map(function(name, i) {
+      var d = statsObj[name];
+      var rankBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:rgba(0,0,0,0.06); font-size:9.5px; font-weight:800; color:var(--kakao-time-gray); margin-right:5px; flex-shrink:0;">' + (i + 1) + '</span>';
+      if (i === 0) rankBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#f59e0b; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0; box-shadow:0 1px 3px rgba(245,158,11,0.35);">1</span>';
+      else if (i === 1) rankBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#94a3b8; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0;">2</span>';
+      else if (i === 2) rankBadge = '<span style="display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:4px; background:#d97706; font-size:9.5px; font-weight:800; color:#ffffff; margin-right:5px; flex-shrink:0;">3</span>';
 
-      return `
-        <div style="display:flex; justify-content:space-between; align-items:center; padding:3.5px 6px; margin-bottom:3px; border-radius:6px; background:rgba(0,0,0,0.02); border:1px solid var(--drawer-card-border); font-size:11px; line-height:1.2;">
-          <div style="display:flex; align-items:center; min-width:0; gap:2px;">
-            ${rankBadge}
-            <span style="font-weight:700; color:var(--kakao-notice-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px;">${escapeHtml(name)}</span>
-          </div>
-          <div style="text-align:right; flex-shrink:0; white-space:nowrap;">
-            <strong style="color:#d97706; font-size:11px;">${d.totalScore}점</strong>
-            <span style="font-size:9.5px; color:var(--kakao-time-gray); margin-left:2px;">(${d.bossCount}회)</span>
-          </div>
-        </div>
-      `;
+      return '<div style="display:flex; justify-content:space-between; align-items:center; padding:3.5px 6px; margin-bottom:3px; border-radius:6px; background:rgba(0,0,0,0.02); border:1px solid var(--drawer-card-border); font-size:11px; line-height:1.2;">' +
+        '<div style="display:flex; align-items:center; min-width:0; gap:2px;">' +
+          rankBadge +
+          '<span style="font-weight:700; color:var(--kakao-notice-text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:130px;">' + escapeHtml(name) + '</span>' +
+        '</div>' +
+        '<div style="text-align:right; flex-shrink:0; white-space:nowrap;">' +
+          '<strong style="color:#d97706; font-size:11px;">' + d.totalScore + '점</strong>' +
+          '<span style="font-size:9.5px; color:var(--kakao-time-gray); margin-left:2px;">(' + d.bossCount + '회)</span>' +
+        '</div>' +
+      '</div>';
     }).join('');
 
-    const reportCardHtml = `
-      <div class="records-report-card">
-        <div class="rec-card-header">
-          <div class="rec-card-title">
-            <i class="fa-solid fa-scroll text-warning"></i>
-            <span>보스&전쟁 통계 보고</span>
-          </div>
-          <span class="rec-date-badge">${periodLabel}</span>
-        </div>
+    var reportCardHtml = '<div class="records-report-card">' +
+      '<div class="rec-card-header">' +
+        '<div class="rec-card-title">' +
+          '<i class="fa-solid fa-scroll text-warning"></i>' +
+          '<span>보스&전쟁 통계 보고</span>' +
+        '</div>' +
+        '<span class="rec-date-badge">' + periodLabel + '</span>' +
+      '</div>' +
 
-        <div class="rec-hero-box">
-          <div>
-            <div class="rec-hero-label"><i class="fa-solid fa-trophy text-warning me-1"></i>종합 참여 1위 MVP</div>
-            <div class="rec-hero-val">🥇 ${escapeHtml(top5[0] || '없음')} <span style="font-size:11px; font-weight:700; color:var(--kakao-notice-text);">(${statsObj[top5[0]]?.totalScore || 0}점)</span></div>
-          </div>
-          <div style="font-size: 1.55rem; line-height: 1;">👑</div>
-        </div>
+      '<div class="rec-hero-box">' +
+        '<div>' +
+          '<div class="rec-hero-label"><i class="fa-solid fa-trophy text-warning me-1"></i>종합 참여 1위 MVP</div>' +
+          '<div class="rec-hero-val">🥇 ' + escapeHtml(top5[0] || '없음') + ' <span style="font-size:11px; font-weight:700; color:var(--kakao-notice-text);">(' + (statsObj[top5[0]]?.totalScore || 0) + '점)</span></div>' +
+        '</div>' +
+        '<div style="font-size: 1.55rem; line-height: 1;">👑</div>' +
+      '</div>' +
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 7px;">
-          <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--drawer-card-border); border-radius: 7px; padding: 5px 7px;">
-            <div style="font-size: 10px; color: var(--kakao-time-gray); font-weight: 700;">총 토벌 횟수</div>
-            <div style="font-size: 11.5px; font-weight: 800; color: var(--kakao-notice-text); margin-top: 1px;">⚔️ ${totalRaidsCount}회 <small style="font-size: 9.5px; color: var(--kakao-time-gray); font-weight: normal;">(전쟁 ${totalWarCount}회)</small></div>
-          </div>
-          <div style="background: rgba(0,0,0,0.02); border: 1px solid var(--drawer-card-border); border-radius: 7px; padding: 5px 7px;">
-            <div style="font-size: 10px; color: var(--kakao-time-gray); font-weight: 700;">참여 인원 / 총점</div>
-            <div style="font-size: 11.5px; font-weight: 800; color: #0284c7; margin-top: 1px;">👥 ${members.length}명 / ${totalScoreSum}점</div>
-          </div>
-        </div>
+      '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 7px;">' +
+        '<div style="background: rgba(0,0,0,0.02); border: 1px solid var(--drawer-card-border); border-radius: 7px; padding: 5px 7px;">' +
+          '<div style="font-size: 10px; color: var(--kakao-time-gray); font-weight: 700;">총 토벌 횟수</div>' +
+          '<div style="font-size: 11.5px; font-weight: 800; color: var(--kakao-notice-text); margin-top: 1px;">⚔️ ' + totalRaidsCount + '회 <small style="font-size: 9.5px; color: var(--kakao-time-gray); font-weight: normal;">(전쟁 ' + totalWarCount + '회)</small></div>' +
+        '</div>' +
+        '<div style="background: rgba(0,0,0,0.02); border: 1px solid var(--drawer-card-border); border-radius: 7px; padding: 5px 7px;">' +
+          '<div style="font-size: 10px; color: var(--kakao-time-gray); font-weight: 700;">참여 인원 / 총점</div>' +
+          '<div style="font-size: 11.5px; font-weight: 800; color: #0284c7; margin-top: 1px;">👥 ' + members.length + '명 / ' + totalScoreSum + '점</div>' +
+        '</div>' +
+      '</div>' +
 
-        <div style="font-size: 10.5px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 4px; display:flex; justify-content:space-between; align-items:center;">
-          <span><i class="fa-solid fa-ranking-star text-primary me-1"></i>TOP 5 랭킹</span>
-          <span style="font-size: 9.5px; font-weight: normal;">총 ${members.length}명 참여</span>
-        </div>
+      '<div style="font-size: 10.5px; font-weight: 700; color: var(--kakao-time-gray); margin-bottom: 4px; display:flex; justify-content:space-between; align-items:center;">' +
+        '<span><i class="fa-solid fa-ranking-star text-primary me-1"></i>TOP 5 랭킹</span>' +
+        '<span style="font-size: 9.5px; font-weight: normal;">총 ' + members.length + '명 참여</span>' +
+      '</div>' +
 
-        <div style="margin-bottom: 6px;">
-          ${rankListHtml}
-        </div>
+      '<div style="margin-bottom: 6px;">' +
+        rankListHtml +
+      '</div>' +
 
-        <div style="font-size: 9.5px; color: var(--kakao-time-gray); text-align: center; margin-top: 4px;">
-          보스 토벌 및 전쟁 참여 누적 활동 집계 완료
-        </div>
-      </div>
-    `;
+      '<div style="font-size: 9.5px; color: var(--kakao-time-gray); text-align: center; margin-top: 4px;">' +
+        '보스 토벌 및 전쟁 참여 누적 활동 집계 완료' +
+      '</div>' +
+    '</div>';
 
     if (btn) {
       btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> 공유 중`;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 공유 중';
     }
 
     try {
@@ -1249,21 +1328,28 @@
       }]);
 
       showRecordsToast("보스&전쟁 통계가 대화방에 공유되었습니다!", "📜");
+
+      // 🎯 공유 완료 후 모듈 창을 닫고 대화방으로 복귀
+      if (typeof closeModuleOverlay === "function") {
+        closeModuleOverlay();
+      }
     } catch (err) {
       showRecordsToast("공유 실패: " + err.message, "❌");
     } finally {
       if (btn) {
         btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i><span>대화방 공유</span>`;
+        btn.innerHTML = '<i class="fa-solid fa-comment-dots"></i><span>대화방 공유</span>';
       }
     }
   };
 
   function escapeHtml(t) {
-    return (t || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m]);
+    return (t || '').replace(/[&<>"']/g, function(m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+    });
   }
 
-  // 🚀 화면 진입 즉시 이번 주(월~일) 날짜 자동 입력 및 데이터 렌더링 실행
+  // 🚀 화면 진입 즉시 초기화 실행 (중복 선언 방어 완료)
   (function init() {
     initRecordsPage();
   })();
