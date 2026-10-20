@@ -82,9 +82,6 @@
       <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageEnemies')">
-        <i class="fa-solid fa-skull text-danger"></i><span>원수목록</span>
-      </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
@@ -150,11 +147,15 @@
         </div>
       </div>
 
+      <!-- 상단 우측 헤더 도구: 보스참여등록(클립) - 대화검색(돋보기) - 보스타임브리핑 - 길드원목록 -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
           <i class="fa-solid fa-download"></i>
         </button>
-        <button type="button" class="btn-kakao-head" title="대화 검색" onclick="focusChatInput()">
+        <button type="button" class="btn-kakao-head" title="보스참여등록" onclick="openModulePage('PageRegister')">
+          <i class="fa-solid fa-paperclip"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" id="btnToggleChatSearch" title="대화 검색" onclick="toggleChatSearchBar()">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
         <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
@@ -165,6 +166,21 @@
         </button>
       </div>
     </header>
+
+    <!-- 🔍 카카오톡 스타일 슬라이드 대화 검색 바 (선택지 A: 7일 보관 안내) -->
+    <div id="chatSearchBarArea" class="chat-search-bar-wrap" style="display: none;">
+      <div class="chat-search-input-box">
+        <i class="fa-solid fa-magnifying-glass search-bar-icon"></i>
+        <input type="text" id="chatSearchKeywordInput" class="chat-search-input" placeholder="대화 검색 (최근 7일간 대화)" oninput="handleSearchChatMessages(this.value)">
+        <button type="button" class="btn-search-clear" onclick="clearChatSearch()" title="검색어 지우기">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="chat-search-info-row">
+        <span class="search-retention-text"><i class="fa-regular fa-clock me-1"></i>일주일(7일) 이전 메시지는 확인하실 수 없습니다.</span>
+        <span class="search-match-count" id="chatSearchMatchCount"></span>
+      </div>
+    </div>
 
     <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
       <div class="d-flex align-items-center" style="min-width: 0 !important; flex: 1;">
@@ -182,14 +198,11 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
+    <!-- 하단 메시지 입력창: 아이콘 제거 후 전송 버튼만 우측에 깔끔 정렬 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
-      <div class="input-bottom-tools">
-        <div class="input-tool-icons">
-          <i class="fa-regular fa-face-smile" title="내 직업/프로필 설정" onclick="openProfileEditModal()"></i>
-          <i class="fa-solid fa-paperclip" title="보스 토벌 스샷 등록" onclick="openModulePage('PageRegister')"></i>
-        </div>
+      <div class="input-bottom-tools justify-content-end">
         <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
           전송
         </button>
