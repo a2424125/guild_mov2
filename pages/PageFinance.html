@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (원본 디자인 복원)
+     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (원본 디자인 복원 및 DB 에러 해결)
      ========================================== -->
 <style>
   .finance-card {
@@ -309,10 +309,13 @@
       const rawRows = rows || [];
 
       rawFinanceLogs = rawRows.map(r => {
-        const typeStr = (r.tx_type === '출금' || r.tx_type === '지출' || r.type === '지출') ? '지출' : '입금';
-        const dateStr = r.date || (r.created_at ? r.created_at.split('T')[0] : new Date().toISOString().split('T')[0]);
+        const typeStr = (r.tx_type === '출금' || r.tx_type === '지출') ? '지출' : '입금';
+        let dateStr = new Date().toISOString().split('T')[0];
+        if (r.created_at) {
+          dateStr = new Date(r.created_at).toISOString().split('T')[0];
+        }
         const reasonStr = r.reason || r.category || '사유 없음';
-        const memoStr = r.note || r.category || '';
+        const memoStr = r.category || '';
 
         return {
           id: r.id,
@@ -420,14 +423,14 @@
       return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const customCreatedAt = new Date().toISOString();
     try {
       await apiRequest("guild_finances", "POST", [{
-        date: todayStr,
         tx_type: diff > 0 ? "입금" : "출금",
         amount: Math.abs(diff),
         category: "금고 잔액 보정",
-        reason: "관리자 직접 수정"
+        reason: "관리자 직접 수정",
+        created_at: customCreatedAt
       }]);
       closeVaultEditModal();
       showKakaoToast("금고 잔액이 보정되었습니다.", "🎉");
@@ -437,9 +440,7 @@
     }
   };
 
-  window.openIncomeModal = function() {
-    // Top action buttons view switcher if needed
-  };
+  window.openIncomeModal = function() {};
 
   window.setIncomeCalcMode = function(mode) {
     incomeCalcMode = mode;
@@ -487,13 +488,15 @@
       if (isNaN(amount) || amount <= 0) return showKakaoToast("유효한 입금 금액을 입력하세요.", "⚠️");
     }
 
+    const customCreatedAt = dt ? new Date(`${dt}T12:00:00`).toISOString() : new Date().toISOString();
+
     try {
       await apiRequest("guild_finances", "POST", [{
-        date: dt,
         tx_type: "입금",
         amount: amount,
         category: reason,
-        reason: memo || reason
+        reason: memo || reason,
+        created_at: customCreatedAt
       }]);
       showKakaoToast(`+${amount.toLocaleString()} D 수익금 입금 완료!`, "🎉");
       document.getElementById('incomeTotalInput').value = '';
@@ -526,13 +529,15 @@
 
     if (isNaN(amount) || amount <= 0) return showKakaoToast("지출 금액을 올바르게 입력하세요.", "⚠️");
 
+    const customCreatedAt = dt ? new Date(`${dt}T12:00:00`).toISOString() : new Date().toISOString();
+
     try {
       await apiRequest("guild_finances", "POST", [{
-        date: dt,
         tx_type: "출금",
         amount: amount,
         category: reason,
-        reason: receiver || reason
+        reason: receiver || reason,
+        created_at: customCreatedAt
       }]);
       closeExpenseModal();
       showKakaoToast(`-${amount.toLocaleString()} D 길드 지출 완료!`, "💸");
@@ -568,14 +573,15 @@
     const memo = document.getElementById('editLogMemo').value.trim();
 
     if (isNaN(amount) || amount <= 0) return showKakaoToast("올바른 금액을 입력하세요.", "⚠️");
+    const customCreatedAt = dt ? new Date(`${dt}T12:00:00`).toISOString() : new Date().toISOString();
 
     try {
       await apiRequest(`guild_finances?id=eq.${id}`, "PATCH", {
-        date: dt,
         tx_type: logType === '입금' ? '입금' : '출금',
         amount: amount,
         category: reason,
-        reason: memo || reason
+        reason: memo || reason,
+        created_at: customCreatedAt
       });
       closeFinanceEditModal();
       showKakaoToast("내역이 수정되었습니다.", "✏️");
@@ -664,7 +670,7 @@
         message: reportHtml,
         msg_type: "finance_report",
         mentions: []
-      }])
+      }]);
       showKakaoToast("대화방에 길드비용 현황이 공유되었습니다!", "🏛️");
       if (typeof closeModuleOverlay === 'function') closeModuleOverlay();
     } catch (err) {
