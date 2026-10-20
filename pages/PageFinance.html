@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (날짜 입력창 ID 완벽 일치화 및 데이터 로드 정상화)
+     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (동기식 즉시 로드 및 원본 디자인 복원)
      ========================================== -->
 <style>
   .finance-card {
@@ -234,19 +234,16 @@
 </div>
 
 <script>
-  let rawFinanceLogs = [];
-  let currentBalance = 0;
-  let currentVaultBalance = 0;
-  let incomeCalcMode = 'total';
-  let lastFetchedPrevVault = 0;
+  window.rawFinanceLogs = [];
+  window.currentBalance = 0;
+  window.incomeCalcMode = 'total';
+  window.lastFetchedPrevVault = 0;
+  window.activeGuildNameForFinance = "길드";
 
   window.formatCommaInput = function(input) {
+    if (!input) return;
     let val = input.value.replace(/[^0-9]/g, '');
-    if (!val) {
-      input.value = '';
-      return;
-    }
-    input.value = Number(val).toLocaleString();
+    input.value = val ? Number(val).toLocaleString() : '';
   };
 
   window.parseCommaNumber = function(str) {
@@ -255,27 +252,27 @@
     return parseInt(clean, 10) || 0;
   };
 
-  async function initFinanceModule() {
-    await loadConfiguredGuildName();
+  // 🎯 초기화: 대기 없이 날짜와 폼을 즉시 동기 세팅한 후 데이터를 즉각 로드
+  function initFinanceModule() {
     const today = new Date().toISOString().split('T')[0];
-    document.getElementById('incomeDate').value = today;
-    document.getElementById('expenseDate').value = today;
+    const incInput = document.getElementById('incomeDate');
+    const expInput = document.getElementById('expenseDate');
+    if (incInput) incInput.value = today;
+    if (expInput) expInput.value = today;
 
     window.setFinanceQuickRange('thisWeek');
     window.setIncomeCalcMode('total');
-  }
 
-  async function loadConfiguredGuildName() {
-    try {
-      const res = await apiRequest("guild_settings?key=eq.guild_name");
-      if (res && res.length > 0 && res[0].value) {
-        window.activeGuildNameForFinance = res[0].value;
-      } else {
-        window.activeGuildNameForFinance = "길드";
-      }
-    } catch(e) {
-      window.activeGuildNameForFinance = "길드";
-    }
+    // 백그라운드에서 길드명 캐시 조회
+    (async () => {
+      try {
+        const res = await apiRequest("guild_settings?select=key,value");
+        if (res && res.length > 0) {
+          const item = res.find(x => x.key === "guild_name");
+          if (item && item.value) window.activeGuildNameForFinance = item.value;
+        }
+      } catch (e) {}
+    })();
   }
 
   window.setFinanceQuickRange = function(rangeType) {
@@ -283,37 +280,48 @@
     let startD = new Date();
     let endD = new Date();
 
-    document.getElementById('btnRangeWeek').classList.remove('active');
-    document.getElementById('btnRangeLastWeek').classList.remove('active');
-    document.getElementById('btnRangeMonth').classList.remove('active');
-    document.getElementById('btnRangeAll').classList.remove('active');
+    const btnW = document.getElementById('btnRangeWeek');
+    const btnLW = document.getElementById('btnRangeLastWeek');
+    const btnM = document.getElementById('btnRangeMonth');
+    const btnA = document.getElementById('btnRangeAll');
+
+    if (btnW) btnW.classList.remove('active');
+    if (btnLW) btnLW.classList.remove('active');
+    if (btnM) btnM.classList.remove('active');
+    if (btnA) btnA.classList.remove('active');
 
     if (rangeType === 'thisWeek') {
-      document.getElementById('btnRangeWeek').classList.add('active');
+      if (btnW) btnW.classList.add('active');
       const day = today.getDay();
       const diffToMonday = today.getDate() - day + (day === 0 ? -6 : 1);
       startD = new Date(today.setDate(diffToMonday));
       endD = new Date();
     } else if (rangeType === 'lastWeek') {
-      document.getElementById('btnRangeLastWeek').classList.add('active');
+      if (btnLW) btnLW.classList.add('active');
       const day = today.getDay();
       const diffToLastMon = today.getDate() - day - 6 + (day === 0 ? -6 : 1);
       startD = new Date(today.setDate(diffToLastMon));
       endD = new Date(today.setDate(startD.getDate() + 6));
     } else if (rangeType === 'thisMonth') {
-      document.getElementById('btnRangeMonth').classList.add('active');
+      if (btnM) btnM.classList.add('active');
       startD = new Date(today.getFullYear(), today.getMonth(), 1);
       endD = new Date(today.getFullYear(), today.getMonth() + 1, 0);
     } else if (rangeType === 'all') {
-      document.getElementById('btnRangeAll').classList.add('active');
+      if (btnA) btnA.classList.add('active');
       startD = new Date(2025, 0, 1);
       endD = new Date(2035, 11, 31);
     }
 
-    document.getElementById('finFilterStart').value = startD.toISOString().split('T')[0];
-    document.getElementById('finFilterEnd').value = endD.toISOString().split('T')[0];
+    const sElem = document.getElementById('finFilterStart');
+    const eElem = document.getElementById('finFilterEnd');
+    if (sElem) sElem.value = startD.toISOString().split('T')[0];
+    if (eElem) eElem.value = endD.toISOString().split('T')[0];
 
-    loadFinanceData();
+    window.loadFinanceData();
+  };
+
+  window.loadFinanceLogs = function() {
+    window.loadFinanceData();
   };
 
   window.loadFinanceData = async function() {
@@ -322,14 +330,16 @@
       container.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>내역을 불러오는 중...</div>`;
     }
 
-    const start = document.getElementById('finFilterStart').value;
-    const end = document.getElementById('finFilterEnd').value;
+    const sElem = document.getElementById('finFilterStart');
+    const eElem = document.getElementById('finFilterEnd');
+    const start = sElem ? sElem.value : '';
+    const end = eElem ? eElem.value : '';
 
     try {
       const rows = await apiRequest("guild_finances?select=*&order=created_at.desc,id.desc");
       const rawRows = rows || [];
 
-      const logs = rawRows.map(r => {
+      window.rawFinanceLogs = rawRows.map(r => {
         const typeStr = (r.tx_type === '출금' || r.tx_type === '지출') ? '출금' : '입금';
         let dateStr = new Date().toISOString().split('T')[0];
         if (r.created_at) {
@@ -337,7 +347,6 @@
         }
         const reasonStr = r.reason || '사유 없음';
         const categoryStr = r.category || '';
-
         const inFilter = (!start || dateStr >= start) && (!end || dateStr <= end);
 
         return {
@@ -357,7 +366,7 @@
       let filteredInc = 0;
       let filteredExp = 0;
 
-      logs.forEach(l => {
+      window.rawFinanceLogs.forEach(l => {
         const amt = Number(l.amount || 0);
         if (l.tx_type === '입금') {
           totalInc += amt;
@@ -368,35 +377,33 @@
         }
       });
 
-      currentBalance = totalInc - totalExp;
-      currentVaultBalance = currentBalance;
+      window.currentBalance = totalInc - totalExp;
 
-      document.getElementById('finCurrentVaultTotal').innerText = currentBalance.toLocaleString() + " D";
-      document.getElementById('finTotalIncomeSum').innerText = "+" + totalInc.toLocaleString();
-      document.getElementById('finTotalExpenseSum').innerText = "-" + totalExp.toLocaleString();
+      const vaultTotalElem = document.getElementById('finCurrentVaultTotal');
+      const incSumElem = document.getElementById('finTotalIncomeSum');
+      const expSumElem = document.getElementById('finTotalExpenseSum');
+      const timeElem = document.getElementById('finVaultUpdatedTime');
+      const periodNetElem = document.getElementById('finPeriodNetProfit');
+      const prevVaultElem = document.getElementById('incomePrevVaultText');
 
-      if (logs.length > 0) {
-        const lastDt = logs[0].created_at ? new Date(logs[0].created_at) : new Date();
-        document.getElementById('finVaultUpdatedTime').innerText = `마지막 갱신: ${formatTime24Hour(lastDt)}`;
-      } else {
-        document.getElementById('finVaultUpdatedTime').innerText = `마지막 갱신: -`;
+      if (vaultTotalElem) vaultTotalElem.innerText = window.currentBalance.toLocaleString() + " D";
+      if (incSumElem) incSumElem.innerText = "+" + totalInc.toLocaleString();
+      if (expSumElem) expSumElem.innerText = "-" + totalExp.toLocaleString();
+
+      if (window.rawFinanceLogs.length > 0 && timeElem) {
+        const lastDt = window.rawFinanceLogs[0].created_at ? new Date(window.rawFinanceLogs[0].created_at) : new Date();
+        timeElem.innerText = `마지막 갱신: ${formatTime24Hour(lastDt)}`;
       }
 
       const periodNet = filteredInc - filteredExp;
-      document.getElementById('finPeriodNetProfit').innerText = `기간 순수익: ${periodNet.toLocaleString()} D`;
+      if (periodNetElem) periodNetElem.innerText = `기간 순수익: ${periodNet.toLocaleString()} D`;
 
-      lastFetchedPrevVault = currentBalance;
-      document.getElementById('incomePrevVaultText').innerText = `직전 금고 잔액: ${lastFetchedPrevVault.toLocaleString()} D`;
+      window.lastFetchedPrevVault = window.currentBalance;
+      if (prevVaultElem) prevVaultElem.innerText = `직전 금고 잔액: ${window.lastFetchedPrevVault.toLocaleString()} D`;
 
-      window.lastFinanceData = {
-        logs: logs,
-        currentBalance: currentBalance,
-        totalIncome: totalInc,
-        totalExpense: totalExp,
-        filteredIncome: periodNet
-      };
+      const filteredLogs = window.rawFinanceLogs.filter(l => l.inFilter);
 
-      const filteredLogs = logs.filter(l => l.inFilter);
+      if (!container) return;
 
       if (filteredLogs.length === 0) {
         container.innerHTML = `<div class="text-secondary small text-center py-4">조회된 입출금 내역이 없습니다.</div>`;
@@ -438,17 +445,20 @@
   };
 
   window.openVaultEditModal = function() {
-    document.getElementById('inputVaultNewTotal').value = currentBalance.toLocaleString();
-    document.getElementById('modalVaultEdit').style.display = 'flex';
+    const vInput = document.getElementById('inputVaultNewTotal');
+    if (vInput) vInput.value = window.currentBalance.toLocaleString();
+    const modal = document.getElementById('modalVaultEdit');
+    if (modal) modal.style.display = 'flex';
   };
   window.closeVaultEditModal = function() {
-    document.getElementById('modalVaultEdit').style.display = 'none';
+    const modal = document.getElementById('modalVaultEdit');
+    if (modal) modal.style.display = 'none';
   };
   window.saveVaultNewTotal = async function() {
     const val = window.parseCommaNumber(document.getElementById('inputVaultNewTotal').value);
     if (isNaN(val)) return showKakaoToast("올바른 금액을 입력하세요.", "⚠️");
 
-    const diff = val - currentBalance;
+    const diff = val - window.currentBalance;
     if (diff === 0) {
       closeVaultEditModal();
       return;
@@ -465,39 +475,43 @@
       }]);
       closeVaultEditModal();
       showKakaoToast("금고 잔액이 보정되었습니다.", "🎉");
-      loadFinanceData();
+      window.loadFinanceData();
     } catch(err) {
       showKakaoToast("수정 실패: " + err.message, "❌");
     }
   };
 
   window.setIncomeCalcMode = function(mode) {
-    incomeCalcMode = mode;
+    window.incomeCalcMode = mode;
     const btnTot = document.getElementById('btnIncModeTotal');
     const btnDir = document.getElementById('btnIncModeDirect');
     const boxTot = document.getElementById('incomeBoxTotalMode');
     const boxDir = document.getElementById('incomeBoxDirectMode');
 
     if (mode === 'total') {
-      btnTot.className = "btn btn-sm btn-success flex-fill active";
-      btnDir.className = "btn btn-sm btn-outline-secondary flex-fill";
-      boxTot.style.display = 'block';
-      boxDir.style.display = 'none';
+      if (btnTot) btnTot.className = "btn btn-sm btn-success flex-fill active";
+      if (btnDir) btnDir.className = "btn btn-sm btn-outline-secondary flex-fill";
+      if (boxTot) boxTot.style.display = 'block';
+      if (boxDir) boxDir.style.display = 'none';
     } else {
-      btnTot.className = "btn btn-sm btn-outline-secondary flex-fill";
-      btnDir.className = "btn btn-sm btn-success flex-fill active";
-      boxTot.style.display = 'none';
-      boxDir.style.display = 'block';
+      if (btnTot) btnTot.className = "btn btn-sm btn-outline-secondary flex-fill";
+      if (btnDir) btnDir.className = "btn btn-sm btn-success flex-fill active";
+      if (boxTot) boxTot.style.display = 'none';
+      if (boxDir) boxDir.style.display = 'block';
     }
   };
 
   window.calculateIncomeDiff = function() {
-    if (incomeCalcMode === 'total') {
-      const val = window.parseCommaNumber(document.getElementById('incomeTotalInput').value);
-      const diff = val - lastFetchedPrevVault;
-      document.getElementById('incomeInputSumText').innerText = `입력 총액: ${val.toLocaleString()} D`;
+    if (window.incomeCalcMode === 'total') {
+      const inputElem = document.getElementById('incomeTotalInput');
+      const val = window.parseCommaNumber(inputElem ? inputElem.value : 0);
+      const diff = val - window.lastFetchedPrevVault;
+      const sumText = document.getElementById('incomeInputSumText');
+      const realDiffText = document.getElementById('incomeRealDiffText');
+
+      if (sumText) sumText.innerText = `입력 총액: ${val.toLocaleString()} D`;
       const sign = diff >= 0 ? "+" : "";
-      document.getElementById('incomeRealDiffText').innerText = `👉 실제 반영 입금액: ${sign}${diff.toLocaleString()} 다이아`;
+      if (realDiffText) realDiffText.innerText = `👉 실제 반영 입금액: ${sign}${diff.toLocaleString()} 다이아`;
     }
   };
 
@@ -507,10 +521,10 @@
     const memo = document.getElementById('incomeMemo').value.trim();
 
     let amount = 0;
-    if (incomeCalcMode === 'total') {
+    if (window.incomeCalcMode === 'total') {
       const totalVal = window.parseCommaNumber(document.getElementById('incomeTotalInput').value);
       if (isNaN(totalVal)) return showKakaoToast("금고 총액을 올바르게 입력하세요.", "⚠️");
-      amount = totalVal - lastFetchedPrevVault;
+      amount = totalVal - window.lastFetchedPrevVault;
       if (amount <= 0) return showKakaoToast("입력한 총액이 직전 잔액보다 적거나 같습니다.", "⚠️");
     } else {
       amount = window.parseCommaNumber(document.getElementById('incomeDirectInput').value);
@@ -532,7 +546,7 @@
       document.getElementById('incomeDirectInput').value = '';
       document.getElementById('incomeReason').value = '';
       document.getElementById('incomeMemo').value = '';
-      loadFinanceData();
+      window.loadFinanceData();
     } catch(err) {
       showKakaoToast("입금 처리 실패: " + err.message, "❌");
     }
@@ -570,14 +584,14 @@
       }]);
       closeExpenseModal();
       showKakaoToast(`-${amount.toLocaleString()} D 길드 지출 완료!`, "💸");
-      loadFinanceData();
+      window.loadFinanceData();
     } catch(err) {
       showKakaoToast("지출 처리 실패: " + err.message, "❌");
     }
   };
 
   window.openFinanceEditModal = function(id) {
-    const log = (window.lastFinanceData.logs || []).find(l => String(l.id) === String(id));
+    const log = (window.rawFinanceLogs || []).find(l => String(l.id) === String(id));
     if (!log) return;
 
     document.getElementById('editLogId').value = log.id;
@@ -614,7 +628,7 @@
       });
       closeEditFinanceModal();
       showKakaoToast("내역이 수정되었습니다.", "✏️");
-      loadFinanceData();
+      window.loadFinanceData();
     } catch(err) {
       showKakaoToast("수정 실패: " + err.message, "❌");
     }
@@ -628,17 +642,19 @@
       await apiRequest(`guild_finances?id=eq.${id}`, "DELETE");
       closeEditFinanceModal();
       showKakaoToast("내역이 삭제되었습니다.", "🗑️");
-      loadFinanceData();
+      window.loadFinanceData();
     } catch(err) {
       showKakaoToast("삭제 실패: " + err.message, "❌");
     }
   };
 
   window.shareFinanceReportToChat = async function() {
-    const sDate = document.getElementById('finFilterStart').value;
-    const eDate = document.getElementById('finFilterEnd').value;
+    const sElem = document.getElementById('finFilterStart');
+    const eElem = document.getElementById('finFilterEnd');
+    const sDate = sElem ? sElem.value : '';
+    const eDate = eElem ? eElem.value : '';
 
-    const filtered = (window.lastFinanceData.logs || []).filter(l => l.inFilter);
+    const filtered = (window.rawFinanceLogs || []).filter(l => l.inFilter);
 
     if (filtered.length === 0) return showKakaoToast("공유할 비용 현황 내역이 없습니다.", "⚠️");
 
@@ -656,7 +672,7 @@
         <div class="fin-card-header">
           <div class="fin-card-title">
             <i class="fa-solid fa-landmark text-warning"></i>
-            <span class="text-truncate">길드금고 결산 보고서</span>
+            <span>길드금고 결산 보고서</span>
           </div>
           <span class="fin-date-badge">${sDate} ~ ${eDate}</span>
         </div>
@@ -664,7 +680,7 @@
         <div class="fin-vault-hero">
           <div>
             <div class="fin-vault-label">현재 금고 총 잔액</div>
-            <div class="fin-vault-val">${currentBalance.toLocaleString()} D</div>
+            <div class="fin-vault-val">${window.currentBalance.toLocaleString()} D</div>
           </div>
           <div style="font-size: 1.5rem;">🏛️</div>
         </div>
