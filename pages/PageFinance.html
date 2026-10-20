@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (데이터 로드 및 디자인 원본 유지)
+     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (데이터 연동 ID 완벽 일치화)
      ========================================== -->
 <style>
   .finance-card {
@@ -86,9 +86,9 @@
       <button type="button" class="fin-date-btn flex-fill" id="btnRangeAll" onclick="setFinanceQuickRange('all')">전체</button>
     </div>
     <div class="d-flex align-items-center gap-2">
-      <input type="date" id="finFilterStart" class="form-control form-control-sm text-center" style="font-size: 0.75rem;" onchange="loadFinanceLogs()">
+      <input type="date" id="finFilterStart" class="form-control form-control-sm text-center" style="font-size: 0.75rem;" onchange="loadFinanceData()">
       <span class="small text-muted">~</span>
-      <input type="date" id="finFilterEnd" class="form-control form-control-sm text-center" style="font-size: 0.75rem;" onchange="loadFinanceLogs()">
+      <input type="date" id="finFilterEnd" class="form-control form-control-sm text-center" style="font-size: 0.75rem;" onchange="loadFinanceData()">
     </div>
   </div>
 
@@ -152,13 +152,13 @@
         <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size: 0.72rem;" onclick="shareFinanceReportToChat()">
           <i class="fa-solid fa-comment me-1"></i> 대화방 공유
         </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="loadFinanceLogs()">
+        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="loadFinanceData()">
           <i class="fa-solid fa-rotate-right"></i> 새로고침
         </button>
       </div>
     </div>
 
-    <div id="financeLogsListContainer" style="max-height: 380px; overflow-y: auto;">
+    <div id="financeLogsList" style="max-height: 380px; overflow-y: auto;">
       <div class="text-secondary small text-center py-4">내역을 불러오는 중...</div>
     </div>
   </div>
@@ -226,7 +226,7 @@
     <input type="text" id="editLogMemo" class="form-control form-control-sm mb-3">
 
     <div class="d-flex gap-2 mb-2">
-      <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="closeFinanceEditModal()">취소</button>
+      <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="closeEditFinanceModal()">취소</button>
       <button type="button" class="btn btn-sm btn-primary flex-fill fw-bold" onclick="executeEditFinanceLog()">수정 저장</button>
     </div>
     <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="executeDeleteFinanceLog()"><i class="fa-solid fa-trash-can me-1"></i>내역 삭제</button>
@@ -234,10 +234,7 @@
 </div>
 
 <script>
-  let rawFinanceLogs = [];
-  let currentVaultBalance = 0;
-  let incomeCalcMode = 'total';
-  let lastFetchedPrevVault = 0;
+  window.lastFinanceData = { logs: [], currentBalance: 0, filteredIncome: 0, totalIncome: 0, totalExpense: 0 };
 
   window.formatCommaInput = function(input) {
     let val = input.value.replace(/[^0-9]/g, '');
@@ -312,22 +309,23 @@
     document.getElementById('finFilterStart').value = startD.toISOString().split('T')[0];
     document.getElementById('finFilterEnd').value = endD.toISOString().split('T')[0];
 
-    loadFinanceLogs();
+    loadFinanceData();
   };
 
-  window.loadFinanceData = function() {
-    loadFinanceLogs();
-  };
+  window.loadFinanceData = async function() {
+    const container = document.getElementById('financeLogsList');
+    if (container) {
+      container.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>내역을 불러오는 중...</div>`;
+    }
 
-  window.loadFinanceLogs = async function() {
-    const container = document.getElementById('financeLogsListContainer');
-    container.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>내역을 불러오는 중...</div>`;
+    const start = document.getElementById('finFilterStart').value;
+    const end = document.getElementById('finFilterEnd').value;
 
     try {
       const rows = await apiRequest("guild_finances?select=*&order=created_at.desc,id.desc");
       const rawRows = rows || [];
 
-      rawFinanceLogs = rawRows.map(r => {
+      const logs = rawRows.map(r => {
         const typeStr = (r.tx_type === '출금' || r.tx_type === '지출') ? '출금' : '입금';
         let dateStr = new Date().toISOString().split('T')[0];
         if (r.created_at) {
@@ -336,6 +334,8 @@
         const reasonStr = r.reason || '사유 없음';
         const categoryStr = r.category || '';
 
+        const inFilter = (!start || dateStr >= start) && (!end || dateStr <= end);
+
         return {
           id: r.id,
           log_date: dateStr,
@@ -343,17 +343,25 @@
           amount: Number(r.amount || 0),
           reason: reasonStr,
           category: categoryStr,
-          created_at: r.created_at
+          created_at: r.created_at,
+          inFilter: inFilter
         };
       });
 
       let totalInc = 0;
       let totalExp = 0;
+      let filteredInc = 0;
+      let filteredExp = 0;
 
-      rawFinanceLogs.forEach(l => {
+      logs.forEach(l => {
         const amt = Number(l.amount || 0);
-        if (l.tx_type === '입금') totalInc += amt;
-        else if (l.tx_type === '출금') totalExp += amt;
+        if (l.tx_type === '입금') {
+          totalInc += amt;
+          if (l.inFilter) filteredInc += amt;
+        } else if (l.tx_type === '출금') {
+          totalExp += amt;
+          if (l.inFilter) filteredExp += amt;
+        }
       });
 
       currentVaultBalance = totalInc - totalExp;
@@ -361,38 +369,35 @@
       document.getElementById('finTotalIncomeSum').innerText = "+" + totalInc.toLocaleString();
       document.getElementById('finTotalExpenseSum').innerText = "-" + totalExp.toLocaleString();
 
-      if (rawFinanceLogs.length > 0) {
-        const lastDt = rawFinanceLogs[0].created_at ? new Date(rawFinanceLogs[0].created_at) : new Date();
+      if (logs.length > 0) {
+        const lastDt = logs[0].created_at ? new Date(logs[0].created_at) : new Date();
         document.getElementById('finVaultUpdatedTime').innerText = `마지막 갱신: ${formatTime24Hour(lastDt)}`;
       } else {
         document.getElementById('finVaultUpdatedTime').innerText = `마지막 갱신: -`;
       }
 
-      const sDateStr = document.getElementById('finFilterStart').value;
-      const eDateStr = document.getElementById('finFilterEnd').value;
-
-      const filtered = rawFinanceLogs.filter(l => {
-        if (!sDateStr || !eDateStr) return true;
-        return l.log_date >= sDateStr && l.log_date <= eDateStr;
-      });
-
-      let periodNet = 0;
-      filtered.forEach(l => {
-        const amt = Number(l.amount || 0);
-        if (l.tx_type === '입금') periodNet += amt;
-        else if (l.tx_type === '출금') periodNet -= amt;
-      });
+      const periodNet = filteredInc - filteredExp;
       document.getElementById('finPeriodNetProfit').innerText = `기간 순수익: ${periodNet.toLocaleString()} D`;
 
       lastFetchedPrevVault = currentVaultBalance;
       document.getElementById('incomePrevVaultText').innerText = `직전 금고 잔액: ${lastFetchedPrevVault.toLocaleString()} D`;
 
-      if (filtered.length === 0) {
+      window.lastFinanceData = {
+        logs: logs,
+        currentBalance: currentBalance,
+        totalIncome: totalInc,
+        totalExpense: totalExp,
+        filteredIncome: periodNet
+      };
+
+      const filteredLogs = logs.filter(l => l.inFilter);
+
+      if (filteredLogs.length === 0) {
         container.innerHTML = `<div class="text-secondary small text-center py-4">조회된 입출금 내역이 없습니다.</div>`;
         return;
       }
 
-      container.innerHTML = filtered.map(l => {
+      container.innerHTML = filteredLogs.map(l => {
         const isInc = (l.tx_type === '입금');
         const badgeClass = isInc ? 'badge-income' : 'badge-expense';
         const signStr = isInc ? '+' : '-';
@@ -420,7 +425,9 @@
       }).join('');
 
     } catch (e) {
-      container.innerHTML = `<div class="text-danger small text-center py-4">데이터 로드 실패: ${e.message}</div>`;
+      if (container) {
+        container.innerHTML = `<div class="text-danger small text-center py-4">데이터 로드 실패: ${e.message}</div>`;
+      }
     }
   };
 
@@ -452,7 +459,7 @@
       }]);
       closeVaultEditModal();
       showKakaoToast("금고 잔액이 보정되었습니다.", "🎉");
-      loadFinanceLogs();
+      loadFinanceData();
     } catch(err) {
       showKakaoToast("수정 실패: " + err.message, "❌");
     }
@@ -519,7 +526,7 @@
       document.getElementById('incomeDirectInput').value = '';
       document.getElementById('incomeReason').value = '';
       document.getElementById('incomeMemo').value = '';
-      loadFinanceLogs();
+      loadFinanceData();
     } catch(err) {
       showKakaoToast("입금 처리 실패: " + err.message, "❌");
     }
@@ -557,14 +564,14 @@
       }]);
       closeExpenseModal();
       showKakaoToast(`-${amount.toLocaleString()} D 길드 지출 완료!`, "💸");
-      loadFinanceLogs();
+      loadFinanceData();
     } catch(err) {
       showKakaoToast("지출 처리 실패: " + err.message, "❌");
     }
   };
 
   window.openFinanceEditModal = function(id) {
-    const log = rawFinanceLogs.find(l => String(l.id) === String(id));
+    const log = (window.lastFinanceData.logs || []).find(l => String(l.id) === String(id));
     if (!log) return;
 
     document.getElementById('editLogId').value = log.id;
@@ -601,7 +608,7 @@
       });
       closeEditFinanceModal();
       showKakaoToast("내역이 수정되었습니다.", "✏️");
-      loadFinanceLogs();
+      loadFinanceData();
     } catch(err) {
       showKakaoToast("수정 실패: " + err.message, "❌");
     }
@@ -615,7 +622,7 @@
       await apiRequest(`guild_finances?id=eq.${id}`, "DELETE");
       closeEditFinanceModal();
       showKakaoToast("내역이 삭제되었습니다.", "🗑️");
-      loadFinanceLogs();
+      loadFinanceData();
     } catch(err) {
       showKakaoToast("삭제 실패: " + err.message, "❌");
     }
@@ -625,10 +632,7 @@
     const sDate = document.getElementById('finFilterStart').value;
     const eDate = document.getElementById('finFilterEnd').value;
 
-    const filtered = rawFinanceLogs.filter(l => {
-      if (!sDate || !eDate) return true;
-      return l.log_date >= sDate && l.log_date <= eDate;
-    });
+    const filtered = (window.lastFinanceData.logs || []).filter(l => l.inFilter);
 
     if (filtered.length === 0) return showKakaoToast("공유할 비용 현황 내역이 없습니다.", "⚠️");
 
