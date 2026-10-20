@@ -116,7 +116,7 @@
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
     background: rgba(0, 0, 0, 0.6);
-    z-index: 999999;
+    z-index: 99999;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -156,7 +156,7 @@
     </div>
   </div>
 
-  <!-- 2. 주간 정산 시뮬레이터 카드 (관리자용) -->
+  <!-- 2. 주간 정산 시뮬레이터 카드 -->
   <div class="finance-card mb-3" style="background: rgba(15, 23, 42, 0.95);">
     <div class="d-flex align-items-center justify-content-between mb-2">
       <div class="d-flex align-items-center gap-2">
@@ -229,7 +229,7 @@
       <input type="date" id="financeStartDate" class="form-control input-custom-finance">
       <span class="text-secondary">~</span>
       <input type="date" id="financeEndDate" class="form-control input-custom-finance">
-      <button class="btn btn-outline-info btn-sm w-100 fw-bold py-1" onclick="window.loadFinanceData()">
+      <button class="btn btn-outline-info btn-sm fw-bold py-1 px-3" onclick="window.loadFinanceData()">
         <i class="fa-solid fa-magnifying-glass me-1"></i>조회
       </button>
     </div>
@@ -488,7 +488,7 @@
     list.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>내역을 불러오는 중...</div>`;
 
     try {
-      // 🎯 기존 원본 테이블 명 'guild_finances' 정상 호출
+      // 🎯 정상적인 'guild_finances' 테이블 호출
       const rows = await apiRequest("guild_finances?select=*&order=created_at.desc,id.desc");
       const logs = rows || [];
 
@@ -722,8 +722,6 @@
     const totalInc = incomeLogs.reduce((acc, l) => acc + Number(l.amount || 0), 0);
     const totalExp = expenseLogs.reduce((acc, l) => acc + Number(l.amount || 0), 0);
     const netProfit = totalInc - totalExp;
-
-    const guildName = "불편한사람들";
 
     const reportHtml = `
       <div class="finance-report-card">
