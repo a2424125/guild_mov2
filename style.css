@@ -235,7 +235,7 @@ html, body {
   padding: 0;
   overflow: hidden;
   background: var(--kakao-bg) !important;
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Pretendard, "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
   color: var(--kakao-header-text);
   user-select: none;
   -webkit-user-select: none;
@@ -688,7 +688,7 @@ body.theme-dark .chat-sender-avatar.bot { background: #262d37 !important; border
 body.theme-dark .chat-sender-name { color: #f3f4f6 !important; font-weight: 700 !important; }
 body.theme-light .chat-sender-name { color: #191919 !important; font-weight: 700 !important; }
 
-.chat-bubble-flex { display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important; }
+.chat-bubble-flex { display: flex; align-items: flex-end !important; gap: 4px; width: fit-content !important; flex-wrap: nowrap !important; }
 .chat-item-row.me .chat-bubble-flex { flex-direction: row-reverse; }
 
 .chat-bubble {
@@ -799,6 +799,12 @@ body.theme-dark .boss-alert-mini-card.alert-spawn { background: #262d37 !importa
 }
 .kakao-toast-box.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+body.theme-dark .member-name-line { color: #f3f4f6 !important; }
+body.theme-dark .member-class-desc { color: #38bdf8 !important; }
+body.theme-dark .drawer-boss-name { color: #f3f4f6 !important; }
+body.theme-dark .drawer-card-bottom { color: #94a3b8 !important; }
+
+.raid-msg-body { max-width: 95% !important; width: fit-content !important; }
 .raid-report-card {
   background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
   border: 1px solid var(--drawer-card-border) !important; border-radius: 12px !important;
@@ -816,6 +822,33 @@ body.theme-dark .boss-alert-mini-card.alert-spawn { background: #262d37 !importa
 .badge-raid-type { font-size: 9.5px !important; padding: 2px 6px !important; border-radius: 4px !important; font-weight: 800 !important; }
 .badge-raid-type.normal { background: #e0f2fe !important; color: #0284c7 !important; border: 1px solid #bae6fd !important; }
 .badge-raid-type.war { background: #fee2e2 !important; color: #dc2626 !important; border: 1px solid #fca5a5 !important; }
+
+.raid-action-row {
+  display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 8px !important; margin-top: 8px !important; padding-top: 6px !important; border-top: 1px solid var(--drawer-card-border) !important;
+}
+.btn-raid-self-add {
+  flex: 1 !important; background: #fee500 !important; color: #191919 !important; border: 1px solid #e5cf00 !important;
+  font-size: 12px !important; font-weight: 800 !important; padding: 6px 10px !important; border-radius: 6px !important; cursor: pointer !important;
+  display: inline-flex !important; align-items: center !important; justify-content: center !important; white-space: nowrap !important;
+}
+.btn-raid-self-add.joined { background: #e2e8f0 !important; color: #64748b !important; border-color: #cbd5e1 !important; cursor: default !important; }
+body.theme-dark .btn-raid-self-add.joined { background: #1e293b !important; color: #94a3b8 !important; border-color: #334155 !important; }
+
+.btn-raid-self-add.disabled, .btn-raid-self-add:disabled {
+  background: #f1f5f9 !important;
+  color: #1e293b !important;
+  border-color: #cbd5e1 !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+body.theme-dark .btn-raid-self-add.disabled, body.theme-dark .btn-raid-self-add:disabled {
+  background: #1e2530 !important;
+  color: #e2e8f0 !important;
+  border-color: #374151 !important;
+  font-weight: 800 !important;
+  opacity: 1 !important;
+}
 
 .badge-raid-timer {
   display: inline-flex !important; align-items: center !important; justify-content: center !important; padding: 5px 8px !important;
@@ -861,6 +894,9 @@ body.theme-dark .fin-period-box { background: rgba(255,255,255,0.04) !important;
    📊 [통계알리미] 카카오톡 정품 규격 통계 보고서 카드 전용 스타일
    ======================================================== */
 .records-report-card {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Pretendard, "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
   background: var(--kakao-notice-bg) !important;
   color: var(--kakao-notice-text) !important;
   border: 1px solid var(--drawer-card-border) !important;
@@ -942,9 +978,10 @@ body.theme-dark .records-report-card .rec-date-badge {
 
 .records-report-card .rec-hero-val {
   font-size: 12px !important;
-  font-weight: 800 !important;
+  font-weight: 900 !important;
   color: #f59e0b !important;
   margin-top: 2px !important;
+  letter-spacing: -0.3px;
 }
 
 /* 요약 그리드 박스 (총 토벌 횟수, 참여 인원/총점) */
