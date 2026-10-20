@@ -488,9 +488,26 @@
     list.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>내역을 불러오는 중...</div>`;
 
     try {
-      // 🎯 정상적인 'guild_finances' 테이블 호출
+      // 🎯 기존 원본 테이블 명 'guild_finances' 호출 및 컬럼 매핑 보장
       const rows = await apiRequest("guild_finances?select=*&order=created_at.desc,id.desc");
-      const logs = rows || [];
+      const rawLogs = rows || [];
+
+      const logs = rawLogs.map(r => {
+        const typeStr = (r.tx_type === '출금' || r.tx_type === '지출' || r.type === '지출') ? '지출' : '입금';
+        const dateStr = r.date || (r.created_at ? r.created_at.split('T')[0] : window.formatDateToYYYYMMDD(new Date()));
+        const categoryStr = r.category || r.reason || '기타';
+        const reasonStr = r.reason || r.note || '';
+
+        return {
+          id: r.id,
+          date: dateStr,
+          type: typeStr,
+          amount: Number(r.amount || 0),
+          reason: categoryStr,
+          note: reasonStr,
+          created_at: r.created_at
+        };
+      });
 
       let totalInc = 0;
       let totalExp = 0;
@@ -606,8 +623,8 @@
     const date = document.getElementById('modalEditDate').value;
     const type = document.getElementById('modalEditType').value;
     const amount = window.parseCommaNumber(document.getElementById('modalEditAmount').value);
-    const reason = document.getElementById('modalEditCategory').value.trim();
-    const note = document.getElementById('modalEditReason').value.trim();
+    const category = document.getElementById('modalEditCategory').value.trim();
+    const reason = document.getElementById('modalEditReason').value.trim();
 
     if (!date) return showKakaoToast("일자를 선택해주세요.", "⚠️");
     if (amount <= 0) return showKakaoToast("유효한 금액을 입력해주세요.", "⚠️");
@@ -615,10 +632,11 @@
     try {
       await apiRequest(`guild_finances?id=eq.${id}`, "PATCH", {
         date: date,
+        tx_type: type === '입금' ? '입금' : '출금',
         type: type,
         amount: amount,
-        reason: reason,
-        note: note
+        category: category,
+        reason: reason
       });
       showKakaoToast("내역이 수정되었습니다.", "✏️");
       window.closeEditFinanceModal();
@@ -657,7 +675,7 @@
   window.submitIncomeRecord = async function() {
     const date = document.getElementById('incomeDate').value;
     const amount = window.parseCommaNumber(document.getElementById('incomeAmount').value);
-    const reason = document.getElementById('incomeReason').value.trim() || "수익금 입금";
+    const category = document.getElementById('incomeReason').value.trim() || "수익금 입금";
     const note = document.getElementById('incomeNote').value.trim();
 
     if (!date) return showKakaoToast("입금 일자를 선택해주세요.", "⚠️");
@@ -666,10 +684,11 @@
     try {
       await apiRequest("guild_finances", "POST", [{
         date: date,
+        tx_type: "입금",
         type: "입금",
         amount: amount,
-        reason: reason,
-        note: note
+        category: category,
+        reason: note || category
       }]);
       showKakaoToast(`+${amount.toLocaleString()} 다이아 입금 완료!`, "🎉");
       document.getElementById('incomeAmount').value = '';
@@ -684,7 +703,7 @@
   window.submitExpenseRecord = async function() {
     const date = document.getElementById('expenseDate').value;
     const amount = window.parseCommaNumber(document.getElementById('expenseAmount').value);
-    const reason = document.getElementById('expenseReason').value.trim() || "길드 지출";
+    const category = document.getElementById('expenseReason').value.trim() || "길드 지출";
     const note = document.getElementById('expenseNote').value.trim();
 
     if (!date) return showKakaoToast("지출 일자를 선택해주세요.", "⚠️");
@@ -698,11 +717,12 @@
     try {
       await apiRequest("guild_finances", "POST", [{
         date: date,
+        tx_type: "출금",
         type: "지출",
         amount: amount,
-        reason: reason,
-        note: note
-      });
+        category: category,
+        reason: note || category
+      }]);
       showKakaoToast(`-${amount.toLocaleString()} 다이아 지출 처리 완료!`, "💸");
       document.getElementById('expenseAmount').value = '';
       document.getElementById('expenseReason').value = '';
