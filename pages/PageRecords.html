@@ -927,10 +927,10 @@
 
   <!-- 2. 하단 4대 메인 탭바 [요약통계] [길드원별통계] [전쟁기록] [토벌기록] -->
   <div class="records-tab-nav">
-    <button type="button" class="tab-btn-4" id="tabBtnSummary" onclick="switchRecordsTab('summary')">
+    <button type="button" class="tab-btn-4 active" id="tabBtnSummary" onclick="switchRecordsTab('summary')">
       <i class="fa-solid fa-chart-pie me-1"></i>요약통계
     </button>
-    <button type="button" class="tab-btn-4 active" id="tabBtnMembers" onclick="switchRecordsTab('members')">
+    <button type="button" class="tab-btn-4" id="tabBtnMembers" onclick="switchRecordsTab('members')">
       <i class="fa-solid fa-users me-1"></i>길드원별통계
     </button>
     <button type="button" class="tab-btn-4" id="tabBtnWarLog" onclick="switchRecordsTab('warlog')">
@@ -941,8 +941,8 @@
     </button>
   </div>
 
-  <!-- 탭 1) 요약통계 뷰 -->
-  <div id="viewSummary" style="display: none;">
+  <!-- 탭 1) 요약통계 뷰 (기본 선택) -->
+  <div id="viewSummary">
     <!-- TOP 5 랭킹 박스 -->
     <div class="top5-container mb-3">
       <div class="best-tab-nav">
@@ -995,7 +995,7 @@
   </div>
 
   <!-- 탭 2) 길드원별통계 뷰 -->
-  <div id="viewMembers">
+  <div id="viewMembers" style="display: none;">
     <div class="search-wrapper-stat">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
       <input type="text" id="statMemberSearch" class="search-input-stat" 
@@ -1171,7 +1171,7 @@
   // ⚡ 재호출 시 Identifier already declared 충돌 방지: 모든 최상위 변수 var 통일
   var rawStatsData = { records: [], warRecords: [], memberStats: {}, bossList: [] };
   var currentBestTab = 'total';
-  var currentMainTab = 'members';
+  var currentMainTab = 'summary'; // 🌟 기본 탭을 'summary'(요약통계)로 설정
   var managingMemberName = "";
   var allGuildMembersList = [];
   var recordsToastTimer = null;
@@ -2236,11 +2236,12 @@
     });
   }
 
-  // 🚀 초기화 자동 기동
+  // 🚀 초기화 자동 기동 (기본 탭을 요약통계로 확실히 선택)
   (function initRecordsPage() {
     if (typeof window.applyAppTheme === 'function') {
       window.applyAppTheme();
     }
+    switchRecordsTab('summary');
     setStatPeriod('thisWeek');
   })();
 </script>
