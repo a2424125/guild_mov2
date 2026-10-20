@@ -100,259 +100,230 @@ async function initApp() {
     supabaseClient = supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
   }
 
-  updateHeaderUserDisplay();
-  await loadGuildSettings();
+  await loadGuildMetadata();
+  await loadTopNoticeHeader();
   await loadGuildMembersData();
   await loadBossTimersList();
-  await loadTopNoticeHeader();
 
-  await checkUserLoginStatus();
+  if (!myCurrentNick || !myCurrentPin) {
+    showGuildLoginModal();
+  } else {
+    const isValid = await verifyStoredSession(myCurrentNick, myCurrentPin);
+    if (isValid) {
+      updateProfileUI(myCurrentNick);
+    } else {
+      showGuildLoginModal();
+    }
+  }
 
-  await loadInitialChatMessages();
+  await loadPastChatMessages();
   listenRealtimeChatMessages();
-
-  startBossSpawnWatcher();
+  listenRealtimeBossTimers();
+  listenRealtimeBossParticipations();
+  startLocalBossWatchTimer();
+  startRaidReportCountdowns();
   cleanupOldChatsBackground();
+
+  bindMentionInputEvents();
+  setupPwaInstallation();
 }
 
-async function loadGuildSettings() {
+async function loadGuildMetadata() {
   try {
-    const settings = await apiRequest("guild_settings?select=*");
-    if (!settings) return;
-
-    window.currentSettingsMap = {};
-    settings.forEach(s => {
-      window.currentSettingsMap[s.key] = s.value;
-      if (s.key === "guild_name") {
-        document.getElementById("chatRoomTitle").innerText = s.value || "길드 대화방";
-        document.getElementById("menuGuildNameText").innerText = s.value || "길드 메뉴";
-        document.getElementById("loginGuildTitle").innerText = `${s.value || '길드'} 로그인`;
-        document.title = `${s.value || '길드'} 대화방`;
-      }
-    });
+    const res = await apiRequest("guild_settings?select=key,value");
+    if (res && res.length > 0) {
+      res.forEach(item => {
+        if (item.key === "guild_name" && item.value) {
+          const gName = item.value;
+          document.getElementById("menuGuildNameText").innerText = `${gName} 관리`;
+          document.getElementById("chatRoomTitle").innerText = gName;
+          document.getElementById("loginGuildTitle").innerText = `${gName} 길드 로그인`;
+          document.title = gName;
+        }
+        if ((item.key === "super_admin_pw" || item.key === "super_admin_pin") && item.value) {
+          window.masterAdminPin = item.value;
+        }
+      });
+    }
   } catch (e) {}
 }
 
 async function loadTopNoticeHeader() {
   try {
-    const notices = await apiRequest("guild_notices?select=title,content&order=id.desc&limit=1");
-    if (notices && notices.length > 0) {
-      const item = notices[0];
-      document.getElementById("kakaoTopNoticeText").innerText = `${item.title} - ${item.content}`;
+    const res = await apiRequest("guild_notices?select=title,content,is_pinned&order=id.desc&limit=5");
+    if (res && res.length > 0) {
+      const pinned = res.find(n => n.is_pinned === true || n.is_pinned === 'true') || res[0];
+      const title = (pinned.title || "").replace(/^\[[^\]]+\]\s*/, '');
+      document.getElementById("kakaoTopNoticeText").innerText = title ? `[공지] ${title}` : "공지사항이 등록되었습니다.";
     } else {
       document.getElementById("kakaoTopNoticeText").innerText = "등록된 공지사항이 없습니다.";
     }
   } catch (e) {}
 }
 
+async function loadGuildMembersData() {
+  try {
+    const res = await apiRequest("guild_members?select=id,name,role,job_class,pin&order=role.asc,name.asc");
+    if (res) {
+      cachedMemberList = res;
+      document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
+      renderDrawerMembersList();
+    }
+  } catch (e) {}
+}
+
+function renderDrawerMembersList() {
+  const container = document.getElementById("drawerMembersContainer");
+  if (!container) return;
+
+  const rolesOrder = { "길드장": 1, "길마": 1, "부길드장": 2, "부길마": 2, "정예": 3, "일반": 4 };
+
+  const sorted = [...cachedMemberList].sort((a, b) => {
+    const rA = rolesOrder[a.role] || 99;
+    const rB = rolesOrder[b.role] || 99;
+    if (rA !== rB) return rA - rB;
+    return (a.name || "").localeCompare(b.name || "", 'ko');
+  });
+
+  const html = `
+    <div style="padding: 14px; border-bottom: 1px solid var(--drawer-header-border); background: var(--drawer-header-bg); display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-weight: 800; font-size: 0.92rem; color: var(--drawer-title);"><i class="fa-solid fa-users text-primary me-2"></i>길드원 목록 (${sorted.length}명)</div>
+      <button type="button" class="sidebar-close-btn" onclick="toggleMembersDrawer(false)"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div style="flex: 1; overflow-y: auto; padding: 8px 6px;">
+      ${sorted.map(m => {
+        const isMaster = (m.role === "길드장" || m.role === "길마");
+        const isSubMaster = (m.role === "부길드장" || m.role === "부길마");
+        const isElite = (m.role === "정예");
+
+        let roleBadge = '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.65rem;">일반</span>';
+        if (isMaster) roleBadge = '<span class="badge bg-warning bg-opacity-25 text-warning" style="font-size:0.65rem;">길드장</span>';
+        else if (isSubMaster) roleBadge = '<span class="badge bg-primary bg-opacity-25 text-primary" style="font-size:0.65rem;">부길드장</span>';
+        else if (isElite) roleBadge = '<span class="badge bg-info bg-opacity-25 text-info" style="font-size:0.65rem;">정예</span>';
+
+        const avatar = (m.job_class || "👤").split(' ')[0] || "👤";
+        const jobName = (m.job_class || "미설정").replace(/^[^\s]+\s*/, '') || "미설정";
+
+        return `
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; border-radius: 8px; margin-bottom: 3px; background: var(--drawer-card-bg); border: 1px solid var(--drawer-card-border);">
+            <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
+              <div style="width: 30px; height: 30px; border-radius: 10px; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; font-size: 1rem;">${avatar}</div>
+              <div style="min-width: 0;">
+                <div style="font-weight: 700; font-size: 0.82rem; color: var(--drawer-title); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtmlText(m.name)}</div>
+                <div style="font-size: 0.68rem; color: var(--drawer-sub-text);">${escapeHtmlText(jobName)}</div>
+              </div>
+            </div>
+            <div>${roleBadge}</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+  container.innerHTML = html;
+}
+
 async function loadBossTimersList() {
   try {
-    const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
-    cachedBossList = bosses || [];
-    syncAllChatCutButtons();
+    const res = await apiRequest("boss_timers?select=*&order=id.asc");
+    if (res) {
+      cachedBossList = res;
+      syncAllChatCutButtons();
+    }
   } catch (e) {}
 }
 
-window.loadGuildMembersData = async function() {
+function toggleMenuDrawer(open) {
+  const drawer = document.getElementById("menuSidebarDrawer");
+  const backdrop = document.getElementById("commonDrawerBackdrop");
+  if (!drawer || !backdrop) return;
+  if (open) {
+    closeAllDrawers();
+    drawer.classList.add("open");
+    backdrop.classList.add("show");
+  } else {
+    drawer.classList.remove("open");
+    checkBackdropState();
+  }
+}
+
+function toggleMembersDrawer(open) {
+  const drawer = document.getElementById("membersSidebarDrawer");
+  const backdrop = document.getElementById("commonDrawerBackdrop");
+  if (!drawer || !backdrop) return;
+  if (open) {
+    closeAllDrawers();
+    drawer.classList.add("open");
+    backdrop.classList.add("show");
+  } else {
+    drawer.classList.remove("open");
+    checkBackdropState();
+  }
+}
+
+function toggleBossDrawer(open) {
+  const drawer = document.getElementById("bossTimerSidebarDrawer");
+  const backdrop = document.getElementById("commonDrawerBackdrop");
+  if (!drawer || !backdrop) return;
+  if (open) {
+    closeAllDrawers();
+    drawer.classList.add("open");
+    backdrop.classList.add("show");
+    loadDrawerPageTimer();
+  } else {
+    drawer.classList.remove("open");
+    checkBackdropState();
+  }
+}
+
+async function loadDrawerPageTimer() {
+  const area = document.getElementById("drawerBossListArea");
+  if (!area) return;
+  area.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>불러오는 중...</div>`;
   try {
-    const members = await apiRequest("guild_members?select=*&order=name.asc");
-    cachedMemberList = members || [];
-    document.getElementById("roomMemberCountText").innerText = cachedMemberList.length;
-    renderMembersSidebarList(cachedMemberList);
-    populateLoginMemberSelect(cachedMemberList);
-  } catch (e) {}
+    const res = await fetch(`pages/PageTimer.html?_t=${Date.now()}`);
+    if (!res.ok) throw new Error("로드 실패");
+    const html = await res.text();
+    area.innerHTML = html;
+
+    document.querySelectorAll(".drawer-dynamic-script").forEach(s => s.remove());
+    area.querySelectorAll("script").forEach(s => {
+      const sc = document.createElement("script");
+      sc.className = "drawer-dynamic-script";
+      if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
+      document.body.appendChild(sc);
+    });
+  } catch (e) {
+    area.innerHTML = `<div class="text-danger small text-center py-4">로드 실패: ${e.message}</div>`;
+  }
+}
+
+window.handleBossDrawerRefresh = async function() {
+  const btn = document.getElementById("btnRefreshBossDrawer");
+  if (btn) btn.classList.add("rotating");
+
+  await loadBossTimersList();
+  await loadDrawerPageTimer();
+
+  setTimeout(() => {
+    if (btn) btn.classList.remove("rotating");
+    showKakaoToast("보스타임 현황이 갱신되었습니다.", "⏰");
+  }, 400);
 };
 
-function updateHeaderUserDisplay() {
-  myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
-  myCurrentClass = localStorage.getItem("guild_my_class") || "미설정";
-  myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-
-  const nickElem = document.getElementById("sidebarUserNickName");
-  const classElem = document.getElementById("sidebarUserClassText");
-  const avatarElem = document.getElementById("sidebarAvatarIcon");
-
-  if (nickElem) nickElem.innerText = myCurrentNick || "로그인 필요";
-  if (classElem) classElem.innerText = myCurrentClass || "직업 설정하기";
-  if (avatarElem) avatarElem.innerText = myCurrentAvatar || "👤";
+function closeAllDrawers() {
+  toggleMenuDrawer(false);
+  toggleMembersDrawer(false);
+  toggleBossDrawer(false);
 }
 
-async function checkUserLoginStatus() {
-  if (!myCurrentNick) {
-    openGuildLoginModal();
-    return;
+function checkBackdropState() {
+  const isMenuOpen = document.getElementById("menuSidebarDrawer").classList.contains("open");
+  const isMembersOpen = document.getElementById("membersSidebarDrawer").classList.contains("open");
+  const isBossOpen = document.getElementById("bossTimerSidebarDrawer").classList.contains("open");
+  const backdrop = document.getElementById("commonDrawerBackdrop");
+  if (!isMenuOpen && !isMembersOpen && !isBossOpen) {
+    backdrop.classList.remove("show");
   }
-
-  try {
-    const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}&select=*`);
-    if (!res || res.length === 0) {
-      handleUserLogout(false);
-      openGuildLoginModal();
-    } else {
-      const u = res[0];
-      myCurrentClass = u.job_class || myCurrentClass;
-      localStorage.setItem("guild_my_class", myCurrentClass);
-      localStorage.setItem("guild_my_role", u.role || "일반");
-      updateHeaderUserDisplay();
-    }
-  } catch (e) {}
-}
-
-function openGuildLoginModal() {
-  document.getElementById("guildLoginModal").style.display = "flex";
-  setTimeout(() => {
-    document.getElementById("loginNickSearchInput").focus();
-  }, 100);
-}
-
-function closeGuildLoginModal() {
-  document.getElementById("guildLoginModal").style.display = "none";
-}
-
-function populateLoginMemberSelect(list) {
-  const select = document.getElementById("loginMemberSelect");
-  if (!select) return;
-  select.innerHTML = '<option value="">닉네임을 선택하세요...</option>';
-  list.forEach(m => {
-    const opt = document.createElement("option");
-    opt.value = m.name;
-    opt.innerText = `${m.name} (${m.job_class || '미설정'})`;
-    select.appendChild(opt);
-  });
-}
-
-function onLoginSearchInput(val) {
-  const q = val.trim().toLowerCase();
-  const select = document.getElementById("loginMemberSelect");
-  if (!select) return;
-
-  if (!q) {
-    populateLoginMemberSelect(cachedMemberList);
-    return;
-  }
-
-  const filtered = cachedMemberList.filter(m => m.name.toLowerCase().includes(q));
-  select.innerHTML = '<option value="">닉네임을 선택하세요...</option>';
-  filtered.forEach(m => {
-    const opt = document.createElement("option");
-    opt.value = m.name;
-    opt.innerText = `${m.name} (${m.job_class || '미설정'})`;
-    select.appendChild(opt);
-  });
-
-  if (filtered.length === 1) {
-    select.value = filtered[0].name;
-  }
-}
-
-function onLoginSelectChange(val) {
-  if (val) {
-    document.getElementById("loginNickSearchInput").value = val;
-    document.getElementById("loginPinInput").focus();
-  }
-}
-
-async function executeGuildLogin() {
-  const nickInput = document.getElementById("loginNickSearchInput").value.trim();
-  const selectVal = document.getElementById("loginMemberSelect").value;
-  const pinVal = document.getElementById("loginPinInput").value.trim();
-
-  const finalNick = selectVal || nickInput;
-
-  if (!finalNick) {
-    showKakaoToast("닉네임을 입력하거나 선택해 주세요.", "⚠️");
-    return;
-  }
-
-  if (finalNick === "슈퍼관리자") {
-    try {
-      const res = await apiRequest(`guild_settings?key=eq.super_admin_pin&select=value`);
-      const masterPin = (res && res[0] && res[0].value) ? res[0].value : "0000";
-      if (pinVal === masterPin) {
-        localStorage.setItem("guild_my_nickname", "슈퍼관리자");
-        localStorage.setItem("guild_my_pin", pinVal);
-        localStorage.setItem("guild_my_role", "길드장");
-        localStorage.setItem("guild_my_avatar", "👑");
-        localStorage.setItem("guild_my_class", "군주");
-        sessionStorage.setItem("admin_role", "super");
-
-        updateHeaderUserDisplay();
-        closeGuildLoginModal();
-        showKakaoToast("👑 최고 관리자로 로그인되었습니다.", "✅");
-        return;
-      } else {
-        showKakaoToast("관리자 비밀번호가 일치하지 않습니다.", "❌");
-        return;
-      }
-    } catch (e) {
-      showKakaoToast("로그인 검증 오류: " + e.message, "❌");
-      return;
-    }
-  }
-
-  try {
-    const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(finalNick)}&select=*`);
-    if (!res || res.length === 0) {
-      showKakaoToast("등록된 길드원이 아닙니다. 닉네임을 확인하세요.", "❌");
-      return;
-    }
-
-    const member = res[0];
-
-    if (!member.pin || member.pin.trim() === "") {
-      if (!pinVal) {
-        showKakaoToast("새로 설정할 개인 비밀번호를 입력해 주세요.", "ℹ️");
-        return;
-      }
-      await apiRequest(`guild_members?id=eq.${member.id}`, "PATCH", { pin: pinVal });
-      member.pin = pinVal;
-      showKakaoToast("비밀번호가 안전하게 최초 등록되었습니다.", "🔒");
-    } else {
-      if (member.pin !== pinVal) {
-        showKakaoToast("비밀번호가 일치하지 않습니다.", "❌");
-        return;
-      }
-    }
-
-    localStorage.setItem("guild_my_nickname", member.name);
-    localStorage.setItem("guild_my_pin", member.pin);
-    localStorage.setItem("guild_my_role", member.role || "일반");
-    localStorage.setItem("guild_my_avatar", (member.job_class || "👤").split(" ")[0]);
-    localStorage.setItem("guild_my_class", member.job_class || "미설정");
-
-    const role = member.role || "일반";
-    if (role === "길드장" || role === "길마") {
-      sessionStorage.setItem("admin_role", "super");
-    } else if (role === "부길드장" || role === "부길마") {
-      sessionStorage.setItem("admin_role", "admin");
-    } else if (role === "정예") {
-      sessionStorage.setItem("admin_role", "elite");
-    } else {
-      sessionStorage.removeItem("admin_role");
-    }
-
-    updateHeaderUserDisplay();
-    closeGuildLoginModal();
-    showKakaoToast(`${member.name}님 환영합니다!`, "👋");
-  } catch (e) {
-    showKakaoToast("로그인 실패: " + e.message, "❌");
-  }
-}
-
-function handleUserLogout(confirmNeeded = true) {
-  if (confirmNeeded && !confirm("정말 로그아웃 하시겠습니까?")) return;
-
-  localStorage.removeItem("guild_my_nickname");
-  localStorage.removeItem("guild_my_pin");
-  localStorage.removeItem("guild_my_role");
-  localStorage.removeItem("guild_my_avatar");
-  localStorage.removeItem("guild_my_class");
-  sessionStorage.removeItem("admin_role");
-
-  updateHeaderUserDisplay();
-  closeAllDrawers();
-  openGuildLoginModal();
-  showKakaoToast("로그아웃 되었습니다.", "👋");
 }
 
 function openProfileEditModal() {
@@ -363,286 +334,219 @@ function closeProfileEditModal() {
   document.getElementById("modalProfileEdit").style.display = "none";
 }
 
-async function selectClassProfile(icon, className) {
-  if (!myCurrentNick) {
-    showKakaoToast("로그인 후 직업을 변경할 수 있습니다.", "⚠️");
-    closeProfileEditModal();
-    return;
+async function selectClassProfile(icon, jobName) {
+  myCurrentAvatar = icon;
+  myCurrentClass = `${icon} ${jobName}`;
+  localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+  localStorage.setItem("guild_my_class", myCurrentClass);
+
+  updateProfileUI(myCurrentNick);
+
+  if (myCurrentNick && myCurrentNick !== "슈퍼관리자" && myCurrentNick.toLowerCase() !== "admin") {
+    try {
+      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+        job_class: myCurrentClass
+      });
+    } catch(e) {}
   }
 
-  const fullJobStr = `${icon} ${className}`;
+  showKakaoToast(`내 직업이 [${myCurrentClass}]로 설정되었습니다!`, "🎉");
+  closeProfileEditModal();
+  await loadGuildMembersData();
+}
+
+async function verifyStoredSession(nick, pin) {
+  const masterPin = window.masterAdminPin || "123456";
+  if ((nick === "슈퍼관리자" || nick.toLowerCase() === "admin") && (pin === "123456" || pin === masterPin)) {
+    sessionStorage.setItem("admin_auth", "true");
+    sessionStorage.setItem("admin_role", "super");
+    myCurrentClass = "👑 슈퍼관리자";
+    myCurrentAvatar = "👑";
+    localStorage.setItem("guild_my_role", "슈퍼관리자");
+    return true;
+  }
   try {
-    if (myCurrentNick !== "슈퍼관리자") {
-      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", { job_class: fullJobStr });
-    }
-    localStorage.setItem("guild_my_avatar", icon);
-    localStorage.setItem("guild_my_class", fullJobStr);
-    updateHeaderUserDisplay();
-    closeProfileEditModal();
-    showKakaoToast(`${fullJobStr}(으)로 직업이 변경되었습니다!`, "✨");
-  } catch (e) {
-    showKakaoToast("직업 변경 실패: " + e.message, "❌");
-  }
-}
-
-function toggleMenuDrawer(open) {
-  const drawer = document.getElementById("menuSidebarDrawer");
-  const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (open) {
-    closeAllDrawers();
-    drawer.classList.add("open");
-    backdrop.classList.add("show");
-  } else {
-    drawer.classList.remove("open");
-    backdrop.classList.remove("show");
-  }
-}
-
-function toggleMembersDrawer(open) {
-  const drawer = document.getElementById("membersSidebarDrawer");
-  const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (open) {
-    closeAllDrawers();
-    drawer.classList.add("open");
-    backdrop.classList.add("show");
-    loadGuildMembersData();
-  } else {
-    drawer.classList.remove("open");
-    backdrop.classList.remove("show");
-  }
-}
-
-function toggleBossDrawer(open) {
-  const drawer = document.getElementById("bossTimerSidebarDrawer");
-  const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (open) {
-    closeAllDrawers();
-    drawer.classList.add("open");
-    backdrop.classList.add("show");
-    renderBossDrawerList();
-  } else {
-    drawer.classList.remove("open");
-    backdrop.classList.remove("show");
-  }
-}
-
-function closeAllDrawers() {
-  document.getElementById("menuSidebarDrawer").classList.remove("open");
-  document.getElementById("membersSidebarDrawer").classList.remove("open");
-  document.getElementById("bossTimerSidebarDrawer").classList.remove("open");
-  document.getElementById("commonDrawerBackdrop").classList.remove("show");
-}
-
-function renderMembersSidebarList(list) {
-  const container = document.getElementById("drawerMembersContainer");
-  if (!container) return;
-
-  const rolesOrder = { "길드장": 1, "길마": 1, "부길드장": 2, "부길마": 2, "정예": 3, "일반": 4 };
-
-  const sorted = [...list].sort((a, b) => {
-    const rA = rolesOrder[a.role] || 99;
-    const rB = rolesOrder[b.role] || 99;
-    if (rA !== rB) return rA - rB;
-    return a.name.localeCompare(b.name, 'ko');
-  });
-
-  const html = `
-    <div class="members-drawer-header">
-      <div class="d-flex align-items-center gap-2">
-        <i class="fa-solid fa-user-group text-primary"></i>
-        <span>길드원 목록 (${sorted.length})</span>
-      </div>
-      <button type="button" class="sidebar-close-btn" onclick="toggleMembersDrawer(false)">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-    <div class="members-scroll-area">
-      ${sorted.map(m => {
-        let badgeClass = "badge-general";
-        if (m.role === "길드장" || m.role === "길마") badgeClass = "badge-master";
-        else if (m.role === "부길드장" || m.role === "부길마") badgeClass = "badge-submaster";
-        else if (m.role === "정예") badgeClass = "badge-elite";
-
-        const avatar = (m.job_class || "👤").split(" ")[0];
-        const job = m.job_class || "미설정";
-
-        return `
-          <div class="member-list-card">
-            <div class="member-avatar-box">${avatar}</div>
-            <div class="member-info-box">
-              <div class="member-name-row">
-                <span class="member-name-text">${escapeHtmlText(m.name)}</span>
-                <span class="member-role-badge ${badgeClass}">${escapeHtmlText(m.role || '일반')}</span>
-              </div>
-              <div class="member-job-text">${escapeHtmlText(job)}</div>
-            </div>
-          </div>
-        `;
-      }).join('')}
-    </div>
-  `;
-  container.innerHTML = html;
-}
-
-async function renderBossDrawerList() {
-  const area = document.getElementById("drawerBossListArea");
-  if (!area) return;
-
-  try {
-    const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
-    cachedBossList = bosses || [];
-    if (cachedBossList.length === 0) {
-      area.innerHTML = `<div class="text-secondary small text-center py-5">등록된 보스가 없습니다.</div>`;
-      return;
-    }
-
-    const now = Date.now();
-    const sorted = [...cachedBossList].map(b => {
-      let diff = 0;
-      let isSpawned = false;
-      if (b.next_spawn_time) {
-        diff = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
-        if (diff <= 0) isSpawned = true;
+    const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(nick)}&select=name,pin,role,job_class`);
+    if (res && res.length > 0) {
+      const dbPin = String(res[0].pin || '0000').trim();
+      if (dbPin === String(pin).trim()) {
+        if (res[0].job_class) {
+          myCurrentClass = res[0].job_class;
+          myCurrentAvatar = res[0].job_class.split(' ')[0] || "👤";
+          localStorage.setItem("guild_my_class", myCurrentClass);
+          localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+        }
+        const userRole = res[0].role || "일반";
+        localStorage.setItem("guild_my_role", userRole);
+        if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
+          sessionStorage.setItem("admin_auth", "true");
+          sessionStorage.setItem("admin_role", "admin");
+        } else if (userRole === "정예") {
+          sessionStorage.setItem("admin_auth", "true");
+          sessionStorage.setItem("admin_role", "elite");
+        } else {
+          sessionStorage.removeItem("admin_auth");
+          sessionStorage.removeItem("admin_role");
+        }
+        return true;
       }
-      return { ...b, diffSec: diff, isSpawned };
-    }).sort((a, b) => {
-      if (a.isSpawned && !b.isSpawned) return -1;
-      if (!a.isSpawned && b.isSpawned) return 1;
-      return a.diffSec - b.diffSec;
-    });
-
-    area.innerHTML = `
-      <div style="padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;">
-        ${sorted.map(b => {
-          let timeDisplay = "--:--";
-          let badgeState = "badge-wait";
-          let statusText = "대기중";
-
-          if (b.next_spawn_time) {
-            if (b.diffSec <= 0) {
-              badgeState = "badge-spawn";
-              statusText = "출현중";
-              timeDisplay = "등장 완료";
-            } else {
-              const m = Math.floor(b.diffSec / 60);
-              const s = b.diffSec % 60;
-              timeDisplay = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-              if (b.diffSec <= 180) {
-                badgeState = "badge-imminent";
-                statusText = "임박";
-              }
-            }
-          }
-
-          return `
-            <div class="boss-drawer-card">
-              <div class="boss-card-info">
-                <div class="boss-name-text">${escapeHtmlText(b.boss_name)}</div>
-                <div class="boss-loc-text">${escapeHtmlText(b.location || '위치 미지정')}</div>
-              </div>
-              <div class="boss-card-status">
-                <span class="boss-time-text">${timeDisplay}</span>
-                <span class="boss-status-badge ${badgeState}">${statusText}</span>
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    `;
-  } catch (e) {
-    area.innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${e.message}</div>`;
-  }
-}
-
-async function handleBossDrawerRefresh() {
-  const btn = document.getElementById("btnRefreshBossDrawer");
-  if (btn) btn.classList.add("fa-spin");
-  await renderBossDrawerList();
-  setTimeout(() => {
-    if (btn) btn.classList.remove("fa-spin");
-    showKakaoToast("보스타임이 동기화되었습니다.", "🔄");
-  }, 400);
-}
-
-window.postBossBriefingToChat = async function() {
-  if (!cachedBossList || cachedBossList.length === 0) {
-    await loadBossTimersList();
-  }
-
-  const now = Date.now();
-  const sorted = [...cachedBossList].map(b => {
-    let diff = 0;
-    let isSpawned = false;
-    if (b.next_spawn_time) {
-      diff = Math.floor((new Date(b.next_spawn_time).getTime() - now) / 1000);
-      if (diff <= 0) isSpawned = true;
     }
-    return { ...b, diffSec: diff, isSpawned };
-  }).sort((a, b) => {
-    if (a.isSpawned && !b.isSpawned) return -1;
-    if (!a.isSpawned && b.isSpawned) return 1;
-    return a.diffSec - b.diffSec;
-  });
+  } catch (e) {}
+  return false;
+}
 
-  const nowDt = new Date();
-  const nowH = String(nowDt.getHours()).padStart(2, '0');
-  const nowM = String(nowDt.getMinutes()).padStart(2, '0');
-  const currentTimeStr = `${nowH}:${nowM}`;
+function renderLoginMemberDropdown(query = "") {
+  const select = document.getElementById("loginMemberSelect");
+  if (!select) return;
+  const q = (query || "").trim().toLowerCase();
+  const filtered = q
+    ? cachedMemberList.filter(m => (m.name || "").toLowerCase().includes(q) || (m.role || "").toLowerCase().includes(q))
+    : cachedMemberList;
 
-  const topItems = sorted.slice(0, 6);
-  const itemsHtml = topItems.map(b => {
-    let statusText = "대기";
-    let colorStyle = "color: var(--kakao-time-gray);";
-    if (b.isSpawned) {
-      statusText = "🔥 출현중";
-      colorStyle = "color: #ef4444; font-weight: 800;";
-    } else if (b.diffSec <= 180) {
-      const m = Math.floor(b.diffSec / 60);
-      const s = b.diffSec % 60;
-      statusText = `⏳ ${m}분 ${s}초`;
-      colorStyle = "color: #f59e0b; font-weight: 800;";
+  let html = '<option value="">' + (q ? `검색 결과 (${filtered.length}명)...` : '닉네임을 선택하세요...') + '</option>';
+  html += filtered.map(m => `<option value="${m.name}" ${m.name === myCurrentNick ? 'selected' : ''}>${m.name} (${m.role || '일반'})</option>`).join('');
+  select.innerHTML = html;
+
+  if (filtered.length === 1 && q) {
+    select.value = filtered[0].name;
+  }
+}
+
+function onLoginSearchInput(val) {
+  renderLoginMemberDropdown(val);
+}
+
+function onLoginSelectChange(val) {
+  if (val) {
+    const searchInput = document.getElementById("loginNickSearchInput");
+    if (searchInput) searchInput.value = val;
+  }
+}
+
+function showGuildLoginModal() {
+  document.getElementById("guildLoginModal").style.display = "flex";
+  const searchInput = document.getElementById("loginNickSearchInput");
+  const pinInput = document.getElementById("loginPinInput");
+  if (searchInput) {
+    searchInput.value = myCurrentNick || "";
+    renderLoginMemberDropdown(searchInput.value);
+  }
+  if (pinInput) pinInput.value = "";
+}
+
+async function executeGuildLogin() {
+  const searchInput = document.getElementById("loginNickSearchInput");
+  const selectElem = document.getElementById("loginMemberSelect");
+  const selectedName = (searchInput && searchInput.value.trim()) || (selectElem && selectElem.value.trim()) || "";
+  const inputPin = document.getElementById("loginPinInput").value.trim();
+
+  if (!selectedName) return showKakaoToast("본인 닉네임을 입력하거나 선택해주세요!", "⚠️");
+  if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
+
+  const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
+  const masterPin = window.masterAdminPin || "123456";
+
+  if (isSuperId) {
+    if (inputPin === "123456" || inputPin === masterPin || (window.masterAdminPin && inputPin === window.masterAdminPin)) {
+      myCurrentNick = "슈퍼관리자";
+      myCurrentPin = inputPin;
+      localStorage.setItem("guild_my_nickname", "슈퍼관리자");
+      localStorage.setItem("guild_my_pin", inputPin);
+      localStorage.setItem("guild_my_role", "슈퍼관리자");
+
+      sessionStorage.setItem("admin_auth", "true");
+      sessionStorage.setItem("admin_role", "super");
+
+      myCurrentClass = "👑 슈퍼관리자";
+      myCurrentAvatar = "👑";
+      localStorage.setItem("guild_my_class", myCurrentClass);
+      localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+
+      updateProfileUI("슈퍼관리자");
+      document.getElementById("guildLoginModal").style.display = "none";
+      return showKakaoToast("👑 슈퍼관리자(Master)로 인증되었습니다.", "🎉");
     } else {
-      const m = Math.floor(b.diffSec / 60);
-      statusText = `${m}분 후`;
+      document.getElementById("loginPinInput").value = "";
+      document.getElementById("loginPinInput").focus();
+      return showKakaoToast("관리자 비밀번호가 올바르지 않습니다! (기본: 123456)", "❌");
     }
-
-    return `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 11.5px; border-bottom: 1px dashed var(--drawer-card-border);">
-        <span style="font-weight: 700; color: var(--kakao-notice-text);">${escapeHtmlText(b.boss_name)}</span>
-        <span style="${colorStyle}">${statusText}</span>
-      </div>
-    `;
-  }).join('');
-
-  const reportCardHtml = `
-    <div class="boss-briefing-card" style="background: var(--drawer-card-bg); border: 1px solid var(--drawer-card-border); border-radius: 12px; padding: 10px 12px; width: 260px; max-width: 100%;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid var(--drawer-card-border);">
-        <span style="font-weight: 800; font-size: 12px; color: var(--kakao-notice-text);"><i class="fa-solid fa-clock text-warning me-1"></i>실시간 보스타임 현황</span>
-        <span style="font-size: 10px; color: var(--kakao-time-gray);">${currentTimeStr} 기준</span>
-      </div>
-      <div style="display: flex; flex-direction: column; gap: 2px;">
-        ${itemsHtml}
-      </div>
-      <div style="text-align: right; margin-top: 6px;">
-        <span style="font-size: 9.5px; color: var(--kakao-time-gray);">* 3분 전/젠 알림이 자동으로 전송됩니다</span>
-      </div>
-    </div>
-  `;
-
-  try {
-    await apiRequest("guild_chats", "POST", [{
-      sender_name: "보스알리미",
-      message: reportCardHtml,
-      msg_type: "boss_briefing",
-      mentions: []
-    }]);
-    showKakaoToast("보스타임 현황이 대화방에 공유되었습니다.", "🕒");
-  } catch (e) {
-    showKakaoToast("공유 실패: " + e.message, "❌");
   }
-};
 
-async function loadInitialChatMessages() {
+  const targetMember = cachedMemberList.find(m => m.name.toLowerCase() === selectedName.toLowerCase());
+  if (!targetMember) {
+    return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
+  }
+
+  let expectedPin = "0000";
+  if (targetMember.pin) {
+    expectedPin = String(targetMember.pin).trim();
+  } else {
+    try {
+      const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(targetMember.name)}&select=pin,role`);
+      if (res && res.length > 0 && res[0].pin) {
+        expectedPin = String(res[0].pin).trim();
+      }
+    } catch (e) {}
+  }
+
+  if (inputPin !== expectedPin) {
+    document.getElementById("loginPinInput").value = "";
+    document.getElementById("loginPinInput").focus();
+    return showKakaoToast("비밀번호가 올바르지 않습니다! (초기값: 0000)", "❌");
+  }
+
+  myCurrentNick = targetMember.name;
+  myCurrentPin = inputPin;
+  localStorage.setItem("guild_my_nickname", targetMember.name);
+  localStorage.setItem("guild_my_pin", inputPin);
+
+  const userRole = targetMember.role || "일반";
+  localStorage.setItem("guild_my_role", userRole);
+
+  if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
+    sessionStorage.setItem("admin_auth", "true");
+    sessionStorage.setItem("admin_role", "admin");
+  } else if (userRole === "정예") {
+    sessionStorage.setItem("admin_auth", "true");
+    sessionStorage.setItem("admin_role", "elite");
+  } else {
+    sessionStorage.removeItem("admin_auth");
+    sessionStorage.removeItem("admin_role");
+  }
+
+  if (targetMember.job_class) {
+    myCurrentClass = targetMember.job_class;
+    myCurrentAvatar = targetMember.job_class.split(' ')[0] || "👤";
+    localStorage.setItem("guild_my_class", myCurrentClass);
+    localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+  }
+
+  updateProfileUI(targetMember.name);
+  document.getElementById("guildLoginModal").style.display = "none";
+  showKakaoToast(`[${targetMember.name}]님 로그인 완료!`, "👋");
+}
+
+function handleUserLogout() {
+  if (!confirm("정말 로그아웃 하시겠습니까?")) return;
+  localStorage.removeItem("guild_my_nickname");
+  localStorage.removeItem("guild_my_pin");
+  localStorage.removeItem("guild_my_role");
+  sessionStorage.removeItem("admin_auth");
+  sessionStorage.removeItem("admin_role");
+
+  myCurrentNick = "";
+  myCurrentPin = "";
+  toggleMenuDrawer(false);
+  showGuildLoginModal();
+}
+
+function updateProfileUI(nick) {
+  document.getElementById("sidebarUserNickName").innerText = nick;
+  document.getElementById("sidebarAvatarIcon").innerText = myCurrentAvatar;
+  document.getElementById("sidebarUserClassText").innerText = myCurrentClass;
+}
+
+async function loadPastChatMessages() {
   const container = document.getElementById("chatMessagesView");
   if (!container) return;
 
@@ -691,6 +595,68 @@ function listenRealtimeChatMessages() {
       scrollChatBottom();
     })
     .subscribe();
+}
+
+function listenRealtimeBossTimers() {
+  if (!supabaseClient) return;
+
+  supabaseClient
+    .channel("public:boss_timers")
+    .on("postgres_changes", { event: "*", schema: "public", table: "boss_timers" }, async () => {
+      await loadBossTimersList();
+      const isBossDrawerOpen = document.getElementById("bossTimerSidebarDrawer").classList.contains("open");
+      if (isBossDrawerOpen) {
+        await loadDrawerPageTimer();
+      }
+    })
+    .subscribe();
+}
+
+function listenRealtimeBossParticipations() {
+  if (!supabaseClient) return;
+
+  supabaseClient
+    .channel("public:boss_participations")
+    .on("postgres_changes", { event: "*", schema: "public", table: "boss_participations" }, () => {})
+    .subscribe();
+}
+
+function startLocalBossWatchTimer() {
+  if (bossWatcherInterval) clearInterval(bossWatcherInterval);
+
+  bossWatcherInterval = setInterval(async () => {
+    if (!cachedBossList || cachedBossList.length === 0) return;
+
+    const now = Date.now();
+    for (let boss of cachedBossList) {
+      if (!boss.next_spawn_time) continue;
+
+      const spawnTime = new Date(boss.next_spawn_time).getTime();
+      const diffSec = Math.floor((spawnTime - now) / 1000);
+
+      const spawnTimeKey = new Date(boss.next_spawn_time).toISOString().slice(0, 16);
+      const key7m = `${boss.id}_7m_${spawnTimeKey}`;
+      const key3m = `${boss.id}_3m_${spawnTimeKey}`;
+      const keySpawn = `${boss.id}_spawn_${spawnTimeKey}`;
+
+      if (diffSec <= 420 && diffSec > 360 && !notifiedBossSpawnMap.has(key7m)) {
+        saveNotifiedBossKey(key7m);
+        await sendBossAlertMessage(boss.boss_name, "7분 전", boss.location);
+      } else if (diffSec <= 180 && diffSec > 120 && !notifiedBossSpawnMap.has(key3m)) {
+        saveNotifiedBossKey(key3m);
+        await sendBossAlertMessage(boss.boss_name, "3분 전", boss.location);
+      } else if (diffSec <= 0 && diffSec > -120 && !notifiedBossSpawnMap.has(keySpawn)) {
+        saveNotifiedBossKey(keySpawn);
+        await sendBossAlertMessage(boss.boss_name, "출현", boss.location);
+      }
+    }
+  }, 1000);
+}
+
+function startRaidReportCountdowns() {
+  setInterval(() => {
+    updateActiveRaidTimers();
+  }, 1000);
 }
 
 function renderChatMessagesBatch(messages) {
@@ -1200,7 +1166,7 @@ async function handleSendMessage() {
 
   if (!myCurrentNick) {
     showKakaoToast("로그인 후 메시지를 전송할 수 있습니다.", "⚠️");
-    openGuildLoginModal();
+    showGuildLoginModal();
     return;
   }
 
@@ -1381,7 +1347,7 @@ async function handleQuickBossCutAction(btnElem, bossName) {
 async function handleQuickRaidSelfAdd(raidId, bossName) {
   if (!myCurrentNick) {
     showKakaoToast("로그인 후 참여 등록이 가능합니다.", "⚠️");
-    openGuildLoginModal();
+    showGuildLoginModal();
     return;
   }
 
@@ -1777,5 +1743,12 @@ if ('serviceWorker' in navigator) {
       .catch(err => console.warn('PWA 등록 실패:', err));
   });
 }
+
+// 모달 열기/닫기 전역 호환 별칭
+window.openGuildLoginModal = showGuildLoginModal;
+window.closeGuildLoginModal = function() {
+  const m = document.getElementById("guildLoginModal");
+  if (m) m.style.display = "none";
+};
 
 window.addEventListener("DOMContentLoaded", initApp);
