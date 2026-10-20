@@ -1096,7 +1096,7 @@
   </div>
 </div>
 
-<!-- 토벌 참여 인원 수정 모달 (4열 가변 폰트 최적화) -->
+<!-- 토벌 참여 인원 수정 모달 -->
 <div id="modalEditRecord" class="rec-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeEditModal()">
   <div class="rec-modal-card" onclick="event.stopPropagation()">
     <div class="rec-modal-header">
@@ -1165,6 +1165,39 @@
     scoreInternal: 1,
     scoreInter: 2
   };
+
+  /* ==========================================================
+     ⚙️ [길드원 체크박스 UI 간편 설정]
+     사용자 취향에 맞게 아래 숫자 3개만 변경하시면 즉시 반영됩니다!
+     ========================================================== */
+  var MEMBER_CHECK_CONFIG = {
+    columns: 4,          // 한 줄에 배치할 열 수 (4: 4열 배치 / 3: 넓은 3열 배치)
+    baseFontSize: 0.69,  // 기본 닉네임 크기 (rem 단위, 기본: 0.69)
+    minFontSize: 0.63    // 긴 닉네임(5~7글자) 최소 크기 (rem 단위, 기본: 0.63)
+  };
+
+  // 🔤 극단적 크기 차이를 없애고 단정하게 균형을 맞춘 유동적 폰트 계산기
+  function getMemberNameCheckStyle(name) {
+    var str = String(name || '').trim();
+    var koreanCount = (str.match(/[가-힣]/g) || []).length;
+    var otherCount = str.length - koreanCount;
+    var weight = (koreanCount * 1.0) + (otherCount * 0.55);
+
+    var size = MEMBER_CHECK_CONFIG.baseFontSize;
+    var letterSpacing = '-0.3px';
+
+    if (weight > 5.5) {
+      // 6~7자 이상 긴 닉네임 (예: 불편한엉덩이, 오빠거기아니야) -> 0.63rem
+      size = MEMBER_CHECK_CONFIG.minFontSize;
+      letterSpacing = '-0.6px';
+    } else if (weight > 4.2) {
+      // 5자 닉네임 (예: 레인아재안, 불편한형진, 오징어튀김) -> 0.66rem
+      size = Math.round(((MEMBER_CHECK_CONFIG.baseFontSize + MEMBER_CHECK_CONFIG.minFontSize) / 2) * 100) / 100;
+      letterSpacing = '-0.4px';
+    }
+
+    return 'font-size: ' + size + 'rem !important; letter-spacing: ' + letterSpacing + ' !important;';
+  }
 
   async function verifyAdminPermission() {
     var adminRole = sessionStorage.getItem("admin_role") || "";
@@ -1803,37 +1836,6 @@
     }
   }
 
-  // 🔤 글자수 및 한글/영문 가중치에 따른 유동적 폰트 크기 & 자간 계산 함수
-  function getMemberNameCheckStyle(name) {
-    var str = String(name || '').trim();
-    var koreanCount = (str.match(/[가-힣]/g) || []).length;
-    var otherCount = str.length - koreanCount;
-    // 한글 1글자 = 약 1.05폭, 영문/숫자/기호 = 약 0.58폭
-    var weight = (koreanCount * 1.05) + (otherCount * 0.58);
-
-    var fontSize = '0.74rem';
-    var letterSpacing = '-0.2px';
-
-    if (weight <= 3.2) {
-      fontSize = '0.74rem';       // 1~3글자 한글: 기본 0.74rem
-      letterSpacing = '-0.2px';
-    } else if (weight <= 4.2) {
-      fontSize = '0.67rem';       // 4글자 한글: 0.67rem (~10.8px)
-      letterSpacing = '-0.4px';
-    } else if (weight <= 5.3) {
-      fontSize = '0.59rem';       // 5글자 한글 (예: 레인아재안, 오징어짬뽕): 0.59rem (~9.5px)
-      letterSpacing = '-0.6px';
-    } else if (weight <= 6.3) {
-      fontSize = '0.53rem';       // 6글자 한글 (예: 불편한사람들, 야옹은고양이): 0.53rem (~8.5px)
-      letterSpacing = '-0.8px';
-    } else {
-      fontSize = '0.47rem';       // 7글자 이상: 0.47rem (~7.5px)
-      letterSpacing = '-1px';
-    }
-
-    return 'font-size: ' + fontSize + ' !important; letter-spacing: ' + letterSpacing + ' !important;';
-  }
-
   // 토벌 참여 인원 수정 모달 관련
   async function triggerEditRecordModal(idx) {
     var isAdmin = await verifyAdminPermission();
@@ -1851,6 +1853,11 @@
     currentEditingOriginalMembers = r.members ? r.members.slice() : [];
 
     var container = document.getElementById('editMemberCheckList');
+    if (MEMBER_CHECK_CONFIG.columns === 3) {
+      container.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+    } else {
+      container.style.gridTemplateColumns = 'repeat(4, minmax(0, 1fr))';
+    }
     container.innerHTML = allGuildMembersList.map(function(m, i) {
       var isChecked = currentEditingOriginalMembers.includes(m.name) ? 'checked' : '';
       var dynStyle = getMemberNameCheckStyle(m.name);
