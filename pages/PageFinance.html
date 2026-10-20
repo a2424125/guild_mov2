@@ -1,353 +1,774 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 길드 비용 및 금고 현황 (동기식 즉시 로드 및 원본 디자인 복원)
+     [ECLIPSE 길드관리] 길드비용 및 금고 현황 모듈
+     경로: pages/PageFinance.html
+     완전한 다크/라이트 모드 고대비 & 커튼형 정독 레이아웃
      ========================================== -->
 <style>
-  .finance-card {
-    background: rgba(18, 26, 45, 0.9);
-    backdrop-filter: blur(14px);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 22px;
-    padding: 20px;
-    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.6);
+  /* 🎨 라이트 모드 (기본 :root 및 명시적 body/html.theme-light) */
+  :root,
+  body.theme-light,
+  html.theme-light {
+    --fin-bg: #f8fafc;
+    --fin-card-bg: #ffffff;
+    --fin-card-border: #e2e8f0;
+    --fin-section-bg: #f8fafc;
+    --fin-section-border: #e2e8f0;
+    --fin-input-bg: #ffffff;
+    --fin-input-border: #cbd5e1;
+    --fin-input-text: #0f172a;
+    --fin-text-main: #0f172a;
+    --fin-text-sub: #475569;
+    --fin-text-muted: #64748b;
+    --fin-gold-text: #b45309;
+    --fin-gold-bg: rgba(245, 158, 11, 0.12);
+    --fin-gold-border: rgba(245, 158, 11, 0.35);
+    --fin-green-text: #059669;
+    --fin-green-bg: rgba(16, 185, 129, 0.12);
+    --fin-green-border: rgba(16, 185, 129, 0.3);
+    --fin-red-text: #dc2626;
+    --fin-red-bg: rgba(239, 68, 68, 0.1);
+    --fin-red-border: rgba(239, 68, 68, 0.3);
+    --fin-blue-text: #0284c7;
+    --fin-blue-bg: rgba(2, 132, 199, 0.08);
+    --fin-blue-border: rgba(2, 132, 199, 0.25);
+    --fin-row-hover: #f1f5f9;
+    --fin-modal-backdrop: rgba(15, 23, 42, 0.45);
+    --fin-modal-bg: #ffffff;
+    --fin-modal-border: #cbd5e1;
+    --fin-modal-text: #0f172a;
+    --fin-modal-input-bg: #f8fafc;
+    --fin-modal-input-border: #cbd5e1;
   }
 
-  .finance-box {
-    background: var(--drawer-card-bg);
-    border: 1px solid var(--drawer-card-border);
+  /* 🌙 다크 모드 (body.theme-dark, html.theme-dark) */
+  body.theme-dark,
+  html.theme-dark {
+    --fin-bg: #0f172a;
+    --fin-card-bg: #181d24;
+    --fin-card-border: #282f3a;
+    --fin-section-bg: #1e2530;
+    --fin-section-border: #2c3545;
+    --fin-input-bg: #141922;
+    --fin-input-border: #2c3545;
+    --fin-input-text: #ffffff;
+    --fin-text-main: #f3f4f6;
+    --fin-text-sub: #9ca3af;
+    --fin-text-muted: #6b7280;
+    --fin-gold-text: #facc15;
+    --fin-gold-bg: rgba(245, 158, 11, 0.2);
+    --fin-gold-border: rgba(245, 158, 11, 0.4);
+    --fin-green-text: #34d399;
+    --fin-green-bg: rgba(16, 185, 129, 0.2);
+    --fin-green-border: rgba(16, 185, 129, 0.4);
+    --fin-red-text: #f87171;
+    --fin-red-bg: rgba(239, 68, 68, 0.2);
+    --fin-red-border: rgba(239, 68, 68, 0.4);
+    --fin-blue-text: #38bdf8;
+    --fin-blue-bg: rgba(56, 189, 248, 0.15);
+    --fin-blue-border: rgba(56, 189, 248, 0.35);
+    --fin-row-hover: #1e293b;
+    --fin-modal-backdrop: rgba(0, 0, 0, 0.7);
+    --fin-modal-bg: #1e2530;
+    --fin-modal-border: #374151;
+    --fin-modal-text: #f3f4f6;
+    --fin-modal-input-bg: #141922;
+    --fin-modal-input-border: #2c3545;
+  }
+
+  .finance-main-card {
+    background: var(--fin-card-bg);
+    border: 1px solid var(--fin-card-border);
     border-radius: 16px;
-    padding: 16px;
-    transition: all 0.2s ease;
+    padding: 13px 14px;
+    color: var(--fin-text-main);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    letter-spacing: -0.2px;
   }
 
-  .fin-date-btn {
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 6px 10px;
+  /* 🏛️ 금고 요약 대시보드 박스 */
+  .finance-hero-box {
+    background: var(--fin-section-bg);
+    border: 1px solid var(--fin-section-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .fin-vault-amount {
+    font-size: 1.55rem;
+    font-weight: 900;
+    color: var(--fin-gold-text);
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+  }
+
+  /* 3분할 슬림 요약 지표 그리드 */
+  .fin-summary-tri-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid var(--fin-section-border);
+  }
+  .fin-tri-item {
+    background: var(--fin-card-bg);
+    border: 1px solid var(--fin-card-border);
     border-radius: 8px;
-    border: 1px solid var(--drawer-card-border);
-    background: var(--modal-input-bg);
-    color: var(--modal-text);
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .fin-tri-label {
+    font-size: 0.66rem;
+    font-weight: 600;
+    color: var(--fin-text-sub);
+    margin-bottom: 2px;
+  }
+  .fin-tri-val {
+    font-size: 0.82rem;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  /* 📅 기간 필터 박스 */
+  .fin-filter-container {
+    background: var(--fin-section-bg);
+    border: 1px solid var(--fin-section-border);
+    border-radius: 11px;
+    padding: 9px 12px;
+    margin-bottom: 10px;
+  }
+
+  .fin-quick-range-group {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 7px;
+  }
+  .btn-fin-range {
+    flex: 1;
+    background: var(--fin-card-bg);
+    border: 1px solid var(--fin-card-border);
+    color: var(--fin-text-sub);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 5px 0;
+    border-radius: 7px;
+    transition: all 0.15s ease;
     cursor: pointer;
+    text-align: center;
   }
-  .fin-date-btn.active {
-    background: #0284c7 !important;
-    color: #ffffff !important;
+  .btn-fin-range:hover {
+    color: var(--fin-text-main);
+    background: var(--fin-row-hover);
+  }
+  .btn-fin-range.active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+  }
+
+  .input-fin-custom {
+    background: var(--fin-input-bg) !important;
+    border: 1px solid var(--fin-input-border) !important;
+    color: var(--fin-input-text) !important;
+    font-size: 0.75rem !important;
+    padding: 5px 8px !important;
+    border-radius: 7px !important;
+  }
+  .input-fin-custom:focus {
     border-color: #0284c7 !important;
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
   }
 
-  .badge-income {
-    background: rgba(16, 185, 129, 0.15);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    font-weight: 700;
+  /* 💬 대화방 공유 버튼 */
+  .btn-share-finance {
+    background: #fee500;
+    border: 1px solid #e5ce00;
+    color: #191919;
+    font-size: 0.74rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    height: 26px;
+    border-radius: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-share-finance:hover {
+    background: #fada0a;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  }
+  .btn-share-finance:active { transform: translateY(0); }
+  .btn-share-finance:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* ⚡ 빠른 액션 버튼 바 */
+  .fin-action-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 11px;
+  }
+  .btn-fin-action-toggle {
+    flex: 1;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 8px 10px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s ease;
+  }
+  .btn-fin-inc-toggle {
+    background: var(--fin-green-bg);
+    border-color: var(--fin-green-border);
+    color: var(--fin-green-text);
+  }
+  .btn-fin-inc-toggle:hover {
+    background: rgba(16, 185, 129, 0.25);
+  }
+  .btn-fin-inc-toggle.active {
+    background: #059669;
+    border-color: #059669;
+    color: #ffffff;
   }
 
-  .badge-expense {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+  .btn-fin-exp-toggle {
+    background: var(--fin-red-bg);
+    border-color: var(--fin-red-border);
+    color: var(--fin-red-text);
+  }
+  .btn-fin-exp-toggle:hover {
+    background: rgba(239, 68, 68, 0.22);
+  }
+
+  /* 📜 커튼형 입금 폼 카드 (평소엔 닫혀있어 장부 정독성 극대화) */
+  .fin-curtain-form-card {
+    display: none;
+    background: var(--fin-section-bg);
+    border: 1px solid var(--fin-section-border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    animation: slideDownCurtain 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes slideDownCurtain {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 🔍 장부 리스트 전용 캡슐 검색창 */
+  .search-wrapper-fin {
+    position: relative;
+    margin-bottom: 9px;
+  }
+  .search-input-fin {
+    width: 100%;
+    background: var(--fin-input-bg) !important;
+    border: 1px solid var(--fin-input-border) !important;
+    color: var(--fin-input-text) !important;
+    font-size: 0.76rem;
+    padding: 6px 10px 6px 30px;
+    border-radius: 20px !important;
+    transition: all 0.15s ease;
+  }
+  .search-input-fin:focus {
+    border-color: #0284c7 !important;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
+  }
+
+  /* 📋 실시간 장부 내역 항목 (영수증 스타일 & 고대비 폰트) */
+  .fin-logs-container {
+    max-height: 480px;
+    overflow-y: auto;
+    padding: 2px 1px;
+  }
+  .fin-log-row {
+    background: var(--fin-card-bg);
+    border: 1px solid var(--fin-card-border);
+    border-radius: 9px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .fin-log-row:hover {
+    border-color: #0284c7;
+    background: var(--fin-row-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .badge-fin-cat {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 1.5px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+  }
+  .badge-fin-income {
+    background: var(--fin-green-bg);
+    border: 1px solid var(--fin-green-border);
+    color: var(--fin-green-text);
+  }
+  .badge-fin-expense {
+    background: var(--fin-red-bg);
+    border: 1px solid var(--fin-red-border);
+    color: var(--fin-red-text);
+  }
+
+  .fin-log-reason-text {
+    font-size: 0.82rem;
     font-weight: 700;
+    color: var(--fin-text-main);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .fin-log-meta-text {
+    font-size: 0.68rem;
+    color: var(--fin-text-sub);
+    font-weight: 500;
+    margin-top: 1px;
+  }
+
+  .fin-log-amount-text {
+    font-size: 0.88rem;
+    font-weight: 800;
+    white-space: nowrap;
+    letter-spacing: -0.3px;
+  }
+  .amount-income { color: var(--fin-green-text); }
+  .amount-expense { color: var(--fin-red-text); }
+
+  /* 🔔 모달 팝업 공통 스타일 (다크/라이트 완벽 지원) */
+  .kakao-modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--fin-modal-backdrop) !important;
+    backdrop-filter: blur(3px);
+    z-index: 10500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    animation: fadeInFinModal 0.15s ease-out;
+  }
+  @keyframes fadeInFinModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .kakao-modal-card {
+    background: var(--fin-modal-bg) !important;
+    border: 1px solid var(--fin-modal-border) !important;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 360px;
+    padding: 18px 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    color: var(--fin-modal-text) !important;
+  }
+  .kakao-modal-card input, .kakao-modal-card select {
+    background: var(--fin-modal-input-bg) !important;
+    border: 1px solid var(--fin-modal-input-border) !important;
+    color: var(--fin-modal-text) !important;
   }
 </style>
 
-<div class="container-fluid px-2 py-3">
-  <!-- 상단 요약 카드 -->
-  <div class="row g-2 mb-3">
-    <div class="col-12">
-      <div class="finance-box shadow-sm">
-        <div class="d-flex align-items-center justify-content-between mb-2">
-          <span class="small fw-bold text-secondary"><i class="fa-solid fa-vault text-warning me-1"></i>현재 길드 금고 잔액</span>
-          <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.72rem;" onclick="openVaultEditModal()">
-            <i class="fa-solid fa-pen-to-string me-1"></i>금고 잔액 수정
-          </button>
-        </div>
-        <div class="d-flex align-items-baseline justify-content-between">
-          <h3 class="fw-black mb-0 text-warning" id="finCurrentVaultTotal">0 D</h3>
-          <span class="small text-muted" id="finVaultUpdatedTime">마지막 갱신: -</span>
-        </div>
-        <div class="mt-2 pt-2 border-top d-flex gap-3" style="font-size: 0.75rem;">
-          <div><span class="text-secondary">누적 입금:</span> <strong class="text-success" id="finTotalIncomeSum">+0</strong></div>
-          <div><span class="text-secondary">누적 지출:</span> <strong class="text-danger" id="finTotalExpenseSum">-0</strong></div>
-        </div>
+<div class="finance-main-card mb-4" id="financeRootCard">
+  <!-- 상단 헤더: 제목 + 대화방 공유 캡슐 버튼 -->
+  <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
+    <div class="d-flex align-items-center gap-2">
+      <span style="font-size: 1.15rem;">💰</span>
+      <div>
+        <h6 class="fw-bold mb-0" style="font-size: 0.88rem; color: var(--fin-text-main);">길드비용 및 금고 현황</h6>
+        <span class="small text-secondary" style="font-size: 0.65rem;">실시간 길드 자금 흐름 추적 및 입출금 장부</span>
+      </div>
+    </div>
+    <!-- 💬 26px 슬림 캡슐 대화방 공유 버튼 -->
+    <button type="button" class="btn-share-finance" id="btnShareFinanceReport" onclick="window.shareFinanceReportToChat()" title="현재 기간의 금고 정산 리포트를 대화방에 공유합니다">
+      <i class="fa-solid fa-comment-dots"></i>
+      <span>대화방 공유</span>
+    </button>
+  </div>
+
+  <!-- 1. 🏛️ 통합 금고 대시보드 (Hero Card) -->
+  <div class="finance-hero-box">
+    <div class="d-flex align-items-center justify-content-between mb-1">
+      <span class="small fw-bold" style="font-size: 0.74rem; color: var(--fin-text-main);">
+        <i class="fa-solid fa-vault text-warning me-1"></i>현재 길드 금고 잔액
+      </span>
+      <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.68rem; border-radius: 5px;" onclick="openVaultEditModal()">
+        <i class="fa-solid fa-pen-to-string me-1"></i>금고 잔액 직접 설정
+      </button>
+    </div>
+
+    <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2">
+      <div class="fin-vault-amount" id="finCurrentVaultTotal">0 D</div>
+      <span class="small" style="font-size: 0.68rem; color: var(--fin-text-muted);" id="finVaultUpdatedTime">마지막 갱신: -</span>
+    </div>
+
+    <!-- 3분할 슬림 요약 지표 (입금/지출/기간순수익) -->
+    <div class="fin-summary-tri-grid">
+      <div class="fin-tri-item">
+        <div class="fin-tri-label">누적 입금</div>
+        <div class="fin-tri-val" style="color: var(--fin-green-text);" id="finTotalIncomeSum">+0 D</div>
+      </div>
+      <div class="fin-tri-item">
+        <div class="fin-tri-label">누적 지출</div>
+        <div class="fin-tri-val" style="color: var(--fin-red-text);" id="finTotalExpenseSum">-0 D</div>
+      </div>
+      <div class="fin-tri-item">
+        <div class="fin-tri-label">기간 순수익</div>
+        <div class="fin-tri-val" style="color: var(--fin-blue-text);" id="finPeriodNetProfit">0 D</div>
       </div>
     </div>
   </div>
 
-  <!-- 기간 필터 박스 -->
-  <div class="finance-box mb-3 shadow-sm">
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <span class="small fw-bold text-secondary"><i class="fa-solid fa-filter me-1 text-info"></i>기간 필터</span>
-      <span class="small fw-bold text-primary" id="finPeriodNetProfit">기간 순수익: 0 D</span>
+  <!-- 2. 📅 컴팩트 기간 필터 박스 -->
+  <div class="fin-filter-container">
+    <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+      <span class="small fw-bold" style="font-size: 0.72rem; color: var(--fin-text-main);">
+        <i class="fa-solid fa-calendar-days me-1 text-primary"></i>장부 조회 기간
+      </span>
+      <span class="small text-secondary" style="font-size: 0.68rem;" id="finPeriodRangeLabel">이번 주</span>
     </div>
-    <div class="d-flex gap-1 mb-2">
-      <button type="button" class="fin-date-btn flex-fill active" id="btnRangeWeek" onclick="setFinanceQuickRange('thisWeek')">이번 주</button>
-      <button type="button" class="fin-date-btn flex-fill" id="btnRangeLastWeek" onclick="setFinanceQuickRange('lastWeek')">지난 주</button>
-      <button type="button" class="fin-date-btn flex-fill" id="btnRangeMonth" onclick="setFinanceQuickRange('thisMonth')">이번 달</button>
-      <button type="button" class="fin-date-btn flex-fill" id="btnRangeAll" onclick="setFinanceQuickRange('all')">전체</button>
+
+    <div class="fin-quick-range-group">
+      <button type="button" class="btn-fin-range active" id="btnRangeWeek" onclick="setFinanceQuickRange('thisWeek')">이번 주</button>
+      <button type="button" class="btn-fin-range" id="btnRangeLastWeek" onclick="setFinanceQuickRange('lastWeek')">지난 주</button>
+      <button type="button" class="btn-fin-range" id="btnRangeMonth" onclick="setFinanceQuickRange('thisMonth')">이번 달</button>
+      <button type="button" class="btn-fin-range" id="btnRangeAll" onclick="setFinanceQuickRange('all')">전체</button>
     </div>
-    <div class="d-flex align-items-center gap-2">
-      <input type="date" id="finFilterStart" class="form-control form-control-sm text-center" style="font-size: 0.75rem;" onchange="loadFinanceData()">
-      <span class="small text-muted">~</span>
-      <input type="date" id="finFilterEnd" class="form-control form-control-sm text-center" style="font-size: 0.75rem;" onchange="loadFinanceData()">
+
+    <div class="row g-1 align-items-center">
+      <div class="col-5">
+        <input type="date" id="finFilterStart" class="form-control input-fin-custom w-100 text-center" onchange="loadFinanceData()">
+      </div>
+      <div class="col-2 text-center text-secondary small" style="font-size: 0.72rem;">~</div>
+      <div class="col-5">
+        <input type="date" id="finFilterEnd" class="form-control input-fin-custom w-100 text-center" onchange="loadFinanceData()">
+      </div>
     </div>
   </div>
 
-  <!-- 액션 버튼 영역 -->
-  <div class="d-flex gap-2 mb-3">
-    <button type="button" class="btn btn-success flex-fill fw-bold py-2 shadow-sm" style="font-size: 0.8rem;" onclick="openIncomeModal()">
-      <i class="fa-solid fa-circle-plus me-1"></i> 수익금 입금
+  <!-- 3. ⚡ 빠른 실행 액션 바 (커튼형 토글) -->
+  <div class="fin-action-bar">
+    <button type="button" class="btn-fin-action-toggle btn-fin-inc-toggle" id="btnToggleIncomeCurtain" onclick="toggleIncomeCurtainForm()">
+      <i class="fa-solid fa-circle-plus"></i>
+      <span id="txtToggleIncomeBtn">수익금 입금 등록</span>
     </button>
-    <button type="button" class="btn btn-danger flex-fill fw-bold py-2 shadow-sm" style="font-size: 0.8rem;" onclick="openExpenseModal()">
-      <i class="fa-solid fa-circle-minus me-1"></i> 길드 지출
+    <button type="button" class="btn-fin-action-toggle btn-fin-exp-toggle" onclick="openExpenseModal()">
+      <i class="fa-solid fa-circle-minus"></i>
+      <span>길드 지출 등록</span>
     </button>
   </div>
 
-  <!-- 수입금 입금 폼 영역 -->
-  <div class="finance-box mb-3 shadow-sm" id="incomeFormCard">
+  <!-- 4. 📜 [커튼형 아코디언] 수익금 입금 등록 폼 (평소엔 접혀있어 장부 정독성 극대화) -->
+  <div class="fin-curtain-form-card" id="incomeFormCard">
+    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary border-opacity-10">
+      <span class="small fw-bold" style="font-size: 0.78rem; color: var(--fin-green-text);">
+        <i class="fa-solid fa-money-bill-trend-up me-1"></i>금고 수익금 입금 처리
+      </span>
+      <button type="button" class="btn btn-sm btn-link text-secondary p-0" style="font-size: 0.72rem; text-decoration: none;" onclick="toggleIncomeCurtainForm(false)">
+        <i class="fa-solid fa-xmark me-1"></i>닫기
+      </button>
+    </div>
+
     <div class="d-flex gap-2 mb-2">
-      <button type="button" class="btn btn-sm btn-success flex-fill active" id="btnIncModeTotal" onclick="setIncomeCalcMode('total')">게임 금고 총액 입력</button>
-      <button type="button" class="btn btn-sm btn-outline-secondary flex-fill" id="btnIncModeDirect" onclick="setIncomeCalcMode('direct')">추가 입금 직접 입력</button>
+      <button type="button" class="btn btn-sm btn-success flex-fill fw-bold" id="btnIncModeTotal" style="font-size: 0.72rem; border-radius: 6px;" onclick="setIncomeCalcMode('total')">게임 금고 총액 입력</button>
+      <button type="button" class="btn btn-sm btn-outline-secondary flex-fill fw-bold" id="btnIncModeDirect" style="font-size: 0.72rem; border-radius: 6px;" onclick="setIncomeCalcMode('direct')">추가 입금 직접 입력</button>
     </div>
 
     <div class="mb-2">
-      <label class="form-label text-secondary mb-1" style="font-size: 0.72rem; font-weight: 700;">입금 일자</label>
-      <input type="date" id="incomeDate" class="form-control form-control-sm">
+      <label class="form-label mb-1" style="font-size: 0.72rem; font-weight: 700; color: var(--fin-text-main);">입금 일자</label>
+      <input type="date" id="incomeDate" class="form-control input-fin-custom">
     </div>
 
     <div id="incomeBoxTotalMode" class="mb-2">
-      <label class="form-label text-secondary mb-1" style="font-size: 0.72rem; font-weight: 700;">인게임 금고 총 보유액 (다이아)</label>
-      <input type="text" id="incomeTotalInput" class="form-control form-control-sm" placeholder="금고 총액 입력" onkeyup="window.formatCommaInput(this); calculateIncomeDiff()">
-      <div class="d-flex justify-content-between text-muted mt-1" style="font-size: 0.68rem;">
+      <label class="form-label mb-1" style="font-size: 0.72rem; font-weight: 700; color: var(--fin-text-main);">인게임 금고 총 보유액 (다이아)</label>
+      <input type="text" id="incomeTotalInput" class="form-control input-fin-custom" placeholder="현재 인게임 금고 총액 입력" onkeyup="window.formatCommaInput(this); calculateIncomeDiff()">
+      <div class="d-flex justify-content-between mt-1" style="font-size: 0.68rem; color: var(--fin-text-sub);">
         <span id="incomePrevVaultText">직전 금고 잔액: 0 D</span>
         <span id="incomeInputSumText">입력 총액: 0 D</span>
       </div>
-      <div class="mt-1 fw-bold text-primary" style="font-size: 0.72rem;" id="incomeRealDiffText">👉 실제 반영 입금액: +0 다이아</div>
+      <div class="mt-1 fw-bold" style="font-size: 0.72rem; color: #0284c7;" id="incomeRealDiffText">👉 실제 반영 입금액: +0 다이아</div>
     </div>
 
     <div id="incomeBoxDirectMode" class="mb-2" style="display: none;">
-      <label class="form-label text-secondary mb-1" style="font-size: 0.72rem; font-weight: 700;">추가 입금할 금액 (다이아)</label>
-      <input type="text" id="incomeDirectInput" class="form-control form-control-sm" placeholder="예: 5,000" onkeyup="window.formatCommaInput(this)">
+      <label class="form-label mb-1" style="font-size: 0.72rem; font-weight: 700; color: var(--fin-text-main);">추가 입금할 금액 (다이아)</label>
+      <input type="text" id="incomeDirectInput" class="form-control input-fin-custom" placeholder="예: 50,000" onkeyup="window.formatCommaInput(this)">
     </div>
 
     <div class="mb-2">
-      <label class="form-label text-secondary mb-1" style="font-size: 0.72rem; font-weight: 700;">수익 내역 / 사유</label>
-      <input type="text" id="incomeReason" class="form-control form-control-sm" placeholder="예: 보스 토벌 누적 수익금, 길드 후원">
+      <label class="form-label mb-1" style="font-size: 0.72rem; font-weight: 700; color: var(--fin-text-main);">수익 내역 / 사유</label>
+      <input type="text" id="incomeReason" class="form-control input-fin-custom" placeholder="예: 보스 토벌 누적 수익금, 길드 후원">
     </div>
 
     <div class="mb-3">
-      <label class="form-label text-secondary mb-1" style="font-size: 0.72rem; font-weight: 700;">비고 / 전달자 닉네임 (선택 사항)</label>
-      <input type="text" id="incomeMemo" class="form-control form-control-sm" placeholder="비고 / 전달자 닉네임 (선택 사항)">
+      <label class="form-label mb-1" style="font-size: 0.72rem; font-weight: 700; color: var(--fin-text-main);">비고 / 전달자 닉네임 (선택 사항)</label>
+      <input type="text" id="incomeMemo" class="form-control input-fin-custom" placeholder="비고 또는 전달자 닉네임">
     </div>
 
-    <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" style="font-size: 0.82rem;" onclick="executeAddIncome()">
-      <i class="fa-solid fa-circle-plus me-1"></i>금고에 수익 입금 처리
+    <button type="button" class="btn btn-success w-100 fw-bold py-2 shadow-sm" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeAddIncome()">
+      <i class="fa-solid fa-check me-1"></i>금고에 수익 입금 확정
     </button>
   </div>
 
-  <!-- 입출금 내역 리스트 -->
-  <div class="finance-box shadow-sm mb-3">
-    <div class="d-flex align-items-center justify-content-between mb-2">
-      <span class="small fw-bold text-secondary"><i class="fa-solid fa-list-check me-1 text-warning"></i>입출금 내역 <span class="text-muted" style="font-size:0.68rem;">(클릭 시 수정/삭제)</span></span>
-      <div class="d-flex gap-1">
-        <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size: 0.72rem;" onclick="shareFinanceReportToChat()">
-          <i class="fa-solid fa-comment me-1"></i> 대화방 공유
-        </button>
-        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="loadFinanceData()">
-          <i class="fa-solid fa-rotate-right"></i> 새로고침
-        </button>
-      </div>
+  <!-- 5. 📜 실시간 입출금 장부 리스트 (화면 메인 집중) -->
+  <div class="finance-hero-box mb-0 p-3">
+    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+      <span class="small fw-bold" style="font-size: 0.8rem; color: var(--fin-text-main);">
+        <i class="fa-solid fa-receipt me-1 text-warning"></i>실시간 입출금 장부
+        <span class="small text-secondary" style="font-size: 0.68rem; font-weight: normal;">(클릭 시 수정/삭제)</span>
+      </span>
+      <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.7rem; border-radius: 5px;" onclick="loadFinanceData()" title="장부 새로고침">
+        <i class="fa-solid fa-rotate-right me-1"></i>새로고침
+      </button>
     </div>
 
-    <div id="financeLogsList" style="max-height: 380px; overflow-y: auto;">
+    <!-- 장부 검색창 -->
+    <div class="search-wrapper-fin">
+      <i class="fa-solid fa-magnifying-glass position-absolute" style="left: 11px; top: 50%; transform: translateY(-50%); color: var(--fin-text-sub); font-size: 0.75rem;"></i>
+      <input type="text" id="finSearchInput" class="search-input-fin" placeholder="내역 / 사유 / 닉네임 검색..." oninput="filterFinanceLogs()">
+    </div>
+
+    <div id="financeLogsList" class="fin-logs-container">
       <div class="text-secondary small text-center py-4">내역을 불러오는 중...</div>
     </div>
   </div>
 </div>
 
-<!-- 금고 잔액 수정 모달 -->
-<div id="modalVaultEdit" class="kakao-modal-backdrop" style="display: none;">
-  <div class="kakao-modal-card">
-    <h6 class="fw-bold mb-3"><i class="fa-solid fa-vault text-warning me-1"></i>길드 금고 잔액 직접 설정</h6>
-    <div class="small text-secondary mb-2">현재 인게임 금고 총 보유액(다이아)을 입력하세요.</div>
-    <input type="text" id="inputVaultNewTotal" class="form-control form-control-sm mb-3" placeholder="예: 1,500,000" onkeyup="window.formatCommaInput(this)">
+<!-- 모달 1: 금고 잔액 직접 설정 모달 -->
+<div id="modalVaultEdit" class="kakao-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeVaultEditModal()">
+  <div class="kakao-modal-card" onclick="event.stopPropagation()">
+    <h6 class="fw-bold mb-2" style="font-size: 0.95rem; color: var(--fin-modal-text);"><i class="fa-solid fa-vault text-warning me-1"></i>길드 금고 잔액 직접 설정</h6>
+    <div class="small text-secondary mb-3" style="font-size: 0.72rem;">인게임 금고 총 보유액(다이아)을 입력하시면 금고 잔액이 동기화됩니다.</div>
+    <input type="text" id="inputVaultNewTotal" class="form-control input-fin-custom mb-3 text-center fw-bold" style="font-size: 1rem;" placeholder="예: 1,500,000" onkeyup="window.formatCommaInput(this)">
     <div class="d-flex gap-2">
-      <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="closeVaultEditModal()">취소</button>
-      <button type="button" class="btn btn-sm btn-warning flex-fill fw-bold text-dark" onclick="saveVaultNewTotal()">저장</button>
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;" onclick="closeVaultEditModal()">취소</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill py-2 fw-bold" style="background: #fee500; border: none; color: #191919; border-radius: 8px; font-size: 0.78rem;" onclick="saveVaultNewTotal()">설정 저장</button>
     </div>
   </div>
 </div>
 
-<!-- 지출 등록 모달 -->
-<div id="modalExpenseAdd" class="kakao-modal-backdrop" style="display: none;">
-  <div class="kakao-modal-card" style="max-width: 340px;">
-    <h6 class="fw-bold mb-3 text-danger"><i class="fa-solid fa-circle-minus me-1"></i>길드 금고 지출</h6>
+<!-- 모달 2: 지출 등록 모달 -->
+<div id="modalExpenseAdd" class="kakao-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeExpenseModal()">
+  <div class="kakao-modal-card" style="max-width: 350px;" onclick="event.stopPropagation()">
+    <h6 class="fw-bold mb-2 text-danger" style="font-size: 0.95rem;"><i class="fa-solid fa-circle-minus me-1"></i>길드 금고 지출 등록</h6>
+    <div class="small text-secondary mb-3" style="font-size: 0.72rem;">공용 포션비, 이벤트 보상 등 지출 내역을 기록합니다.</div>
 
-    <div class="text-start small fw-bold text-secondary mb-1">지출 일자</div>
-    <input type="date" id="expenseDate" class="form-control form-control-sm mb-2">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">지출 일자</div>
+    <input type="date" id="expenseDate" class="form-control input-fin-custom mb-2">
 
-    <div class="text-start small fw-bold text-secondary mb-1">지출 금액 (다이아)</div>
-    <input type="text" id="expenseAmount" class="form-control form-control-sm mb-2" placeholder="예: 10,000" onkeyup="window.formatCommaInput(this)">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">지출 금액 (다이아)</div>
+    <input type="text" id="expenseAmount" class="form-control input-fin-custom mb-2 fw-bold" placeholder="예: 10,000" onkeyup="window.formatCommaInput(this)">
 
-    <div class="text-start small fw-bold text-secondary mb-1">지출 사유 / 용도</div>
-    <input type="text" id="expenseReason" class="form-control form-control-sm mb-2" placeholder="예: 공용 쟁 포션비 지원, 이벤트 보상">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">지출 사유 / 용도</div>
+    <input type="text" id="expenseReason" class="form-control input-fin-custom mb-2" placeholder="예: 공용 쟁 포션비 지원, 이벤트 보상">
 
-    <div class="text-start small fw-bold text-secondary mb-1">수령자 / 담당자 닉네임 (선택)</div>
-    <input type="text" id="expenseReceiver" class="form-control form-control-sm mb-3" placeholder="예: OOO 캐릭터">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">수령자 / 담당자 닉네임 (선택)</div>
+    <input type="text" id="expenseReceiver" class="form-control input-fin-custom mb-3" placeholder="예: 불편한형진">
 
     <div class="d-flex gap-2">
-      <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="closeExpenseModal()">취소</button>
-      <button type="button" class="btn btn-sm btn-danger flex-fill fw-bold" onclick="executeAddExpense()">지출 처리</button>
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;" onclick="closeExpenseModal()">취소</button>
+      <button type="button" class="btn btn-danger btn-sm flex-fill py-2 fw-bold" style="border-radius: 8px; font-size: 0.78rem;" onclick="executeAddExpense()">지출 처리</button>
     </div>
   </div>
 </div>
 
-<!-- 내역 상세/수정 모달 -->
-<div id="modalFinanceEdit" class="kakao-modal-backdrop" style="display: none;">
-  <div class="kakao-modal-card" style="max-width: 340px;">
-    <h6 class="fw-bold mb-3 text-info"><i class="fa-solid fa-pen-to-square me-1"></i>입출금 내역 수정 / 삭제</h6>
+<!-- 모달 3: 내역 상세/수정/삭제 모달 -->
+<div id="modalFinanceEdit" class="kakao-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeEditFinanceModal()">
+  <div class="kakao-modal-card" style="max-width: 350px;" onclick="event.stopPropagation()">
+    <h6 class="fw-bold mb-2 text-primary" style="font-size: 0.95rem;"><i class="fa-solid fa-pen-to-square me-1"></i>입출금 내역 수정 / 삭제</h6>
     <input type="hidden" id="editLogId">
 
-    <div class="text-start small fw-bold text-secondary mb-1">일자</div>
-    <input type="date" id="editLogDate" class="form-control form-control-sm mb-2">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">일자</div>
+    <input type="date" id="editLogDate" class="form-control input-fin-custom mb-2">
 
-    <div class="text-start small fw-bold text-secondary mb-1">구분</div>
-    <select id="editLogType" class="form-select form-select-sm mb-2">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">구분</div>
+    <select id="editLogType" class="form-select input-fin-custom mb-2" style="font-size: 0.8rem;">
       <option value="입금">입금</option>
       <option value="출금">출금</option>
     </select>
 
-    <div class="text-start small fw-bold text-secondary mb-1">금액 (다이아)</div>
-    <input type="text" id="editLogAmount" class="form-control form-control-sm mb-2" onkeyup="window.formatCommaInput(this)">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">금액 (다이아)</div>
+    <input type="text" id="editLogAmount" class="form-control input-fin-custom mb-2 fw-bold" onkeyup="window.formatCommaInput(this)">
 
-    <div class="text-start small fw-bold text-secondary mb-1">내역 / 사유</div>
-    <input type="text" id="editLogReason" class="form-control form-control-sm mb-2">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">내역 / 사유</div>
+    <input type="text" id="editLogReason" class="form-control input-fin-custom mb-2">
 
-    <div class="text-start small fw-bold text-secondary mb-1">비고 / 전달자</div>
-    <input type="text" id="editLogMemo" class="form-control form-control-sm mb-3">
+    <div class="text-start small fw-bold mb-1" style="font-size: 0.72rem; color: var(--fin-modal-text);">비고 / 전달자</div>
+    <input type="text" id="editLogMemo" class="form-control input-fin-custom mb-3">
 
     <div class="d-flex gap-2 mb-2">
-      <button type="button" class="btn btn-sm btn-secondary flex-fill" onclick="closeEditFinanceModal()">취소</button>
-      <button type="button" class="btn btn-sm btn-primary flex-fill fw-bold" onclick="executeEditFinanceLog()">수정 저장</button>
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="border-radius: 8px; font-weight: 700; font-size: 0.78rem;" onclick="closeEditFinanceModal()">취소</button>
+      <button type="button" class="btn btn-primary btn-sm flex-fill py-2 fw-bold" style="border-radius: 8px; font-size: 0.78rem;" onclick="executeEditFinanceLog()">수정 저장</button>
     </div>
-    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="executeDeleteFinanceLog()"><i class="fa-solid fa-trash-can me-1"></i>내역 삭제</button>
+    <button type="button" class="btn btn-sm btn-outline-danger w-100 py-1" style="font-size: 0.75rem; border-radius: 6px;" onclick="executeDeleteFinanceLog()"><i class="fa-solid fa-trash-can me-1"></i>내역 삭제</button>
   </div>
 </div>
 
 <script>
-  window.rawFinanceLogs = [];
-  window.currentBalance = 0;
-  window.incomeCalcMode = 'total';
-  window.lastFetchedPrevVault = 0;
-  window.activeGuildNameForFinance = "길드";
+  // ⚡ 재호출 시 Identifier already declared 충돌 방지: 모든 변수 var 선언
+  var rawFinanceLogs = [];
+  var currentBalance = 0;
+  var incomeCalcMode = 'total';
+  var lastFetchedPrevVault = 0;
+  var activeGuildNameForFinance = "길드";
 
   window.formatCommaInput = function(input) {
     if (!input) return;
-    let val = input.value.replace(/[^0-9]/g, '');
+    var val = input.value.replace(/[^0-9]/g, '');
     input.value = val ? Number(val).toLocaleString() : '';
   };
 
   window.parseCommaNumber = function(str) {
     if (!str) return 0;
-    let clean = String(str).replace(/[^0-9]/g, '');
+    var clean = String(str).replace(/[^0-9]/g, '');
     return parseInt(clean, 10) || 0;
   };
 
-  // 🎯 초기화: 대기 없이 날짜와 폼을 즉시 동기 세팅한 후 데이터를 즉각 로드
+  // 🎯 커튼형 입금 폼 열기/닫기 토글
+  function toggleIncomeCurtainForm(forceState) {
+    var card = document.getElementById('incomeFormCard');
+    var btn = document.getElementById('btnToggleIncomeCurtain');
+    var txt = document.getElementById('txtToggleIncomeBtn');
+    if (!card) return;
+
+    var isOpening = (forceState !== undefined) ? forceState : (card.style.display === 'none' || !card.style.display);
+
+    if (isOpening) {
+      card.style.display = 'block';
+      if (btn) btn.classList.add('active');
+      if (txt) txt.innerText = '▲ 입금창 닫기';
+      setTimeout(function() {
+        var input = (incomeCalcMode === 'total') ? document.getElementById('incomeTotalInput') : document.getElementById('incomeDirectInput');
+        if (input) input.focus();
+      }, 100);
+    } else {
+      card.style.display = 'none';
+      if (btn) btn.classList.remove('active');
+      if (txt) txt.innerText = '수익금 입금 등록';
+    }
+  }
+
+  // 🎯 초기화: 날짜 세팅 및 테마 동기화
   function initFinanceModule() {
-    const today = new Date().toISOString().split('T')[0];
-    const incInput = document.getElementById('incomeDate');
-    const expInput = document.getElementById('expenseDate');
+    if (typeof window.applyAppTheme === 'function') {
+      window.applyAppTheme();
+    }
+    var today = new Date().toISOString().split('T')[0];
+    var incInput = document.getElementById('incomeDate');
+    var expInput = document.getElementById('expenseDate');
     if (incInput) incInput.value = today;
     if (expInput) expInput.value = today;
 
-    window.setFinanceQuickRange('thisWeek');
-    window.setIncomeCalcMode('total');
-
-    // 백그라운드에서 길드명 캐시 조회
-    (async () => {
-      try {
-        const res = await apiRequest("guild_settings?select=key,value");
-        if (res && res.length > 0) {
-          const item = res.find(x => x.key === "guild_name");
-          if (item && item.value) window.activeGuildNameForFinance = item.value;
-        }
-      } catch (e) {}
-    })();
+    setFinanceQuickRange('thisWeek');
   }
 
-  window.setFinanceQuickRange = function(rangeType) {
-    const today = new Date();
-    let startD = new Date();
-    let endD = new Date();
+  // 📅 빠른 기간 선택
+  function setFinanceQuickRange(rangeType) {
+    document.querySelectorAll('#btnRangeWeek, #btnRangeLastWeek, #btnRangeMonth, #btnRangeAll').forEach(function(b) {
+      b.classList.remove('active');
+    });
 
-    const btnW = document.getElementById('btnRangeWeek');
-    const btnLW = document.getElementById('btnRangeLastWeek');
-    const btnM = document.getElementById('btnRangeMonth');
-    const btnA = document.getElementById('btnRangeAll');
-
-    if (btnW) btnW.classList.remove('active');
-    if (btnLW) btnLW.classList.remove('active');
-    if (btnM) btnM.classList.remove('active');
-    if (btnA) btnA.classList.remove('active');
+    var today = new Date();
+    var currentDay = (today.getDay() + 6) % 7; // 월=0, 일=6
+    var start = null;
+    var end = null;
+    var labelText = "이번 주";
 
     if (rangeType === 'thisWeek') {
-      if (btnW) btnW.classList.add('active');
-      const day = today.getDay();
-      const diffToMonday = today.getDate() - day + (day === 0 ? -6 : 1);
-      startD = new Date(today.setDate(diffToMonday));
-      endD = new Date();
+      var btn = document.getElementById('btnRangeWeek');
+      if (btn) btn.classList.add('active');
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - currentDay);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+      labelText = "이번 주";
     } else if (rangeType === 'lastWeek') {
-      if (btnLW) btnLW.classList.add('active');
-      const day = today.getDay();
-      const diffToLastMon = today.getDate() - day - 6 + (day === 0 ? -6 : 1);
-      startD = new Date(today.setDate(diffToLastMon));
-      endD = new Date(today.setDate(startD.getDate() + 6));
+      var btn = document.getElementById('btnRangeLastWeek');
+      if (btn) btn.classList.add('active');
+      start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - currentDay - 7);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
+      labelText = "지난 주";
     } else if (rangeType === 'thisMonth') {
-      if (btnM) btnM.classList.add('active');
-      startD = new Date(today.getFullYear(), today.getMonth(), 1);
-      endD = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      var btn = document.getElementById('btnRangeMonth');
+      if (btn) btn.classList.add('active');
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      labelText = "이번 달";
     } else if (rangeType === 'all') {
-      if (btnA) btnA.classList.add('active');
-      startD = new Date(2025, 0, 1);
-      endD = new Date(2035, 11, 31);
+      var btn = document.getElementById('btnRangeAll');
+      if (btn) btn.classList.add('active');
+      labelText = "전체 기간";
     }
 
-    const sElem = document.getElementById('finFilterStart');
-    const eElem = document.getElementById('finFilterEnd');
-    if (sElem) sElem.value = startD.toISOString().split('T')[0];
-    if (eElem) eElem.value = endD.toISOString().split('T')[0];
+    function fmt(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
 
-    window.loadFinanceData();
-  };
+    var sInput = document.getElementById('finFilterStart');
+    var eInput = document.getElementById('finFilterEnd');
+    if (sInput) sInput.value = start ? fmt(start) : '';
+    if (eInput) eInput.value = end ? fmt(end) : '';
 
-  window.loadFinanceLogs = function() {
-    window.loadFinanceData();
-  };
+    var lbl = document.getElementById('finPeriodRangeLabel');
+    if (lbl) lbl.innerText = labelText;
 
-  window.loadFinanceData = async function() {
-    const container = document.getElementById('financeLogsList');
+    loadFinanceData();
+  }
+
+  // 📊 데이터 로드 및 렌더링
+  async function loadFinanceData() {
+    var container = document.getElementById('financeLogsList');
     if (container) {
-      container.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>내역을 불러오는 중...</div>`;
+      container.innerHTML = '<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>장부 내역 로딩 중...</div>';
     }
 
-    const sElem = document.getElementById('finFilterStart');
-    const eElem = document.getElementById('finFilterEnd');
-    const start = sElem ? sElem.value : '';
-    const end = eElem ? eElem.value : '';
+    var sDate = document.getElementById('finFilterStart') ? document.getElementById('finFilterStart').value : '';
+    var eDate = document.getElementById('finFilterEnd') ? document.getElementById('finFilterEnd').value : '';
 
     try {
-      const rows = await apiRequest("guild_finances?select=*&order=created_at.desc,id.desc");
-      const rawRows = rows || [];
+      var res = await Promise.all([
+        apiRequest("guild_finances?select=*&order=created_at.desc"),
+        apiRequest("guild_settings?select=*")
+      ]);
 
-      window.rawFinanceLogs = rawRows.map(r => {
-        const typeStr = (r.tx_type === '출금' || r.tx_type === '지출') ? '출금' : '입금';
-        let dateStr = new Date().toISOString().split('T')[0];
-        if (r.created_at) {
-          dateStr = new Date(r.created_at).toISOString().split('T')[0];
-        }
-        const reasonStr = r.reason || '사유 없음';
-        const categoryStr = r.category || '';
-        const inFilter = (!start || dateStr >= start) && (!end || dateStr <= end);
+      var rawLogs = res[0] || [];
+      var settings = res[1] || [];
+
+      if (settings && settings.length > 0) {
+        settings.forEach(function(s) {
+          if (s.key === 'guild_name') activeGuildNameForFinance = s.value || "길드";
+        });
+      }
+
+      rawFinanceLogs = rawLogs.map(function(r) {
+        var dateStr = r.created_at ? r.created_at.slice(0, 10) : '';
+        var typeStr = r.tx_type || (r.amount >= 0 ? '입금' : '출금');
+        var reasonStr = r.reason || '사유 미기재';
+        var categoryStr = r.category || '';
+
+        var inFilter = true;
+        if (sDate && dateStr < sDate) inFilter = false;
+        if (eDate && dateStr > eDate) inFilter = false;
 
         return {
           id: r.id,
@@ -361,13 +782,13 @@
         };
       });
 
-      let totalInc = 0;
-      let totalExp = 0;
-      let filteredInc = 0;
-      let filteredExp = 0;
+      var totalInc = 0;
+      var totalExp = 0;
+      var filteredInc = 0;
+      var filteredExp = 0;
 
-      window.rawFinanceLogs.forEach(l => {
-        const amt = Number(l.amount || 0);
+      rawFinanceLogs.forEach(function(l) {
+        var amt = Number(l.amount || 0);
         if (l.tx_type === '입금') {
           totalInc += amt;
           if (l.inFilter) filteredInc += amt;
@@ -377,334 +798,369 @@
         }
       });
 
-      window.currentBalance = totalInc - totalExp;
+      currentBalance = totalInc - totalExp;
 
-      const vaultTotalElem = document.getElementById('finCurrentVaultTotal');
-      const incSumElem = document.getElementById('finTotalIncomeSum');
-      const expSumElem = document.getElementById('finTotalExpenseSum');
-      const timeElem = document.getElementById('finVaultUpdatedTime');
-      const periodNetElem = document.getElementById('finPeriodNetProfit');
-      const prevVaultElem = document.getElementById('incomePrevVaultText');
+      var vaultTotalElem = document.getElementById('finCurrentVaultTotal');
+      var incSumElem = document.getElementById('finTotalIncomeSum');
+      var expSumElem = document.getElementById('finTotalExpenseSum');
+      var timeElem = document.getElementById('finVaultUpdatedTime');
+      var periodNetElem = document.getElementById('finPeriodNetProfit');
+      var prevVaultElem = document.getElementById('incomePrevVaultText');
 
-      if (vaultTotalElem) vaultTotalElem.innerText = window.currentBalance.toLocaleString() + " D";
-      if (incSumElem) incSumElem.innerText = "+" + totalInc.toLocaleString();
-      if (expSumElem) expSumElem.innerText = "-" + totalExp.toLocaleString();
+      if (vaultTotalElem) vaultTotalElem.innerText = currentBalance.toLocaleString() + " D";
+      if (incSumElem) incSumElem.innerText = "+" + totalInc.toLocaleString() + " D";
+      if (expSumElem) expSumElem.innerText = "-" + totalExp.toLocaleString() + " D";
 
-      if (window.rawFinanceLogs.length > 0 && timeElem) {
-        const lastDt = window.rawFinanceLogs[0].created_at ? new Date(window.rawFinanceLogs[0].created_at) : new Date();
-        timeElem.innerText = `마지막 갱신: ${formatTime24Hour(lastDt)}`;
+      if (rawFinanceLogs.length > 0 && timeElem) {
+        var lastDt = rawFinanceLogs[0].created_at ? new Date(rawFinanceLogs[0].created_at) : new Date();
+        var h = String(lastDt.getHours()).padStart(2, '0');
+        var m = String(lastDt.getMinutes()).padStart(2, '0');
+        timeElem.innerText = "마지막 갱신: " + h + ":" + m;
       }
 
-      const periodNet = filteredInc - filteredExp;
-      if (periodNetElem) periodNetElem.innerText = `기간 순수익: ${periodNet.toLocaleString()} D`;
+      var periodNet = filteredInc - filteredExp;
+      if (periodNetElem) periodNetElem.innerText = (periodNet >= 0 ? "+" : "") + periodNet.toLocaleString() + " D";
 
-      window.lastFetchedPrevVault = window.currentBalance;
-      if (prevVaultElem) prevVaultElem.innerText = `직전 금고 잔액: ${window.lastFetchedPrevVault.toLocaleString()} D`;
+      lastFetchedPrevVault = currentBalance;
+      if (prevVaultElem) prevVaultElem.innerText = "직전 금고 잔액: " + lastFetchedPrevVault.toLocaleString() + " D";
 
-      const filteredLogs = window.rawFinanceLogs.filter(l => l.inFilter);
-
-      if (!container) return;
-
-      if (filteredLogs.length === 0) {
-        container.innerHTML = `<div class="text-secondary small text-center py-4">조회된 입출금 내역이 없습니다.</div>`;
-        return;
-      }
-
-      container.innerHTML = filteredLogs.map(l => {
-        const isInc = (l.tx_type === '입금');
-        const badgeClass = isInc ? 'badge-income' : 'badge-expense';
-        const signStr = isInc ? '+' : '-';
-        const amtStr = Number(l.amount || 0).toLocaleString();
-        const catBadge = l.category ? `<span class="badge ${badgeClass}" style="font-size: 0.68rem; padding: 2px 5px;">${escapeHtmlText(l.category)}</span>` : '';
-
-        return `
-          <div class="p-2 mb-2 rounded border bg-white shadow-sm d-flex align-items-center justify-content-between" 
-               style="cursor: pointer; transition: background 0.12s;" 
-               onclick="openFinanceEditModal('${l.id}')">
-            <div style="min-width: 0; flex: 1; padding-right: 6px;">
-              <div class="d-flex align-items-center gap-2 mb-1">
-                ${catBadge}
-                <span class="small fw-bold text-dark text-truncate">${escapeHtmlText(l.reason)}</span>
-              </div>
-              <div class="text-muted" style="font-size: 0.68rem;">
-                ${escapeHtmlText(l.log_date)} • ${escapeHtmlText(l.category || l.tx_type)}
-              </div>
-            </div>
-            <div class="text-end fw-black ${isInc ? 'text-success' : 'text-danger'}" style="font-size: 0.88rem; white-space: nowrap;">
-              ${signStr}${amtStr} D
-            </div>
-          </div>
-        `;
-      }).join('');
-
-    } catch (e) {
+      renderFinanceLogs();
+    } catch (err) {
       if (container) {
-        container.innerHTML = `<div class="text-danger small text-center py-4">데이터 로드 실패: ${e.message}</div>`;
+        container.innerHTML = '<div class="text-danger small text-center py-4">조회 실패: ' + err.message + '</div>';
       }
     }
-  };
+  }
 
-  window.openVaultEditModal = function() {
-    const vInput = document.getElementById('inputVaultNewTotal');
-    if (vInput) vInput.value = window.currentBalance.toLocaleString();
-    const modal = document.getElementById('modalVaultEdit');
-    if (modal) modal.style.display = 'flex';
-  };
-  window.closeVaultEditModal = function() {
-    const modal = document.getElementById('modalVaultEdit');
-    if (modal) modal.style.display = 'none';
-  };
-  window.saveVaultNewTotal = async function() {
-    const val = window.parseCommaNumber(document.getElementById('inputVaultNewTotal').value);
-    if (isNaN(val)) return showKakaoToast("올바른 금액을 입력하세요.", "⚠️");
+  // 렌더링 함수
+  function renderFinanceLogs() {
+    var container = document.getElementById('financeLogsList');
+    if (!container) return;
 
-    const diff = val - window.currentBalance;
+    var q = document.getElementById('finSearchInput') ? document.getElementById('finSearchInput').value.trim().toLowerCase() : '';
+
+    var filteredLogs = rawFinanceLogs.filter(function(l) {
+      if (!l.inFilter) return false;
+      if (!q) return true;
+      var text = (l.reason + ' ' + l.category + ' ' + l.tx_type).toLowerCase();
+      return text.includes(q);
+    });
+
+    if (filteredLogs.length === 0) {
+      container.innerHTML = '<div class="text-secondary small text-center py-4">조회된 입출금 내역이 없습니다.</div>';
+      return;
+    }
+
+    container.innerHTML = filteredLogs.map(function(l) {
+      var isInc = (l.tx_type === '입금');
+      var badgeClass = isInc ? 'badge-fin-income' : 'badge-fin-expense';
+      var amountClass = isInc ? 'amount-income' : 'amount-expense';
+      var signStr = isInc ? '+' : '-';
+      var amtStr = Number(l.amount || 0).toLocaleString();
+      var catBadge = l.category ? '<span class="badge-fin-cat ' + badgeClass + '">' + escapeHtmlText(l.category) + '</span>' : '';
+
+      return '<div class="fin-log-row" onclick="openFinanceEditModal(' + l.id + ')">' +
+        '<div style="min-width: 0; flex: 1; padding-right: 6px;">' +
+          '<div class="d-flex align-items-center gap-2 mb-1 flex-wrap">' +
+            catBadge +
+            '<span class="fin-log-reason-text">' + escapeHtmlText(l.reason) + '</span>' +
+          '</div>' +
+          '<div class="fin-log-meta-text">' +
+            escapeHtmlText(l.log_date) + ' &bull; ' + escapeHtmlText(l.category || l.tx_type) +
+          '</div>' +
+        '</div>' +
+        '<div class="fin-log-amount-text ' + amountClass + '">' +
+          signStr + amtStr + ' D' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function filterFinanceLogs() {
+    renderFinanceLogs();
+  }
+
+  // 💰 금고 잔액 직접 수정 모달
+  function openVaultEditModal() {
+    var input = document.getElementById('inputVaultNewTotal');
+    if (input) input.value = currentBalance.toLocaleString();
+    document.getElementById('modalVaultEdit').style.display = 'flex';
+    setTimeout(function() { if (input) input.focus(); }, 100);
+  }
+  function closeVaultEditModal() {
+    document.getElementById('modalVaultEdit').style.display = 'none';
+  }
+
+  async function saveVaultNewTotal() {
+    var input = document.getElementById('inputVaultNewTotal');
+    var targetTotal = window.parseCommaNumber(input.value);
+
+    var diff = targetTotal - currentBalance;
     if (diff === 0) {
+      showToastMsg("금고 잔액에 변동이 없습니다.", "ℹ️");
       closeVaultEditModal();
       return;
     }
 
-    const customCreatedAt = new Date().toISOString();
+    var txType = diff > 0 ? "입금" : "출금";
+    var absDiff = Math.abs(diff);
+
     try {
       await apiRequest("guild_finances", "POST", [{
-        tx_type: diff > 0 ? "입금" : "출금",
-        amount: Math.abs(diff),
-        category: "금고 잔액 보정",
-        reason: "관리자 직접 수정",
-        created_at: customCreatedAt
+        tx_type: txType,
+        category: "금고직접조정",
+        amount: absDiff,
+        reason: "관리자 금고 잔액 직접 설정 (" + currentBalance.toLocaleString() + " -> " + targetTotal.toLocaleString() + ")",
+        created_at: new Date().toISOString()
       }]);
-      closeVaultEditModal();
-      showKakaoToast("금고 잔액이 보정되었습니다.", "🎉");
-      window.loadFinanceData();
-    } catch(err) {
-      showKakaoToast("수정 실패: " + err.message, "❌");
-    }
-  };
 
-  window.setIncomeCalcMode = function(mode) {
-    window.incomeCalcMode = mode;
-    const btnTot = document.getElementById('btnIncModeTotal');
-    const btnDir = document.getElementById('btnIncModeDirect');
-    const boxTot = document.getElementById('incomeBoxTotalMode');
-    const boxDir = document.getElementById('incomeBoxDirectMode');
+      showToastMsg("길드 금고 잔액이 성공적으로 재설정되었습니다!", "✅");
+      closeVaultEditModal();
+      await loadFinanceData();
+    } catch (e) {
+      alert("금고 설정 실패: " + e.message);
+    }
+  }
+
+  // 📥 입금 계산 모드 설정 (게임 금고 총액 vs 직접 입력)
+  function setIncomeCalcMode(mode) {
+    incomeCalcMode = mode;
+    var btnTotal = document.getElementById('btnIncModeTotal');
+    var btnDirect = document.getElementById('btnIncModeDirect');
+    var boxTotal = document.getElementById('incomeBoxTotalMode');
+    var boxDirect = document.getElementById('incomeBoxDirectMode');
 
     if (mode === 'total') {
-      if (btnTot) btnTot.className = "btn btn-sm btn-success flex-fill active";
-      if (btnDir) btnDir.className = "btn btn-sm btn-outline-secondary flex-fill";
-      if (boxTot) boxTot.style.display = 'block';
-      if (boxDir) boxDir.style.display = 'none';
+      if (btnTotal) { btnTotal.classList.add('btn-success', 'active'); btnTotal.classList.remove('btn-outline-secondary'); }
+      if (btnDirect) { btnDirect.classList.remove('btn-success', 'active'); btnDirect.classList.add('btn-outline-secondary'); }
+      if (boxTotal) boxTotal.style.display = 'block';
+      if (boxDirect) boxDirect.style.display = 'none';
     } else {
-      if (btnTot) btnTot.className = "btn btn-sm btn-outline-secondary flex-fill";
-      if (btnDir) btnDir.className = "btn btn-sm btn-success flex-fill active";
-      if (boxTot) boxTot.style.display = 'none';
-      if (boxDir) boxDir.style.display = 'block';
+      if (btnTotal) { btnTotal.classList.remove('btn-success', 'active'); btnTotal.classList.add('btn-outline-secondary'); }
+      if (btnDirect) { btnDirect.classList.add('btn-success', 'active'); btnDirect.classList.remove('btn-outline-secondary'); }
+      if (boxTotal) boxTotal.style.display = 'none';
+      if (boxDirect) boxDirect.style.display = 'block';
     }
-  };
+  }
 
-  window.calculateIncomeDiff = function() {
-    if (window.incomeCalcMode === 'total') {
-      const inputElem = document.getElementById('incomeTotalInput');
-      const val = window.parseCommaNumber(inputElem ? inputElem.value : 0);
-      const diff = val - window.lastFetchedPrevVault;
-      const sumText = document.getElementById('incomeInputSumText');
-      const realDiffText = document.getElementById('incomeRealDiffText');
+  function calculateIncomeDiff() {
+    if (incomeCalcMode !== 'total') return;
+    var inputElem = document.getElementById('incomeTotalInput');
+    var inputSumElem = document.getElementById('incomeInputSumText');
+    var realDiffElem = document.getElementById('incomeRealDiffText');
 
-      if (sumText) sumText.innerText = `입력 총액: ${val.toLocaleString()} D`;
-      const sign = diff >= 0 ? "+" : "";
-      if (realDiffText) realDiffText.innerText = `👉 실제 반영 입금액: ${sign}${diff.toLocaleString()} 다이아`;
+    var entered = window.parseCommaNumber(inputElem.value);
+    if (inputSumElem) inputSumElem.innerText = "입력 총액: " + entered.toLocaleString() + " D";
+
+    var diff = entered - lastFetchedPrevVault;
+    if (realDiffElem) {
+      if (diff >= 0) {
+        realDiffElem.innerText = "👉 실제 반영 입금액: +" + diff.toLocaleString() + " 다이아";
+        realDiffElem.style.color = "var(--fin-green-text)";
+      } else {
+        realDiffElem.innerText = "⚠️ 입력 총액이 직전 잔액보다 적습니다 (" + diff.toLocaleString() + " D)";
+        realDiffElem.style.color = "var(--fin-red-text)";
+      }
     }
-  };
+  }
 
-  window.executeAddIncome = async function() {
-    const dt = document.getElementById('incomeDate').value;
-    const reason = document.getElementById('incomeReason').value.trim() || "수익금 입금";
-    const memo = document.getElementById('incomeMemo').value.trim();
+  async function executeAddIncome() {
+    var dateVal = document.getElementById('incomeDate').value || new Date().toISOString().slice(0, 10);
+    var reasonVal = document.getElementById('incomeReason').value.trim() || "보스 토벌 수익금";
+    var memoVal = document.getElementById('incomeMemo').value.trim();
 
-    let amount = 0;
-    if (window.incomeCalcMode === 'total') {
-      const totalVal = window.parseCommaNumber(document.getElementById('incomeTotalInput').value);
-      if (isNaN(totalVal)) return showKakaoToast("금고 총액을 올바르게 입력하세요.", "⚠️");
-      amount = totalVal - window.lastFetchedPrevVault;
-      if (amount <= 0) return showKakaoToast("입력한 총액이 직전 잔액보다 적거나 같습니다.", "⚠️");
+    var amountVal = 0;
+    if (incomeCalcMode === 'total') {
+      var entered = window.parseCommaNumber(document.getElementById('incomeTotalInput').value);
+      amountVal = entered - lastFetchedPrevVault;
+      if (amountVal <= 0) {
+        return alert("입력 총액이 직전 금고 잔액보다 커야 입금 처리가 가능합니다.");
+      }
     } else {
-      amount = window.parseCommaNumber(document.getElementById('incomeDirectInput').value);
-      if (isNaN(amount) || amount <= 0) return showKakaoToast("유효한 입금 금액을 입력하세요.", "⚠️");
+      amountVal = window.parseCommaNumber(document.getElementById('incomeDirectInput').value);
+      if (amountVal <= 0) {
+        return alert("추가 입금할 금액을 0보다 크게 입력하세요.");
+      }
     }
-
-    const customCreatedAt = dt ? new Date(`${dt}T12:00:00`).toISOString() : new Date().toISOString();
 
     try {
+      var fullReason = reasonVal + (memoVal ? " (" + memoVal + ")" : "");
       await apiRequest("guild_finances", "POST", [{
         tx_type: "입금",
-        amount: amount,
         category: "수익금입금",
-        reason: memo ? `${reason} (${memo})` : reason,
-        created_at: customCreatedAt
+        amount: amountVal,
+        reason: fullReason,
+        created_at: new Date(dateVal + 'T12:00:00Z').toISOString()
       }]);
-      showKakaoToast(`+${amount.toLocaleString()} D 수익금 입금 완료!`, "🎉");
-      document.getElementById('incomeTotalInput').value = '';
-      document.getElementById('incomeDirectInput').value = '';
-      document.getElementById('incomeReason').value = '';
-      document.getElementById('incomeMemo').value = '';
-      window.loadFinanceData();
-    } catch(err) {
-      showKakaoToast("입금 처리 실패: " + err.message, "❌");
+
+      showToastMsg("수익금 +" + amountVal.toLocaleString() + " D 입금 완료!", "💰");
+      
+      // 입력창 리셋 및 커튼 닫기
+      document.getElementById('incomeTotalInput').value = "";
+      document.getElementById('incomeDirectInput').value = "";
+      document.getElementById('incomeReason').value = "";
+      document.getElementById('incomeMemo').value = "";
+      toggleIncomeCurtainForm(false);
+
+      await loadFinanceData();
+    } catch (e) {
+      alert("입금 처리 실패: " + e.message);
     }
-  };
+  }
 
-  window.openExpenseModal = function() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('expenseDate').value = today;
-    document.getElementById('expenseAmount').value = '';
-    document.getElementById('expenseReason').value = '';
-    document.getElementById('expenseReceiver').value = '';
+  // 📤 지출 모달 열기/닫기/실행
+  function openExpenseModal() {
+    document.getElementById('expenseAmount').value = "";
+    document.getElementById('expenseReason').value = "";
+    document.getElementById('expenseReceiver').value = "";
     document.getElementById('modalExpenseAdd').style.display = 'flex';
-  };
-  window.closeExpenseModal = function() {
+    setTimeout(function() { document.getElementById('expenseAmount').focus(); }, 100);
+  }
+  function closeExpenseModal() {
     document.getElementById('modalExpenseAdd').style.display = 'none';
-  };
+  }
 
-  window.executeAddExpense = async function() {
-    const dt = document.getElementById('expenseDate').value;
-    const amount = window.parseCommaNumber(document.getElementById('expenseAmount').value);
-    const reason = document.getElementById('expenseReason').value.trim() || "길드 지출";
-    const receiver = document.getElementById('expenseReceiver').value.trim();
+  async function executeAddExpense() {
+    var dateVal = document.getElementById('expenseDate').value || new Date().toISOString().slice(0, 10);
+    var amt = window.parseCommaNumber(document.getElementById('expenseAmount').value);
+    var reasonVal = document.getElementById('expenseReason').value.trim() || "길드 운영 지출";
+    var receiverVal = document.getElementById('expenseReceiver').value.trim();
 
-    if (isNaN(amount) || amount <= 0) return showKakaoToast("지출 금액을 올바르게 입력하세요.", "⚠️");
-
-    const customCreatedAt = dt ? new Date(`${dt}T12:00:00`).toISOString() : new Date().toISOString();
+    if (amt <= 0) return alert("지출 금액을 입력하세요.");
 
     try {
+      var fullReason = reasonVal + (receiverVal ? " (수령자: " + receiverVal + ")" : "");
       await apiRequest("guild_finances", "POST", [{
         tx_type: "출금",
-        amount: amount,
-        category: "길드지출",
-        reason: receiver ? `${reason} (${receiver})` : reason,
-        created_at: customCreatedAt
+        category: "운영비지출",
+        amount: amt,
+        reason: fullReason,
+        created_at: new Date(dateVal + 'T12:00:00Z').toISOString()
       }]);
-      closeExpenseModal();
-      showKakaoToast(`-${amount.toLocaleString()} D 길드 지출 완료!`, "💸");
-      window.loadFinanceData();
-    } catch(err) {
-      showKakaoToast("지출 처리 실패: " + err.message, "❌");
-    }
-  };
 
-  window.openFinanceEditModal = function(id) {
-    const log = (window.rawFinanceLogs || []).find(l => String(l.id) === String(id));
+      showToastMsg("금고 지출 -" + amt.toLocaleString() + " D 처리 완료!", "💸");
+      closeExpenseModal();
+      await loadFinanceData();
+    } catch (e) {
+      alert("지출 처리 실패: " + e.message);
+    }
+  }
+
+  // ✏️ 내역 수정 / 삭제 모달
+  function openFinanceEditModal(logId) {
+    var log = rawFinanceLogs.find(function(l) { return l.id === logId; });
     if (!log) return;
 
     document.getElementById('editLogId').value = log.id;
     document.getElementById('editLogDate').value = log.log_date;
     document.getElementById('editLogType').value = log.tx_type;
-    document.getElementById('editLogAmount').value = Number(log.amount).toLocaleString();
+    document.getElementById('editLogAmount').value = log.amount.toLocaleString();
     document.getElementById('editLogReason').value = log.reason;
     document.getElementById('editLogMemo').value = log.category;
 
     document.getElementById('modalFinanceEdit').style.display = 'flex';
-  };
-  window.closeEditFinanceModal = function() {
+  }
+  function closeEditFinanceModal() {
     document.getElementById('modalFinanceEdit').style.display = 'none';
-  };
+  }
 
-  window.executeEditFinanceLog = async function() {
-    const id = document.getElementById('editLogId').value;
-    const dt = document.getElementById('editLogDate').value;
-    const logType = document.getElementById('editLogType').value;
-    const amount = window.parseCommaNumber(document.getElementById('editLogAmount').value);
-    const reason = document.getElementById('editLogReason').value.trim();
-    const category = document.getElementById('editLogMemo').value.trim();
+  async function executeEditFinanceLog() {
+    var logId = document.getElementById('editLogId').value;
+    var dateVal = document.getElementById('editLogDate').value;
+    var typeVal = document.getElementById('editLogType').value;
+    var amtVal = window.parseCommaNumber(document.getElementById('editLogAmount').value);
+    var reasonVal = document.getElementById('editLogReason').value.trim();
+    var categoryVal = document.getElementById('editLogMemo').value.trim();
 
-    if (isNaN(amount) || amount <= 0) return showKakaoToast("올바른 금액을 입력하세요.", "⚠️");
-    const customCreatedAt = dt ? new Date(`${dt}T12:00:00`).toISOString() : new Date().toISOString();
+    if (amtVal <= 0) return alert("금액을 올바르게 입력하세요.");
 
     try {
-      await apiRequest(`guild_finances?id=eq.${id}`, "PATCH", {
-        tx_type: logType,
-        amount: amount,
-        category: category || (logType === '입금' ? '수익금입금' : '길드지출'),
-        reason: reason,
-        created_at: customCreatedAt
+      await apiRequest("guild_finances?id=eq." + logId, "PATCH", {
+        tx_type: typeVal,
+        amount: amtVal,
+        reason: reasonVal,
+        category: categoryVal,
+        created_at: new Date(dateVal + 'T12:00:00Z').toISOString()
       });
-      closeEditFinanceModal();
-      showKakaoToast("내역이 수정되었습니다.", "✏️");
-      window.loadFinanceData();
-    } catch(err) {
-      showKakaoToast("수정 실패: " + err.message, "❌");
-    }
-  };
 
-  window.executeDeleteFinanceLog = async function() {
-    if (!confirm("정말 이 내역을 삭제하시겠습니까?")) return;
-    const id = document.getElementById('editLogId').value;
+      showToastMsg("장부 내역 수정 완료!", "✅");
+      closeEditFinanceModal();
+      await loadFinanceData();
+    } catch (e) {
+      alert("수정 실패: " + e.message);
+    }
+  }
+
+  async function executeDeleteFinanceLog() {
+    var logId = document.getElementById('editLogId').value;
+    if (!confirm("이 입출금 내역을 정말 삭제하시겠습니까? (금고 잔액에 즉시 반영됩니다)")) return;
 
     try {
-      await apiRequest(`guild_finances?id=eq.${id}`, "DELETE");
+      await apiRequest("guild_finances?id=eq." + logId, "DELETE");
+      showToastMsg("내역이 삭제되었습니다.", "🗑️");
       closeEditFinanceModal();
-      showKakaoToast("내역이 삭제되었습니다.", "🗑️");
-      window.loadFinanceData();
-    } catch(err) {
-      showKakaoToast("삭제 실패: " + err.message, "❌");
+      await loadFinanceData();
+    } catch (e) {
+      alert("삭제 실패: " + e.message);
     }
-  };
+  }
 
+  // 💬 대화방 공유
   window.shareFinanceReportToChat = async function() {
-    const sElem = document.getElementById('finFilterStart');
-    const eElem = document.getElementById('finFilterEnd');
-    const sDate = sElem ? sElem.value : '';
-    const eDate = eElem ? eElem.value : '';
+    var btn = document.getElementById('btnShareFinanceReport');
+    var sDate = document.getElementById('finFilterStart').value;
+    var eDate = document.getElementById('finFilterEnd').value;
+    var periodLabel = (sDate && eDate) ? (sDate + " ~ " + eDate) : "전체 기간";
 
-    const filtered = (window.rawFinanceLogs || []).filter(l => l.inFilter);
-
-    if (filtered.length === 0) return showKakaoToast("공유할 비용 현황 내역이 없습니다.", "⚠️");
-
-    let incSum = 0;
-    let expSum = 0;
-    filtered.forEach(l => {
-      const amt = Number(l.amount || 0);
-      if (l.tx_type === '입금') incSum += amt;
-      else if (l.tx_type === '출금') expSum += amt;
+    var filteredLogs = rawFinanceLogs.filter(function(l) { return l.inFilter; });
+    var incSum = 0;
+    var expSum = 0;
+    filteredLogs.forEach(function(l) {
+      if (l.tx_type === '입금') incSum += l.amount;
+      else if (l.tx_type === '출금') expSum += l.amount;
     });
-    const netSum = incSum - expSum;
+    var netProfit = incSum - expSum;
 
-    const reportHtml = `
-      <div class="finance-report-card">
-        <div class="fin-card-header">
-          <div class="fin-card-title">
-            <i class="fa-solid fa-landmark text-warning"></i>
-            <span>길드금고 결산 보고서</span>
-          </div>
-          <span class="fin-date-badge">${sDate} ~ ${eDate}</span>
-        </div>
+    var recentItemsHtml = filteredLogs.slice(0, 5).map(function(l) {
+      var isInc = (l.tx_type === '입금');
+      var sign = isInc ? "+" : "-";
+      var color = isInc ? "#059669" : "#dc2626";
+      return '<div style="display:flex; justify-content:space-between; align-items:center; padding:3px 6px; border-radius:5px; background:rgba(0,0,0,0.02); font-size:11px;">' +
+        '<span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px; font-weight:600; color:var(--kakao-notice-text);">' + escapeHtmlText(l.reason) + '</span>' +
+        '<span style="font-weight:800; color:' + color + ';">' + sign + l.amount.toLocaleString() + ' D</span>' +
+      '</div>';
+    }).join('');
 
-        <div class="fin-vault-hero">
-          <div>
-            <div class="fin-vault-label">현재 금고 총 잔액</div>
-            <div class="fin-vault-val">${window.currentBalance.toLocaleString()} D</div>
-          </div>
-          <div style="font-size: 1.5rem;">🏛️</div>
-        </div>
+    var reportHtml = '<div class="finance-report-card" style="background:#ffffff; border-radius:12px; padding:12px; border:1px solid #e2e8f0; font-family:-apple-system, sans-serif;">' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">' +
+        '<strong style="font-size:12.5px; color:#0f172a;"><i class="fa-solid fa-vault me-1 text-warning"></i>[' + escapeHtmlText(activeGuildNameForFinance) + '] 금고 정산 리포트</strong>' +
+        '<span style="font-size:10px; color:#64748b; background:#f1f5f9; padding:2px 6px; border-radius:10px;">' + periodLabel + '</span>' +
+      '</div>' +
+      '<div style="background:#fffbeb; border:1px solid #fde047; border-radius:8px; padding:8px 10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">' +
+        '<span style="font-size:11px; font-weight:700; color:#854d0e;">현재 길드 금고 총액</span>' +
+        '<span style="font-size:14px; font-weight:900; color:#b45309;">' + currentBalance.toLocaleString() + ' D</span>' +
+      '</div>' +
+      '<div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:8px;">' +
+        '<div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:6px; padding:5px 8px;">' +
+          '<div style="font-size:10px; color:#059669; font-weight:600;">기간 총 입금</div>' +
+          '<div style="font-size:11.5px; font-weight:800; color:#059669;">+' + incSum.toLocaleString() + ' D</div>' +
+        '</div>' +
+        '<div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.25); border-radius:6px; padding:5px 8px;">' +
+          '<div style="font-size:10px; color:#dc2626; font-weight:600;">기간 총 지출</div>' +
+          '<div style="font-size:11.5px; font-weight:800; color:#dc2626;">-' + expSum.toLocaleString() + ' D</div>' +
+        '</div>' +
+      '</div>' +
+      '<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 8px; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.25); border-radius:6px; margin-bottom:8px;">' +
+        '<span style="font-size:11px; font-weight:700; color:#0284c7;">기간 순수익</span>' +
+        '<strong style="font-size:12px; color:#0284c7;">' + (netProfit >= 0 ? "+" : "") + netProfit.toLocaleString() + ' D</strong>' +
+      '</div>' +
+      (recentItemsHtml ? '<div style="margin-top:6px;"><div style="font-size:10.5px; font-weight:700; color:#334155; margin-bottom:4px;">최근 내역 (5건)</div><div style="display:flex; flex-direction:column; gap:3px;">' + recentItemsHtml + '</div></div>' : '') +
+    '</div>';
 
-        <div class="fin-period-box">
-          <div class="d-flex justify-content-between mb-1">
-            <span class="text-muted">기간 총 수입:</span>
-            <strong class="text-success">+${incSum.toLocaleString()} D</strong>
-          </div>
-          <div class="d-flex justify-content-between mb-1">
-            <span class="text-muted">기간 총 지출:</span>
-            <strong class="text-danger">-${expSum.toLocaleString()} D</strong>
-          </div>
-          <div class="d-flex justify-content-between pt-1 border-top">
-            <span class="fw-bold text-dark">기간 순수익:</span>
-            <strong class="fw-bold ${netSum >= 0 ? 'text-primary' : 'text-danger'}">${netSum >= 0 ? '+' : ''}${netSum.toLocaleString()} D</strong>
-          </div>
-        </div>
-
-        <div class="text-muted text-center" style="font-size: 10px;">
-          조회 내역 총 ${filtered.length}건 결산 완료
-        </div>
-      </div>
-    `;
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 공유 중';
+    }
 
     try {
       await apiRequest("guild_chats", "POST", [{
@@ -713,12 +1169,37 @@
         msg_type: "finance_report",
         mentions: []
       }]);
-      showKakaoToast("대화방에 길드비용 현황이 공유되었습니다!", "🏛️");
-      if (typeof closeModuleOverlay === 'function') closeModuleOverlay();
+
+      showToastMsg("금고 정산 리포트가 대화방에 공유되었습니다!", "📜");
+      if (typeof window.closeModuleOverlay === 'function') {
+        window.closeModuleOverlay();
+      }
     } catch (err) {
-      showKakaoToast("공유 실패: " + err.message, "❌");
+      showToastMsg("공유 실패: " + err.message, "❌");
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-comment-dots"></i><span>대화방 공유</span>';
+      }
     }
   };
 
-  initFinanceModule();
+  function showToastMsg(msg, icon) {
+    if (typeof showKakaoToast === 'function') {
+      showKakaoToast(msg, icon || "✅");
+    } else {
+      alert(msg);
+    }
+  }
+
+  function escapeHtmlText(t) {
+    return (t || '').replace(/[&<>"']/g, function(m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+    });
+  }
+
+  // 🚀 자동 기동
+  (function initFin() {
+    initFinanceModule();
+  })();
 </script>
