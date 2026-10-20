@@ -334,10 +334,7 @@
     transition: all 0.15s ease;
   }
   .search-input-fin:focus {
-    background-color: var(--fin-input-bg) !important;
     border-color: #0284c7 !important;
-    color: var(--fin-input-text) !important;
-    -webkit-text-fill-color: var(--fin-input-text) !important;
     outline: none;
     box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
   }
@@ -513,95 +510,37 @@
     color: var(--fin-gold-text) !important;
     line-height: 1.2 !important;
   }
-  .fin-report-grid {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 5px !important;
-    margin-bottom: 6px !important;
+  .fin-period-box {
+    background: var(--fin-section-bg) !important;
+    border: 1px solid var(--fin-section-border) !important;
+    border-radius: 8px !important;
+    padding: 7px 9px !important;
+    margin-bottom: 8px !important;
+    font-size: 11.5px !important;
   }
-  .fin-report-box-inc {
+  .fin-badge-income {
     background: var(--fin-green-bg) !important;
     border: 1px solid var(--fin-green-border) !important;
-    border-radius: 7px !important;
+    color: var(--fin-green-text) !important;
+    border-radius: 6px !important;
     padding: 5px 8px !important;
   }
-  .fin-report-box-exp {
+  .fin-badge-expense {
     background: var(--fin-red-bg) !important;
     border: 1px solid var(--fin-red-border) !important;
-    border-radius: 7px !important;
+    color: var(--fin-red-text) !important;
+    border-radius: 6px !important;
     padding: 5px 8px !important;
   }
-  .fin-report-label-inc {
-    font-size: 9.5px !important;
-    font-weight: 700 !important;
-    color: var(--fin-green-text) !important;
-  }
-  .fin-report-val-inc {
-    font-size: 11.5px !important;
-    font-weight: 900 !important;
-    color: var(--fin-green-text) !important;
-  }
-  .fin-report-label-exp {
-    font-size: 9.5px !important;
-    font-weight: 700 !important;
-    color: var(--fin-red-text) !important;
-  }
-  .fin-report-val-exp {
-    font-size: 11.5px !important;
-    font-weight: 900 !important;
-    color: var(--fin-red-text) !important;
-  }
-  .fin-report-profit-bar {
+  .fin-deposit-row {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 5px 8px !important;
-    background: var(--fin-blue-bg) !important;
-    border: 1px solid var(--fin-blue-border) !important;
-    border-radius: 7px !important;
-    margin-bottom: 7px !important;
-  }
-  .fin-report-profit-label {
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    color: var(--fin-blue-text) !important;
-  }
-  .fin-report-profit-val {
-    font-size: 12px !important;
-    font-weight: 900 !important;
-    color: var(--fin-blue-text) !important;
-  }
-  .fin-report-recent-header {
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    color: var(--fin-text-muted) !important;
-    margin-bottom: 4px !important;
-  }
-  .fin-report-recent-row {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 3px 6px !important;
-    border-radius: 5px !important;
-    background: var(--fin-row-hover) !important;
     font-size: 11px !important;
-    margin-bottom: 3px !important;
-  }
-  .fin-report-recent-title {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-    max-width: 140px !important;
-    font-weight: 600 !important;
-    color: var(--fin-text-main) !important;
-  }
-  .fin-report-recent-inc {
-    font-weight: 800 !important;
-    color: var(--fin-green-text) !important;
-  }
-  .fin-report-recent-exp {
-    font-weight: 800 !important;
-    color: var(--fin-red-text) !important;
+    padding: 3px 6px !important;
+    background: var(--fin-row-hover) !important;
+    border-radius: 4px !important;
+    margin-bottom: 2px !important;
   }
 </style>
 
@@ -1333,18 +1272,24 @@
       else if (l.tx_type === '출금') expSum += l.amount;
     });
     var netProfit = incSum - expSum;
+    var isNetPositive = netProfit >= 0;
 
     var recentItemsHtml = filteredLogs.slice(0, 5).map(function(l) {
       var isInc = (l.tx_type === '입금');
       var sign = isInc ? "+" : "-";
-      var amtClass = isInc ? 'fin-report-recent-inc' : 'fin-report-recent-exp';
-      return '<div class="fin-report-recent-row">' +
-        '<span class="fin-report-recent-title">' + escapeHtmlText(l.reason) + '</span>' +
-        '<span class="' + amtClass + '">' + sign + l.amount.toLocaleString() + ' D</span>' +
+      var badgeCls = isInc ? 'fin-badge-income' : 'fin-badge-expense';
+      return '<div class="fin-deposit-row">' +
+        '<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; margin-right: 6px; color: var(--kakao-notice-text); font-weight: 600;" title="' + escapeHtmlText(l.reason) + '">' +
+          escapeHtmlText(l.reason) +
+        '</span>' +
+        '<span class="' + badgeCls + '" style="border: none !important; background: transparent !important; padding: 0 !important; font-size: 11px !important; font-weight: 800 !important; flex-shrink: 0;">' +
+          sign + l.amount.toLocaleString() + ' D' +
+        '</span>' +
       '</div>';
     }).join('');
 
     var reportHtml = '<div class="finance-report-card">' +
+      '<!-- 헤더: 길드명 + 다크 골드 날짜 배지 -->' +
       '<div class="fin-card-header">' +
         '<div class="fin-card-title">' +
           '<i class="fa-solid fa-vault text-warning"></i>' +
@@ -1352,27 +1297,49 @@
         '</div>' +
         '<span class="fin-date-badge">' + escapeHtmlText(periodLabel) + '</span>' +
       '</div>' +
+
+      '<!-- 현재 금고 잔액 하이라이트 박스 -->' +
       '<div class="fin-vault-hero">' +
-        '<span class="fin-vault-label">현재 길드 금고 총액</span>' +
-        '<span class="fin-vault-val">' + currentBalance.toLocaleString() + ' D</span>' +
-      '</div>' +
-      '<div class="fin-report-grid">' +
-        '<div class="fin-report-box-inc">' +
-          '<div class="fin-report-label-inc">기간 총 입금</div>' +
-          '<div class="fin-report-val-inc">+' + incSum.toLocaleString() + ' D</div>' +
+        '<div>' +
+          '<div class="fin-vault-label"><i class="fa-solid fa-coins me-1 text-warning"></i>현재 길드 금고 총액</div>' +
+          '<div class="fin-vault-val">' + currentBalance.toLocaleString() + ' <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">D</span></div>' +
         '</div>' +
-        '<div class="fin-report-box-exp">' +
-          '<div class="fin-report-label-exp">기간 총 지출</div>' +
-          '<div class="fin-report-val-exp">-' + expSum.toLocaleString() + ' D</div>' +
+        '<div style="font-size: 1.4rem; line-height: 1;">💰</div>' +
+      '</div>' +
+
+      '<!-- 집계 기간 및 기간 순수익 요약 박스 (style.css fin-period-box) -->' +
+      '<div class="fin-period-box">' +
+        '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px dashed var(--drawer-card-border);">' +
+          '<span style="color: var(--kakao-time-gray); font-size: 11px; font-weight: 600;"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>집계 기간</span>' +
+          '<span style="font-weight: 700; font-size: 11px; color: var(--kakao-notice-text);">' + escapeHtmlText(periodLabel) + '</span>' +
+        '</div>' +
+        '<div style="display: flex; justify-content: space-between; align-items: center;">' +
+          '<span style="font-weight: 700; font-size: 11.5px; color: var(--kakao-notice-text);">기간 순수익</span>' +
+          '<span class="' + (isNetPositive ? 'fin-badge-income' : 'fin-badge-expense') + '" style="border: none !important; background: transparent !important; padding: 0 !important; font-size: 12.5px !important; font-weight: 800 !important;">' +
+            (isNetPositive ? '+' : '') + netProfit.toLocaleString() + ' D' +
+          '</span>' +
         '</div>' +
       '</div>' +
-      '<div class="fin-report-profit-bar">' +
-        '<span class="fin-report-profit-label">기간 순수익</span>' +
-        '<strong class="fin-report-profit-val">' + (netProfit >= 0 ? "+" : "") + netProfit.toLocaleString() + ' D</strong>' +
+
+      '<!-- 누적 입금 / 누적 지출 2분할 칩 (style.css 정식 클래스 연동) -->' +
+      '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">' +
+        '<div class="fin-badge-income">' +
+          '<div style="font-size: 10px; font-weight: 600;">기간 총 입금</div>' +
+          '<div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">+' + incSum.toLocaleString() + ' D</div>' +
+        '</div>' +
+        '<div class="fin-badge-expense">' +
+          '<div style="font-size: 10px; font-weight: 600;">기간 총 지출</div>' +
+          '<div style="font-size: 11.5px; font-weight: 800; margin-top: 1px;">-' + expSum.toLocaleString() + ' D</div>' +
+        '</div>' +
       '</div>' +
+
+      '<!-- 최근 내역 요약 (style.css fin-deposit-row 연동) -->' +
       (recentItemsHtml ? '<div style="margin-top: 6px;">' +
-        '<div class="fin-report-recent-header">최근 내역 (5건)</div>' +
-        '<div style="display:flex; flex-direction:column; gap:3px;">' + recentItemsHtml + '</div>' +
+        '<div style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text); margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">' +
+          '<span><i class="fa-solid fa-receipt me-1 text-primary"></i>최근 내역 (5건)</span>' +
+          '<span style="font-size: 10px; color: var(--kakao-time-gray); font-weight: normal;">총 ' + filteredLogs.length + '건</span>' +
+        '</div>' +
+        recentItemsHtml +
       '</div>' : '') +
     '</div>';
 
