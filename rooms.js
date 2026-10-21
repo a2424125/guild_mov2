@@ -14,9 +14,9 @@ window.switchMainBottomTab = function(tabName) {
   const tabChats = document.getElementById("tabChatRoomsContent");
   const tabMore = document.getElementById("tabMoreContent");
 
-  const navFriends = document.getElementById("navTabFriends");
-  const navChats = document.getElementById("navTabChats");
-  const navMore = document.getElementById("navTabMore");
+  const navFriends = document.getElementById("tabItemFriends") || document.getElementById("navTabFriends");
+  const navChats = document.getElementById("tabItemChats") || document.getElementById("navTabChats");
+  const navMore = document.getElementById("tabItemMore") || document.getElementById("navTabMore");
 
   const headerTitle = document.getElementById("mainTabHeaderTitle");
   const headerSubtitle = document.getElementById("mainTabHeaderSubtitle");
@@ -258,7 +258,8 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   }
 };
 
-window.exitChatRoomToMain = function() {
+// 대화방에서 메인 3탭 화면으로 안전하게 복귀하는 함수 (뒤로가기 < 버튼 연동)
+window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
   const mainView = document.getElementById("kakaoMainTabsView");
   const chatView = document.getElementById("chatRoomView");
 
@@ -267,7 +268,9 @@ window.exitChatRoomToMain = function() {
   document.body.classList.add("in-main-tabs");
 
   window.currentActiveRoomId = null;
-  window.switchMainBottomTab("chats");
+  if (typeof window.switchMainBottomTab === 'function') {
+    window.switchMainBottomTab("chats");
+  }
 };
 
 // --------------------------------------------------------
