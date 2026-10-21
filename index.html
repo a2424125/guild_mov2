@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>길드 대화방</title>
+  <title>길드톡 - 메신저</title>
 
   <!-- PWA 앱 설정 -->
   <link rel="manifest" href="/manifest.json">
@@ -13,15 +13,15 @@
   <meta name="apple-mobile-web-app-title" content="길드톡">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
-  <!-- 부트스트랩 & 폰트어썸 아이콘 -->
+  <!-- 부트스트랩 5 & 폰트어썸 6 아이콘 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Supabase 공식 SDK 및 설정 파일 로드 -->
+  <!-- Supabase 공식 SDK 및 공통 설정 로드 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
+  <!-- 초기 렌더링 깜빡임 방지 테마 스크립트 -->
   <script>
     (function() {
       try {
@@ -37,8 +37,202 @@
     })();
   </script>
 
-  <!-- 외부 분리 스타일시트 연결 -->
+  <!-- 외부 분리 기본 스타일시트 -->
   <link rel="stylesheet" href="style.css">
+
+  <!-- 카카오톡 스타일 메인 3탭 전용 스타일 (기존 테마 변수 100% 호환) -->
+  <style>
+    /* 하단 3탭 바 */
+    .kakao-bottom-tabbar {
+      height: 52px;
+      background: var(--kakao-header-bg) !important;
+      border-top: 1px solid var(--kakao-header-border) !important;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .kakao-tab-item {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--kakao-header-subtext);
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-decoration: none;
+      position: relative;
+      transition: color 0.15s ease;
+      user-select: none;
+    }
+    .kakao-tab-item i {
+      font-size: 1.15rem;
+      margin-bottom: 2px;
+    }
+    .kakao-tab-item.active {
+      color: var(--kakao-header-text) !important;
+    }
+    body.theme-light .kakao-tab-item.active i {
+      color: #191919;
+    }
+    body.theme-dark .kakao-tab-item.active i {
+      color: #fee500;
+    }
+    .kakao-tab-badge {
+      position: absolute;
+      top: 4px;
+      right: calc(50% - 18px);
+      background: #ef4444;
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 10px;
+      line-height: 1.2;
+    }
+
+    /* 탭별 스크롤 바디 */
+    .kakao-tab-body {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 10px 12px 20px 12px;
+    }
+
+    /* 대화방 카드 목록 스타일 */
+    .chat-room-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 12px;
+      border-radius: 12px;
+      background: var(--drawer-card-bg);
+      border: 1px solid var(--drawer-card-border);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .chat-room-card:hover {
+      background: var(--drawer-item-hover-bg);
+    }
+    .chat-room-card:active {
+      transform: scale(0.99);
+    }
+    .room-avatar-large {
+      width: 44px;
+      height: 44px;
+      border-radius: 15px;
+      background: rgba(254, 229, 0, 0.2);
+      color: #eab308;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .room-avatar-large.private {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+    .room-avatar-large.direct {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+    }
+    .room-content-box {
+      flex: 1;
+      min-width: 0;
+    }
+    .room-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3px;
+    }
+    .room-name-text {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--kakao-header-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .room-time-text {
+      font-size: 0.68rem;
+      color: var(--kakao-time-gray);
+      flex-shrink: 0;
+    }
+    .room-msg-preview {
+      font-size: 0.78rem;
+      color: var(--kakao-header-subtext);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin: 0;
+    }
+
+    /* 친구(길드원) 카드 */
+    .friend-item-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .friend-item-card:hover {
+      background: var(--drawer-item-hover-bg);
+    }
+    .friend-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
+      background: rgba(148, 163, 184, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    /* 더보기 메뉴 그리드 */
+    .more-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 10px 4px;
+    }
+    .more-menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 4px;
+      background: var(--drawer-card-bg);
+      border: 1px solid var(--drawer-card-border);
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--kakao-header-text);
+      transition: all 0.15s ease;
+    }
+    .more-menu-item:hover {
+      background: var(--drawer-item-hover-bg);
+      transform: translateY(-2px);
+    }
+    .more-menu-icon {
+      font-size: 1.35rem;
+    }
+    .more-menu-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+  </style>
 </head>
 <body class="theme-dark">
 
@@ -129,11 +323,144 @@
     </div>
   </aside>
 
-  <!-- 3. 메인 대화방 -->
-  <div class="app-main-layout">
+
+  <!-- ========================================================
+       [VIEW 1] 카카오톡 스타일 메인 3탭 화면 (친구 / 채팅목록 / 더보기)
+       ======================================================== -->
+  <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex;">
+    
+    <!-- 메인 탭 상단 헤더 -->
     <header class="kakao-chat-header">
       <div class="header-left-area">
-        <button type="button" class="btn-kakao-menu" title="메뉴 열기" onclick="toggleMenuDrawer(true)">
+        <div class="room-avatar-circle" style="background: rgba(2, 132, 199, 0.2); color: #38bdf8;">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="room-info-box">
+          <div class="room-title-text" id="mainTabHeaderTitle">대화방 목록</div>
+          <div class="room-count-text" id="mainTabHeaderSubtitle">길드 메신저</div>
+        </div>
+      </div>
+
+      <div class="header-right-tools">
+        <!-- 톡방 개설 버튼 (채팅 탭일 때 노출) -->
+        <button type="button" class="btn-kakao-head text-primary fw-bold" id="btnOpenCreateRoomModal" title="새 톡방 개설" onclick="openCreateRoomModal()">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+        <!-- 햄버거 메뉴 열기 -->
+        <button type="button" class="btn-kakao-head" title="길드 메뉴 열기" onclick="toggleMenuDrawer(true)">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- [탭 1] 친구 (길드원 목록) 본문 -->
+    <div id="tabFriendsContent" class="kakao-tab-body" style="display: none;">
+      <!-- 내 프로필 카드 -->
+      <div class="chat-room-card" onclick="openProfileEditModal()" style="margin-bottom: 14px; background: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.2);">
+        <div class="room-avatar-large" id="mainTabMyAvatar">👤</div>
+        <div class="room-content-box">
+          <div class="room-name-text" id="mainTabMyNick" style="font-size: 0.98rem;">내 프로필</div>
+          <p class="room-msg-preview" id="mainTabMyClass" style="color: #38bdf8;">직업 설정하기</p>
+        </div>
+        <i class="fa-solid fa-pen text-secondary" style="font-size: 0.8rem;"></i>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between px-1 mb-2">
+        <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">길드원 목록 (<span id="mainTabMemberCount">0</span>)</span>
+        <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary" style="font-size: 0.7rem;" onclick="loadMainTabFriendsList()">
+          <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
+        </button>
+      </div>
+
+      <!-- 길드원 리스트 컨테이너 -->
+      <div id="mainTabFriendsList">
+        <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>길드원을 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- [탭 2] 대화방 목록 본문 -->
+    <div id="tabChatRoomsContent" class="kakao-tab-body" style="display: block;">
+      <div class="d-flex align-items-center justify-content-between px-1 mb-2">
+        <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">참여 중인 톡방 (<span id="mainTabRoomCount">0</span>)</span>
+        <button type="button" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size: 0.75rem;" onclick="openCreateRoomModal()">
+          <i class="fa-solid fa-comment-medical me-1"></i>새 대화방 개설
+        </button>
+      </div>
+
+      <!-- 대화방 카드 목록 컨테이너 -->
+      <div id="mainTabRoomsList">
+        <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>대화방 목록을 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- [탭 3] 더보기 본문 (기존 주요 기능 바로가기 그리드) -->
+    <div id="tabMoreContent" class="kakao-tab-body" style="display: none;">
+      <div class="more-menu-grid">
+        <div class="more-menu-item" onclick="openModulePage('PageNotice')">
+          <i class="fa-solid fa-bullhorn more-menu-icon text-info"></i>
+          <span class="more-menu-label">공지사항</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageRegister')">
+          <i class="fa-solid fa-crosshairs more-menu-icon text-danger"></i>
+          <span class="more-menu-label">보스등록</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageRecords')">
+          <i class="fa-solid fa-scroll more-menu-icon text-warning"></i>
+          <span class="more-menu-label">보스참여자</span>
+        </div>
+        <div class="more-menu-item" onclick="toggleBossDrawer(true)">
+          <i class="fa-solid fa-hourglass-half more-menu-icon text-warning"></i>
+          <span class="more-menu-label">보스타임</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageWish')">
+          <i class="fa-solid fa-gift more-menu-icon" style="color:#f472b6;"></i>
+          <span class="more-menu-label">분배희망</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageSettle')">
+          <i class="fa-solid fa-coins more-menu-icon text-success"></i>
+          <span class="more-menu-label">정산내역</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageFinance')">
+          <i class="fa-solid fa-landmark more-menu-icon text-secondary"></i>
+          <span class="more-menu-label">길드비용</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageSettings')">
+          <i class="fa-solid fa-gear more-menu-icon text-secondary"></i>
+          <span class="more-menu-label">설정</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 3탭 네비게이션 바 -->
+    <nav class="kakao-bottom-tabbar">
+      <div class="kakao-tab-item" id="navTabFriends" onclick="switchMainBottomTab('friends')">
+        <i class="fa-solid fa-user"></i>
+        <span>친구</span>
+      </div>
+      <div class="kakao-tab-item active" id="navTabChats" onclick="switchMainBottomTab('chats')">
+        <i class="fa-solid fa-comment"></i>
+        <span>채팅</span>
+        <span class="kakao-tab-badge" id="navUnreadTotalBadge" style="display: none;">0</span>
+      </div>
+      <div class="kakao-tab-item" id="navTabMore" onclick="switchMainBottomTab('more')">
+        <i class="fa-solid fa-ellipsis"></i>
+        <span>더보기</span>
+      </div>
+    </nav>
+  </div>
+
+
+  <!-- ========================================================
+       [VIEW 2] 개별 대화방 화면 (기존 대화방 100% 동일 보존)
+       ======================================================== -->
+  <div id="chatRoomView" class="app-main-layout" style="display: none;">
+    <header class="kakao-chat-header">
+      <div class="header-left-area">
+        <!-- 메인 탭(대화방 목록)으로 복귀하는 뒤로가기 버튼 -->
+        <button type="button" class="btn-kakao-menu" title="대화방 목록으로" onclick="exitChatRoomToMain()">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button type="button" class="btn-kakao-menu" title="길드 메뉴 열기" onclick="toggleMenuDrawer(true)">
           <i class="fa-solid fa-bars"></i>
         </button>
         <div class="room-avatar-circle" id="chatRoomAvatar">
@@ -147,7 +474,7 @@
         </div>
       </div>
 
-      <!-- 상단 우측 헤더 도구: 보스참여등록(클립) - 대화검색(돋보기) - 보스타임채팅브리핑(시계) - 길드원목록(친구) -->
+      <!-- 상단 우측 헤더 도구 (기존과 100% 동일) -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
           <i class="fa-solid fa-download"></i>
@@ -167,7 +494,7 @@
       </div>
     </header>
 
-    <!-- 🔍 카카오톡 스타일 슬라이드 대화 검색 바 (선택지 A: 7일 보관 안내) -->
+    <!-- 대화 검색 바 -->
     <div id="chatSearchBarArea" class="chat-search-bar-wrap" style="display: none;">
       <div class="chat-search-input-box">
         <i class="fa-solid fa-magnifying-glass search-bar-icon"></i>
@@ -182,6 +509,7 @@
       </div>
     </div>
 
+    <!-- 상단 공지 배너 -->
     <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
       <div class="d-flex align-items-center" style="min-width: 0 !important; flex: 1;">
         <i class="fa-solid fa-bullhorn notice-icon-part"></i>
@@ -190,15 +518,17 @@
       <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.72rem;"></i>
     </div>
 
+    <!-- 대화 메시지 뷰 -->
     <div class="chat-messages-container" id="chatMessagesView">
       <div class="text-center my-1">
         <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
       </div>
     </div>
 
+    <!-- 멘션 팝업 -->
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 메시지 입력창: 아이콘 제거 후 전송 버튼만 우측에 깔끔 정렬 -->
+    <!-- 메시지 입력창 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
@@ -209,6 +539,7 @@
       </div>
     </footer>
 
+    <!-- 모듈 화면 오버레이 -->
     <div id="moduleOverlay" class="module-display-overlay">
       <div class="module-nav-header">
         <button type="button" class="btn-kakao-overlay-back" onclick="closeModuleOverlay()" title="대화방으로 복귀">
@@ -222,11 +553,58 @@
     </div>
   </div>
 
+
+  <!-- ========================================================
+       [공통 토스트 & 모달 팝업 레이어]
+       ======================================================== -->
   <div id="kakaoToastBox" class="kakao-toast-box">
     <span id="kakaoToastIcon">💬</span>
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
+  <!-- 1. 새 대화방 개설 모달 -->
+  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card" style="max-width: 350px;">
+      <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(254, 229, 0, 0.2); color: #eab308; display: inline-flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 10px;">
+        <i class="fa-solid fa-comment-medical"></i>
+      </div>
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 대화방 만들기</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">원하는 방 종류와 참여할 길드원을 선택하세요.</p>
+      
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">방 제목</label>
+        <input type="text" id="newRoomTitleInput" placeholder="예: 운영진 회의방, 레이드 1조" style="height: 36px; margin-bottom: 0;">
+      </div>
+
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">방 종류</label>
+        <select id="newRoomTypeSelect" style="height: 36px;" onchange="onRoomTypeChange(this.value)">
+          <option value="public">전체 공개방 (길드원 전체)</option>
+          <option value="private">비밀 운영진방 (선택 멤버만)</option>
+          <option value="direct">1:1 개인 대화방</option>
+        </select>
+      </div>
+
+      <!-- 멤버 선택 체크박스 영역 -->
+      <div id="roomMemberSelectArea" style="text-align: left; margin-bottom: 12px; display: none;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">참여할 길드원 선택</label>
+        <div id="roomMemberCheckList" style="max-height: 140px; overflow-y: auto; background: var(--modal-input-bg); border: 1px solid var(--modal-input-border); border-radius: 8px; padding: 6px 10px;">
+          <!-- 동적 렌더링 -->
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeCreateRoomModal()">
+          취소
+        </button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; font-size: 0.8rem; border-radius: 8px;" onclick="executeCreateRoom()">
+          개설하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 직업 선택 모달 -->
   <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
@@ -234,36 +612,28 @@
       
       <div class="class-preset-grid">
         <div class="class-preset-cell" onclick="selectClassProfile('🏹', '궁수')">
-          <span class="class-icon-big">🏹</span>
-          <span class="class-title-small">궁수</span>
+          <span class="class-icon-big">🏹</span><span class="class-title-small">궁수</span>
         </div>
         <div class="class-preset-cell" onclick="selectClassProfile('🌿', '힐러')">
-          <span class="class-icon-big">🌿</span>
-          <span class="class-title-small">힐러</span>
+          <span class="class-icon-big">🌿</span><span class="class-title-small">힐러</span>
         </div>
         <div class="class-preset-cell" onclick="selectClassProfile('⚔️', '전사')">
-          <span class="class-icon-big">⚔️</span>
-          <span class="class-title-small">전사</span>
+          <span class="class-icon-big">⚔️</span><span class="class-title-small">전사</span>
         </div>
         <div class="class-preset-cell" onclick="selectClassProfile('🛡️', '탱커')">
-          <span class="class-icon-big">🛡️</span>
-          <span class="class-title-small">탱커</span>
+          <span class="class-icon-big">🛡️</span><span class="class-title-small">탱커</span>
         </div>
         <div class="class-preset-cell" onclick="selectClassProfile('🪄', '마법사')">
-          <span class="class-icon-big">🪄</span>
-          <span class="class-title-small">마법사</span>
+          <span class="class-icon-big">🪄</span><span class="class-title-small">마법사</span>
         </div>
         <div class="class-preset-cell" onclick="selectClassProfile('👊', '무투사')">
-          <span class="class-icon-big">👊</span>
-          <span class="class-title-small">무투사</span>
+          <span class="class-icon-big">👊</span><span class="class-title-small">무투사</span>
         </div>
         <div class="class-preset-cell" onclick="selectClassProfile('🥷', '암살자')">
-          <span class="class-icon-big">🥷</span>
-          <span class="class-title-small">암살자</span>
+          <span class="class-icon-big">🥷</span><span class="class-title-small">암살자</span>
         </div>
         <div class="class-preset-cell" onclick="selectClassProfile('👑', '길드장')">
-          <span class="class-icon-big">👑</span>
-          <span class="class-title-small">길드장</span>
+          <span class="class-icon-big">👑</span><span class="class-title-small">길드장</span>
         </div>
       </div>
 
@@ -271,6 +641,7 @@
     </div>
   </div>
 
+  <!-- 3. 길드 로그인 모달 -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
@@ -297,10 +668,63 @@
         로그인
       </button>
       <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 설정에서 가능합니다.</div>
+
+      <!-- 새 길드 개설 / 라이선스 신청 버튼 -->
+      <div class="mt-2 pt-2 border-top text-center" style="border-color: rgba(148, 163, 184, 0.2) !important;">
+        <button type="button" class="btn btn-link p-0 text-decoration-none" style="font-size: 0.72rem; color: #3b82f6;" onclick="openLicenseRequestModal()">
+          <i class="fa-solid fa-key me-1"></i>새 길드 등록 / 라이선스 신청하기
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- 외부 분리 스크립트 연결 -->
+  <!-- 4. 새 길드 라이선스 발급 신청 모달 -->
+  <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none;">
+    <div class="kakao-modal-card" style="max-width: 340px;">
+      <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(59, 130, 246, 0.15); color: #3b82f6; display: inline-flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 10px;">
+        <i class="fa-solid fa-key"></i>
+      </div>
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 길드 라이선스 신청</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">길드 개설을 위해 기본 정보를 입력해 주세요.<br>확인 후 관리자가 라이선스 키를 발급해 드립니다.</p>
+      
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">게임명 (예: 리니지, 오딘, 로아 등)</label>
+        <input type="text" id="reqGameNameInput" placeholder="게임 이름 입력" style="height: 36px; margin-bottom: 0;">
+      </div>
+
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">길드명</label>
+        <input type="text" id="reqGuildNameInput" placeholder="길드 이름 입력" style="height: 36px; margin-bottom: 0;">
+      </div>
+
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">신청자 닉네임 (길드장)</label>
+        <input type="text" id="reqApplicantNickInput" placeholder="길드장 닉네임" style="height: 36px; margin-bottom: 0;">
+      </div>
+
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">이메일 주소</label>
+        <input type="email" id="reqEmailInput" placeholder="license@example.com" style="height: 36px; margin-bottom: 0;">
+      </div>
+
+      <div style="text-align: left; margin-bottom: 12px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">기타 연락처 (카카오톡 ID / 디스코드 등)</label>
+        <input type="text" id="reqContactInput" placeholder="직접 전달받을 메신저 ID (선택)" style="height: 36px; margin-bottom: 0;">
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeLicenseRequestModal()">
+          취소
+        </button>
+        <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="submitLicenseRequest()">
+          신청 완료
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 외부 분리 스크립트 연결: 톡방 전용 모듈 -> 기존 메인 스크립트 순차 로드 -->
+  <script src="rooms.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
