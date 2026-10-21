@@ -21,44 +21,61 @@ function showKakaoToast(msg, icon = "💬") {
   const box = document.getElementById("kakaoToastBox");
   const m = document.getElementById("kakaoToastMsg");
   const ic = document.getElementById("kakaoToastIcon");
-  if (!box) return;
+  if (!box || !m) return;
 
   m.innerText = msg;
-  ic.innerText = icon;
+  if (ic) ic.innerText = icon;
+
+  box.classList.remove("show");
+  void box.offsetWidth;
   box.classList.add("show");
 
   if (kakaoToastTimer) clearTimeout(kakaoToastTimer);
-  kakaoToastTimer = setTimeout(() => box.classList.remove("show"), 2300);
+  kakaoToastTimer = setTimeout(() => {
+    box.classList.remove("show");
+  }, 2300);
 }
 
 function formatTime24Hour(dateInput) {
   if (!dateInput) return "";
-  let d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
-  if (isNaN(d.getTime())) d = new Date();
+  let d;
+  if (typeof dateInput === 'string') {
+    let clean = dateInput.trim();
+    if (clean.includes(' ') && !clean.includes('T')) clean = clean.replace(' ', 'T');
+    if (!clean.endsWith('Z') && !clean.includes('+') && !clean.includes('-')) clean += 'Z';
+    d = new Date(clean);
+  } else {
+    d = new Date(dateInput);
+  }
+  if (isNaN(d.getTime())) return "";
 
-  const formatter = new Intl.DateTimeFormat('ko-KR', {
-    timeZone: 'Asia/Seoul',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-  return formatter.format(d);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
 }
 
 function formatTime24HourWithDate(dateInput) {
   if (!dateInput) return "";
-  let d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
-  if (isNaN(d.getTime())) d = new Date();
+  let d = new Date(dateInput);
+  if (isNaN(d.getTime())) return "";
 
-  const timeStr = formatTime24Hour(d);
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${timeStr} (${m}/${day})`;
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${mm}/${dd} ${hh}:${min}`;
 }
 
 function formatKSTChatTime(dateInput) {
-  if (!dateInput) return "";
-  let d = (dateInput instanceof Date) ? dateInput : new Date(dateInput);
+  let d;
+  if (typeof dateInput === 'string') {
+    let clean = dateInput.trim();
+    if (clean.includes(' ') && !clean.includes('T')) clean = clean.replace(' ', 'T');
+    if (!clean.endsWith('Z') && !clean.includes('+') && !clean.includes('-')) clean += 'Z';
+    d = new Date(clean);
+  } else {
+    d = new Date(dateInput);
+  }
   if (isNaN(d.getTime())) d = new Date();
 
   const formatter = new Intl.DateTimeFormat('ko-KR', {
@@ -70,62 +87,59 @@ function formatKSTChatTime(dateInput) {
   return formatter.format(d);
 }
 
-function isSameMinuteKST(dateStr1, dateStr2) {
-  if (!dateStr1 || !dateStr2) return false;
-  const d1 = new Date(dateStr1);
-  const d2 = new Date(dateStr2);
-  if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return false;
+window.formatTime24Hour = formatTime24Hour;
+window.formatTime24HourWithDate = formatTime24HourWithDate;
+window.formatKSTChatTime = formatKSTChatTime;
 
-  const f = new Intl.DateTimeFormat('ko-KR', {
-    timeZone: 'Asia/Seoul',
-    year: 'numeric', month: 'numeric', day: 'numeric',
-    hour: 'numeric', minute: 'numeric', hour12: false
-  });
-  return f.format(d1) === f.format(d2);
-}
+// --------------------------------------------------------
+// 2. 테마 설정 및 초기화
+// --------------------------------------------------------
+window.applyAppTheme = function(mode) {
+  const theme = mode || localStorage.getItem("guild_theme_mode") || "dark";
+  const isLight = (theme === "light");
 
-function ensureSupabaseInitialized() {
-  if (!supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+  document.body.classList.toggle("theme-light", isLight);
+  document.body.classList.toggle("theme-dark", !isLight);
+  document.documentElement.classList.toggle("theme-light", isLight);
+  document.documentElement.classList.toggle("theme-dark", !isLight);
+
+  localStorage.setItem("guild_theme_mode", theme);
+  const btn = document.getElementById("btnToggleAppTheme");
+  if (btn) {
+    btn.innerHTML = isLight ? '<i class="fa-solid fa-moon"></i>' : '<i class="fa-solid fa-sun"></i>';
+    btn.title = isLight ? '다크 모드로 전환' : '라이트 모드로 전환';
+  }
+};
+
+window.addEventListener("storage", function(e) {
+  if (e.key === "guild_theme_mode") window.applyAppTheme(e.newValue);
+});
+
+async function initApp() {
+  if (typeof window.applyAppTheme === 'function') window.applyAppTheme();
+  if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
     supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
     window.supabaseClient = supabaseClient;
   }
-  return supabaseClient;
-}
 
-// --------------------------------------------------------
-// 2. 길드 환경설정 및 세션 초기화
-// --------------------------------------------------------
-async function initGuildAppSession() {
-  ensureSupabaseInitialized();
+  await loadGuildSettings();
+  await window.loadGuildMembersData();
 
-  await Promise.allSettled([
-    loadGuildSettings(),
-    window.loadGuildMembersData(),
-    (typeof window.loadBossTimersList === 'function' ? window.loadBossTimersList() : Promise.resolve())
-  ]);
+  if (typeof window.loadBossTimersList === 'function') await window.loadBossTimersList();
+  if (typeof window.startLocalBossWatchTimer === 'function') window.startLocalBossWatchTimer();
 
-  initThemeFromStorage();
-  checkAuthAndOpenAppropriateModal();
-}
+  listenRealtimeChatMessages();
+  if (typeof window.listenRealtimeBossTimers === 'function') window.listenRealtimeBossTimers();
 
-function checkAuthAndOpenAppropriateModal() {
-  myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
-  myCurrentPin = localStorage.getItem("guild_my_pin") || "";
+  setupPwaInstallation();
+  bindMentionInputEvents();
+  cleanupOldChatsBackground();
 
   if (!myCurrentNick) {
-    // 게이트웨이 허브가 존재하면 게이트웨이를 띄우고, 아니면 기본 로그인 모달 노출
     if (typeof openWelcomeGatewayModal === 'function') {
       openWelcomeGatewayModal();
     } else {
       showGuildLoginModal();
-    }
-    const chatContainer = document.getElementById("chatMessagesView");
-    if (chatContainer) {
-      chatContainer.innerHTML = `
-        <div class="text-center my-4">
-          <span class="badge bg-secondary bg-opacity-25 text-secondary px-3 py-2" style="font-size:0.75rem;">로그인이 필요합니다.</span>
-        </div>
-      `;
     }
   } else {
     updateProfileUI(myCurrentNick);
@@ -135,7 +149,7 @@ function checkAuthAndOpenAppropriateModal() {
 
 async function loadGuildSettings() {
   try {
-    // 1. 현재 선택된 활성 길드(my_joined_guilds) 정보 우선 반영
+    // 1. 현재 활성 길드(my_joined_guilds) 정보 우선 반영
     const currentGid = localStorage.getItem("current_guild_id");
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
@@ -160,7 +174,7 @@ async function loadGuildSettings() {
       if (t4) t4.innerText = gGame + " · " + gName;
     }
 
-    // 2. 서버 설정 조회 시 특정 길드명이 없는 일반 상태라면 중립 텍스트 유지
+    // 2. 서버 설정 조회 동기화
     const res = await apiRequest("guild_settings?select=key,value");
     if (res && res.length > 0) {
       res.forEach(item => {
@@ -185,11 +199,19 @@ window.loadGuildMembersData = async function() {
     let members = [];
     if (currentGid) {
       try {
-        members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=name.asc");
-      } catch (err) {}
+        members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=nickname.asc");
+      } catch (err) {
+        try {
+          members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=name.asc");
+        } catch(e2) {}
+      }
     }
     if (!members || members.length === 0) {
-      members = await apiRequest("guild_members?select=*&order=name.asc");
+      try {
+        members = await apiRequest("guild_members?select=*&order=nickname.asc");
+      } catch (e3) {
+        members = await apiRequest("guild_members?select=*&order=name.asc");
+      }
     }
     cachedMemberList = members || [];
     window.cachedMemberList = cachedMemberList;
@@ -198,8 +220,8 @@ window.loadGuildMembersData = async function() {
       const pA = getRolePriority(a.role);
       const pB = getRolePriority(b.role);
       if (pA !== pB) return pA - pB;
-      const nA = a.name || a.nickname || "";
-      const nB = b.name || b.nickname || "";
+      const nA = a.nickname || a.name || "";
+      const nB = b.nickname || b.name || "";
       return nA.localeCompare(nB, 'ko');
     });
 
@@ -224,48 +246,104 @@ function getRolePriority(role) {
 function toggleMenuDrawer(isOpen) {
   const drawer = document.getElementById("menuSidebarDrawer");
   const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (!drawer || !backdrop) return;
-
   if (isOpen) {
-    drawer.classList.add("open");
-    backdrop.classList.add("show");
+    toggleMembersDrawer(false);
+    toggleBossDrawer(false);
+    if (drawer) drawer.classList.add("open");
+    if (backdrop) backdrop.classList.add("show");
   } else {
-    drawer.classList.remove("open");
-    backdrop.classList.remove("show");
+    if (drawer) drawer.classList.remove("open");
+    checkBackdropState();
   }
 }
 
-function toggleMembersDrawer(isOpen) {
+async function toggleMembersDrawer(isOpen) {
   const drawer = document.getElementById("membersSidebarDrawer");
   const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (!drawer || !backdrop) return;
-
   if (isOpen) {
-    drawer.classList.add("open");
-    backdrop.classList.add("show");
-    renderMembersDrawerList();
-  } else {
-    drawer.classList.remove("open");
-    backdrop.classList.remove("show");
-  }
-}
+    toggleMenuDrawer(false);
+    toggleBossDrawer(false);
+    if (backdrop) backdrop.classList.add("show");
+    if (drawer) drawer.classList.add("open");
 
-function toggleBossDrawer(isOpen) {
-  const drawer = document.getElementById("bossTimerSidebarDrawer");
-  const backdrop = document.getElementById("commonDrawerBackdrop");
-  if (!drawer || !backdrop) return;
+    const container = document.getElementById("drawerMembersContainer");
+    if (container) {
+      container.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>길드원을 불러오는 중...</div>`;
+      try {
+        const res = await fetch(`pages/PageMembers.html?_t=${Date.now()}`);
+        if (!res.ok) throw new Error("로드 실패");
+        const html = await res.text();
+        container.innerHTML = html;
 
-  if (isOpen) {
-    drawer.classList.add("open");
-    backdrop.classList.add("show");
-    if (typeof window.loadBossTimersList === 'function') {
-      window.loadBossTimersList();
+        document.querySelectorAll(".drawer-member-script").forEach(s => s.remove());
+        container.querySelectorAll("script").forEach(s => {
+          const sc = document.createElement("script");
+          sc.className = "drawer-member-script";
+          if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
+          document.body.appendChild(sc);
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="text-danger small text-center py-5">로드 실패: ${e.message}</div>`;
+      }
     }
   } else {
-    drawer.classList.remove("open");
-    backdrop.classList.remove("show");
+    if (drawer) drawer.classList.remove("open");
+    checkBackdropState();
   }
 }
+
+async function toggleBossDrawer(isOpen) {
+  const drawer = document.getElementById("bossTimerSidebarDrawer");
+  const backdrop = document.getElementById("commonDrawerBackdrop");
+  if (isOpen) {
+    toggleMenuDrawer(false);
+    toggleMembersDrawer(false);
+    if (backdrop) backdrop.classList.add("show");
+    if (drawer) drawer.classList.add("open");
+    await loadDrawerPageTimer();
+  } else {
+    if (drawer) drawer.classList.remove("open");
+    checkBackdropState();
+    if (typeof window.__currentModuleCleanup === "function") {
+      window.__currentModuleCleanup();
+    }
+  }
+}
+
+async function loadDrawerPageTimer() {
+  const area = document.getElementById("drawerBossListArea");
+  if (!area) return;
+  area.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>불러오는 중...</div>`;
+  try {
+    const res = await fetch(`pages/PageTimer.html?_t=${Date.now()}`);
+    if (!res.ok) throw new Error("로드 실패");
+    const html = await res.text();
+    area.innerHTML = html;
+
+    document.querySelectorAll(".drawer-dynamic-script").forEach(s => s.remove());
+    area.querySelectorAll("script").forEach(s => {
+      const sc = document.createElement("script");
+      sc.className = "drawer-dynamic-script";
+      if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
+      document.body.appendChild(sc);
+    });
+  } catch (e) {
+    area.innerHTML = `<div class="text-danger small text-center py-4">로드 실패: ${e.message}</div>`;
+  }
+}
+
+window.handleBossDrawerRefresh = async function() {
+  const btn = document.getElementById("btnRefreshBossDrawer");
+  if (btn) btn.classList.add("rotating");
+
+  if (typeof window.loadBossTimersList === "function") await window.loadBossTimersList();
+  await loadDrawerPageTimer();
+
+  setTimeout(() => {
+    if (btn) btn.classList.remove("rotating");
+    showKakaoToast("보스타임 현황이 갱신되었습니다.", "⏰");
+  }, 400);
+};
 
 function closeAllDrawers() {
   toggleMenuDrawer(false);
@@ -273,100 +351,55 @@ function closeAllDrawers() {
   toggleBossDrawer(false);
 }
 
-function renderMembersDrawerList() {
-  const box = document.getElementById("drawerMemberListContainer");
-  const countVal = document.getElementById("drawerMemberCountVal");
-  if (!box) return;
-
-  if (countVal) countVal.innerText = cachedMemberList.length;
-
-  if (!cachedMemberList || cachedMemberList.length === 0) {
-    box.innerHTML = `<div class="text-center py-4 text-secondary small">등록된 길드원이 없습니다.</div>`;
-    return;
-  }
-
-  box.innerHTML = cachedMemberList.map(m => {
-    const name = m.name || m.nickname || "무명";
-    const role = m.role || "일반";
-    const job = m.class_name || m.job_class || "미설정";
-    const isMaster = (role === "길드장" || role === "길마");
-    const isSubMaster = (role === "부길드장" || role === "부길마");
-    const isElite = (role === "정예");
-
-    let badgeClass = "badge bg-secondary bg-opacity-25 text-secondary";
-    if (isMaster) badgeClass = "badge bg-warning text-dark fw-bold";
-    else if (isSubMaster) badgeClass = "badge bg-info text-dark fw-bold";
-    else if (isElite) badgeClass = "badge bg-primary text-white fw-bold";
-
-    return `
-      <div class="chat-room-card friend-item-card" style="margin-bottom:6px; padding:7px 10px;">
-        <div class="user-avatar" style="width:30px; height:30px; font-size:0.9rem;">
-          ${isMaster ? '👑' : '👤'}
-        </div>
-        <div class="room-content-box">
-          <div class="d-flex align-items-center justify-content-between">
-            <span class="room-name-text member-name-line" style="font-size:0.82rem;">${name}</span>
-            <span class="${badgeClass}" style="font-size:0.62rem; padding:2px 5px;">${role}</span>
-          </div>
-          <div class="room-msg-preview member-class-desc" style="font-size:0.68rem; color:#64748b;">
-            ${job}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
-function updateProfileUI(nick) {
-  myCurrentNick = nick || "";
-  myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-  myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미설정";
-
-  const dAvatar = document.getElementById("drawerMyAvatarIcon");
-  const dNick = document.getElementById("drawerMyNickText");
-  const dClass = document.getElementById("drawerMyClassText");
-  if (dAvatar) dAvatar.innerText = myCurrentAvatar;
-  if (dNick) dNick.innerText = myCurrentNick || "로그인 필요";
-  if (dClass) dClass.innerText = myCurrentClass;
-
-  const tAvatar = document.getElementById("mainTabMyAvatar");
-  const tNick = document.getElementById("mainTabMyNick");
-  const tClass = document.getElementById("mainTabMyClass");
-  if (tAvatar) tAvatar.innerText = myCurrentAvatar;
-  if (tNick) tNick.innerText = myCurrentNick || "로그인 필요";
-  if (tClass) tClass.innerText = myCurrentClass;
+function checkBackdropState() {
+  const d1 = document.getElementById("menuSidebarDrawer");
+  const d2 = document.getElementById("membersSidebarDrawer");
+  const d3 = document.getElementById("bossTimerSidebarDrawer");
+  const backdrop = document.getElementById("commonDrawerBackdrop");
+  const isOpen = (d1 && d1.classList.contains("open")) ||
+                 (d2 && d2.classList.contains("open")) ||
+                 (d3 && d3.classList.contains("open"));
+  if (!isOpen && backdrop) backdrop.classList.remove("show");
 }
 
 function openProfileEditModal() {
-  const modal = document.getElementById("modalProfileEdit");
-  if (modal) modal.style.display = "flex";
+  document.getElementById("modalProfileEdit").style.display = "flex";
 }
 function closeProfileEditModal() {
-  const modal = document.getElementById("modalProfileEdit");
-  if (modal) modal.style.display = "none";
+  document.getElementById("modalProfileEdit").style.display = "none";
 }
 
 async function selectClassProfile(icon, className) {
   myCurrentAvatar = icon;
-  myCurrentClass = className;
+  myCurrentClass = `${icon} ${className}`;
+  
   localStorage.setItem("guild_my_avatar", icon);
-  localStorage.setItem("guild_my_class", className);
+  localStorage.setItem("guild_my_class", myCurrentClass);
 
-  updateProfileUI(myCurrentNick);
-  closeProfileEditModal();
-  showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
+  const aIcon = document.getElementById("sidebarAvatarIcon");
+  const uClass = document.getElementById("sidebarUserClassText");
+  if (aIcon) aIcon.innerText = icon;
+  if (uClass) uClass.innerText = myCurrentClass;
 
   if (myCurrentNick) {
     try {
-      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
-        class_name: className
+      await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+        job_class: myCurrentClass
       });
-    } catch (e) {}
+    } catch (e) {
+      try {
+        await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+          job_class: myCurrentClass
+        });
+      } catch(e2) {}
+    }
   }
+  closeProfileEditModal();
+  showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
 }
 
 // --------------------------------------------------------
-// 4. 길드 로그인 / 로그아웃 및 다중 길드 스위칭
+// 4. 길드 로그인 / 로그아웃 (버그 완벽 수정)
 // --------------------------------------------------------
 function renderLoginMemberDropdown(query = "") {
   const selectElem = document.getElementById("loginMemberSelect");
@@ -374,13 +407,13 @@ function renderLoginMemberDropdown(query = "") {
 
   const q = (query || "").toLowerCase().trim();
   const filtered = cachedMemberList.filter(m => {
-    const name = m.name || m.nickname || "";
+    const name = m.nickname || m.name || "";
     return name.toLowerCase().includes(q);
   });
 
   selectElem.innerHTML = `<option value="">닉네임을 선택하세요 (${filtered.length}명)</option>` +
     filtered.map(m => {
-      const name = m.name || m.nickname || "";
+      const name = m.nickname || m.name || "";
       const role = m.role || "일반";
       const cls = m.class_name || m.job_class || "";
       return `<option value="${name}">${name} (${role}${cls ? ' · ' + cls : ''})</option>`;
@@ -441,7 +474,7 @@ async function executeGuildLogin() {
   }
 
   const targetMember = cachedMemberList.find(m => {
-    const n = m.name || m.nickname || "";
+    const n = m.nickname || m.name || "";
     return n.toLowerCase() === selectedName.toLowerCase();
   });
 
@@ -449,23 +482,31 @@ async function executeGuildLogin() {
     return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
   }
 
-  let expectedPin = "0000";
+  let expectedPin = "000000";
   if (targetMember.pin) {
     expectedPin = String(targetMember.pin).trim();
   } else {
     try {
-      const res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(targetMember.name)}&select=pin,role`);
+      const qNick = targetMember.nickname || targetMember.name || "";
+      let res = await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(qNick)}&select=pin,role`);
+      if (!res || res.length === 0) {
+        res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(qNick)}&select=pin,role`);
+      }
       if (res && res.length > 0 && res[0].pin) expectedPin = String(res[0].pin).trim();
     } catch (e) {}
   }
 
-  if (inputPin !== expectedPin) {
+  const isPinMatched = (inputPin === expectedPin) || 
+                       (expectedPin === "0000" && inputPin === "000000") || 
+                       (expectedPin === "000000" && inputPin === "0000");
+
+  if (!isPinMatched) {
     document.getElementById("loginPinInput").value = "";
     document.getElementById("loginPinInput").focus();
-    return showKakaoToast("비밀번호가 올바르지 않습니다! (초기값: 0000)", "❌");
+    return showKakaoToast("비밀번호가 올바르지 않습니다! (6자리 숫자 PIN)", "❌");
   }
 
-  const memberName = targetMember.name || targetMember.nickname;
+  const memberName = targetMember.nickname || targetMember.name;
   myCurrentNick = memberName;
   myCurrentPin = inputPin;
   localStorage.setItem("guild_my_nickname", memberName);
@@ -485,19 +526,6 @@ async function executeGuildLogin() {
     sessionStorage.removeItem("admin_role");
   }
 
-  // 현재 활성 길드 정보 업데이트
-  const currentGid = localStorage.getItem("current_guild_id");
-  if (currentGid) {
-    let joined = [];
-    try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-    const existing = joined.find(g => g.guild_id === currentGid);
-    if (existing) {
-      existing.nickname = memberName;
-      existing.role = userRole;
-      localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
-    }
-  }
-
   updateProfileUI(memberName);
   document.getElementById("guildLoginModal").style.display = "none";
   showKakaoToast(`[${memberName}] 님 반갑습니다!`, "🎉");
@@ -505,7 +533,6 @@ async function executeGuildLogin() {
   resetAndReloadChatAfterAuth();
 }
 
-// [개선]: 카카오톡 커스텀 로그아웃 확인 모달 연동
 function handleUserLogout() {
   if (typeof openConfirmLogoutModal === "function") {
     openConfirmLogoutModal();
@@ -534,11 +561,7 @@ window.executeLogoutProcess = function() {
   lastRenderedSender = null;
 
   toggleMenuDrawer(false);
-  if (typeof openWelcomeGatewayModal === 'function') {
-    openWelcomeGatewayModal();
-  } else {
-    showGuildLoginModal();
-  }
+  showGuildLoginModal();
 };
 
 window.switchActiveGuild = function(guildId) {
@@ -564,157 +587,256 @@ function resetAndReloadChatAfterAuth() {
   }
   lastRenderedSender = null;
   loadPastChatMessages();
+
+  if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
+  if (typeof window.loadMainTabRoomsList === "function") window.loadMainTabRoomsList();
+}
+
+function updateProfileUI(nick) {
+  const nickElem = document.getElementById("sidebarUserNickName");
+  const avatarElem = document.getElementById("sidebarAvatarIcon");
+  const classElem = document.getElementById("sidebarUserClassText");
+
+  if (nickElem) nickElem.innerText = nick;
+  if (avatarElem) avatarElem.innerText = myCurrentAvatar;
+  if (classElem) classElem.innerText = myCurrentClass;
 }
 
 // --------------------------------------------------------
-// 5. 과거 메시지 로드 및 대화방 렌더링
+// 5. 과거 대화 로드 & 실시간 대화 수신 (방별 격리 & 노란색 읽음 계산)
 // --------------------------------------------------------
 async function loadPastChatMessages() {
-  const chatContainer = document.getElementById("chatMessagesView");
-  if (!chatContainer) return;
-
   try {
-    const activeRoomId = window.currentActiveRoomId || "public";
-    let query = `chat_messages?order=created_at.asc&limit=70`;
-    if (activeRoomId && activeRoomId !== "public") {
-      query = `chat_messages?room_id=eq.${encodeURIComponent(activeRoomId)}&order=created_at.asc&limit=70`;
+    let endpoint = "guild_chats?select=*&order=id.desc&limit=100";
+    const currentGid = localStorage.getItem("current_guild_id");
+    const currentRoomKey = window.currentActiveRoomKey || "general";
+
+    if (currentGid) {
+      endpoint = `guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_key=eq.${encodeURIComponent(currentRoomKey)}&select=*&order=id.desc&limit=100`;
     }
 
-    const messages = await apiRequest(query);
+    let messages = await apiRequest(endpoint);
+    if ((!messages || messages.length === 0) && currentGid) {
+      messages = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&select=*&order=id.desc&limit=100`);
+    }
+    if (!messages || messages.length === 0) {
+      messages = await apiRequest("guild_chats?select=*&order=id.desc&limit=100");
+    }
 
-    chatContainer.innerHTML = "";
+    const container = document.getElementById("chatMessagesView");
+    if (!container) return;
+    container.innerHTML = "";
     lastRenderedSender = null;
 
-    if (!messages || messages.length === 0) {
-      chatContainer.innerHTML = `
-        <div class="text-center my-4 text-secondary small">
-          <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2" style="font-size:0.75rem;">대화 내역이 없습니다. 첫 인사를 건네보세요!</span>
-        </div>
-      `;
-      return;
+    if (messages && messages.length > 0) {
+      messages.reverse().forEach(m => appendChatMessage(m, false));
     }
-
-    messages.forEach((msg, idx) => {
-      const prevMsg = idx > 0 ? messages[idx - 1] : null;
-      const nextMsg = idx < messages.length - 1 ? messages[idx + 1] : null;
-      renderSingleChatMessageBubble(msg, prevMsg, nextMsg);
-    });
-
-    scrollChatToBottom();
-  } catch (err) {
-    console.error("loadPastChatMessages error:", err);
-  }
+    scrollToBottom(false);
+  } catch (e) {}
 }
 
-function scrollChatToBottom() {
-  const container = document.getElementById("chatMessagesView");
-  if (container) {
-    setTimeout(() => {
-      container.scrollTop = container.scrollHeight;
-    }, 50);
-  }
+function listenRealtimeChatMessages() {
+  if (!supabaseClient) return;
+
+  const currentGid = localStorage.getItem("current_guild_id") || "";
+  const filterStr = currentGid ? `guild_id=eq.${currentGid}` : undefined;
+
+  supabaseClient
+    .channel('public:guild_chats')
+    .on('postgres_changes', {
+      event: 'INSERT',
+      schema: 'public',
+      table: 'guild_chats',
+      filter: filterStr
+    }, payload => {
+      const newMsg = payload.new;
+      const currentRoomKey = window.currentActiveRoomKey || "general";
+      if (newMsg.room_key && newMsg.room_key !== currentRoomKey) {
+        if (typeof window.incrementRoomUnreadCount === "function") {
+          window.incrementRoomUnreadCount(newMsg.room_key);
+        }
+        return;
+      }
+      handleIncomingChatMessage(newMsg);
+    })
+    .subscribe();
 }
 
-function renderSingleChatMessageBubble(msg, prevMsg = null, nextMsg = null) {
+function handleIncomingChatMessage(newMsg) {
+  const optIdx = pendingOptimisticMessages.findIndex(m =>
+    m.sender_name === newMsg.sender_name && m.message === newMsg.message
+  );
+
+  if (optIdx !== -1) {
+    const optId = pendingOptimisticMessages[optIdx].tempId;
+    const optElem = document.getElementById(`opt_msg_${optId}`);
+    if (optElem) {
+      optElem.id = `msg_row_${newMsg.id}`;
+      optElem.classList.remove("optimistic-msg");
+      const readBadge = optElem.querySelector(".chat-unread-count");
+      if (readBadge) {
+        readBadge.innerText = calculateUnreadCount(newMsg);
+        readBadge.style.display = "inline-block";
+      }
+    }
+    pendingOptimisticMessages.splice(optIdx, 1);
+    return;
+  }
+
+  appendChatMessage(newMsg, true);
+  scrollToBottom(true);
+}
+
+// --------------------------------------------------------
+// 6. 카카오톡 말풍선 렌더링 (노란색 읽음 숫자 & 나/상대방 완벽 분리)
+// --------------------------------------------------------
+function calculateUnreadCount(msg) {
+  const total = (cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 1;
+  const readList = Array.isArray(msg.read_by) ? msg.read_by : [];
+  let unread = total - readList.length;
+  if (unread < 0) unread = 0;
+  return unread;
+}
+
+function appendChatMessage(msg, animate = false) {
   const container = document.getElementById("chatMessagesView");
   if (!container) return;
 
-  const isMe = (myCurrentNick && msg.sender_name === myCurrentNick);
-  const timeFormatted = formatKSTChatTime(msg.created_at);
-
-  const isConsecutivePrev = prevMsg && (prevMsg.sender_name === msg.sender_name) && isSameMinuteKST(prevMsg.created_at, msg.created_at);
-  const isConsecutiveNext = nextMsg && (nextMsg.sender_name === msg.sender_name) && isSameMinuteKST(msg.created_at, nextMsg.created_at);
-
-  const hideAvatarAndName = isConsecutivePrev;
-  const hideTimestamp = isConsecutiveNext;
-
-  const totalMembers = (cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 10;
-  const readCount = Number(msg.read_count || 1);
-  const unreadCount = Math.max(0, totalMembers - readCount);
-  const unreadSpanHtml = (unreadCount > 0)
-    ? `<span class="chat-unread-count" id="unread-count-${msg.id || ''}">${unreadCount}</span>`
-    : `<span class="chat-unread-count" id="unread-count-${msg.id || ''}" style="display:none;"></span>`;
-
-  const metaHtml = `
-    <div class="chat-meta-box">
-      ${unreadSpanHtml}
-      ${!hideTimestamp ? `<span class="chat-timestamp">${timeFormatted}</span>` : ''}
-    </div>
-  `;
-
-  let bubbleBodyHtml = "";
-  let isSpecialCard = false;
-
-  if (msg.message_type === "boss_briefing" || msg.content?.startsWith("[보스현황브리핑]")) {
-    isSpecialCard = true;
-    bubbleBodyHtml = msg.content;
-  } else if (msg.message_type === "boss_spawn" || msg.content?.includes("boss-alert-mini-card")) {
-    isSpecialCard = true;
-    bubbleBodyHtml = msg.content;
-  } else if (msg.message_type === "raid_report" || msg.content?.includes("raid-report-card")) {
-    isSpecialCard = true;
-    bubbleBodyHtml = msg.content;
-  } else if (msg.message_type === "finance_report" || msg.content?.includes("finance-report-card")) {
-    isSpecialCard = true;
-    bubbleBodyHtml = msg.content;
-  } else if (msg.message_type === "records_report" || msg.content?.includes("records-report-card")) {
-    isSpecialCard = true;
-    bubbleBodyHtml = msg.content;
-  } else if (msg.message_type === "image") {
-    bubbleBodyHtml = `<img src="${msg.content}" style="max-width:240px; border-radius:8px; cursor:pointer;" onclick="openImagePreviewModal('${msg.content}')" alt="공유 사진">`;
-  } else {
-    const escaped = escapeHtmlEntities(msg.content || "");
-    bubbleBodyHtml = `<div class="chat-bubble">${escaped}</div>`;
-  }
+  const currentNick = (myCurrentNick || "").trim();
+  const senderNick = (msg.sender_name || "").trim();
+  const isMine = (currentNick !== "" && currentNick === senderNick);
 
   const row = document.createElement("div");
-  row.className = `chat-item-row ${isMe ? 'me' : 'other'} ${isConsecutivePrev ? 'consecutive' : ''}`;
-  if (msg.id) row.id = `chat-msg-row-${msg.id}`;
+  row.className = `chat-row ${isMine ? "mine" : "theirs"} ${animate ? "fade-in" : ""}`;
+  row.id = `msg_row_${msg.id}`;
 
-  if (isMe) {
-    row.innerHTML = `
-      <div class="chat-bubble-flex">
-        ${metaHtml}
-        <div class="chat-msg-body ${isSpecialCard ? 'raid-msg-body' : ''}">
-          ${bubbleBodyHtml}
+  const timeStr = formatKSTChatTime(msg.created_at || new Date().toISOString());
+  const unreadCount = calculateUnreadCount(msg);
+  const unreadBadge = `<span class="chat-unread-count" style="display:${unreadCount > 0 ? 'inline-block' : 'none'}">${unreadCount}</span>`;
+
+  const cleanMessageText = escapeHtml(msg.message || "");
+  const msgKey = msg.id || ('tmp_' + Date.now());
+
+  let bubbleBody = "";
+
+  if (msg.msg_type === "boss_briefing") {
+    bubbleBody = `
+      <div class="bubble-content-box boss-card-wrap">
+        <div class="boss-briefing-header">
+          <i class="fa-solid fa-list-check me-1 text-warning"></i>
+          <span>보스타임 종합 브리핑</span>
+        </div>
+        <div class="boss-briefing-card">${cleanMessageText}</div>
+      </div>
+    `;
+  }
+  else if (msg.msg_type === "raid_register") {
+    const raidId = msg.meta_data?.raid_id || "";
+    const bossName = msg.meta_data?.boss_name || "보스";
+    const killTime = msg.meta_data?.kill_time ? formatTime24Hour(msg.meta_data.kill_time) : "";
+
+    bubbleBody = `
+      <div class="bubble-content-box boss-card-wrap">
+        <div class="raid-register-card">
+          <div class="raid-hero-top">
+            <span class="badge bg-danger px-2 py-1">토벌 등록 완료</span>
+            <span class="raid-kill-time">${killTime ? killTime + ' 처치' : ''}</span>
+          </div>
+          <div class="raid-hero-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <div>
+                <span class="raid-hero-title">${bossName}</span>
+                <span class="badge bg-secondary ms-2" id="raid_count_${raidId}">${(msg.meta_data?.members || []).length}명 참여</span>
+              </div>
+            </div>
+            <div class="raid-members-tags mb-3" id="raid_tags_${raidId}">
+              ${(msg.meta_data?.members || []).map(m => `<span class="badge bg-dark bg-opacity-75 text-light border border-secondary px-2 py-1">${escapeHtml(m)}</span>`).join(" ")}
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-warning btn-sm fw-bold px-3 py-1" id="btn_raid_join_${raidId}" onclick="handleQuickRaidSelfAdd('${raidId}', '${bossName}')">
+                <i class="fa-solid fa-user-plus me-1"></i>나도 참여 (+1점)
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     `;
-  } else {
-    const matchedSender = cachedMemberList.find(m => (m.name === msg.sender_name || m.nickname === msg.sender_name));
-    const senderRole = matchedSender?.role || "";
-    const senderClass = matchedSender?.class_name || matchedSender?.job_class || "";
-    const isBot = (msg.sender_name === "시스템" || msg.sender_name === "보스타이머");
+  }
+  else if (msg.msg_type === "boss_alert") {
+    const bossNameInMsg = extractBossNameFromMessage(cleanMessageText);
+    const subCutBtn = bossNameInMsg ? `
+      <button type="button" class="btn-chat-cut" id="btn_cut_${msgKey}" data-boss="${bossNameInMsg}" onclick="triggerQuickCutAction('${bossNameInMsg}', 'btn_cut_${msgKey}')">
+        <i class="fa-solid fa-bolt me-1"></i>컷(처치)
+      </button>
+    ` : "";
 
-    let avatarIcon = isBot ? "🤖" : (senderRole.includes("길드장") ? "👑" : "👤");
+    bubbleBody = `
+      <div class="bubble-content-box boss-card-wrap">
+        <div class="boss-alert-header">
+          <i class="fa-solid fa-bell text-warning me-1"></i>
+          <span>보스 출현 알림</span>
+        </div>
+        <div class="boss-alert-mini-card spawn-alert">${cleanMessageText}</div>
+        <div class="boss-alert-tools-row">
+          ${subCutBtn}
+        </div>
+      </div>
+    `;
+  }
+  else {
+    bubbleBody = `<div class="bubble-content-box">${cleanMessageText}</div>`;
+  }
+
+  if (isMine) {
+    row.innerHTML = `
+      <div class="bubble-meta mine">
+        ${unreadBadge}
+        <span class="chat-time">${timeStr}</span>
+      </div>
+      <div class="bubble-main mine">
+        ${bubbleBody}
+      </div>
+    `;
+  } else {
+    const senderRole = msg.role || "일반";
+    const senderClass = msg.job_class || "";
+    const avatar = msg.avatar || "👤";
+    const roleBadge = (senderRole === "길드장" || senderRole === "길마") ? `<span class="badge-role-master">👑 길마</span>` :
+                      (senderRole === "부길드장" || senderRole === "부길마") ? `<span class="badge-role-sub">⚔️ 부길</span>` :
+                      (senderRole === "정예") ? `<span class="badge-role-elite">🛡️ 정예</span>` : "";
 
     row.innerHTML = `
-      ${!hideAvatarAndName ? `
-        <div class="chat-sender-avatar ${isBot ? 'bot' : ''}">
-          ${avatarIcon}
+      <div class="sender-avatar">${avatar}</div>
+      <div class="theirs-body">
+        <div class="sender-name-label">
+          <span class="sender-nick">${escapeHtml(senderNick)}</span>
+          ${roleBadge}
+          ${senderClass ? `<span class="sender-class">${escapeHtml(senderClass)}</span>` : ''}
         </div>
-      ` : `
-        <div style="width:34px; flex-shrink:0;"></div>
-      `}
-      <div class="chat-msg-body ${isSpecialCard ? 'raid-msg-body' : ''}">
-        ${!hideAvatarAndName ? `
-          <div class="chat-sender-name">
-            ${escapeHtmlEntities(msg.sender_name)}${senderClass ? `<span style="font-size:10px; color:#64748b; font-weight:normal; margin-left:3px;">${senderClass}</span>` : ''}
+        <div class="d-flex align-items-end">
+          <div class="bubble-main theirs">
+            ${bubbleBody}
           </div>
-        ` : ''}
-        <div class="chat-bubble-flex">
-          ${bubbleBodyHtml}
-          ${metaHtml}
+          <div class="bubble-meta theirs ms-2">
+            ${unreadBadge}
+            <span class="chat-time">${timeStr}</span>
+          </div>
         </div>
       </div>
     `;
   }
 
   container.appendChild(row);
-  lastRenderedSender = msg.sender_name;
+  lastRenderedSender = senderNick;
 }
 
-function escapeHtmlEntities(str) {
+function extractBossNameFromMessage(text) {
+  if (!text) return "";
+  const match = text.match(/\[(.*?)\]/);
+  return match ? match[1].trim() : "";
+}
+
+function escapeHtml(str) {
   if (!str) return "";
   return String(str)
     .replace(/&/g, "&amp;")
@@ -724,298 +846,278 @@ function escapeHtmlEntities(str) {
     .replace(/'/g, "&#039;");
 }
 
-// --------------------------------------------------------
-// 6. 메시지 전송 및 낙관적 UI 업데이트
-// --------------------------------------------------------
-async function sendMessageAction() {
-  const textarea = document.getElementById("chatInputTextarea");
-  if (!textarea) return;
+function scrollToBottom(smooth = true) {
+  const container = document.getElementById("chatMessagesView");
+  if (!container) return;
+  if (smooth) {
+    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+  } else {
+    container.scrollTop = container.scrollHeight;
+  }
+}
 
-  const content = textarea.value.trim();
-  if (!content) return;
+// --------------------------------------------------------
+// 7. 메시지 입력 및 전송 제어
+// --------------------------------------------------------
+async function executeSendMessage() {
+  const input = document.getElementById("chatMessageInput");
+  if (!input) return;
+  const rawText = input.value.trim();
+  if (!rawText) return;
 
   if (!myCurrentNick) {
     if (typeof openWelcomeGatewayModal === 'function') openWelcomeGatewayModal();
     else showGuildLoginModal();
-    return showKakaoToast("로그인 후 메시지를 전송할 수 있습니다.", "⚠️");
-  }
-
-  // 1. 보스 컷/예약 명령어 가로채기
-  if (content.startsWith("!컷") || content.startsWith("!예약") || content.startsWith("!보스")) {
-    if (typeof window.handleBossCommandInChat === 'function') {
-      const handled = await window.handleBossCommandInChat(content);
-      if (handled) {
-        textarea.value = "";
-        return;
-      }
-    }
-  }
-
-  textarea.value = "";
-  textarea.style.height = "38px";
-
-  const tempId = "temp-" + Date.now();
-  const activeRoomId = window.currentActiveRoomId || "public";
-  const optimisticMsg = {
-    id: tempId,
-    room_id: activeRoomId,
-    sender_name: myCurrentNick,
-    content: content,
-    message_type: "text",
-    created_at: new Date().toISOString(),
-    read_count: 1
-  };
-
-  renderSingleChatMessageBubble(optimisticMsg);
-  scrollChatToBottom();
-
-  try {
-    const payload = {
-      room_id: activeRoomId,
-      sender_name: myCurrentNick,
-      content: content,
-      message_type: "text"
-    };
-
-    const res = await apiRequest("chat_messages", "POST", [payload]);
-    if (res && res.length > 0 && res[0].id) {
-      const tempElem = document.getElementById(`chat-msg-row-${tempId}`);
-      if (tempElem) {
-        tempElem.id = `chat-msg-row-${res[0].id}`;
-      }
-    }
-  } catch (err) {
-    console.error("메시지 전송 실패:", err);
-    showKakaoToast("메시지 전송 실패 (재시도 중...)", "❌");
-  }
-}
-
-// --------------------------------------------------------
-// 7. 실시간 채팅 수신 (Realtime Subscription)
-// --------------------------------------------------------
-function initChatRealtimeStream() {
-  const client = ensureSupabaseInitialized();
-  if (!client) return;
-
-  try {
-    client
-      .channel('public:chat_messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, payload => {
-        handleIncomingRealtimeMessage(payload.new);
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages' }, payload => {
-        handleMessageReadCountUpdate(payload.new);
-      })
-      .subscribe();
-  } catch (e) {
-    console.error("Realtime subscription error:", e);
-  }
-}
-
-function handleIncomingRealtimeMessage(newMsg) {
-  if (!newMsg) return;
-
-  const activeRoomId = window.currentActiveRoomId || "public";
-  if (newMsg.room_id && newMsg.room_id !== activeRoomId) {
     return;
   }
 
-  if (newMsg.sender_name === myCurrentNick) {
-    const existingTemp = document.getElementById(`chat-msg-row-${newMsg.id}`);
-    if (existingTemp) return;
-  }
+  input.value = "";
+  input.focus();
 
-  renderSingleChatMessageBubble(newMsg);
-  scrollChatToBottom();
-}
+  const currentGid = localStorage.getItem("current_guild_id") || null;
+  const currentRoomKey = window.currentActiveRoomKey || "general";
+  const myRole = localStorage.getItem("guild_my_role") || "일반";
 
-function handleMessageReadCountUpdate(updatedMsg) {
-  if (!updatedMsg || !updatedMsg.id) return;
-  const unreadSpan = document.getElementById(`unread-count-${updatedMsg.id}`);
-  if (!unreadSpan) return;
+  const tempId = Date.now();
+  const optMsg = {
+    tempId: tempId,
+    sender_name: myCurrentNick,
+    role: myRole,
+    avatar: myCurrentAvatar,
+    job_class: myCurrentClass,
+    message: rawText,
+    msg_type: "chat",
+    created_at: new Date().toISOString(),
+    guild_id: currentGid,
+    room_key: currentRoomKey,
+    read_by: [myCurrentNick]
+  };
 
-  const totalMembers = (cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 10;
-  const readCount = Number(updatedMsg.read_count || 1);
-  const unread = Math.max(0, totalMembers - readCount);
+  pendingOptimisticMessages.push(optMsg);
+  appendOptimisticChatMessage(optMsg);
+  scrollToBottom(true);
 
-  if (unread > 0) {
-    unreadSpan.innerText = unread;
-    unreadSpan.style.display = "inline";
-  } else {
-    unreadSpan.style.display = "none";
-  }
-}
-
-// --------------------------------------------------------
-// 8. 대화 검색 바 토글 및 인라인 검색 기능
-// --------------------------------------------------------
-function toggleChatSearchBar() {
-  const bar = document.getElementById("chatSearchBarWrap");
-  if (!bar) return;
-
-  if (bar.style.display === "none" || !bar.style.display) {
-    bar.style.display = "block";
-    const input = document.getElementById("chatSearchKeywordInput");
-    if (input) {
-      input.value = "";
-      input.focus();
-    }
-  } else {
-    bar.style.display = "none";
-    clearChatSearchHighlights();
+  try {
+    const payload = {
+      sender_name: myCurrentNick,
+      role: myRole,
+      avatar: myCurrentAvatar,
+      job_class: myCurrentClass,
+      message: rawText,
+      msg_type: "chat",
+      guild_id: currentGid,
+      room_key: currentRoomKey,
+      read_by: [myCurrentNick]
+    };
+    await apiRequest("guild_chats", "POST", payload);
+  } catch (err) {
+    showKakaoToast("메시지 전송에 실패했습니다: " + err.message, "⚠️");
   }
 }
 
-function clearChatSearchInput() {
-  const input = document.getElementById("chatSearchKeywordInput");
-  if (input) {
-    input.value = "";
-    input.focus();
-  }
-  clearChatSearchHighlights();
-}
-
-function clearChatSearchHighlights() {
-  const countText = document.getElementById("searchMatchCountText");
-  if (countText) countText.innerText = "";
-
+function appendOptimisticChatMessage(optMsg) {
   const container = document.getElementById("chatMessagesView");
   if (!container) return;
-  const rows = container.querySelectorAll(".chat-item-row");
-  rows.forEach(r => r.style.opacity = "1");
-}
 
-// --------------------------------------------------------
-// 9. 멘션(@) 및 파일 첨부
-// --------------------------------------------------------
-function insertEmojiToInput(emoji) {
-  const textarea = document.getElementById("chatInputTextarea");
-  if (!textarea) return;
-  textarea.value += emoji;
-  textarea.focus();
-}
+  const row = document.createElement("div");
+  row.className = "chat-row mine fade-in optimistic-msg";
+  row.id = `opt_msg_${optMsg.tempId}`;
 
-function triggerFileUploadAction() {
-  const fileInput = document.getElementById("kakaoHiddenFileInput");
-  if (fileInput) fileInput.click();
-}
+  const timeStr = formatKSTChatTime(optMsg.created_at);
+  const cleanMessageText = escapeHtml(optMsg.message);
 
-async function handleKakaoFileSelected(e) {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-
-  showKakaoToast("사진을 업로드 중입니다...", "⏳");
-
-  try {
-    const reader = new FileReader();
-    reader.onload = async function(event) {
-      const base64Data = event.target.result;
-      const activeRoomId = window.currentActiveRoomId || "public";
-      await apiRequest("chat_messages", "POST", [{
-        room_id: activeRoomId,
-        sender_name: myCurrentNick,
-        content: base64Data,
-        message_type: "image"
-      }]);
-      showKakaoToast("사진이 전송되었습니다!", "📸");
-    };
-    reader.readAsDataURL(file);
-  } catch (err) {
-    showKakaoToast("사진 전송 실패", "❌");
-  } finally {
-    e.target.value = "";
-  }
-}
-
-// --------------------------------------------------------
-// 10. 모듈 페이지 오버레이 열기 및 닫기
-// --------------------------------------------------------
-async function openModulePage(pageName) {
-  const overlay = document.getElementById("moduleOverlay");
-  const bodyBox = document.getElementById("overlayBodyContent");
-  const titleText = document.getElementById("overlayNavTitle");
-  if (!overlay || !bodyBox) return;
-
-  toggleMenuDrawer(false);
-
-  const titleMap = {
-    'PageNotice': '공지사항',
-    'PageRegister': '보스등록',
-    'PageRecords': '보스참여자목록',
-    'PageWish': '분배희망신청',
-    'PageSettle': '정산내역',
-    'PageMembers': '길드원목록',
-    'PageSettings': '환경설정'
-  };
-  if (titleText) titleText.innerText = titleMap[pageName] || "기능 화면";
-
-  bodyBox.innerHTML = `
-    <div class="text-center py-5 text-secondary">
-      <i class="fa-solid fa-spinner fa-spin fa-2x mb-3"></i>
-      <div>화면을 불러오는 중...</div>
+  row.innerHTML = `
+    <div class="bubble-meta mine">
+      <span class="chat-unread-count" style="display:none">1</span>
+      <span class="chat-time">${timeStr}</span>
+    </div>
+    <div class="bubble-main mine">
+      <div class="bubble-content-box">${cleanMessageText}</div>
     </div>
   `;
-  overlay.style.display = "flex";
+  container.appendChild(row);
+}
 
-  try {
-    const res = await fetch(`pages/${pageName}.html`);
-    if (!res.ok) throw new Error("페이지 로드 실패");
-    const htmlText = await res.text();
-    bodyBox.innerHTML = htmlText;
+function handleChatInputKeydown(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    executeSendMessage();
+  }
+}
 
-    const scripts = bodyBox.querySelectorAll("script");
-    scripts.forEach(oldScript => {
-      const newScript = document.createElement("script");
-      Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-      newScript.appendChild(document.createTextNode(oldScript.innerHTML));
-      oldScript.parentNode.replaceChild(newScript, oldScript);
-    });
-  } catch (err) {
-    bodyBox.innerHTML = `
-      <div class="text-center py-5 text-danger">
-        <i class="fa-solid fa-triangle-exclamation fa-2x mb-3"></i>
-        <div>화면을 불러오지 못했습니다.</div>
+// --------------------------------------------------------
+// 8. 멘션 팝업 자동완성
+// --------------------------------------------------------
+function bindMentionInputEvents() {
+  const input = document.getElementById("chatMessageInput");
+  if (!input) return;
+
+  input.addEventListener("input", function() {
+    const val = input.value;
+    const cursorPos = input.selectionStart;
+    const textBefore = val.slice(0, cursorPos);
+    const atIdx = textBefore.lastIndexOf("@");
+
+    if (atIdx !== -1) {
+      const query = textBefore.slice(atIdx + 1);
+      if (!query.includes(" ")) {
+        renderMentionPopup(query);
+        return;
+      }
+    }
+    closeMentionPopup();
+  });
+}
+
+function renderMentionPopup(query) {
+  const popup = document.getElementById("mentionPopupBox");
+  if (!popup) return;
+
+  const q = query.toLowerCase();
+  const matched = cachedMemberList.filter(m => {
+    const name = m.nickname || m.name || "";
+    return name.toLowerCase().includes(q);
+  }).slice(0, 5);
+
+  if (matched.length === 0) {
+    popup.style.display = "none";
+    return;
+  }
+
+  popup.innerHTML = matched.map(m => {
+    const name = m.nickname || m.name || "";
+    const role = m.role || "일반";
+    return `
+      <div class="mention-item" onclick="insertMentionNickname('${escapeHtml(name)}')">
+        <span class="mention-name">@${escapeHtml(name)}</span>
+        <span class="badge bg-secondary ms-1" style="font-size:0.65rem;">${role}</span>
       </div>
     `;
-  }
+  }).join("");
+
+  popup.style.display = "block";
 }
 
-function closeModuleOverlay() {
+function insertMentionNickname(name) {
+  const input = document.getElementById("chatMessageInput");
+  if (!input) return;
+
+  const val = input.value;
+  const cursorPos = input.selectionStart;
+  const atIdx = val.slice(0, cursorPos).lastIndexOf("@");
+  input.value = val.slice(0, atIdx) + `@${name} ` + val.slice(cursorPos);
+  closeMentionPopup();
+  input.focus();
+}
+
+function closeMentionPopup() {
+  const popup = document.getElementById("mentionPopupBox");
+  if (popup) popup.style.display = "none";
+}
+
+// --------------------------------------------------------
+// 9. 서브 모듈 화면 오버레이 로더
+// --------------------------------------------------------
+window.openModulePage = async function(pageName) {
+  closeAllDrawers();
+
+  const myRole = localStorage.getItem("guild_my_role") || "일반";
+  const adminRole = sessionStorage.getItem("admin_role") || "";
+  const isSuper = (adminRole === "super");
+  const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
+  const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
+
+  if (pageName === 'PageSettings' && !isAdmin) {
+    return showKakaoToast("설정 페이지는 관리자만 접근할 수 있습니다.", "⚠️");
+  }
+  if (pageName === 'PageFinance' && !isAdmin) {
+    return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
+  }
+  if (pageName === 'PageRegister' && !isElite) {
+    return showKakaoToast("보스참여등록은 정예 이상만 접근할 수 있습니다.", "⚠️");
+  }
+
   const overlay = document.getElementById("moduleOverlay");
-  const bodyBox = document.getElementById("overlayBodyContent");
-  if (overlay) overlay.style.display = "none";
-  if (bodyBox) bodyBox.innerHTML = "";
-}
+  const body = document.getElementById("overlayBodyContent");
+  const navTitle = document.getElementById("overlayNavTitle");
 
-function initThemeFromStorage() {
-  const saved = localStorage.getItem("guild_theme_mode") || "dark";
-  if (saved === "light") {
-    document.documentElement.classList.add("theme-light");
-    document.documentElement.classList.remove("theme-dark");
-    document.body.classList.add("theme-light");
-    document.body.classList.remove("theme-dark");
-  } else {
-    document.documentElement.classList.add("theme-dark");
-    document.documentElement.classList.remove("theme-light");
-    document.body.classList.add("theme-dark");
-    document.body.classList.remove("theme-light");
-  }
-}
+  const titleMap = {
+    "PageNotice": "공지사항",
+    "PageRegister": "보스참여등록",
+    "PageRecords": "보스참여자",
+    "PageWish": "분배희망신청",
+    "PageSettle": "정산내역",
+    "PageFinance": "길드비용현황",
+    "PageSettings": "시스템 설정"
+  };
 
-// --------------------------------------------------------
-// 초기 실행 이벤트
-// --------------------------------------------------------
-window.addEventListener("DOMContentLoaded", () => {
-  initGuildAppSession();
-  initChatRealtimeStream();
+  if (navTitle) navTitle.innerText = titleMap[pageName] || "기능 화면";
+  if (overlay) overlay.style.display = "flex";
+  if (body) body.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>화면을 불러오는 중...</div>`;
 
-  const textarea = document.getElementById("chatInputTextarea");
-  if (textarea) {
-    textarea.addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessageAction();
-      }
+  try {
+    let res = await fetch(`pages/${pageName}.html?_t=${Date.now()}`);
+    if (!res.ok) res = await fetch(`pages/${pageName}.htm?_t=${Date.now()}`);
+    if (!res.ok) throw new Error("로드 실패");
+    const html = await res.text();
+    if (body) body.innerHTML = html;
+
+    document.querySelectorAll(".module-dynamic-script").forEach(s => s.remove());
+    body.querySelectorAll("script").forEach(s => {
+      const newScript = document.createElement("script");
+      newScript.className = "module-dynamic-script";
+      if (s.src) newScript.src = s.src;
+      else newScript.textContent = s.textContent;
+      document.body.appendChild(newScript);
     });
+  } catch (err) {
+    if (body) body.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${err.message}</div>`;
   }
-});
+};
+
+window.closeModuleOverlay = function() {
+  const overlay = document.getElementById("moduleOverlay");
+  if (overlay) overlay.style.display = "none";
+};
+
+// --------------------------------------------------------
+// 10. 대화 검색 및 기타 유틸
+// --------------------------------------------------------
+function toggleChatSearchBox(isOpen) {
+  const box = document.getElementById("chatSearchArea");
+  if (!box) return;
+  box.style.display = isOpen ? "flex" : "none";
+  if (isOpen) {
+    const input = document.getElementById("chatSearchInput");
+    if (input) input.focus();
+  }
+}
+
+function onChatSearchInput(query) {
+  const q = (query || "").toLowerCase().trim();
+  const rows = document.querySelectorAll("#chatMessagesView .chat-row");
+  rows.forEach(r => {
+    if (!q) {
+      r.style.display = "flex";
+      return;
+    }
+    const txt = r.innerText.toLowerCase();
+    r.style.display = txt.includes(q) ? "flex" : "none";
+  });
+}
+
+function setupPwaInstallation() {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
+}
+
+async function cleanupOldChatsBackground() {
+  try {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    await apiRequest(`guild_chats?created_at=lt.${sevenDaysAgo}`, "DELETE");
+  } catch (e) {}
+}
+
+window.addEventListener("DOMContentLoaded", initApp);
