@@ -16,7 +16,8 @@
     --pm-search-bg: #f4f5f7;
     --pm-search-border: #e2e8f0;
     --pm-search-input: #191919;
-    --pm-row-hover: #f8fafc;
+    --pm-row-hover: #eef2f6;
+    --pm-row-hover-border: #cbd5e1;
     --pm-avatar-bg: #f1f5f9;
     --pm-avatar-border: #cbd5e1;
     --pm-btn-bg: #ffffff;
@@ -45,7 +46,8 @@
     --pm-search-bg: #262d37;
     --pm-search-border: #374151;
     --pm-search-input: #f3f4f6;
-    --pm-row-hover: #262d37;
+    --pm-row-hover: #222b37;
+    --pm-row-hover-border: #334155;
     --pm-avatar-bg: #1e2530;
     --pm-avatar-border: #374151;
     --pm-btn-bg: #262d37;
@@ -176,18 +178,23 @@
   .members-scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   body.theme-dark .members-scroll-area::-webkit-scrollbar-thumb { background: #374151; }
 
-  /* 👥 길드원 프로필 행 (가로폭 최적화 & 뱃지 잘림 원천 차단) */
+  /* 👥 길드원 프로필 행 (호버 효과 고대비 시인성 극대화) */
   .member-profile-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 7px 10px;
+    padding: 8px 10px;
+    margin: 2px 6px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.12s ease;
-    gap: 4px;
+    transition: all 0.15s ease;
+    gap: 6px;
+    border: 1px solid transparent;
   }
   .member-profile-row:hover {
     background: var(--pm-row-hover);
+    border-color: var(--pm-row-hover-border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   }
 
   .member-left-info {
@@ -386,7 +393,7 @@
       <button type="button" class="btn-member-tool-icon btn-gray-icon" id="pmBtnRefresh" title="새로고침" onclick="pmHandleRefresh()">
         <i class="fa-solid fa-arrows-rotate"></i>
       </button>
-      <button type="button" class="btn-member-tool-icon btn-gray-icon" title="닫기" onclick="if(typeof toggleMembersDrawer==='function') toggleMembersDrawer(false);">
+      <button type="button" class="btn-member-tool-icon btn-gray-icon" title="닫기" onclick="if(typeof toggleMembersDrawer==='function') toggleMembersDrawer(false); if(typeof closeModuleOverlay==='function') closeModuleOverlay();">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
@@ -454,7 +461,7 @@
     <h6 class="fw-bold mb-1" style="font-size: 0.95rem; color: var(--pm-modal-text);"><i class="fa-solid fa-key text-warning me-1"></i>비밀번호 변경</h6>
     <p class="text-secondary small mb-3" id="pmPinNotice" style="font-size: 0.72rem;">기존 비밀번호와 새 비밀번호를 입력하세요.</p>
     
-    <input type="password" id="pmOldPin" class="text-center" placeholder="기존 비밀번호 (초기값 0000)" maxlength="16" inputmode="numeric">
+    <input type="password" id="pmOldPin" class="text-center" placeholder="기존 비밀번호 (초기값 000000)" maxlength="16" inputmode="numeric">
     <input type="password" id="pmNewPin" class="text-center" placeholder="새 비밀번호 (숫자 6자리 이상)" maxlength="16" inputmode="numeric">
 
     <div class="d-flex gap-2 mt-2">
@@ -482,14 +489,18 @@
     if (!container) return;
 
     try {
-      var data = await apiRequest("guild_members?select=*");
+      var curGid = localStorage.getItem("current_guild_id");
+      var endpoint = curGid ? ("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=*") : "guild_members?select=*";
+      var data = await apiRequest(endpoint);
       pmMemberListData = data || [];
 
       pmMemberListData.sort(function(a, b) {
         var pA = pmGetRolePriority(a.role);
         var pB = pmGetRolePriority(b.role);
         if (pA !== pB) return pA - pB;
-        return (a.name || '').localeCompare(b.name || '', 'ko');
+        var nA = a.nickname || a.name || "";
+        var nB = b.nickname || b.name || "";
+        return nA.localeCompare(nB, 'ko');
       });
 
       var countElem = document.getElementById("pmMemberCountText");
@@ -519,6 +530,7 @@
     var myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
 
     container.innerHTML = list.map(function(m) {
+      var memberNick = m.nickname || m.name || "길드원";
       var roleStr = String(m.role || '일반').trim();
       var roleTagClass = "role-tag-normal";
       var avatarClass = "normal";
@@ -534,11 +546,11 @@
         avatarClass = "elite";
       }
 
-      var isMe = (m.name === myNick);
-      var displayAvatar = isMe ? myAvatar : (m.avatar || (m.name ? m.name.charAt(0) : '👤'));
+      var isMe = (memberNick === myNick);
+      var displayAvatar = isMe ? myAvatar : (m.avatar || (memberNick ? memberNick.charAt(0) : '👤'));
       var displayClass = isMe ? myClass : (m.job_class || '직업 미지정');
 
-      var safeName = escapeHtml(m.name);
+      var safeName = escapeHtml(memberNick);
       var safeClass = escapeHtml(displayClass);
 
       return '<div class="member-profile-row">' +
@@ -568,7 +580,10 @@
   function pmFilterMemberList() {
     var q = document.getElementById("pmSearchInput").value.trim().toLowerCase();
     var filtered = pmMemberListData.filter(function(m) {
-      return (m.name || '').toLowerCase().includes(q) || (m.role || '').toLowerCase().includes(q) || (m.job_class || '').toLowerCase().includes(q);
+      var n = (m.nickname || m.name || "").toLowerCase();
+      var r = (m.role || "").toLowerCase();
+      var c = (m.job_class || "").toLowerCase();
+      return n.includes(q) || r.includes(q) || c.includes(q);
     });
     pmRenderMemberList(filtered);
   }
@@ -600,12 +615,15 @@
     var role = document.getElementById("pmNewRole").value;
 
     if (!name) return (typeof showKakaoToast === 'function') ? showKakaoToast("닉네임을 입력하세요!", "⚠️") : alert("닉네임 입력 필요");
-    if (pmMemberListData.some(function(m) { return m.name === name; })) {
+    if (pmMemberListData.some(function(m) { return (m.nickname || m.name) === name; })) {
       return (typeof showKakaoToast === 'function') ? showKakaoToast("이미 존재하는 닉네임입니다!", "⚠️") : alert("이미 존재하는 닉네임");
     }
 
     try {
-      await apiRequest("guild_members", "POST", [{ name: name, role: role, pin: "0000" }]);
+      var curGid = localStorage.getItem("current_guild_id");
+      var newMember = { nickname: name, name: name, role: role, pin: "000000" };
+      if (curGid) newMember.guild_id = curGid;
+      await apiRequest("guild_members", "POST", [newMember]);
       if (typeof showKakaoToast === 'function') showKakaoToast("[" + name + "] 길드원 등록 완료!", "🎉");
       pmCloseAddModal();
       await pmLoadMemberList();
@@ -636,9 +654,9 @@
 
     try {
       if (oldName !== newName) {
-        await apiRequest("rpc/update_member_nickname", "POST", { old_name: oldName, new_name: newName });
+        try { await apiRequest("rpc/update_member_nickname", "POST", { old_name: oldName, new_name: newName }); } catch(e) {}
       }
-      await apiRequest("guild_members?id=eq." + id, "PATCH", { role: role, name: newName });
+      await apiRequest("guild_members?id=eq." + id, "PATCH", { role: role, nickname: newName, name: newName });
 
       if (typeof showKakaoToast === 'function') showKakaoToast("[" + newName + "] 정보 수정 완료!", "✅");
       pmCloseEditModal();
@@ -665,10 +683,11 @@
     if (!target) return;
 
     pmTargetPinMember = target;
-    var isDefault = (!target.pin || target.pin === "0000");
+    var tNick = target.nickname || target.name;
+    var isDefault = (!target.pin || target.pin === "0000" || target.pin === "000000");
     document.getElementById("pmPinNotice").innerText = isDefault
-      ? "[" + target.name + "] 초기 상태입니다. 기존 비번에 0000을 입력하세요."
-      : "[" + target.name + "] 현재 비밀번호와 새 비밀번호를 입력하세요.";
+      ? "[" + tNick + "] 초기 상태입니다. 기존 비번에 000000을 입력하세요."
+      : "[" + tNick + "] 현재 비밀번호와 새 비밀번호를 입력하세요.";
 
     document.getElementById("pmOldPin").value = "";
     document.getElementById("pmNewPin").value = "";
@@ -685,10 +704,14 @@
 
     var oldPin = document.getElementById("pmOldPin").value.trim();
     var newPin = document.getElementById("pmNewPin").value.trim();
-    var currentPin = (pmTargetPinMember.pin || "0000").trim();
+    var currentPin = (pmTargetPinMember.pin || "000000").trim();
 
-    if (oldPin !== currentPin) {
-      return (typeof showKakaoToast === 'function') ? showKakaoToast("기존 비밀번호 불일치 (기본값: 0000)", "❌") : alert("비밀번호 불일치");
+    var isPinMatch = (oldPin === currentPin) || 
+                     (currentPin === "0000" && oldPin === "000000") || 
+                     (currentPin === "000000" && oldPin === "0000");
+
+    if (!isPinMatch) {
+      return (typeof showKakaoToast === 'function') ? showKakaoToast("기존 비밀번호 불일치 (초기값: 000000)", "❌") : alert("비밀번호 불일치");
     }
     if (!/^\d+$/.test(newPin) || newPin.length < 6) {
       return (typeof showKakaoToast === 'function') ? showKakaoToast("숫자 6자리 이상 입력하세요.", "⚠️") : alert("6자리 이상 숫자");
@@ -699,7 +722,8 @@
 
     try {
       await apiRequest("guild_members?id=eq." + pmTargetPinMember.id, "PATCH", { pin: newPin });
-      if (typeof showKakaoToast === 'function') showKakaoToast("[" + pmTargetPinMember.name + "] 비밀번호 변경 완료!", "🎉");
+      var tNick = pmTargetPinMember.nickname || pmTargetPinMember.name;
+      if (typeof showKakaoToast === 'function') showKakaoToast("[" + tNick + "] 비밀번호 변경 완료!", "🎉");
       pmClosePinModal();
       await pmLoadMemberList();
     } catch (e) {
