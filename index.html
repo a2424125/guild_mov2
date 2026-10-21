@@ -232,36 +232,38 @@
     }
   </style>
 </head>
+
 <body class="theme-dark in-main-tabs">
 
-  <!-- 공통 백드롭 -->
+  <!-- 서랍 딤 배경 오버레이 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
 
-  <!-- 1. 햄버거 메뉴 서랍 (260px) -->
+  <!-- ========================================================
+       [햄버거 메뉴 서랍 (메뉴)]
+       ======================================================== -->
   <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
         <i class="fa-solid fa-shield-halved text-primary"></i>
-        <span id="menuGuildNameText">길드 메뉴</span>
+        <span id="menuGuildNameText">길드 메신저</span>
       </div>
-      <button type="button" class="sidebar-close-btn" onclick="toggleMenuDrawer(false)">
+      <button type="button" class="sidebar-close-btn" onclick="toggleMenuDrawer(false)" title="닫기">
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
 
     <ul class="sidebar-menu-list">
-      <!-- 길드 대화방 안에서만 노출되는 게임 전용 기능 메뉴 -->
       <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageNotice')">
         <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
       </li>
-      <li class="sidebar-menu-item guild-room-feature-item" onclick="toggleMenuDrawer(false); toggleMembersDrawer(true);">
+      <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageMembers')">
         <i class="fa-solid fa-users text-primary"></i><span>길드원목록</span>
       </li>
       <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageRegister')">
         <i class="fa-solid fa-crosshairs text-danger"></i><span>보스참여등록</span>
       </li>
       <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageRecords')">
-        <i class="fa-solid fa-scroll text-warning"></i><span>보스참여자</span>
+        <i class="fa-solid fa-scroll text-warning"></i><span>보스참여자목록</span>
       </li>
       <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageWish')">
         <i class="fa-solid fa-gift" style="color: #f472b6;"></i><span>분배희망신청</span>
@@ -269,61 +271,71 @@
       <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageSettle')">
         <i class="fa-solid fa-coins text-success"></i><span>정산내역</span>
       </li>
-      <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageFinance')">
-        <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
-      </li>
-      <li class="sidebar-menu-item guild-room-feature-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
-        <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
-      </li>
-
-      <!-- 메인 화면과 대화방 모두에서 접근 가능한 공통 설정 메뉴 -->
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
-        <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); openLicenseRequestModal();">
-        <i class="fa-solid fa-paper-plane text-primary"></i><span>라이선스 신청</span>
+        <i class="fa-solid fa-gear text-secondary"></i><span>환경설정</span>
       </li>
     </ul>
 
     <div class="sidebar-footer">
-      <div class="user-profile-badge" onclick="openProfileEditModal()">
-        <div class="user-avatar" id="sidebarAvatarIcon">👤</div>
-        <div>
-          <div class="user-name-text" id="sidebarUserNickName">로그인 필요</div>
-          <div class="user-sub-class" id="sidebarUserClassText">직업 설정하기</div>
+      <div class="user-profile-badge" onclick="openProfileEditModal()" title="프로필 및 직업 변경">
+        <div class="user-avatar" id="drawerMyAvatarIcon">👤</div>
+        <div style="min-width: 0;">
+          <div class="user-name-text" id="drawerMyNickText">로그인 필요</div>
+          <div class="user-sub-class" id="drawerMyClassText">직업을 설정하세요</div>
         </div>
       </div>
-      <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size: 0.7rem;" onclick="handleUserLogout()">
+      <button type="button" class="btn btn-outline-danger btn-sm py-1 px-2" style="font-size: 0.72rem;" onclick="handleUserLogout()">
         로그아웃
       </button>
     </div>
   </aside>
 
-  <!-- 2. 길드원 목록 서랍 -->
+  <!-- ========================================================
+       [길드원 서랍]
+       ======================================================== -->
   <aside id="membersSidebarDrawer" class="app-members-drawer">
-    <div id="drawerMembersContainer" style="height: 100%; display: flex; flex-direction: column;">
-      <div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>길드원을 불러오는 중...</div>
-    </div>
-  </aside>
-
-  <!-- 4. 보스타임 전용 서랍 -->
-  <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header-bar">
       <div class="boss-drawer-title-box">
-        <i class="fa-regular fa-clock"></i>
-        <span>보스타임 현황</span>
+        <i class="fa-solid fa-users text-primary"></i>
+        <span>길드원 (<span id="drawerMemberCountVal">0</span>)</span>
       </div>
       <div class="boss-header-tools-box">
-        <button type="button" class="btn-tool-icon" id="btnRefreshBossDrawer" title="새로고침" onclick="handleBossDrawerRefresh()">
+        <button type="button" class="btn-tool-icon" onclick="loadGuildMembersData()" title="새로고침">
           <i class="fa-solid fa-arrows-rotate"></i>
         </button>
-        <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleBossDrawer(false)">
+        <button type="button" class="btn-tool-icon" onclick="toggleMembersDrawer(false)" title="닫기">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
     </div>
-    <div id="drawerBossListArea" style="flex: 1; overflow-y: auto;">
-      <div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>보스타임을 불러오는 중...</div>
+    <div class="sidebar-menu-list" id="drawerMemberListContainer" style="padding: 10px 8px;">
+      <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>길드원을 불러오는 중...</div>
+    </div>
+  </aside>
+
+  <!-- ========================================================
+       [보스타이머 서랍]
+       ======================================================== -->
+  <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
+    <div class="boss-drawer-header-bar">
+      <div class="boss-drawer-title-box">
+        <i class="fa-solid fa-clock-rotate-left"></i>
+        <span>실시간 보스타이머</span>
+      </div>
+      <div class="boss-header-tools-box">
+        <button type="button" class="btn-tool-icon" id="btnRefreshBossDrawer" onclick="loadBossTimersList()" title="새로고침">
+          <i class="fa-solid fa-arrows-rotate"></i>
+        </button>
+        <button type="button" class="btn-tool-icon" id="btnShareBossBrief" onclick="postBossBriefingToChat()" title="대화창에 전송">
+          <i class="fa-solid fa-share-nodes"></i>
+        </button>
+        <button type="button" class="btn-tool-icon" onclick="toggleBossDrawer(false)" title="닫기">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+    <div class="sidebar-menu-list" id="drawerBossListContainer" style="padding: 8px 6px;">
+      <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>보스 정보를 불러오는 중...</div>
     </div>
   </aside>
 
@@ -333,14 +345,18 @@
        ======================================================== -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex;">
     
-    <!-- 메인 탭 상단 헤더 -->
+    <!-- 메인 탭 상단 헤더: 길드 전환(스위처) 연동 -->
     <header class="kakao-chat-header">
-      <div class="header-left-area">
+      <div class="header-left-area" onclick="openGuildSwitcherModal()" style="cursor: pointer;" title="길드 전환 / 추가">
         <div class="room-avatar-circle" style="background: rgba(2, 132, 199, 0.15); color: #0284c7;">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div class="room-info-box">
-          <div class="room-title-text" id="mainTabHeaderTitle">대화방 목록</div>
+          <div class="d-flex align-items-center gap-1">
+            <span class="badge bg-warning text-dark px-1 py-0 fw-bold" id="mainTabGameBadge" style="font-size:0.65rem; border-radius: 4px; display: none;">게임</span>
+            <div class="room-title-text" id="mainTabHeaderTitle">대화방 목록</div>
+            <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.65rem; margin-left: 2px;"></i>
+          </div>
           <div class="room-count-text" id="mainTabHeaderSubtitle">길드 메신저</div>
         </div>
       </div>
@@ -418,40 +434,40 @@
           <span class="more-menu-label">보스참여자</span>
         </div>
         <div class="more-menu-item" onclick="toggleBossDrawer(true)">
-          <i class="fa-solid fa-hourglass-half more-menu-icon text-warning"></i>
-          <span class="more-menu-label">보스타임</span>
+          <i class="fa-solid fa-clock-rotate-left more-menu-icon text-warning"></i>
+          <span class="more-menu-label">보스타이머</span>
         </div>
         <div class="more-menu-item" onclick="openModulePage('PageWish')">
-          <i class="fa-solid fa-gift more-menu-icon" style="color:#f472b6;"></i>
+          <i class="fa-solid fa-gift more-menu-icon" style="color: #f472b6;"></i>
           <span class="more-menu-label">분배희망</span>
         </div>
         <div class="more-menu-item" onclick="openModulePage('PageSettle')">
           <i class="fa-solid fa-coins more-menu-icon text-success"></i>
           <span class="more-menu-label">정산내역</span>
         </div>
-        <div class="more-menu-item" onclick="openModulePage('PageFinance')">
-          <i class="fa-solid fa-landmark more-menu-icon text-secondary"></i>
-          <span class="more-menu-label">길드비용</span>
+        <div class="more-menu-item" onclick="openModulePage('PageMembers')">
+          <i class="fa-solid fa-users more-menu-icon text-primary"></i>
+          <span class="more-menu-label">길드원관리</span>
         </div>
         <div class="more-menu-item" onclick="openModulePage('PageSettings')">
           <i class="fa-solid fa-gear more-menu-icon text-secondary"></i>
-          <span class="more-menu-label">설정</span>
+          <span class="more-menu-label">환경설정</span>
         </div>
       </div>
     </div>
 
-    <!-- 하단 3탭 네비게이션 바 -->
+    <!-- 카카오톡 정품 3탭 네비게이션 바 -->
     <nav class="kakao-bottom-tabbar">
-      <div class="kakao-tab-item" id="navTabFriends" onclick="switchMainBottomTab('friends')">
+      <div class="kakao-tab-item" id="tabItemFriends" onclick="switchMainBottomTab('friends')">
         <i class="fa-solid fa-user"></i>
         <span>친구</span>
       </div>
-      <div class="kakao-tab-item active" id="navTabChats" onclick="switchMainBottomTab('chats')">
+      <div class="kakao-tab-item active" id="tabItemChats" onclick="switchMainBottomTab('chats')">
         <i class="fa-solid fa-comment"></i>
         <span>채팅</span>
-        <span class="kakao-tab-badge" id="navUnreadTotalBadge" style="display: none;">0</span>
+        <span class="kakao-tab-badge" id="tabTotalUnreadBadge" style="display: none;">0</span>
       </div>
-      <div class="kakao-tab-item" id="navTabMore" onclick="switchMainBottomTab('more')">
+      <div class="kakao-tab-item" id="tabItemMore" onclick="switchMainBottomTab('more')">
         <i class="fa-solid fa-ellipsis"></i>
         <span>더보기</span>
       </div>
@@ -460,92 +476,102 @@
 
 
   <!-- ========================================================
-       [VIEW 2] 개별 대화방 화면 (시그니처 파스텔 블루 테마 100% 동일)
+       [VIEW 2] 개별 대화방 화면 (기존 카카오톡 대화방 인터페이스)
        ======================================================== -->
   <div id="chatRoomView" class="app-main-layout" style="display: none;">
+    
+    <!-- 카카오톡 헤더 (대화방 전용) -->
     <header class="kakao-chat-header">
       <div class="header-left-area">
-        <!-- 메인 탭(대화방 목록)으로 복귀하는 뒤로가기 버튼 -->
-        <button type="button" class="btn-kakao-menu" title="대화방 목록으로" onclick="exitChatRoomToMain()">
+        <!-- 메인 3탭 화면으로 복귀 버튼 (뒤로가기) -->
+        <button type="button" class="btn-kakao-menu text-primary fw-bold me-1" onclick="leaveChatRoomToMainTabs()" title="대화방 목록으로 나가기">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <button type="button" class="btn-kakao-menu" title="길드 메뉴 열기" onclick="toggleMenuDrawer(true)">
+        <button type="button" class="btn-kakao-menu" onclick="toggleMenuDrawer(true)" title="메뉴">
           <i class="fa-solid fa-bars"></i>
         </button>
         <div class="room-avatar-circle" id="chatRoomAvatar">
           <i class="fa-solid fa-users"></i>
         </div>
         <div class="room-info-box">
-          <div class="room-title-text" id="chatRoomTitle">길드 대화방</div>
-          <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)">
-            <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
+          <div class="room-title-text" id="chatRoomTitle">전체 대화방</div>
+          <div class="room-count-text" id="roomMemberCountText" onclick="toggleMembersDrawer(true)" title="길드원 목록 보기">
+            0
           </div>
         </div>
       </div>
 
-      <!-- 상단 우측 헤더 도구 (기존과 100% 동일) -->
       <div class="header-right-tools">
-        <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
-          <i class="fa-solid fa-download"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="보스참여등록" onclick="openModulePage('PageRegister')">
+        <!-- 파일 첨부 -->
+        <button type="button" class="btn-kakao-head" onclick="triggerFileUploadAction()" title="사진/파일 공유">
           <i class="fa-solid fa-paperclip"></i>
         </button>
-        <button type="button" class="btn-kakao-head" id="btnToggleChatSearch" title="대화 검색" onclick="toggleChatSearchBar()">
+        <input type="file" id="kakaoHiddenFileInput" style="display:none;" accept="image/*" onchange="handleKakaoFileSelected(event)">
+
+        <!-- 대화 검색 토글 버튼 -->
+        <button type="button" class="btn-kakao-head" id="btnToggleChatSearch" onclick="toggleChatSearchBar()" title="대화 검색">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
-        <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
-          <i class="fa-regular fa-clock"></i>
+
+        <!-- 보스타이머 서랍 열기 -->
+        <button type="button" class="btn-kakao-head" onclick="toggleBossDrawer(true)" title="보스타이머">
+          <i class="fa-solid fa-clock-rotate-left"></i>
         </button>
-        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
-          <i class="fa-solid fa-user-group"></i>
+
+        <!-- 길드원 서랍 열기 -->
+        <button type="button" class="btn-kakao-head" onclick="toggleMembersDrawer(true)" title="길드원 서랍">
+          <i class="fa-solid fa-users"></i>
         </button>
       </div>
     </header>
 
-    <!-- 대화 검색 바 -->
-    <div id="chatSearchBarArea" class="chat-search-bar-wrap" style="display: none;">
+    <!-- 슬라이드 대화 검색창 바 -->
+    <div id="chatSearchBarWrap" class="chat-search-bar-wrap" style="display: none;">
       <div class="chat-search-input-box">
         <i class="fa-solid fa-magnifying-glass search-bar-icon"></i>
-        <input type="text" id="chatSearchKeywordInput" class="chat-search-input" placeholder="대화 검색 (최근 7일간 대화)" oninput="handleSearchChatMessages(this.value)">
-        <button type="button" class="btn-search-clear" onclick="clearChatSearch()" title="검색어 지우기">
-          <i class="fa-solid fa-xmark"></i>
+        <input type="text" id="chatSearchKeywordInput" class="chat-search-input" placeholder="대화 내용 검색..." autocomplete="off">
+        <button type="button" class="btn-search-clear" onclick="clearChatSearchInput()" title="검색어 지우기">
+          <i class="fa-solid fa-circle-xmark"></i>
         </button>
       </div>
       <div class="chat-search-info-row">
-        <span class="search-retention-text"><i class="fa-regular fa-clock me-1"></i>일주일(7일) 이전 메시지는 확인하실 수 없습니다.</span>
-        <span class="search-match-count" id="chatSearchMatchCount"></span>
+        <span class="search-retention-text"><i class="fa-solid fa-circle-info me-1"></i>과거 1주일간의 대화에서 검색됩니다</span>
+        <span class="search-match-count" id="searchMatchCountText"></span>
       </div>
     </div>
 
-    <!-- 상단 공지 배너 -->
-    <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
-      <div class="d-flex align-items-center" style="min-width: 0 !important; flex: 1;">
+    <!-- 공지사항 고정 배너 -->
+    <div class="kakao-notice-banner" id="kakaoNoticeBanner" onclick="openModulePage('PageNotice')">
+      <div class="d-flex align-items-center" style="min-width: 0; flex: 1;">
         <i class="fa-solid fa-bullhorn notice-icon-part"></i>
-        <div class="notice-text-content" id="kakaoTopNoticeText">공지사항을 불러오는 중...</div>
+        <span class="notice-text-content" id="kakaoNoticeText">공지사항을 불러오는 중...</span>
       </div>
-      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.72rem;"></i>
+      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.75rem; flex-shrink: 0; margin-left: 6px;"></i>
     </div>
 
-    <!-- 대화 메시지 뷰 -->
-    <div class="chat-messages-container" id="chatMessagesView">
-      <div class="text-center my-1">
-        <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
+    <!-- 실시간 채팅 메시지 스크롤 영역 -->
+    <main class="chat-messages-container" id="chatMessagesView">
+      <div class="text-center my-4 text-secondary small">
+        <i class="fa-solid fa-spinner fa-spin me-2"></i>메시지를 불러오는 중...
       </div>
-    </div>
+    </main>
 
-    <!-- 멘션 팝업 -->
-    <div id="mentionPopupBox" class="mention-popup-container"></div>
-
-    <!-- 메시지 입력창 -->
+    <!-- 카카오톡 하단 메시지 입력창 -->
     <footer class="kakao-input-area">
-      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
+      <textarea id="chatInputTextarea" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" rows="2"></textarea>
       
-      <div class="input-bottom-tools justify-content-end">
-        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
+      <div class="input-bottom-tools">
+        <div class="input-tool-icons">
+          <i class="fa-regular fa-face-smile" onclick="insertEmojiToInput('😊')" title="이모티콘"></i>
+          <i class="fa-solid fa-paperclip" onclick="triggerFileUploadAction()" title="사진/파일 공유"></i>
+        </div>
+        <button type="button" class="btn-kakao-send" id="btnChatSend" onclick="sendMessageAction()">
           전송
         </button>
       </div>
+
+      <!-- 멘션(@) 팝업 레이어 -->
+      <div id="mentionPopup" class="mention-popup-container"></div>
     </footer>
 
     <!-- 모듈 화면 오버레이 -->
@@ -680,7 +706,7 @@
     </div>
   </div>
 
-  <!-- 4. 길드 로그인 모달 (최초 구매자 길드 시작 & 신청하기 통합) -->
+  <!-- 4. 길드 로그인 모달 (초대코드 참여 & 길드 개설 & 신청 통합) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
@@ -708,8 +734,11 @@
       </button>
       <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 설정에서 가능합니다.</div>
 
-      <!-- 최초 구매자용: 라이선스 키로 길드 시작하기 & 라이선스 신청하기 통합 동선 -->
+      <!-- 길드원용 초대코드 참여 & 길드장용 라이선스 시작 동선 -->
       <div class="mt-2 pt-2 border-top text-center" style="border-color: rgba(148, 163, 184, 0.2) !important;">
+        <button type="button" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 mb-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openJoinGuildModal()">
+          <i class="fa-solid fa-user-plus me-1"></i>초대 코드로 길드 참여하기
+        </button>
         <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold py-2 mb-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openActivateGuildFromLogin()">
           <i class="fa-solid fa-key me-1"></i>라이선스 키로 길드 시작하기
         </button>
@@ -781,15 +810,113 @@
     </div>
   </div>
 
-  <!-- 라이선스 신청 & 길드 활성화 단독 제어 스크립트 (캐시 오류 원천 차단) -->
+  <!-- 7. 카카오톡 감성 로그아웃 확인 모달 -->
+  <div id="modalConfirmLogout" class="kakao-modal-backdrop" style="display: none; z-index: 1200;">
+    <div class="kakao-modal-card" style="max-width: 310px;">
+      <div style="width: 48px; height: 48px; border-radius: 15px; background: rgba(239, 68, 68, 0.15); color: #ef4444; display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 12px;">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </div>
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">로그아웃</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.74rem; line-height: 1.4;">
+        정말로 로그아웃하시겠습니까?<br>대화방 연결이 해제됩니다.
+      </p>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeConfirmLogoutModal()">
+          취소
+        </button>
+        <button type="button" class="btn btn-danger btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="confirmUserLogoutAction()">
+          로그아웃
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. 길드원용: 초대 코드로 길드 참여하기 모달 -->
+  <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 1060;">
+    <div class="kakao-modal-card" style="max-width: 340px;">
+      <div style="width: 46px; height: 46px; border-radius: 14px; background: rgba(59, 130, 246, 0.15); color: #2563eb; display: inline-flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 10px;">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">초대 코드로 길드 참여</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">길드장에게 받은 초대 코드를 입력하여<br>해당 게임 길드에 참여하세요.</p>
+      
+      <!-- 1단계: 초대 코드 입력 -->
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">길드 초대 코드</label>
+        <div class="d-flex gap-2">
+          <input type="text" id="joinInviteCodeInput" placeholder="예: ECL-XXXX" style="height: 36px; margin-bottom: 0; text-transform: uppercase;">
+          <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-bold" style="font-size:0.75rem; border-radius: 7px; white-space: nowrap;" onclick="verifyGuildInviteCode()">
+            확인
+          </button>
+        </div>
+      </div>
+
+      <!-- 코드 확인 후 나타나는 길드 카드 & 가입 폼 -->
+      <div id="joinGuildDetailsArea" style="display: none; text-align: left;">
+        <div class="p-2 mb-2 rounded border" style="background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2) !important;">
+          <div class="fw-bold text-primary" id="joinFoundGameName" style="font-size: 0.75rem;">[게임명]</div>
+          <div class="fw-bold text-dark" id="joinFoundGuildName" style="font-size: 0.92rem;">길드명</div>
+        </div>
+
+        <div style="margin-bottom: 8px;">
+          <label class="text-secondary small mb-1" style="font-size: 0.68rem;">길드 입장 비밀번호 (길드장이 설정한 암호)</label>
+          <input type="password" id="joinGuildPasswordInput" placeholder="입장 비밀번호 입력" style="height: 36px; margin-bottom: 0;">
+        </div>
+
+        <div style="margin-bottom: 8px;">
+          <label class="text-secondary small mb-1" style="font-size: 0.68rem;">본인 닉네임</label>
+          <input type="text" id="joinMemberNickInput" placeholder="게임 내 닉네임" style="height: 36px; margin-bottom: 0;">
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label class="text-secondary small mb-1" style="font-size: 0.68rem;">개인 비밀번호(PIN) 설정</label>
+          <input type="password" id="joinMemberPinInput" placeholder="4자리 숫자 (로그인용)" maxlength="10" style="height: 36px; margin-bottom: 0;">
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeJoinGuildModal()">
+          취소
+        </button>
+        <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold py-2" id="btnSubmitJoinGuild" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeJoinGuild()" disabled>
+          길드 참여 완료
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9. 다중 길드 전환(스위처) 팝업 모달 -->
+  <div id="modalGuildSwitcher" class="kakao-modal-backdrop" style="display: none; z-index: 1050;">
+    <div class="kakao-modal-card" style="max-width: 330px;">
+      <div class="d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom">
+        <h6 class="fw-bold mb-0" style="font-size: 0.92rem;"><i class="fa-solid fa-layer-group text-primary me-2"></i>참여 중인 길드</h6>
+        <button type="button" class="btn-close" style="font-size:0.7rem;" onclick="closeGuildSwitcherModal()"></button>
+      </div>
+      <div id="guildSwitcherList" style="max-height: 220px; overflow-y: auto; text-align: left; margin-bottom: 12px;">
+        <!-- 동적으로 참여한 길드 목록 렌더링 -->
+      </div>
+      <div class="d-flex flex-column gap-2">
+        <button type="button" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2" style="font-size:0.78rem; border-radius:8px;" onclick="openJoinGuildFromSwitcher()">
+          <i class="fa-solid fa-plus me-1"></i>새 길드 참여하기 (초대 코드)
+        </button>
+        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold py-2" style="font-size:0.78rem; border-radius:8px;" onclick="openActivateGuildFromSwitcher()">
+          <i class="fa-solid fa-key me-1"></i>라이선스 키로 길드 신규 개설
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ========================================================
+       [인라인 모달 제어 스크립트]
+       ======================================================== -->
   <script>
     function openLicenseRequestModal() {
-      var loginModal = document.getElementById("guildLoginModal");
-      if (loginModal) loginModal.style.display = "none";
       var modal = document.getElementById("modalLicenseRequest");
       if (modal) modal.style.display = "flex";
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "none";
     }
-
     function closeLicenseRequestModal() {
       var modal = document.getElementById("modalLicenseRequest");
       if (modal) modal.style.display = "none";
@@ -800,26 +927,18 @@
     function openActivateGuildFromLogin() {
       var loginModal = document.getElementById("guildLoginModal");
       if (loginModal) loginModal.style.display = "none";
-      var actModal = document.getElementById("modalActivateGuild");
-      if (actModal) actModal.style.display = "flex";
-    }
-
-    function closeActivateGuildModal() {
-      var actModal = document.getElementById("modalActivateGuild");
-      if (actModal) actModal.style.display = "none";
-      var loginModal = document.getElementById("guildLoginModal");
-      if (loginModal) loginModal.style.display = "flex";
+      if (typeof openActivateGuildModal === 'function') {
+        openActivateGuildModal();
+      } else {
+        var modal = document.getElementById("modalActivateGuild");
+        if (modal) modal.style.display = "flex";
+      }
     }
 
     function closeLicenseSuccessModal() {
-      var successModal = document.getElementById("modalLicenseSuccess");
-      if (successModal) successModal.style.display = "none";
-      if (localStorage.getItem("current_guild_id")) {
-        location.reload();
-      } else {
-        var loginModal = document.getElementById("guildLoginModal");
-        if (loginModal) loginModal.style.display = "flex";
-      }
+      var modal = document.getElementById("modalLicenseSuccess");
+      if (modal) modal.style.display = "none";
+      location.reload();
     }
 
     async function submitLicenseRequest() {
@@ -840,7 +959,7 @@
         return;
       }
       if (!applicantNick) {
-        alert("신청자(길드장) 닉네임을 입력해 주세요.");
+        alert("신청자 닉네임을 입력해 주세요.");
         document.getElementById("reqApplicantNickInput").focus();
         return;
       }
@@ -886,12 +1005,11 @@
           successModal.style.display = "flex";
         }
       } catch (err) {
-        console.error("License request failed:", err);
         alert("신청 접수 중 오류가 발생했습니다: " + (err.message || "다시 시도해 주세요."));
       }
     }
 
-    // [핵심 버그 완벽 해결]: 라이선스 키로 길드 시작하기 실행 함수 내장
+    // [핵심 버그 해결 & 초대코드 연동]: 라이선스 키로 길드 시작하기 실행 함수
     async function executeActivateGuild() {
       var keyInput = (document.getElementById("actLicenseKeyInput").value || "").trim().toUpperCase();
       var pinInput = (document.getElementById("actMasterPinInput").value || "").trim();
@@ -938,26 +1056,21 @@
         var masterNick = lic.applicant_nickname || "길드장";
         var guildId = lic.guild_id;
 
-        // 2. 길드원(guild_members) 테이블에 길드장 등록
-        var memRes = await window.supabaseClient.from('guild_members').insert([{
-          guild_id: guildId,
-          nickname: masterNick,
+        // 2. 길드원(guild_members) 테이블에 길드장 등록 (DB 정규 컬럼 준수)
+        var memberPayload = {
           name: masterNick,
-          class_name: "👑 길드장",
           role: "길드장",
-          pin: pinInput,
-          avatar_icon: "👑"
-        }]);
+          pin: pinInput
+        };
+        if (guildId) memberPayload.guild_id = guildId;
 
+        var memRes = await window.supabaseClient.from('guild_members').insert([memberPayload]);
         if (memRes.error && !String(memRes.error.message || '').includes('duplicate')) {
-          // name 컬럼 누락 방어
+          // guild_id 미존재 컬럼 스키마 방어: name, role, pin 만 인서트
           await window.supabaseClient.from('guild_members').insert([{
-            guild_id: guildId,
-            nickname: masterNick,
-            class_name: "👑 길드장",
+            name: masterNick,
             role: "길드장",
-            pin: pinInput,
-            avatar_icon: "👑"
+            pin: pinInput
           }]);
         }
 
@@ -977,7 +1090,7 @@
           }]);
         }
 
-        // 4. 로컬 스토리지에 로그인 세션 자동 설정
+        // 4. 로컬 스토리지에 로그인 세션 및 참여 길드 목록 자동 등록
         localStorage.setItem("current_guild_id", guildId);
         localStorage.setItem("guild_my_nickname", masterNick);
         localStorage.setItem("guild_my_pin", pinInput);
@@ -986,6 +1099,20 @@
         localStorage.setItem("guild_my_avatar", "👑");
         sessionStorage.setItem("admin_auth", "true");
         sessionStorage.setItem("admin_role", "admin");
+
+        // 참여한 길드 목록(my_joined_guilds) 영구 등록
+        var joinedGuilds = [];
+        try { joinedGuilds = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+        joinedGuilds = joinedGuilds.filter(function(g) { return g.guild_id !== guildId; });
+        joinedGuilds.push({
+          guild_id: guildId,
+          guild_name: lic.guild_name || "길드",
+          game_name: lic.game_name || "게임",
+          nickname: masterNick,
+          role: "길드장",
+          invite_code: keyInput
+        });
+        localStorage.setItem("my_joined_guilds", JSON.stringify(joinedGuilds));
 
         // 5. 모달 닫기 및 성공 팝업 모달 띄우기
         closeActivateGuildModal();
@@ -1007,6 +1134,255 @@
           btn.innerHTML = `길드 개설 완료`;
         }
       }
+    }
+
+    // ========================================================
+    // [신규 기능 1] 카카오톡 감성 로그아웃 확인 모달 제어
+    // ========================================================
+    function openConfirmLogoutModal() {
+      var modal = document.getElementById("modalConfirmLogout");
+      if (modal) modal.style.display = "flex";
+    }
+    function closeConfirmLogoutModal() {
+      var modal = document.getElementById("modalConfirmLogout");
+      if (modal) modal.style.display = "none";
+    }
+    function confirmUserLogoutAction() {
+      closeConfirmLogoutModal();
+      if (typeof window.executeLogoutProcess === 'function') {
+        window.executeLogoutProcess();
+      } else {
+        localStorage.removeItem("guild_my_nickname");
+        localStorage.removeItem("guild_my_pin");
+        localStorage.removeItem("guild_my_role");
+        sessionStorage.removeItem("admin_auth");
+        sessionStorage.removeItem("admin_role");
+        location.reload();
+      }
+    }
+
+    // ========================================================
+    // [신규 기능 2] 초대 코드로 길드 참여하기 모달 제어
+    // ========================================================
+    var tempFoundGuild = null;
+
+    function openJoinGuildModal() {
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "none";
+      var modal = document.getElementById("modalJoinGuild");
+      if (modal) {
+        modal.style.display = "flex";
+        document.getElementById("joinInviteCodeInput").value = "";
+        document.getElementById("joinGuildDetailsArea").style.display = "none";
+        document.getElementById("btnSubmitJoinGuild").disabled = true;
+        tempFoundGuild = null;
+      }
+    }
+    function closeJoinGuildModal() {
+      var modal = document.getElementById("modalJoinGuild");
+      if (modal) modal.style.display = "none";
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "flex";
+    }
+
+    async function verifyGuildInviteCode() {
+      var code = (document.getElementById("joinInviteCodeInput").value || "").trim().toUpperCase();
+      if (!code) {
+        alert("초대 코드를 입력해 주세요.");
+        return;
+      }
+
+      try {
+        if (!window.supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+          window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        }
+        if (!window.supabaseClient) throw new Error("DB 연결 실패");
+
+        // app_licenses 또는 guilds 에서 코드 조회 (초대 코드는 license_key 와 매핑)
+        var licRes = await window.supabaseClient
+          .from('app_licenses')
+          .select('*')
+          .eq('license_key', code);
+
+        if (licRes.error) throw licRes.error;
+        if (!licRes.data || licRes.data.length === 0) {
+          var gRes = await window.supabaseClient.from('guilds').select('*').eq('license_key', code);
+          if (gRes.data && gRes.data.length > 0) {
+            tempFoundGuild = {
+              guild_id: gRes.data[0].id,
+              guild_name: gRes.data[0].guild_name,
+              game_name: gRes.data[0].game_name || "게임",
+              license_key: code
+            };
+          } else {
+            throw new Error("일치하는 길드를 찾을 수 없습니다. 초대 코드를 확인하세요.");
+          }
+        } else {
+          var lic = licRes.data[0];
+          if (lic.status !== 'active') {
+            throw new Error("해당 길드는 현재 비활성화(정지) 상태입니다.");
+          }
+          tempFoundGuild = {
+            guild_id: lic.guild_id,
+            guild_name: lic.guild_name,
+            game_name: lic.game_name || "게임",
+            license_key: code
+          };
+        }
+
+        document.getElementById("joinFoundGameName").innerText = "[" + tempFoundGuild.game_name + "]";
+        document.getElementById("joinFoundGuildName").innerText = tempFoundGuild.guild_name;
+        document.getElementById("joinGuildDetailsArea").style.display = "block";
+        document.getElementById("btnSubmitJoinGuild").disabled = false;
+      } catch (err) {
+        alert("초대 코드 확인 실패: " + (err.message || "다시 시도해 주세요."));
+      }
+    }
+
+    async function executeJoinGuild() {
+      if (!tempFoundGuild) return alert("먼저 초대 코드를 확인해 주세요.");
+
+      var nick = (document.getElementById("joinMemberNickInput").value || "").trim();
+      var pin = (document.getElementById("joinMemberPinInput").value || "").trim();
+
+      if (!nick) {
+        alert("게임 내 닉네임을 입력해 주세요.");
+        document.getElementById("joinMemberNickInput").focus();
+        return;
+      }
+      if (!pin) {
+        alert("개인 로그인용 비밀번호(PIN)를 입력해 주세요.");
+        document.getElementById("joinMemberPinInput").focus();
+        return;
+      }
+
+      var btn = document.getElementById("btnSubmitJoinGuild");
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i>가입 처리 중...';
+
+      try {
+        if (!window.supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+          window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        }
+
+        var memPayload = {
+          name: nick,
+          role: "일반",
+          pin: pin
+        };
+        if (tempFoundGuild.guild_id) memPayload.guild_id = tempFoundGuild.guild_id;
+
+        var mRes = await window.supabaseClient.from('guild_members').insert([memPayload]);
+        if (mRes.error && !String(mRes.error.message || '').includes('duplicate')) {
+          await window.supabaseClient.from('guild_members').insert([{
+            name: nick,
+            role: "일반",
+            pin: pin
+          }]);
+        }
+
+        localStorage.setItem("current_guild_id", tempFoundGuild.guild_id);
+        localStorage.setItem("guild_my_nickname", nick);
+        localStorage.setItem("guild_my_pin", pin);
+        localStorage.setItem("guild_my_role", "일반");
+        localStorage.setItem("guild_my_class", "일반 길드원");
+        localStorage.setItem("guild_my_avatar", "👤");
+
+        var joinedGuilds = [];
+        try { joinedGuilds = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+        joinedGuilds = joinedGuilds.filter(function(g) { return g.guild_id !== tempFoundGuild.guild_id; });
+        joinedGuilds.push({
+          guild_id: tempFoundGuild.guild_id,
+          guild_name: tempFoundGuild.guild_name,
+          game_name: tempFoundGuild.game_name,
+          nickname: nick,
+          role: "일반",
+          invite_code: tempFoundGuild.license_key || ""
+        });
+        localStorage.setItem("my_joined_guilds", JSON.stringify(joinedGuilds));
+
+        closeJoinGuildModal();
+        var successModal = document.getElementById("modalLicenseSuccess");
+        if (successModal) {
+          var h6 = successModal.querySelector("h6");
+          var p = successModal.querySelector("p");
+          if (h6) h6.innerText = "[" + tempFoundGuild.guild_name + "] 참여 완료!";
+          if (p) p.innerHTML = "길드에 성공적으로 등록되었습니다.<br><strong>" + nick + "</strong>님으로 로그인되었습니다.";
+          successModal.style.display = "flex";
+        }
+      } catch (err) {
+        alert("길드 참여 실패: " + (err.message || "다시 시도해 주세요."));
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "길드 참여 완료";
+      }
+    }
+
+    // ========================================================
+    // [신규 기능 3] 다중 길드 전환(스위처) 제어
+    // ========================================================
+    function openGuildSwitcherModal() {
+      var modal = document.getElementById("modalGuildSwitcher");
+      if (!modal) return;
+      renderGuildSwitcherList();
+      modal.style.display = "flex";
+    }
+    function closeGuildSwitcherModal() {
+      var modal = document.getElementById("modalGuildSwitcher");
+      if (modal) modal.style.display = "none";
+    }
+
+    function renderGuildSwitcherList() {
+      var container = document.getElementById("guildSwitcherList");
+      if (!container) return;
+
+      var joined = [];
+      try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+      var currentGid = localStorage.getItem("current_guild_id");
+
+      if (joined.length === 0) {
+        container.innerHTML = '<div class="text-center py-3 text-secondary small">참여 중인 길드가 없습니다.<br>아래 버튼을 눌러 길드에 참여해 보세요!</div>';
+        return;
+      }
+
+      container.innerHTML = joined.map(function(g) {
+        var isCurrent = (g.guild_id === currentGid);
+        var badgeHtml = isCurrent ? '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem;">접속중</span>' : '<i class="fa-solid fa-chevron-right text-secondary" style="font-size:0.75rem;"></i>';
+        return '<div class="d-flex align-items-center justify-content-between p-2 mb-2 rounded border" style="cursor: pointer; background: ' + (isCurrent ? 'rgba(254, 229, 0, 0.12)' : 'var(--modal-input-bg)') + '; border-color: ' + (isCurrent ? '#fee500' : 'var(--modal-input-border)') + ' !important;" onclick="switchActiveGuildById(\'' + g.guild_id + '\')">' +
+          '<div class="d-flex align-items-center gap-2 min-width-0">' +
+            '<div style="width: 32px; height: 32px; border-radius: 9px; background: rgba(56, 189, 248, 0.2); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;"><i class="fa-solid fa-shield-halved"></i></div>' +
+            '<div style="min-width: 0;">' +
+              '<div class="d-flex align-items-center gap-1">' +
+                '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || '게임') + '</span>' +
+                '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
+              '</div>' +
+              '<div class="text-secondary small" style="font-size: 0.68rem;">내 닉네임: ' + g.nickname + ' (' + (g.role || '일반') + ')</div>' +
+            '</div>' +
+          '</div>' + badgeHtml +
+        '</div>';
+      }).join('');
+    }
+
+    function switchActiveGuildById(guildId) {
+      var joined = [];
+      try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+      var target = joined.find(function(g) { return g.guild_id === guildId; });
+      if (!target) return;
+
+      localStorage.setItem("current_guild_id", target.guild_id);
+      localStorage.setItem("guild_my_nickname", target.nickname);
+      localStorage.setItem("guild_my_role", target.role || "일반");
+      closeGuildSwitcherModal();
+      location.reload();
+    }
+
+    function openJoinGuildFromSwitcher() {
+      closeGuildSwitcherModal();
+      openJoinGuildModal();
+    }
+    function openActivateGuildFromSwitcher() {
+      closeGuildSwitcherModal();
+      openActivateGuildFromLogin();
     }
   </script>
 
