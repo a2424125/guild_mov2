@@ -149,7 +149,6 @@ async function initApp() {
 
 async function loadGuildSettings() {
   try {
-    // 1. 현재 활성 길드(my_joined_guilds) 정보 우선 반영
     const currentGid = localStorage.getItem("current_guild_id");
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
@@ -174,7 +173,6 @@ async function loadGuildSettings() {
       if (t4) t4.innerText = gGame + " · " + gName;
     }
 
-    // 2. 서버 설정 조회 동기화
     const res = await apiRequest("guild_settings?select=key,value");
     if (res && res.length > 0) {
       res.forEach(item => {
@@ -263,6 +261,7 @@ async function toggleMembersDrawer(isOpen) {
   if (isOpen) {
     toggleMenuDrawer(false);
     toggleBossDrawer(false);
+    if (typeof window.closeModuleOverlay === "function") window.closeModuleOverlay();
     if (backdrop) backdrop.classList.add("show");
     if (drawer) drawer.classList.add("open");
 
@@ -288,6 +287,7 @@ async function toggleMembersDrawer(isOpen) {
     }
   } else {
     if (drawer) drawer.classList.remove("open");
+    if (typeof window.closeModuleOverlay === "function") window.closeModuleOverlay();
     checkBackdropState();
   }
 }
@@ -1016,9 +1016,16 @@ function closeMentionPopup() {
 }
 
 // --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더
+// 9. 서브 모듈 화면 오버레이 로더 (PageMembers 서랍 강제 라우팅 가드)
 // --------------------------------------------------------
 window.openModulePage = async function(pageName) {
+  if (pageName === "PageMembers") {
+    closeAllDrawers();
+    if (typeof window.closeModuleOverlay === "function") window.closeModuleOverlay();
+    toggleMembersDrawer(true);
+    return;
+  }
+
   closeAllDrawers();
 
   const myRole = localStorage.getItem("guild_my_role") || "일반";
