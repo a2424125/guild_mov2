@@ -463,7 +463,7 @@ window.initRoomsRealtime = function() {
 };
 
 // --------------------------------------------------------
-// 8. 라이선스 키로 길드 최초 개설 (길드장 활성화)
+// 8. 라이선스 키로 길드 최초 개설 (길드장 활성화 - nickname 컬럼 우선 규격)
 // --------------------------------------------------------
 window.openActivateGuildModal = function() {
   const modal = document.getElementById("modalActivateGuild");
@@ -492,20 +492,29 @@ window.executeActivateGuild = async function() {
     const masterNick = lic.applicant_nickname || "길드장";
     const guildId = lic.guild_id;
 
+    // guild_members 테이블에 nickname 컬럼으로 안전 인서트
     try {
       await apiRequest("guild_members", "POST", [{
         guild_id: guildId,
-        name: masterNick,
+        nickname: masterNick,
         role: "길드장",
         pin: pinInput
       }]);
     } catch(mErr) {
-      // guild_id 누락 스키마 대비 방어
-      await apiRequest("guild_members", "POST", [{
-        name: masterNick,
-        role: "길드장",
-        pin: pinInput
-      }]);
+      try {
+        await apiRequest("guild_members", "POST", [{
+          guild_id: guildId,
+          name: masterNick,
+          role: "길드장",
+          pin: pinInput
+        }]);
+      } catch(mErr2) {
+        await apiRequest("guild_members", "POST", [{
+          nickname: masterNick,
+          role: "길드장",
+          pin: pinInput
+        }]);
+      }
     }
 
     const roomCheck = await apiRequest(`chat_rooms?guild_id=eq.${guildId}&room_type=eq.public`);
