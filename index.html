@@ -387,7 +387,7 @@
       <div class="d-flex align-items-center justify-content-between px-1 mb-2">
         <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
         <div class="d-flex gap-2">
-          <button type="button" class="btn btn-link p-0 text-decoration-none text-warning fw-bold" style="font-size: 0.74rem;" onclick="openActivateGuildModal()">
+          <button type="button" class="btn btn-link p-0 text-decoration-none text-warning fw-bold" style="font-size: 0.74rem;" onclick="openActivateGuildFromLogin()">
             <i class="fa-solid fa-key me-1"></i>길드 활성화
           </button>
           <button type="button" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size: 0.74rem;" onclick="openCreateRoomModal()">
@@ -680,7 +680,7 @@
     </div>
   </div>
 
-  <!-- 4. 길드 로그인 모달 (간소화 & 오류 해결) -->
+  <!-- 4. 길드 로그인 모달 (최초 구매자 길드 시작 & 신청하기 통합) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
@@ -708,10 +708,13 @@
       </button>
       <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 설정에서 가능합니다.</div>
 
-      <!-- 라이선스 신청 바로가기 (간소화) -->
+      <!-- 최초 구매자용: 라이선스 키로 길드 시작하기 & 라이선스 신청하기 통합 동선 -->
       <div class="mt-2 pt-2 border-top text-center" style="border-color: rgba(148, 163, 184, 0.2) !important;">
+        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold py-2 mb-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openActivateGuildFromLogin()">
+          <i class="fa-solid fa-key me-1"></i>라이선스 키로 길드 시작하기
+        </button>
         <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold" style="font-size: 0.74rem; color: #0284c7;" onclick="openLicenseRequestModal()">
-          <i class="fa-solid fa-paper-plane me-1"></i>길드톡 라이선스 신청하기
+          <i class="fa-solid fa-paper-plane me-1"></i>새 라이선스 발급 신청
         </button>
       </div>
     </div>
@@ -762,7 +765,23 @@
     </div>
   </div>
 
-  <!-- 라이선스 신청 팝업 단독 제어 스크립트 -->
+  <!-- 6. [신규 추가] 카카오톡 감성 신청 접수 완료 카드 모달 (브라우저 기본 alert 대체) -->
+  <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 1100;">
+    <div class="kakao-modal-card" style="max-width: 320px;">
+      <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(34, 197, 94, 0.15); color: #22c55e; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 14px;">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h6 class="fw-bold mb-1" style="font-size: 1rem;">신청이 접수되었습니다!</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.76rem; line-height: 1.4;">
+        운영자 확인 후 등록하신 연락처 또는 이메일로<br>라이선스 키가 안전하게 발급됩니다.
+      </p>
+      <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" style="font-size: 0.84rem; border-radius: 8px;" onclick="closeLicenseSuccessModal()">
+        확인
+      </button>
+    </div>
+  </div>
+
+  <!-- 라이선스 신청 및 모달 제어 스크립트 -->
   <script>
     function openLicenseRequestModal() {
       var loginModal = document.getElementById("guildLoginModal");
@@ -774,6 +793,27 @@
     function closeLicenseRequestModal() {
       var modal = document.getElementById("modalLicenseRequest");
       if (modal) modal.style.display = "none";
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "flex";
+    }
+
+    function openActivateGuildFromLogin() {
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "none";
+      var actModal = document.getElementById("modalActivateGuild");
+      if (actModal) actModal.style.display = "flex";
+    }
+
+    function closeActivateGuildModal() {
+      var actModal = document.getElementById("modalActivateGuild");
+      if (actModal) actModal.style.display = "none";
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "flex";
+    }
+
+    function closeLicenseSuccessModal() {
+      var successModal = document.getElementById("modalLicenseSuccess");
+      if (successModal) successModal.style.display = "none";
       var loginModal = document.getElementById("guildLoginModal");
       if (loginModal) loginModal.style.display = "flex";
     }
@@ -824,14 +864,19 @@
         var res = await window.supabaseClient.from('license_requests').insert([insertPayload]);
         if (res.error) throw res.error;
 
-        alert("라이선스 발급 신청이 정상적으로 접수되었습니다!\n운영자 확인 후 안내해 드립니다.");
-        closeLicenseRequestModal();
+        // 신청 창 닫기 및 폼 초기화
+        var reqModal = document.getElementById("modalLicenseRequest");
+        if (reqModal) reqModal.style.display = "none";
 
         document.getElementById("reqGameNameInput").value = "";
         document.getElementById("reqGuildNameInput").value = "";
         document.getElementById("reqApplicantNickInput").value = "";
         document.getElementById("reqEmailInput").value = "";
         document.getElementById("reqContactInput").value = "";
+
+        // 브라우저 기본 alert 대신 카카오톡 감성의 고급 모달 팝업 실행
+        var successModal = document.getElementById("modalLicenseSuccess");
+        if (successModal) successModal.style.display = "flex";
       } catch (err) {
         console.error("License request failed:", err);
         alert("신청 접수 중 오류가 발생했습니다: " + (err.message || "다시 시도해 주세요."));
