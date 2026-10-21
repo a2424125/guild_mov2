@@ -699,8 +699,12 @@ body.theme-light .chat-sender-name { color: #191919 !important; font-weight: 700
 .chat-item-row.other .chat-bubble { background: var(--kakao-bubble-other) !important; color: var(--kakao-bubble-other-text) !important; }
 .chat-item-row.me .chat-bubble { background: var(--kakao-bubble-me) !important; color: var(--kakao-bubble-me-text) !important; }
 
-.chat-meta-box { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; margin-bottom: 1px; }
-.chat-unread-count { color: var(--kakao-unread-yellow); font-size: 10px; font-weight: 700; margin-bottom: 1px; }
+/* 🎯 노란색 미확인 숫자 위치: 상대방은 말풍선 우측 벽에 밀착, 내 메시지는 좌측 벽에 밀착 */
+.chat-meta-box { display: flex; flex-direction: column; flex-shrink: 0; margin-bottom: 1px; }
+.chat-item-row.other .chat-meta-box { align-items: flex-start !important; }
+.chat-item-row.me .chat-meta-box { align-items: flex-end !important; }
+.chat-unread-count { color: var(--kakao-unread-yellow); font-size: 10px; font-weight: 700; margin-bottom: 1px; line-height: 1; }
+.chat-unread-count:empty { display: none !important; }
 .chat-timestamp { font-size: 10px; color: var(--kakao-time-gray) !important; white-space: nowrap; font-weight: 400; }
 
 .boss-brief-bubble {
