@@ -476,51 +476,45 @@
 
 
   <!-- ========================================================
-       [VIEW 2] 개별 대화방 화면 (기존 카카오톡 대화방 인터페이스)
+       [VIEW 2] 개별 대화방 화면 (시그니처 파스텔 블루 테마 100% 동일)
        ======================================================== -->
   <div id="chatRoomView" class="app-main-layout" style="display: none;">
-    
-    <!-- 카카오톡 헤더 (대화방 전용) -->
     <header class="kakao-chat-header">
       <div class="header-left-area">
-        <!-- 메인 3탭 화면으로 복귀 버튼 (뒤로가기) -->
-        <button type="button" class="btn-kakao-menu text-primary fw-bold me-1" onclick="leaveChatRoomToMainTabs()" title="대화방 목록으로 나가기">
-          <i class="fa-solid fa-chevron-left"></i>
+        <!-- 메인 탭(대화방 목록)으로 복귀하는 뒤로가기 버튼 -->
+        <button type="button" class="btn-kakao-menu text-primary fw-bold" title="대화방 목록으로 나가기" onclick="exitChatRoomToMain()">
+          <i class="fa-solid fa-chevron-left" style="font-size: 1.1rem;"></i>
         </button>
-        <button type="button" class="btn-kakao-menu" onclick="toggleMenuDrawer(true)" title="메뉴">
+        <button type="button" class="btn-kakao-menu" title="길드 메뉴 열기" onclick="toggleMenuDrawer(true)">
           <i class="fa-solid fa-bars"></i>
         </button>
         <div class="room-avatar-circle" id="chatRoomAvatar">
           <i class="fa-solid fa-users"></i>
         </div>
         <div class="room-info-box">
-          <div class="room-title-text" id="chatRoomTitle">전체 대화방</div>
-          <div class="room-count-text" id="roomMemberCountText" onclick="toggleMembersDrawer(true)" title="길드원 목록 보기">
-            0
+          <div class="room-title-text" id="chatRoomTitle">길드 대화방</div>
+          <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)">
+            <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
           </div>
         </div>
       </div>
 
+      <!-- 상단 우측 헤더 도구 -->
       <div class="header-right-tools">
-        <!-- 파일 첨부 -->
-        <button type="button" class="btn-kakao-head" onclick="triggerFileUploadAction()" title="사진/파일 공유">
+        <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="보스참여등록" onclick="openModulePage('PageRegister')">
           <i class="fa-solid fa-paperclip"></i>
         </button>
-        <input type="file" id="kakaoHiddenFileInput" style="display:none;" accept="image/*" onchange="handleKakaoFileSelected(event)">
-
-        <!-- 대화 검색 토글 버튼 -->
-        <button type="button" class="btn-kakao-head" id="btnToggleChatSearch" onclick="toggleChatSearchBar()" title="대화 검색">
+        <button type="button" class="btn-kakao-head" id="btnToggleChatSearch" title="대화 검색" onclick="toggleChatSearchBar()">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
-
-        <!-- 보스타이머 서랍 열기 -->
-        <button type="button" class="btn-kakao-head" onclick="toggleBossDrawer(true)" title="보스타이머">
-          <i class="fa-solid fa-clock-rotate-left"></i>
+        <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
+          <i class="fa-regular fa-clock"></i>
         </button>
-
-        <!-- 길드원 서랍 열기 -->
-        <button type="button" class="btn-kakao-head" onclick="toggleMembersDrawer(true)" title="길드원 서랍">
-          <i class="fa-solid fa-users"></i>
+        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
+          <i class="fa-solid fa-user-group"></i>
         </button>
       </div>
     </header>
@@ -706,11 +700,40 @@
     </div>
   </div>
 
-  <!-- 4. 길드 로그인 모달 (초대코드 참여 & 길드 개설 & 신청 통합) -->
+  <!-- 0. 최초 진입 게이트웨이 모달 (신규 시작 허브) -->
+  <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none; z-index: 1040;">
+    <div class="kakao-modal-card" style="max-width: 330px;">
+      <div style="width: 52px; height: 52px; border-radius: 16px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.7rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);">
+        G
+      </div>
+      <h6 class="fw-bold mb-1" style="font-size: 1.05rem;">길드톡 메신저</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.74rem;">원하시는 시작 방식을 선택하세요.</p>
+
+      <!-- 이미 참여한 길드가 있을 때 나타나는 최근 접속 길드 카드 -->
+      <div id="gatewayJoinedGuildsBox" style="display: none; margin-bottom: 12px; text-align: left;">
+        <label class="text-secondary small mb-1 fw-bold" style="font-size: 0.68rem;">최근 참여한 길드</label>
+        <div id="gatewayJoinedGuildsList"></div>
+      </div>
+
+      <div class="d-flex flex-column gap-2">
+        <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openJoinGuildFromGateway()">
+          <i class="fa-solid fa-user-plus me-1"></i>초대 코드로 길드 입장하기
+        </button>
+        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold py-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openActivateGuildFromGateway()">
+          <i class="fa-solid fa-key me-1"></i>라이선스 키로 길드 신규 개설
+        </button>
+        <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold mt-1" style="font-size: 0.74rem; color: #0284c7;" onclick="openLicenseRequestFromGateway()">
+          <i class="fa-solid fa-paper-plane me-1"></i>신규 길드 라이선스 발급 신청
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 길드 로그인 모달 (선택된 길드 전용 로그인) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
-      <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
-        <i class="fa-solid fa-comment text-dark"></i>
+      <div style="width: 50px; height: 50px; border-radius: 15px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.65rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
+        G
       </div>
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 닉네임과 개인 비밀번호를 입력하세요.</p>
@@ -734,16 +757,9 @@
       </button>
       <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 설정에서 가능합니다.</div>
 
-      <!-- 길드원용 초대코드 참여 & 길드장용 라이선스 시작 동선 -->
       <div class="mt-2 pt-2 border-top text-center" style="border-color: rgba(148, 163, 184, 0.2) !important;">
-        <button type="button" class="btn btn-outline-primary btn-sm w-100 fw-bold py-2 mb-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openJoinGuildModal()">
-          <i class="fa-solid fa-user-plus me-1"></i>초대 코드로 길드 참여하기
-        </button>
-        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold py-2 mb-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openActivateGuildFromLogin()">
-          <i class="fa-solid fa-key me-1"></i>라이선스 키로 길드 시작하기
-        </button>
-        <button type="button" class="btn btn-link p-0 text-decoration-none fw-bold" style="font-size: 0.74rem; color: #0284c7;" onclick="openLicenseRequestModal()">
-          <i class="fa-solid fa-paper-plane me-1"></i>새 라이선스 발급 신청
+        <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary" style="font-size: 0.74rem;" onclick="returnToWelcomeGateway()">
+          <i class="fa-solid fa-arrow-left me-1"></i>처음 화면(시작 방식 선택)으로 가기
         </button>
       </div>
     </div>
@@ -911,6 +927,94 @@
        [인라인 모달 제어 스크립트]
        ======================================================== -->
   <script>
+    // ========================================================
+    // [게이트웨이 허브] 최초 시작 선택 화면 제어
+    // ========================================================
+    function openWelcomeGatewayModal() {
+      var gateway = document.getElementById("modalWelcomeGateway");
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "none";
+      if (!gateway) return;
+
+      var joined = [];
+      try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+      var box = document.getElementById("gatewayJoinedGuildsBox");
+      var list = document.getElementById("gatewayJoinedGuildsList");
+
+      if (joined.length > 0 && box && list) {
+        box.style.display = "block";
+        list.innerHTML = joined.map(function(g) {
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="cursor:pointer; background:var(--modal-input-bg); border-color:var(--modal-input-border) !important;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
+            '<div class="d-flex align-items-center gap-2 min-width-0">' +
+              '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || '게임') + '</span>' +
+              '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
+            '</div>' +
+            '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem;">로그인</span>' +
+          '</div>';
+        }).join('');
+      } else if (box) {
+        box.style.display = "none";
+      }
+
+      gateway.style.display = "flex";
+    }
+
+    function closeWelcomeGatewayModal() {
+      var gateway = document.getElementById("modalWelcomeGateway");
+      if (gateway) gateway.style.display = "none";
+    }
+
+    function returnToWelcomeGateway() {
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "none";
+      openWelcomeGatewayModal();
+    }
+
+    function loginToJoinedGuild(guildId) {
+      closeWelcomeGatewayModal();
+      var joined = [];
+      try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+      var g = joined.find(function(item) { return item.guild_id === guildId; });
+      if (g) {
+        localStorage.setItem("current_guild_id", g.guild_id);
+        var titleElem = document.getElementById("loginGuildTitle");
+        if (titleElem) titleElem.innerText = "[" + (g.game_name || '게임') + "] " + g.guild_name + " 로그인";
+      }
+      var loginModal = document.getElementById("guildLoginModal");
+      if (loginModal) loginModal.style.display = "flex";
+      if (typeof window.loadGuildMembersData === 'function') window.loadGuildMembersData();
+    }
+
+    function openJoinGuildFromGateway() {
+      closeWelcomeGatewayModal();
+      openJoinGuildModal();
+    }
+    function openActivateGuildFromGateway() {
+      closeWelcomeGatewayModal();
+      openActivateGuildFromLogin();
+    }
+    function openLicenseRequestFromGateway() {
+      closeWelcomeGatewayModal();
+      openLicenseRequestModal();
+    }
+
+    // ========================================================
+    // [뒤로가기/홈] 대화방에서 메인 3탭(대화방 목록)으로 100% 안전 복귀
+    // ========================================================
+    window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
+      var mainView = document.getElementById("kakaoMainTabsView");
+      var chatView = document.getElementById("chatRoomView");
+
+      if (chatView) chatView.style.display = "none";
+      if (mainView) mainView.style.display = "flex";
+      document.body.classList.add("in-main-tabs");
+
+      window.currentActiveRoomId = null;
+      if (typeof window.switchMainBottomTab === 'function') {
+        window.switchMainBottomTab("chats");
+      }
+    };
+
     function openLicenseRequestModal() {
       var modal = document.getElementById("modalLicenseRequest");
       if (modal) modal.style.display = "flex";
