@@ -63,7 +63,7 @@ window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
   if (!container) return;
 
-  const myNick = localStorage.getItem("guild_my_nick") || "";
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
   const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
   const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
 
@@ -80,7 +80,15 @@ window.loadMainTabFriendsList = async function() {
     let members = window.cachedMemberList || [];
     if (!members || members.length === 0) {
       if (typeof apiRequest === "function") {
-        members = await apiRequest("guild_members?select=*&order=name.asc");
+        const currentGid = localStorage.getItem("current_guild_id");
+        try {
+          if (currentGid) {
+            members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=name.asc");
+          }
+        } catch(e) {}
+        if (!members || members.length === 0) {
+          members = await apiRequest("guild_members?select=*&order=name.asc");
+        }
         window.cachedMemberList = members || [];
       }
     }
@@ -137,15 +145,23 @@ window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
   if (!container) return;
 
-  const myNick = localStorage.getItem("guild_my_nick") || "";
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
 
   try {
     let rooms = [];
     if (typeof apiRequest === "function") {
-      rooms = await apiRequest("chat_rooms?select=*,room_members(*)&order=created_at.asc");
+      const currentGid = localStorage.getItem("current_guild_id");
+      try {
+        if (currentGid) {
+          rooms = await apiRequest("chat_rooms?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*,room_members(*)&order=created_at.asc");
+        }
+      } catch(e) {}
+      if (!rooms || rooms.length === 0) {
+        rooms = await apiRequest("chat_rooms?select=*,room_members(*)&order=created_at.asc");
+      }
     }
 
-    // 기본 방이 없으면 전체 공개방을 기본값으로 노출
+    // 기본 방이 없으면 1차적으로 전체 공개방을 노출하도록 처리
     if (!rooms || rooms.length === 0) {
       rooms = [{
         id: "default_public",
@@ -156,7 +172,6 @@ window.loadMainTabRoomsList = async function() {
     }
 
     // 필터링: 내가 참여할 수 있는 방인지 확인
-    // (public: 전체 / private: room_members에 내가 포함 / direct: 내가 포함)
     const myRooms = rooms.filter(r => {
       if (r.room_type === "public") return true;
       if (!r.room_members || r.room_members.length === 0) return true;
@@ -210,7 +225,7 @@ window.loadMainTabRoomsList = async function() {
 };
 
 // --------------------------------------------------------
-// 4. 개별 대화방 입장 및 퇴장 (화면 전환)
+// 4. 개별 대화방 입장 및 퇴장 (화면 전환 & 메뉴 토글)
 // --------------------------------------------------------
 window.openChatRoom = function(roomId, roomTitle, roomType) {
   window.currentActiveRoomId = roomId;
@@ -220,6 +235,7 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
 
   if (mainView) mainView.style.display = "none";
   if (chatView) chatView.style.display = "flex";
+  document.body.classList.remove("in-main-tabs");
 
   // 대화방 타이틀 및 아바타 갱신
   const titleElem = document.getElementById("chatRoomTitle");
@@ -248,16 +264,17 @@ window.exitChatRoomToMain = function() {
 
   if (chatView) chatView.style.display = "none";
   if (mainView) mainView.style.display = "flex";
+  document.body.classList.add("in-main-tabs");
 
   window.currentActiveRoomId = null;
   window.switchMainBottomTab("chats");
 };
 
 // --------------------------------------------------------
-// 5. 1:1 개인톡 즉시 생성 및 입장
+// 5. 1:1 개인톡 즉시 생성 및 입장 (길드원끼리만 허용)
 // --------------------------------------------------------
 window.startDirectChatWith = async function(targetNick) {
-  const myNick = localStorage.getItem("guild_my_nick") || "";
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
   if (!myNick) {
     if (typeof showKakaoToast === "function") showKakaoToast("로그인이 필요합니다.", "⚠️");
     return;
@@ -268,7 +285,6 @@ window.startDirectChatWith = async function(targetNick) {
   }
 
   try {
-    // 1. 이미 두 사람 간의 1:1 방이 있는지 검색
     const directRooms = (window.cachedChatRoomsList || []).filter(r => r.room_type === "direct");
     const existing = directRooms.find(r => {
       const names = (r.room_name || "");
@@ -280,7 +296,6 @@ window.startDirectChatWith = async function(targetNick) {
       return;
     }
 
-    // 2. 새 1:1 톡방 생성
     const roomTitle = `${myNick} & ${targetNick} 1:1 톡방`;
     const createRes = await apiRequest("chat_rooms", "POST", [{
       room_name: roomTitle,
@@ -291,7 +306,6 @@ window.startDirectChatWith = async function(targetNick) {
     if (!createRes || !createRes[0]) throw new Error("1:1 방 생성 실패");
     const newRoom = createRes[0];
 
-    // 두 멤버를 방에 참여 등록
     await apiRequest("room_members", "POST", [
       { room_id: newRoom.id, member_nickname: myNick, role: "member" },
       { room_id: newRoom.id, member_nickname: targetNick, role: "member" }
@@ -306,11 +320,12 @@ window.startDirectChatWith = async function(targetNick) {
 };
 
 // --------------------------------------------------------
-// 6. 새 대화방 개설 모달 제어
+// 6. 새 대화방 개설 모달 제어 (길드장 권한 체크)
 // --------------------------------------------------------
 window.openCreateRoomModal = function() {
   const modal = document.getElementById("modalCreateRoom");
-  const myNick = localStorage.getItem("guild_my_nick") || "";
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+  const myRole = localStorage.getItem("guild_my_role") || "일반";
 
   if (modal) modal.style.display = "flex";
 
@@ -322,7 +337,6 @@ window.openCreateRoomModal = function() {
 
   onRoomTypeChange("public");
 
-  // 멤버 체크박스 렌더링 (본인 제외)
   const listContainer = document.getElementById("roomMemberCheckList");
   if (listContainer) {
     const members = (window.cachedMemberList || []).filter(m => {
@@ -364,7 +378,14 @@ window.onRoomTypeChange = function(type) {
 window.executeCreateRoom = async function() {
   const title = (document.getElementById("newRoomTitleInput").value || "").trim();
   const type = document.getElementById("newRoomTypeSelect").value;
-  const myNick = localStorage.getItem("guild_my_nick") || "길드원";
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "길드원");
+  const myRole = localStorage.getItem("guild_my_role") || "일반";
+
+  // 길드장이 아닌 일반 길드원이 그룹방(전체/운영진)을 만들려고 할 때 방어
+  const isGuildMaster = (myRole === "길드장" || myRole === "길마" || sessionStorage.getItem("admin_role") === "super" || sessionStorage.getItem("admin_role") === "admin");
+  if (type !== "direct" && !isGuildMaster) {
+    return alert("운영진방 및 그룹 대화방 개설은 길드장(최초 구매자)만 가능합니다.");
+  }
 
   if (!title) {
     alert("방 제목을 입력해 주세요.");
@@ -372,7 +393,6 @@ window.executeCreateRoom = async function() {
     return;
   }
 
-  // 선택된 멤버 추출
   const checkedBoxes = document.querySelectorAll("input[name='createRoomMember']:checked");
   const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
 
@@ -386,17 +406,19 @@ window.executeCreateRoom = async function() {
   }
 
   try {
-    // 1. chat_rooms에 신규 톡방 생성
-    const res = await apiRequest("chat_rooms", "POST", [{
+    const currentGid = localStorage.getItem("current_guild_id");
+    const roomPayload = {
       room_name: title,
       room_type: type,
       created_by: myNick
-    }]);
+    };
+    if (currentGid) roomPayload.guild_id = currentGid;
+
+    const res = await apiRequest("chat_rooms", "POST", [roomPayload]);
 
     if (!res || !res[0]) throw new Error("방 생성 응답 없음");
     const newRoom = res[0];
 
-    // 2. room_members에 참여 인원 등록 (본인 포함)
     const membersToInsert = [myNick, ...selectedMembers];
     const memberPayloads = membersToInsert.map(nick => ({
       room_id: newRoom.id,
@@ -434,6 +456,91 @@ window.initRoomsRealtime = function() {
       .subscribe();
   } catch (e) {
     console.warn("Rooms realtime subscription failed:", e);
+  }
+};
+
+// --------------------------------------------------------
+// 8. 라이선스 키로 길드 최초 개설 (길드장 활성화)
+// --------------------------------------------------------
+window.openActivateGuildModal = function() {
+  const modal = document.getElementById("modalActivateGuild");
+  if (modal) modal.style.display = "flex";
+};
+window.closeActivateGuildModal = function() {
+  const modal = document.getElementById("modalActivateGuild");
+  if (modal) modal.style.display = "none";
+};
+window.executeActivateGuild = async function() {
+  const keyInput = (document.getElementById("actLicenseKeyInput").value || "").trim().toUpperCase();
+  const pinInput = (document.getElementById("actMasterPinInput").value || "").trim();
+  if (!keyInput) return alert("라이선스 키를 입력해 주세요.");
+  if (!pinInput) return alert("길드장 비밀번호(PIN)를 입력해 주세요.");
+
+  try {
+    const licRes = await apiRequest(`app_licenses?license_key=eq.${encodeURIComponent(keyInput)}&select=*`);
+    if (!licRes || licRes.length === 0) {
+      return alert("유효하지 않은 라이선스 키입니다. 관리자에게 문의하세요.");
+    }
+    const lic = licRes[0];
+    if (lic.status !== "active") {
+      return alert("해당 라이선스는 현재 만료되었거나 정지 상태입니다.");
+    }
+
+    const masterNick = lic.applicant_nickname || "길드장";
+    const guildId = lic.guild_id;
+
+    try {
+      await apiRequest("guild_members", "POST", [{
+        guild_id: guildId,
+        name: masterNick,
+        role: "길드장",
+        pin: pinInput
+      }]);
+    } catch(mErr) {
+      // guild_id 누락 스키마 대비 방어
+      await apiRequest("guild_members", "POST", [{
+        name: masterNick,
+        role: "길드장",
+        pin: pinInput
+      }]);
+    }
+
+    const roomCheck = await apiRequest(`chat_rooms?guild_id=eq.${guildId}&room_type=eq.public`);
+    if (!roomCheck || roomCheck.length === 0) {
+      await apiRequest("chat_rooms", "POST", [{
+        guild_id: guildId,
+        room_name: `${lic.guild_name} 전체 대화방`,
+        room_type: "public",
+        created_by: masterNick
+      }]);
+    }
+
+    localStorage.setItem("current_guild_id", guildId);
+    localStorage.setItem("guild_my_nickname", masterNick);
+    localStorage.setItem("guild_my_pin", pinInput);
+    localStorage.setItem("guild_my_role", "길드장");
+    sessionStorage.setItem("admin_auth", "true");
+    sessionStorage.setItem("admin_role", "admin");
+
+    let joinedGuilds = [];
+    try { joinedGuilds = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+    joinedGuilds = joinedGuilds.filter(g => g.guild_id !== guildId);
+    joinedGuilds.push({
+      guild_id: guildId,
+      guild_name: lic.guild_name || "길드",
+      game_name: lic.game_name || "게임",
+      nickname: masterNick,
+      role: "길드장",
+      invite_code: keyInput
+    });
+    localStorage.setItem("my_joined_guilds", JSON.stringify(joinedGuilds));
+
+    alert(`[${lic.guild_name}] 길드가 성공적으로 개설되었습니다!\n${masterNick}님으로 로그인되었습니다.`);
+    closeActivateGuildModal();
+    location.reload();
+  } catch (err) {
+    console.error("Activate guild error:", err);
+    alert("길드 개설 실패: " + err.message);
   }
 };
 
