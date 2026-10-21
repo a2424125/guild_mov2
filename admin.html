@@ -468,7 +468,15 @@
     // 1. 보안 인증 로직
     const MASTER_PIN = "master7777"; // 마스터 기본 비밀번호
 
+    // Supabase 클라이언트 초기화 함수 (누락 방지)
+    function ensureSupabaseClient() {
+      if (!window.supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+        window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+      }
+    }
+
     function checkAuthOnLoad() {
+      ensureSupabaseClient();
       if (sessionStorage.getItem("master_authenticated") === "true") {
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("adminMainContent").style.display = "block";
@@ -508,27 +516,59 @@
       document.getElementById("tabPanelRequests").style.display = (tabName === 'requests') ? 'block' : 'none';
     }
 
-    // 3. 데이터 로딩 & 대시보드 집계
+    // 3. 데이터 로딩 & 대시보드 집계 (독립적이고 안전한 쿼리 분리)
     let cachedGuilds = [];
     let cachedRequests = [];
 
     async function loadAllDashboardData() {
-      if (!window.supabaseClient) return;
+      ensureSupabaseClient();
+      if (!window.supabaseClient) {
+        console.warn("Supabase 클라이언트를 초기화할 수 없습니다.");
+        return;
+      }
 
       try {
-        // 길드 및 라이선스 데이터 로드
-        const { data: guilds, error: gErr } = await window.supabaseClient
-          .from('guilds')
-          .select('*, app_licenses(*)')
-          .order('created_at', { ascending: false });
+        // 1. 길드 데이터 로드
+        let guilds = [];
+        try {
+          const { data, error: gErr } = await window.supabaseClient
+            .from('guilds')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (!gErr) guilds = data || [];
+        } catch (e) {
+          console.warn("guilds fetch error:", e);
+        }
 
-        // 신청서 데이터 로드
-        const { data: requests, error: rErr } = await window.supabaseClient
-          .from('license_requests')
-          .select('*')
-          .order('created_at', { ascending: false });
+        // 2. 라이선스 데이터 로드
+        let licenses = [];
+        try {
+          const { data, error: lErr } = await window.supabaseClient
+            .from('app_licenses')
+            .select('*');
+          if (!lErr) licenses = data || [];
+        } catch (e) {
+          console.warn("app_licenses fetch error:", e);
+        }
 
-        // 전체 등록 인원 집계 (guild_members 테이블)
+        // 길드와 라이선스 1:N 매핑
+        guilds.forEach(g => {
+          g.app_licenses = licenses.filter(l => l.guild_id === g.id);
+        });
+
+        // 3. 신청서 데이터 로드 (신청 접수함)
+        let requests = [];
+        try {
+          const { data, error: rErr } = await window.supabaseClient
+            .from('license_requests')
+            .select('*')
+            .order('created_at', { ascending: false });
+          if (!rErr) requests = data || [];
+        } catch (e) {
+          console.warn("license_requests fetch error:", e);
+        }
+
+        // 4. 전체 등록 인원 집계 (guild_members 테이블)
         let totalMembersCount = 0;
         try {
           const { count } = await window.supabaseClient
@@ -537,8 +577,8 @@
           totalMembersCount = count || 0;
         } catch(e) {}
 
-        cachedGuilds = guilds || [];
-        cachedRequests = requests || [];
+        cachedGuilds = guilds;
+        cachedRequests = requests;
 
         // KPI 집계
         const activeGuilds = cachedGuilds.filter(g => g.is_active !== false).length;
@@ -667,6 +707,7 @@
 
     // 6. 다이렉트 라이선스 생성 및 전달 메시지 복사
     async function executeDirectIssue() {
+      ensureSupabaseClient();
       const gameName = (document.getElementById("directGameName").value || "").trim();
       const guildName = (document.getElementById("directGuildName").value || "").trim();
       const applicantNick = (document.getElementById("directApplicantNick").value || "").trim();
@@ -679,7 +720,6 @@
         return;
       }
 
-      // 라이선스 키 생성: ECL-YYYYMMDD-XXXX
       const today = new Date();
       const datePart = today.toISOString().slice(0, 10).replace(/-/g, '');
       const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -693,7 +733,6 @@
       }
 
       try {
-        // 1. guilds 생성
         const { data: guildData, error: gErr } = await window.supabaseClient
           .from('guilds')
           .insert([{
@@ -707,7 +746,6 @@
 
         if (gErr) throw gErr;
 
-        // 2. app_licenses 생성
         const { error: lErr } = await window.supabaseClient
           .from('app_licenses')
           .insert([{
@@ -729,7 +767,6 @@
 
         alert(`라이선스가 정상 발급되었습니다!\n카카오톡/디스코드 전달용 메시지가 클립보드에 자동 복사되었습니다.`);
 
-        // 폼 초기화 및 새로고침
         document.getElementById("directGameName").value = "";
         document.getElementById("directGuildName").value = "";
         document.getElementById("directApplicantNick").value = "";
@@ -745,6 +782,7 @@
 
     // 7. 신청서 승인 및 발급
     async function approveRequest(reqId, gameName, guildName, applicantNick, contactInfo) {
+      ensureSupabaseClient();
       if (!confirm(`[${guildName}] 길드의 라이선스를 즉시 발급하시겠습니까?`)) return;
 
       const today = new Date();
@@ -757,7 +795,6 @@
       const expiresAt = expDate.toISOString();
 
       try {
-        // 길드 생성
         const { data: guildData, error: gErr } = await window.supabaseClient
           .from('guilds')
           .insert([{
@@ -769,7 +806,6 @@
           .select().single();
         if (gErr) throw gErr;
 
-        // 라이선스 생성
         await window.supabaseClient.from('app_licenses').insert([{
           guild_id: guildData.id,
           license_key: licenseKey,
@@ -782,7 +818,6 @@
           status: 'active'
         }]);
 
-        // 신청서 상태 업데이트
         await window.supabaseClient
           .from('license_requests')
           .update({ status: 'approved' })
@@ -800,6 +835,7 @@
 
     // 8. 기간 연장 (+30일)
     async function extendGuildLicense(guildId, addDays) {
+      ensureSupabaseClient();
       if (!confirm(`해당 길드의 라이선스를 ${addDays}일 연장하시겠습니까?`)) return;
       try {
         const { data: lic } = await window.supabaseClient
@@ -849,7 +885,7 @@
 
 [최초 시작 방법]
 1. 위 주소(${origin})로 접속하세요.
-2. 로그인 창에서 [새 길드 등록 / 라이선스 신청]을 통해 전달받은 라이선스 키로 본인 길드를 시작하세요.
+2. 로그인 창에서 [🔑 라이선스 키로 길드 시작하기]를 누르고 전달받은 라이선스 키와 길드장 비밀번호를 설정하시면 본인 길드가 개설됩니다.
 3. 길드원들에게 주소를 공유하고 바로 실시간 대화와 보스 타임을 공유하실 수 있습니다!`;
 
       navigator.clipboard.writeText(text).catch(() => {});
