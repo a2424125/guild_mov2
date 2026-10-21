@@ -1,0 +1,562 @@
+<!-- ==========================================
+     [길드 메신저] 개발자 전용 마스터 라이선스 관리 모듈
+     경로: pages/PageLicense.html
+     다이렉트 원클릭 발급 & 신청서 승인 & 발급 내역 관리
+     ========================================== -->
+<style>
+  .lic-container {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--drawer-bg);
+    color: var(--drawer-text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Pretendard, "Noto Sans KR", "Malgun Gothic", "맑은 고딕", sans-serif;
+    min-height: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 상단 요약 배너 */
+  .lic-summary-card {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(2, 132, 199, 0.04) 100%);
+    border: 1px solid rgba(2, 132, 199, 0.3);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .lic-summary-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  body.theme-dark .lic-summary-title { color: #38bdf8; }
+  .lic-summary-desc {
+    font-size: 0.72rem;
+    color: var(--drawer-text-sub);
+    margin-top: 2px;
+  }
+
+  /* 탭 네비게이션 */
+  .lic-tabs-row {
+    display: flex;
+    gap: 6px;
+    border-bottom: 1px solid var(--drawer-border);
+    padding-bottom: 6px;
+  }
+  .lic-tab-btn {
+    flex: 1;
+    background: var(--drawer-card-bg);
+    border: 1px solid var(--drawer-card-border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--drawer-text-sub);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+  .lic-tab-btn.active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+    font-weight: 800;
+  }
+  body.theme-dark .lic-tab-btn.active {
+    background: #0284c7;
+    border-color: #38bdf8;
+  }
+
+  /* 카드 컨테이너 */
+  .lic-section-card {
+    background: var(--drawer-card-bg);
+    border: 1px solid var(--drawer-card-border);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  .lic-card-title {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--drawer-text-main);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* 입력 폼 컨트롤 */
+  .lic-form-group {
+    margin-bottom: 10px;
+  }
+  .lic-form-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--drawer-text-sub);
+    margin-bottom: 4px;
+    display: block;
+  }
+  .lic-form-input, .lic-form-select {
+    width: 100%;
+    background: var(--drawer-input-bg);
+    border: 1px solid var(--drawer-input-border);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    color: var(--drawer-input-text);
+    outline: none;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+  .lic-form-input:focus, .lic-form-select:focus {
+    border-color: #0284c7;
+  }
+
+  /* 생성 버튼 */
+  .btn-lic-action {
+    width: 100%;
+    background: #0284c7;
+    border: none;
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 10px 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .btn-lic-action:hover {
+    background: #0369a1;
+  }
+
+  /* 발급 결과 미리보기 박스 */
+  .lic-copy-box {
+    margin-top: 12px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .lic-copy-header {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #059669;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .lic-code-display {
+    font-family: monospace;
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: #059669;
+    letter-spacing: 1.5px;
+    word-break: break-all;
+  }
+  .btn-mini-copy {
+    background: #10b981;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+
+  /* 리스트 항목 카드 */
+  .lic-item-row {
+    background: var(--drawer-bg);
+    border: 1px solid var(--drawer-card-border);
+    border-radius: 9px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .lic-item-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .lic-item-code {
+    font-family: monospace;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--drawer-text-main);
+    letter-spacing: 0.5px;
+  }
+  .badge-lic-state {
+    font-size: 0.65rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+  .badge-lic-state.unused {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+  }
+  .badge-lic-state.used {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #e2e8f0;
+  }
+  .badge-lic-state.approved {
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+  }
+
+  .lic-item-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--drawer-text-sub);
+  }
+  .lic-item-actions {
+    display: flex;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .btn-item-action {
+    background: var(--drawer-card-bg);
+    border: 1px solid var(--drawer-card-border);
+    color: var(--drawer-text-main);
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  .btn-item-action.primary {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+  }
+</style>
+
+<div class="lic-container">
+  <!-- 상단 요약 배너 -->
+  <div class="lic-summary-card">
+    <div>
+      <div class="lic-summary-title">
+        <i class="fa-solid fa-key"></i>
+        <span>라이선스 마스터 관리창</span>
+      </div>
+      <div class="lic-summary-desc">신규 길드 발급 키 생성, 직거래 복사 및 이메일 신청 승인</div>
+    </div>
+    <div style="font-size: 1.6rem; opacity: 0.85;">👑</div>
+  </div>
+
+  <!-- 3단 탭 네비게이션 -->
+  <div class="lic-tabs-row">
+    <button type="button" class="lic-tab-btn active" onclick="switchLicTab('direct')">
+      <i class="fa-solid fa-bolt me-1"></i>다이렉트 즉시 발급
+    </button>
+    <button type="button" class="lic-tab-btn" onclick="switchLicTab('requests')">
+      <i class="fa-solid fa-inbox me-1"></i>신청서 접수 (<span id="licPendingCount">0</span>)
+    </button>
+    <button type="button" class="lic-tab-btn" onclick="switchLicTab('history')">
+      <i class="fa-solid fa-list-check me-1"></i>발급 목록
+    </button>
+  </div>
+
+  <!-- 탭 1: 다이렉트 즉시 발급 (카톡/디코 직거래 전달용) -->
+  <div id="licTabDirect" class="lic-section-card">
+    <div class="lic-card-title">
+      <i class="fa-solid fa-paper-plane text-primary"></i>
+      <span>다이렉트 라이선스 생성 & 복사</span>
+    </div>
+    
+    <div class="lic-form-group">
+      <label class="lic-form-label">대상 게임명</label>
+      <input type="text" id="licInputGame" class="lic-form-input" placeholder="예: 리니지W, 오딘, 이클립스 등">
+    </div>
+
+    <div class="lic-form-group">
+      <label class="lic-form-label">구매자 메모 (길드명 또는 닉네임)</label>
+      <input type="text" id="licInputBuyer" class="lic-form-input" placeholder="예: 드래곤길드 / 카톡 홍길동">
+    </div>
+
+    <div class="lic-form-group">
+      <label class="lic-form-label">라이선스 유형</label>
+      <select id="licSelectType" class="lic-form-select">
+        <option value="lifetime" selected>영구 소장용 (Lifetime)</option>
+        <option value="standard">1년 정기권 (1 Year)</option>
+        <option value="trial">30일 체험판 (30 Days)</option>
+      </select>
+    </div>
+
+    <button type="button" class="btn-lic-action" onclick="generateDirectLicense()">
+      <i class="fa-solid fa-copy"></i>
+      <span>라이선스 발급 및 안내문 즉시 복사</span>
+    </button>
+
+    <div id="licGeneratedResultBox" class="lic-copy-box" style="display: none;">
+      <div class="lic-copy-header">
+        <span><i class="fa-solid fa-circle-check me-1"></i>발급 완료 (클립보드 복사됨)</span>
+        <button type="button" class="btn-mini-copy" onclick="copyLastGeneratedGuide()">다시 복사</button>
+      </div>
+      <div class="lic-code-display" id="licDisplayCode">GUILD-XXXX-XXXX</div>
+      <div class="small text-secondary mt-1" style="font-size: 0.68rem; line-height: 1.35;">
+        * 카카오톡이나 디스코드 채팅창에 바로 붙여넣기(Ctrl+V) 하시면 안내문이 전송됩니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭 2: 홈페이지 신청서 접수 목록 -->
+  <div id="licTabRequests" class="lic-section-card" style="display: none;">
+    <div class="lic-card-title">
+      <i class="fa-solid fa-inbox text-warning"></i>
+      <span>홈페이지 라이선스 신청 대기 목록</span>
+    </div>
+    <div id="licRequestsListArea">
+      <div class="text-secondary small text-center py-4">신청 내역을 불러오는 중...</div>
+    </div>
+  </div>
+
+  <!-- 탭 3: 전체 발급 내역 -->
+  <div id="licTabHistory" class="lic-section-card" style="display: none;">
+    <div class="lic-card-title">
+      <i class="fa-solid fa-clock-rotate-left text-info"></i>
+      <span>발급된 전체 라이선스 이력</span>
+    </div>
+    <div id="licHistoryListArea">
+      <div class="text-secondary small text-center py-4">목록을 불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var lastGeneratedGuideText = "";
+
+  function switchLicTab(tabName) {
+    document.querySelectorAll('.lic-tab-btn').forEach((b, i) => {
+      b.classList.remove('active');
+      if ((tabName === 'direct' && i === 0) || (tabName === 'requests' && i === 1) || (tabName === 'history' && i === 2)) {
+        b.classList.add('active');
+      }
+    });
+
+    document.getElementById('licTabDirect').style.display = (tabName === 'direct') ? 'block' : 'none';
+    document.getElementById('licTabRequests').style.display = (tabName === 'requests') ? 'block' : 'none';
+    document.getElementById('licTabHistory').style.display = (tabName === 'history') ? 'block' : 'none';
+
+    if (tabName === 'requests') loadLicenseRequests();
+    if (tabName === 'history') loadLicenseHistory();
+  }
+
+  // 1. 다이렉트 라이선스 즉시 생성 & 클립보드 복사
+  async function generateDirectLicense() {
+    var game = (document.getElementById('licInputGame').value || '').trim() || '공통';
+    var buyer = (document.getElementById('licInputBuyer').value || '').trim() || '직거래 구매자';
+    var type = document.getElementById('licSelectType').value || 'lifetime';
+
+    var randomKey = generateSecureKey();
+
+    try {
+      await apiRequest("app_licenses", "POST", [{
+        license_key: randomKey,
+        license_type: type,
+        game_name: game,
+        issued_to: buyer,
+        issue_method: 'direct',
+        is_used: false
+      }]);
+
+      var siteUrl = window.location.origin;
+      lastGeneratedGuideText = 
+`[길드 메신저 정식 라이선스 발급 안내]
+• 메신저 접속 주소: ${siteUrl}
+• 게임명: ${game}
+• 길드 라이선스 키: ${randomKey}
+• 등록 방법: 접속 후 [새 길드 개설] 메뉴에서 위 키를 입력하시면 길드 세팅이 완료됩니다.`;
+
+      document.getElementById('licDisplayCode').innerText = randomKey;
+      document.getElementById('licGeneratedResultBox').style.display = 'block';
+
+      navigator.clipboard.writeText(lastGeneratedGuideText).then(function() {
+        if (typeof showKakaoToast === 'function') {
+          showKakaoToast("라이선스 키와 안내문이 복사되었습니다!", "📋");
+        }
+      }).catch(function() {
+        if (typeof showKakaoToast === 'function') {
+          showKakaoToast(`[${randomKey}] 생성 완료!`, "🔑");
+        }
+      });
+    } catch (e) {
+      alert("라이선스 생성 실패: " + e.message);
+    }
+  }
+
+  function copyLastGeneratedGuide() {
+    if (!lastGeneratedGuideText) return;
+    navigator.clipboard.writeText(lastGeneratedGuideText).then(function() {
+      if (typeof showKakaoToast === 'function') showKakaoToast("안내문이 클립보드에 복사되었습니다!", "📋");
+    });
+  }
+
+  function generateSecureKey() {
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var part1 = '';
+    var part2 = '';
+    for (var i = 0; i < 4; i++) part1 += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (var j = 0; j < 4; j++) part2 += chars.charAt(Math.floor(Math.random() * chars.length));
+    return 'GUILD-' + part1 + '-' + part2;
+  }
+
+  // 2. 신청서 접수 목록 로드
+  async function loadLicenseRequests() {
+    var container = document.getElementById('licRequestsListArea');
+    if (!container) return;
+
+    try {
+      var list = await apiRequest("license_requests?order=created_at.desc&limit=50");
+      var pendingCount = (list || []).filter(r => r.status === 'pending').length;
+      document.getElementById('licPendingCount').innerText = pendingCount;
+
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="text-secondary small text-center py-4">접수된 신청서가 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(function(r) {
+        var isPending = (r.status === 'pending');
+        var badge = isPending 
+          ? '<span class="badge-lic-state unused">⏳ 대기중</span>'
+          : '<span class="badge-lic-state approved">✅ 승인완료</span>';
+
+        var actionBtn = isPending
+          ? `<button type="button" class="btn-item-action primary" onclick="approveLicenseRequest(${r.id}, '${escapeHtml(r.applicant_email)}', '${escapeHtml(r.game_name)}', '${escapeHtml(r.guild_name)}')"><i class="fa-solid fa-check me-1"></i>승인 & 키 발급</button>`
+          : `<span class="small text-secondary font-monospace">${escapeHtml(r.assigned_license_key || '-')}</span>`;
+
+        return `
+          <div class="lic-item-row">
+            <div class="lic-item-top">
+              <span class="fw-bold" style="font-size:0.84rem;">[${escapeHtml(r.game_name)}] ${escapeHtml(r.guild_name)}</span>
+              ${badge}
+            </div>
+            <div class="lic-item-meta">
+              <span>신청자: ${escapeHtml(r.applicant_name || '길드장')} (${escapeHtml(r.applicant_email)})</span>
+              <span>${(r.created_at || '').slice(0, 10)}</span>
+            </div>
+            ${r.contact_info ? `<div class="small text-secondary" style="font-size:0.68rem;">연락처: ${escapeHtml(r.contact_info)}</div>` : ''}
+            <div class="lic-item-actions justify-content-end">
+              ${actionBtn}
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      container.innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${e.message}</div>`;
+    }
+  }
+
+  // 3. 신청서 원클릭 승인 & 키 발급
+  async function approveLicenseRequest(id, email, game, guild) {
+    if (!confirm(`[${guild}] 길드의 라이선스를 승인하고 키를 발급하시겠습니까?`)) return;
+
+    var newKey = generateSecureKey();
+    try {
+      await apiRequest("app_licenses", "POST", [{
+        license_key: newKey,
+        license_type: 'standard',
+        game_name: game,
+        issued_to: email,
+        issue_method: 'email_request',
+        is_used: false
+      }]);
+
+      await apiRequest(`license_requests?id=eq.${id}`, "PATCH", {
+        status: 'approved',
+        assigned_license_key: newKey
+      });
+
+      var siteUrl = window.location.origin;
+      var copyText = 
+`[길드 메신저 라이선스 승인 완료]
+신청하신 [${guild}] 길드의 라이선스가 발급되었습니다.
+• 접속 URL: ${siteUrl}
+• 라이선스 키: ${newKey}
+접속 후 [새 길드 개설] 메뉴에 입력하세요.`;
+
+      navigator.clipboard.writeText(copyText);
+      if (typeof showKakaoToast === 'function') {
+        showKakaoToast(`[${newKey}] 발급 완료 및 안내문 복사!`, "🎉");
+      }
+      await loadLicenseRequests();
+    } catch (e) {
+      alert("승인 처리 실패: " + e.message);
+    }
+  }
+
+  // 4. 발급된 전체 이력 목록 로드
+  async function loadLicenseHistory() {
+    var container = document.getElementById('licHistoryListArea');
+    if (!container) return;
+
+    try {
+      var list = await apiRequest("app_licenses?order=created_at.desc&limit=80");
+      if (!list || list.length === 0) {
+        container.innerHTML = '<div class="text-secondary small text-center py-4">발급 이력이 없습니다.</div>';
+        return;
+      }
+
+      container.innerHTML = list.map(function(item) {
+        var stateBadge = item.is_used 
+          ? '<span class="badge-lic-state used">사용완료</span>'
+          : '<span class="badge-lic-state unused">미사용 (대기)</span>';
+
+        return `
+          <div class="lic-item-row">
+            <div class="lic-item-top">
+              <span class="lic-item-code">${escapeHtml(item.license_key)}</span>
+              ${stateBadge}
+            </div>
+            <div class="lic-item-meta">
+              <span>[${escapeHtml(item.game_name || '공통')}] ${escapeHtml(item.issued_to || '-')}</span>
+              <span>${(item.created_at || '').slice(0, 10)}</span>
+            </div>
+            <div class="lic-item-actions justify-content-end">
+              <button type="button" class="btn-item-action" onclick="copyDirectKeyOnly('${escapeHtml(item.license_key)}')">
+                <i class="fa-solid fa-copy me-1"></i>키 복사
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (e) {
+      container.innerHTML = `<div class="text-danger small text-center py-4">조회 실패: ${e.message}</div>`;
+    }
+  }
+
+  function copyDirectKeyOnly(key) {
+    navigator.clipboard.writeText(key).then(function() {
+      if (typeof showKakaoToast === 'function') showKakaoToast(`[${key}] 키가 복사되었습니다!`, "📋");
+    });
+  }
+
+  function escapeHtml(t) {
+    return (t || '').replace(/[&<>"']/g, function(m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
+    });
+  }
+
+  (function initLicenseModule() {
+    switchLicTab('direct');
+  })();
+</script>
