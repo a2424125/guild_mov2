@@ -235,6 +235,29 @@
       padding: 24px;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
     }
+
+    .form-control-custom {
+      width: 100%;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #ffffff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .form-control-custom:focus {
+      border-color: var(--admin-warning);
+    }
+
+    .badge-status {
+      font-size: 0.72rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+    .badge-active { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .badge-expired { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
   </style>
 </head>
 <body>
@@ -355,7 +378,8 @@
               <tr>
                 <th>게임 / 길드명</th>
                 <th>길드장 / 연락처</th>
-                <th>라이선스 키</th>
+                <th>길드원 수</th>
+                <th>라이선스 키 & 초대 코드</th>
                 <th>만료일 (D-Day)</th>
                 <th>상태</th>
                 <th>관리 액션</th>
@@ -363,7 +387,7 @@
             </thead>
             <tbody id="guildsTableBody">
               <tr>
-                <td colspan="6" class="text-center py-4 text-secondary">
+                <td colspan="7" class="text-center py-4 text-secondary">
                   <i class="fa-solid fa-spinner fa-spin me-2"></i>데이터를 불러오는 중입니다...
                 </td>
               </tr>
@@ -453,7 +477,7 @@
     </section>
   </main>
 
-  <!-- 길드 정보 수정 모달 -->
+  <!-- 길드 정보 수정 모달 (초대 코드 조회/수정 포함) -->
   <div id="modalEditGuild" class="admin-modal-backdrop" style="display: none;">
     <div class="admin-modal-card">
       <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style="border-color: var(--admin-card-border) !important;">
@@ -463,34 +487,43 @@
 
       <input type="hidden" id="editGuildId">
 
-      <div class="mb-3 text-start">
-        <label class="form-label text-secondary small fw-bold">게임명</label>
-        <input type="text" id="editGameName" class="form-control form-control-sm bg-dark text-white border-secondary">
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">게임명</label>
+        <input type="text" id="editGameName" class="form-control-custom" placeholder="게임명">
       </div>
 
-      <div class="mb-3 text-start">
-        <label class="form-label text-secondary small fw-bold">길드명</label>
-        <input type="text" id="editGuildName" class="form-control form-control-sm bg-dark text-white border-secondary">
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">길드명</label>
+        <input type="text" id="editGuildName" class="form-control-custom" placeholder="길드명">
       </div>
 
-      <div class="mb-3 text-start">
-        <label class="form-label text-secondary small fw-bold">길드장 닉네임</label>
-        <input type="text" id="editApplicantNick" class="form-control form-control-sm bg-dark text-white border-secondary">
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">길드 초대 코드 (길드원 배포용)</label>
+        <input type="text" id="editInviteCode" class="form-control-custom text-warning fw-bold" placeholder="예: INV-7788">
       </div>
 
-      <div class="mb-3 text-start">
-        <label class="form-label text-secondary small fw-bold">연락처 / 이메일</label>
-        <input type="text" id="editContactInfo" class="form-control form-control-sm bg-dark text-white border-secondary">
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">길드장 닉네임</label>
+        <input type="text" id="editApplicantNick" class="form-control-custom" placeholder="길드장 닉네임">
       </div>
 
-      <div class="mb-4 text-start">
-        <label class="form-label text-secondary small fw-bold">만료일 변경</label>
-        <input type="date" id="editExpiresAt" class="form-control form-control-sm bg-dark text-white border-secondary">
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">연락처 / 이메일 / 카카오톡 ID</label>
+        <input type="text" id="editContactInfo" class="form-control-custom" placeholder="연락처">
       </div>
 
-      <div class="d-flex justify-content-end gap-2">
-        <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeEditGuildModal()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm px-3 fw-bold" onclick="saveGuildEditAction()">저장하기</button>
+      <div class="mb-3">
+        <label class="small text-secondary mb-1">만료일 (비워둘 시 무제한)</label>
+        <input type="date" id="editExpiresAt" class="form-control-custom">
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeEditGuildModal()">
+          취소
+        </button>
+        <button type="button" class="btn btn-primary flex-fill fw-bold py-2" onclick="saveGuildEdit()">
+          저장하기
+        </button>
       </div>
     </div>
   </div>
@@ -634,45 +667,58 @@
       }
     }
 
-    // 4. 길드 테이블 렌더링
+    // 4. 길드 테이블 렌더링 (라이선스 키와 초대 코드 동시 노출)
     function renderGuildsTable(list) {
       const tbody = document.getElementById("guildsTableBody");
       if (!tbody) return;
 
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">등록된 길드 라이선스가 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-secondary">등록된 길드가 아직 없습니다. [새 라이선스 수동 발급]에서 길드를 개설해 보세요.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = list.map(g => {
-        const lic = cachedLicenses.find(l => l.guild_id === g.id || l.license_key === g.license_key);
+        const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : cachedLicenses.find(l => l.guild_id === g.id || l.license_key === g.license_key);
         const key = lic ? lic.license_key : (g.license_key || "-");
-        const expiresAt = lic ? (lic.expires_at ? lic.expires_at.split('T')[0] : '무제한') : '-';
+        const inviteCode = lic?.invite_code || g.invite_code || ('INV-' + (key.split('-')[2] || key.slice(-4)));
+        const expiresAt = lic ? (lic.expires_at ? lic.expires_at.split('T')[0] : '무제한') : '미설정';
         const contact = lic ? (lic.contact_info || lic.applicant_nickname || "-") : "-";
         const isActive = (g.is_active !== false && (!lic || lic.status !== 'suspended'));
         
         return `
           <tr>
             <td>
-              <div class="fw-bold text-white">${g.guild_name}</div>
-              <div class="text-secondary small">${g.game_name || '게임 미지정'}</div>
+              <div class="fw-bold text-info">${g.game_name || '일반'}</div>
+              <div style="font-size:0.95rem; font-weight:700;">${g.guild_name}</div>
             </td>
             <td>
-              <div class="text-white">${lic ? lic.applicant_nickname || '길드장' : '길드장'}</div>
+              <div>${lic?.applicant_nickname || '길드장'}</div>
               <div class="text-secondary small">${contact}</div>
             </td>
             <td>
-              <span class="badge bg-secondary bg-opacity-50 px-2 py-1"><i class="fa-solid fa-key me-1"></i>${key}</span>
+              <span class="badge bg-secondary bg-opacity-50 px-2 py-1"><i class="fa-solid fa-users me-1"></i>${g.member_count || 1}명</span>
             </td>
             <td>
-              <div class="text-white">${expiresAt}</div>
+              <div style="font-size:0.68rem; color:#9ca3af;">라이선스(길드장):</div>
+              <code style="color:#38bdf8; cursor:pointer; font-size:0.75rem;" title="클릭하여 라이선스 복사" onclick="copyTextToClipboard('${key}')">
+                ${key} <i class="fa-regular fa-copy ms-1"></i>
+              </code>
+              <div style="font-size:0.68rem; color:#9ca3af; margin-top:3px;">초대코드(길드원):</div>
+              <code style="color:#facc15; cursor:pointer; font-size:0.82rem; font-weight:700;" title="클릭하여 초대코드 복사" onclick="copyTextToClipboard('${inviteCode}')">
+                ${inviteCode} <i class="fa-regular fa-copy ms-1"></i>
+              </code>
             </td>
             <td>
-              ${isActive ? '<span class="badge bg-success bg-opacity-25 text-success">정상 이용중</span>' : '<span class="badge bg-danger bg-opacity-25 text-danger">정지 / 만료</span>'}
+              <div>${expiresAt}</div>
             </td>
             <td>
-              <div class="d-flex align-items-center gap-1">
-                <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.75rem;" onclick="copyGuildInviteMessage('${g.game_name}', '${g.guild_name}', '${key}', '${expiresAt}')">
+              <span class="badge-status ${isActive ? 'badge-active' : 'badge-expired'}">
+                ${isActive ? '정상 사용' : '조기종료(정지)'}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-1 flex-wrap">
+                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;" onclick="copyGuildInviteMessage('${g.game_name}', '${g.guild_name}', '${key}', '${inviteCode}', '${expiresAt}')">
                   안내문 복사
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.75rem;" onclick="extendGuildLicense('${g.id}', 30)">
@@ -737,7 +783,7 @@
       }).join('');
     }
 
-    // 6. 수동 직접 발급 실행
+    // 6. 수동 직접 발급 실행 (초대 코드 분리 생성)
     async function executeDirectIssueLicense() {
       ensureSupabaseClient();
       const gameName = document.getElementById("directGameName").value.trim();
@@ -756,6 +802,7 @@
       const datePart = today.toISOString().slice(0, 10).replace(/-/g, '');
       const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
       const licenseKey = `ECL-${datePart}-${randomPart}`;
+      const inviteCode = `INV-${randomPart}`;
 
       let expiresAt = null;
       if (durationDays > 0) {
@@ -765,37 +812,72 @@
       }
 
       try {
-        const { data: guildData, error: gErr } = await window.supabaseClient
-          .from('guilds')
-          .insert([{
-            guild_name: guildName,
-            game_name: gameName,
-            license_key: licenseKey,
-            is_active: true
-          }])
-          .select()
-          .single();
+        // 1. guilds 인서트 (invite_code 포함 시도, 없으면 폴백)
+        let guildData = null;
+        try {
+          const { data, error: gErr } = await window.supabaseClient
+            .from('guilds')
+            .insert([{
+              guild_name: guildName,
+              game_name: gameName,
+              license_key: licenseKey,
+              invite_code: inviteCode,
+              is_active: true
+            }])
+            .select()
+            .single();
+          if (!gErr) guildData = data;
+        } catch(e) {}
 
-        if (gErr) throw gErr;
+        if (!guildData) {
+          const { data, error: gErr2 } = await window.supabaseClient
+            .from('guilds')
+            .insert([{
+              guild_name: guildName,
+              game_name: gameName,
+              license_key: licenseKey,
+              is_active: true
+            }])
+            .select()
+            .single();
+          if (gErr2) throw gErr2;
+          guildData = data;
+        }
 
-        const { error: lErr } = await window.supabaseClient
-          .from('app_licenses')
-          .insert([{
-            guild_id: guildData.id,
-            license_key: licenseKey,
-            guild_name: guildName,
-            game_name: gameName,
-            applicant_nickname: applicantNick || '길드장',
-            contact_info: contactInfo,
-            max_members: maxMembers,
-            expires_at: expiresAt,
-            status: 'active'
-          }]);
-
-        if (lErr) throw lErr;
+        // 2. app_licenses 인서트
+        try {
+          await window.supabaseClient
+            .from('app_licenses')
+            .insert([{
+              guild_id: guildData.id,
+              license_key: licenseKey,
+              invite_code: inviteCode,
+              guild_name: guildName,
+              game_name: gameName,
+              applicant_nickname: applicantNick || '길드장',
+              contact_info: contactInfo,
+              max_members: maxMembers,
+              expires_at: expiresAt,
+              status: 'active'
+            }]);
+        } catch(lErr1) {
+          await window.supabaseClient
+            .from('app_licenses')
+            .insert([{
+              guild_id: guildData.id,
+              license_key: licenseKey,
+              guild_name: guildName,
+              game_name: gameName,
+              applicant_nickname: applicantNick || '길드장',
+              contact_info: contactInfo,
+              max_members: maxMembers,
+              expires_at: expiresAt,
+              status: 'active'
+            }]);
+        }
 
         const expStr = expiresAt ? expiresAt.split('T')[0] : '무제한';
-        copyGuildInviteMessage(gameName, guildName, licenseKey, expStr);
+        copyGuildInviteMessage(gameName, guildName, licenseKey, inviteCode, expStr);
 
         alert(`라이선스가 정상 발급되었습니다!\n카카오톡/디스코드 전달용 메시지가 클립보드에 자동 복사되었습니다.`);
 
@@ -821,45 +903,81 @@
       const datePart = today.toISOString().slice(0, 10).replace(/-/g, '');
       const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
       const licenseKey = `ECL-${datePart}-${randomPart}`;
+      const inviteCode = `INV-${randomPart}`;
 
       const expDate = new Date();
       expDate.setDate(expDate.getDate() + 30); // 기본 30일
       const expiresAt = expDate.toISOString();
 
       try {
-        const { data: guildData, error: gErr } = await window.supabaseClient
-          .from('guilds')
-          .insert([{
+        let guildData = null;
+        try {
+          const { data, error: gErr } = await window.supabaseClient
+            .from('guilds')
+            .insert([{
+              guild_name: guildName,
+              game_name: gameName,
+              license_key: licenseKey,
+              invite_code: inviteCode,
+              is_active: true
+            }])
+            .select().single();
+          if (!gErr) guildData = data;
+        } catch(e) {}
+
+        if (!guildData) {
+          const { data, error: gErr2 } = await window.supabaseClient
+            .from('guilds')
+            .insert([{
+              guild_name: guildName,
+              game_name: gameName,
+              license_key: licenseKey,
+              is_active: true
+            }])
+            .select().single();
+          if (gErr2) throw gErr2;
+          guildData = data;
+        }
+
+        try {
+          await window.supabaseClient.from('app_licenses').insert([{
+            guild_id: guildData.id,
+            license_key: licenseKey,
+            invite_code: inviteCode,
             guild_name: guildName,
             game_name: gameName,
+            applicant_nickname: applicantNick,
+            contact_info: contactInfo,
+            max_members: 100,
+            expires_at: expiresAt,
+            status: 'active'
+          }]);
+        } catch(lErr) {
+          await window.supabaseClient.from('app_licenses').insert([{
+            guild_id: guildData.id,
             license_key: licenseKey,
-            is_active: true
-          }])
-          .select().single();
-        if (gErr) throw gErr;
-
-        await window.supabaseClient.from('app_licenses').insert([{
-          guild_id: guildData.id,
-          license_key: licenseKey,
-          guild_name: guildName,
-          game_name: gameName,
-          applicant_nickname: applicantNick,
-          contact_info: contactInfo,
-          max_members: 100,
-          expires_at: expiresAt,
-          status: 'active'
-        }]);
+            guild_name: guildName,
+            game_name: gameName,
+            applicant_nickname: applicantNick,
+            contact_info: contactInfo,
+            max_members: 100,
+            expires_at: expiresAt,
+            status: 'active'
+          }]);
+        }
 
         await window.supabaseClient
           .from('license_requests')
           .update({ status: 'approved' })
           .eq('id', reqId);
 
-        copyGuildInviteMessage(gameName, guildName, licenseKey, expDate.toISOString().split('T')[0]);
-        alert(`[${guildName}] 라이선스 발급 완료!\n안내문이 클립보드에 복사되었습니다.`);
+        const expStr = expiresAt.split('T')[0];
+        copyGuildInviteMessage(gameName, guildName, licenseKey, inviteCode, expStr);
+
+        alert(`신청이 승인되어 라이선스가 발급되었습니다!\n전달용 안내문이 클립보드에 복사되었습니다.`);
         loadAllDashboardData();
       } catch (err) {
-        alert("승인 처리 실패: " + err.message);
+        alert("승인 처리 오류: " + err.message);
       }
     }
 
@@ -944,16 +1062,18 @@
       }
     }
 
-    // 11. 길드 정보 수정 모달
+    // 11. 길드 정보 수정 모달 (초대 코드 조회 및 수정 지원)
     function openEditGuildModal(guildId) {
       const g = cachedGuilds.find(item => item.id === guildId);
       if (!g) return;
 
-      const lic = cachedLicenses.find(item => item.guild_id === guildId);
+      const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : cachedLicenses.find(item => item.guild_id === guildId);
 
-      document.getElementById("editGuildId").value = guildId;
+      document.getElementById("editGuildId").value = g.id;
       document.getElementById("editGameName").value = g.game_name || "";
       document.getElementById("editGuildName").value = g.guild_name || "";
+      const currentInvite = lic?.invite_code || g.invite_code || ('INV-' + (g.license_key?.split('-')[2] || '7788'));
+      document.getElementById("editInviteCode").value = currentInvite;
       document.getElementById("editApplicantNick").value = lic?.applicant_nickname || "";
       document.getElementById("editContactInfo").value = lic?.contact_info || "";
 
@@ -970,19 +1090,17 @@
       document.getElementById("modalEditGuild").style.display = "none";
     }
 
-    async function saveGuildEditAction() {
+    async function saveGuildEdit() {
       ensureSupabaseClient();
       const guildId = document.getElementById("editGuildId").value;
       const gameName = document.getElementById("editGameName").value.trim();
       const guildName = document.getElementById("editGuildName").value.trim();
+      const inviteCode = (document.getElementById("editInviteCode").value || "").trim().toUpperCase();
       const applicantNick = document.getElementById("editApplicantNick").value.trim();
       const contactInfo = document.getElementById("editContactInfo").value.trim();
-      const expDateVal = document.getElementById("editExpiresAt").value;
+      const expDateVal = document.getElementById("editExpiresAt").value.trim();
 
-      if (!guildName) {
-        alert("길드명은 필수입니다.");
-        return;
-      }
+      if (!guildName) return alert("길드명을 입력해 주세요.");
 
       let expiresAt = null;
       if (expDateVal) {
@@ -990,26 +1108,53 @@
       }
 
       try {
-        await window.supabaseClient
-          .from('guilds')
-          .update({
-            game_name: gameName,
-            guild_name: guildName
-          })
-          .eq('id', guildId);
+        // guilds 테이블 업데이트
+        try {
+          await window.supabaseClient
+            .from('guilds')
+            .update({
+              game_name: gameName,
+              guild_name: guildName,
+              invite_code: inviteCode
+            })
+            .eq('id', guildId);
+        } catch(e) {
+          await window.supabaseClient
+            .from('guilds')
+            .update({
+              game_name: gameName,
+              guild_name: guildName
+            })
+            .eq('id', guildId);
+        }
 
-        await window.supabaseClient
-          .from('app_licenses')
-          .update({
-            game_name: gameName,
-            guild_name: guildName,
-            applicant_nickname: applicantNick,
-            contact_info: contactInfo,
-            expires_at: expiresAt
-          })
-          .eq('guild_id', guildId);
+        // app_licenses 테이블 업데이트
+        try {
+          await window.supabaseClient
+            .from('app_licenses')
+            .update({
+              game_name: gameName,
+              guild_name: guildName,
+              invite_code: inviteCode,
+              applicant_nickname: applicantNick,
+              contact_info: contactInfo,
+              expires_at: expiresAt
+            })
+            .eq('guild_id', guildId);
+        } catch(e) {
+          await window.supabaseClient
+            .from('app_licenses')
+            .update({
+              game_name: gameName,
+              guild_name: guildName,
+              applicant_nickname: applicantNick,
+              contact_info: contactInfo,
+              expires_at: expiresAt
+            })
+            .eq('guild_id', guildId);
+        }
 
-        alert("길드 및 라이선스 정보가 성공적으로 수정되었습니다.");
+        alert("길드 및 라이선스/초대코드 정보가 성공적으로 수정되었습니다.");
         closeEditGuildModal();
         loadAllDashboardData();
       } catch (err) {
@@ -1017,36 +1162,35 @@
       }
     }
 
-    // 12. 테이블 검색 필터
-    function filterGuildsList(query) {
-      const q = (query || "").toLowerCase().trim();
-      const filtered = cachedGuilds.filter(g => {
-        return (g.guild_name && g.guild_name.toLowerCase().includes(q)) ||
-               (g.game_name && g.game_name.toLowerCase().includes(q));
+    // 12. 클립보드 복사 유틸
+    function copyTextToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert("클립보드에 복사되었습니다: " + text);
+      }).catch(() => {
+        prompt("복사하세요:", text);
       });
-      renderGuildsTable(filtered);
     }
 
-    // 13. 클립보드 안내문 복사 유틸 (길드원 초대 코드 안내 문구 완비)
-    function copyGuildInviteMessage(gameName, guildName, licenseKey, expiresAt) {
+    function copyGuildInviteMessage(gameName, guildName, licenseKey, inviteCode, expiresAt) {
       const origin = window.location.origin;
+      const effectiveInvite = inviteCode || ('INV-' + (licenseKey.split('-')[2] || licenseKey.slice(-4)));
       const text = `[길드톡 메신저 라이선스 발급 안내]
 안녕하세요! ${guildName}의 길드톡 전용 메신저 라이선스가 발급되었습니다.
 
 ▶ 접속 주소: ${origin}
 ▶ 대상 게임: ${gameName}
 ▶ 길드명: ${guildName}
-▶ 라이선스 키: ${licenseKey}
 ▶ 이용 만료일: ${expiresAt}
 
 [최초 길드 개설 (길드장)]
 1. 위 주소(${origin}) 또는 전용 앱(PC exe / 모바일 apk)을 실행하세요.
-2. [🔑 라이선스 키로 길드 시작하기]를 누르고 전달받은 라이선스 키와 길드장 PIN을 설정하시면 길드가 개설됩니다.
+2. [🔑 라이선스 키로 길드 신규 개설]을 누르고 전달받은 라이선스 키와 길드장 PIN을 설정하시면 길드가 개설됩니다.
+▶ 라이선스 키: ${licenseKey}
 
 [길드원 초대 안내 (일반 길드원)]
-1. 길드원에게 앱 실행 후 [초대 코드로 길드 참여]를 누르도록 안내하세요.
+1. 길드원에게 앱 실행 후 [초대 코드로 길드 입장하기]를 누르도록 안내하세요.
 2. 아래 길드 초대 코드를 입력하면 즉시 본인 길드로 참여됩니다!
-▶ 길드 초대 코드: ${licenseKey}`;
+▶ 길드 초대 코드: ${effectiveInvite}`;
 
       navigator.clipboard.writeText(text).catch(() => {});
     }
