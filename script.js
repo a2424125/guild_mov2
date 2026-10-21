@@ -654,7 +654,17 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
   
   const timeStr = formatKSTChatTime(msg.created_at);
-  const unreadCount = 1;
+  const totalMembers = (cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 49;
+  
+  let unreadCount = 0;
+  if (msg.created_at) {
+    const elapsedMin = Math.floor((Date.now() - new Date(msg.created_at).getTime()) / (1000 * 60));
+    const readMembers = Math.min(totalMembers, (isMe ? 1 : 0) + Math.max(0, Math.floor(elapsedMin * 0.8)));
+    unreadCount = Math.max(0, totalMembers - readMembers);
+  } else {
+    unreadCount = isMe ? Math.max(0, totalMembers - 1) : totalMembers;
+  }
+  const unreadSpanHtml = (unreadCount > 0) ? `<span class="chat-unread-count">${unreadCount}</span>` : `<span class="chat-unread-count"></span>`;
 
   let html = "";
   const cleanMessageText = (msg.message || '').trim();
@@ -679,7 +689,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
               ${cleanMessageText}
             </div>
             <div class="chat-meta-box">
-              <span class="chat-unread-count">${unreadCount}</span>
+              ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
           </div>
@@ -698,7 +708,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
           <div class="chat-bubble-flex">
             ${cardContent}
             <div class="chat-meta-box">
-              <span class="chat-unread-count">${unreadCount}</span>
+              ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
           </div>
@@ -717,7 +727,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
           <div class="chat-bubble-flex">
             ${cleanCard}
             <div class="chat-meta-box">
-              <span class="chat-unread-count">${unreadCount}</span>
+              ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
           </div>
@@ -742,7 +752,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
             <div class="chat-bubble-flex">
               <div class="chat-bubble">${formatMessageWithMentions(cleanMessageText)}</div>
               <div class="chat-meta-box">
-                <span class="chat-unread-count">${unreadCount}</span>
+                ${unreadSpanHtml}
                 <span class="chat-timestamp">${timeStr}</span>
               </div>
             </div>
@@ -796,7 +806,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
 
                 <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 7px; padding: 6px 9px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <span style="font-size: 11px; font-weight: 700; color: var(--kakao-notice-text);">💵 1인당 최종 배당금:</span>
-                  <strong style="font-size: 12px; font-weight: 900; color: #059669;">+${perShare} D</strong>
+                  <strong style="font-size: 13px; font-weight: 900; color: #059669;">+${perShare} D</strong>
                 </div>
 
                 <div style="background: rgba(0, 0, 0, 0.03); border: 1px solid var(--drawer-card-border); border-radius: 6px; padding: 5px 8px; max-height: 75px; overflow-y: auto;">
@@ -808,7 +818,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
               </div>
 
               <div class="chat-meta-box">
-                <span class="chat-unread-count">${unreadCount}</span>
+                ${unreadSpanHtml}
                 <span class="chat-timestamp">${reportTime}</span>
               </div>
             </div>
@@ -834,7 +844,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
             <div class="chat-bubble-flex">
               <div class="chat-bubble">${formatMessageWithMentions(cleanMessageText)}</div>
               <div class="chat-meta-box">
-                <span class="chat-unread-count">${unreadCount}</span>
+                ${unreadSpanHtml}
                 <span class="chat-timestamp">${timeStr}</span>
               </div>
             </div>
@@ -972,7 +982,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
               </div>
 
               <div class="chat-meta-box">
-                <span class="chat-unread-count">${unreadCount}</span>
+                ${unreadSpanHtml}
                 <span class="chat-timestamp">${timeStr}</span>
               </div>
             </div>
@@ -1029,7 +1039,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
               ${subCutButtonHtml}
             </div>
             <div class="chat-meta-box">
-              <span class="chat-unread-count">${unreadCount}</span>
+              ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
           </div>
@@ -1045,7 +1055,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
           <div class="chat-bubble-flex">
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
             <div class="chat-meta-box">
-              <span class="chat-unread-count">1</span>
+              ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
           </div>
@@ -1065,7 +1075,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
           <div class="chat-bubble-flex">
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
             <div class="chat-meta-box">
-              <span class="chat-unread-count">${unreadCount}</span>
+              ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
           </div>
