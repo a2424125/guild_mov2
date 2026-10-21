@@ -2,584 +2,571 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>길드톡 마스터 관리 센터</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECLIPSE 마스터 관리자 센터 (SaaS Master Portal)</title>
 
-  <!-- 부트스트랩 5 & 폰트어썸 6 -->
+  <!-- 부트스트랩 5 & 폰트어썸 6 아이콘 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Supabase JS SDK & 설정 -->
+  <!-- Supabase 공식 SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
   <style>
     :root {
-      --admin-bg: #0f172a;
-      --admin-card-bg: #1e293b;
-      --admin-card-border: #334155;
-      --admin-text-main: #f8fafc;
-      --admin-text-muted: #94a3b8;
-      --admin-primary: #38bdf8;
-      --admin-success: #22c55e;
+      --admin-bg: #0b0f19;
+      --admin-card-bg: #111827;
+      --admin-card-border: #1f2937;
+      --admin-text-main: #f9fafb;
+      --admin-text-sub: #9ca3af;
+      --admin-accent: #3b82f6;
       --admin-warning: #f59e0b;
+      --admin-success: #10b981;
       --admin-danger: #ef4444;
     }
 
     body {
       background-color: var(--admin-bg);
       color: var(--admin-text-main);
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Pretendard, "Noto Sans KR", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
       margin: 0;
       padding: 0;
       min-height: 100vh;
     }
 
-    /* 관리자 인증 락 화면 */
-    #lockScreen {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .lock-card {
-      background: var(--admin-card-bg);
-      border: 1px solid var(--admin-card-border);
-      border-radius: 16px;
-      padding: 32px 24px;
-      max-width: 360px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    }
-
-    /* 메인 컨테이너 */
-    .admin-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 16px 60px 16px;
-    }
-
-    /* 상단 네비게이션 헤더 */
-    .admin-header {
+    .admin-navbar {
+      background-color: var(--admin-card-bg);
+      border-bottom: 1px solid var(--admin-card-border);
+      padding: 14px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
-      background: var(--admin-card-bg);
-      border: 1px solid var(--admin-card-border);
-      border-radius: 14px;
-      margin-bottom: 20px;
     }
-    .admin-title-box {
+
+    .admin-brand {
+      font-size: 1.15rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
+      color: #ffffff;
+      letter-spacing: -0.5px;
     }
-    .admin-logo-icon {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-      border-radius: 10px;
+
+    .admin-brand i {
+      color: var(--admin-warning);
+    }
+
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* KPI 카드 그리드 */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background-color: var(--admin-card-bg);
+      border: 1px solid var(--admin-card-border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .kpi-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-top: 4px;
+    }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--admin-text-sub);
+    }
+
+    .kpi-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.3rem;
-      color: #fff;
     }
 
-    /* KPI 요약 카드 */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .kpi-card {
-      background: var(--admin-card-bg);
-      border: 1px solid var(--admin-card-border);
-      border-radius: 12px;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .kpi-icon-wrap {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.25rem;
-    }
-    .kpi-value {
-      font-size: 1.5rem;
-      font-weight: 800;
-      line-height: 1.2;
-    }
-    .kpi-label {
-      font-size: 0.75rem;
-      color: var(--admin-text-muted);
-    }
-
-    /* 탭 메뉴 */
-    .admin-tabs {
-      display: flex;
-      gap: 8px;
-      border-bottom: 1px solid var(--admin-card-border);
-      margin-bottom: 20px;
-      padding-bottom: 8px;
-      overflow-x: auto;
-    }
-    .admin-tab-btn {
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--admin-text-muted);
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .admin-tab-btn:hover {
-      color: var(--admin-text-main);
-      background: rgba(255, 255, 255, 0.05);
-    }
-    .admin-tab-btn.active {
-      background: #0284c7;
-      color: #fff;
-      border-color: #0284c7;
-    }
-
-    /* 카드 패널 */
-    .admin-panel {
-      background: var(--admin-card-bg);
+    /* 탭 및 메인 카드 */
+    .admin-main-card {
+      background-color: var(--admin-card-bg);
       border: 1px solid var(--admin-card-border);
       border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 24px;
+      overflow: hidden;
     }
-    .panel-header {
+
+    .admin-nav-tabs {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid var(--admin-card-border);
+      background-color: rgba(17, 24, 39, 0.8);
+      padding: 0 16px;
     }
-    .panel-title {
-      font-size: 1rem;
+
+    .admin-tab-btn {
+      background: none;
+      border: none;
+      color: var(--admin-text-sub);
+      font-size: 0.88rem;
       font-weight: 700;
+      padding: 16px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    .admin-tab-btn:hover {
+      color: var(--admin-text-main);
+    }
+
+    .admin-tab-btn.active {
+      color: var(--admin-warning);
+      border-bottom-color: var(--admin-warning);
     }
 
     /* 테이블 스타일 */
-    .custom-table {
+    .admin-table {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+      border-collapse: collapse;
       color: var(--admin-text-main);
-      font-size: 0.82rem;
+      font-size: 0.85rem;
     }
-    .custom-table th {
-      background: rgba(15, 23, 42, 0.6);
-      color: var(--admin-text-muted);
-      font-weight: 600;
-      padding: 10px 12px;
+
+    .admin-table th {
+      background-color: rgba(31, 41, 55, 0.5);
+      padding: 12px 16px;
+      font-weight: 700;
+      color: var(--admin-text-sub);
       border-bottom: 1px solid var(--admin-card-border);
-      white-space: nowrap;
+      text-align: left;
     }
-    .custom-table td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+    .admin-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.6);
       vertical-align: middle;
     }
-    .custom-table tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
+
+    .admin-table tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
     }
 
-    /* 폼 요소 */
-    .form-control-custom {
-      background: #0f172a;
+    /* 인증 락커 오버레이 */
+    .admin-auth-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-color: #060a12;
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .auth-card {
+      background-color: var(--admin-card-bg);
       border: 1px solid var(--admin-card-border);
-      color: #fff;
-      border-radius: 8px;
-      padding: 9px 12px;
-      font-size: 0.85rem;
+      border-radius: 16px;
+      padding: 32px 28px;
+      max-width: 380px;
       width: 100%;
-      box-sizing: border-box;
-    }
-    .form-control-custom:focus {
-      outline: none;
-      border-color: var(--admin-primary);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
 
-    /* 뱃지 */
-    .badge-status {
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 600;
+    .auth-input-pin {
+      width: 100%;
+      height: 48px;
+      font-size: 1.4rem;
+      letter-spacing: 8px;
+      text-align: center;
+      background: #1f2937;
+      border: 1px solid #374151;
+      border-radius: 10px;
+      color: #ffffff;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.15s ease;
     }
-    .badge-active { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-    .badge-expired { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .badge-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    .auth-input-pin:focus {
+      border-color: var(--admin-warning);
+    }
+
+    /* 공통 모달 팝업 */
+    .admin-modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .admin-modal-card {
+      background: var(--admin-card-bg);
+      border: 1px solid var(--admin-card-border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 480px;
+      padding: 24px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    }
   </style>
 </head>
 <body>
 
-  <!-- 1. 마스터 비밀번호 인증 락 화면 (기본 PIN: master7777) -->
-  <div id="lockScreen">
-    <div class="lock-card">
-      <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); color: var(--admin-primary); display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 16px;">
-        <i class="fa-solid fa-shield-halved"></i>
+  <!-- 마스터 인증 오버레이 (보안 잠금) -->
+  <div id="adminAuthOverlay" class="admin-auth-overlay">
+    <div class="auth-card">
+      <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(245, 158, 11, 0.15); color: #f59e0b; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 16px;">
+        <i class="fa-solid fa-lock"></i>
       </div>
-      <h5 class="fw-bold mb-1">마스터 관리자 인증</h5>
-      <p class="text-secondary small mb-4" style="font-size: 0.78rem;">플랫폼 소유자 전용 라이선스 관리 센터입니다.<br>마스터 비밀번호(PIN)를 입력하세요.</p>
+      <h5 class="fw-bold text-white mb-1">ECLIPSE 마스터 인증</h5>
+      <p class="text-secondary small mb-4">최고 관리자 전용 PIN 번호를 입력하세요.</p>
       
-      <input type="password" id="masterPinInput" class="form-control-custom text-center mb-3" placeholder="마스터 비밀번호 입력" style="font-size: 1.1rem; letter-spacing: 3px;" onkeypress="if(event.keyCode===13){ verifyMasterPin(); }">
+      <input type="password" id="masterPinInput" class="auth-input-pin" maxlength="10" placeholder="••••" onkeypress="if(event.keyCode===13){ verifyMasterPin(); }">
       
-      <button type="button" class="btn btn-primary w-100 fw-bold py-2 mb-2" onclick="verifyMasterPin()">
-        인증 및 접속
+      <button type="button" class="btn btn-warning w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; font-size: 0.95rem; border-radius: 10px;" onclick="verifyMasterPin()">
+        마스터 콘솔 입장
       </button>
-      <div class="text-secondary small mt-3" style="font-size: 0.7rem;">
-        * 초기 비밀번호는 <code>master7777</code> 입니다.
-      </div>
+      <div class="text-secondary" style="font-size: 0.72rem;">* 기본 마스터 PIN: master7777</div>
     </div>
   </div>
 
-  <!-- 2. 메인 관리자 대시보드 컨테이너 -->
-  <div class="admin-container" id="adminMainContent" style="display: none;">
-    
-    <!-- 상단 헤더 -->
-    <header class="admin-header">
-      <div class="admin-title-box">
-        <div class="admin-logo-icon">
-          <i class="fa-solid fa-crown"></i>
-        </div>
-        <div>
-          <h5 class="fw-bold mb-0" style="font-size: 1.1rem;">길드톡 SaaS 마스터 관리 센터</h5>
-          <span class="text-secondary small" style="font-size: 0.75rem;">라이선스 발급 및 이용 고객(길드/인원) 통합 모니터링</span>
-        </div>
-      </div>
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-info btn-sm" onclick="loadAllDashboardData()">
-          <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
-        </button>
-        <button type="button" class="btn btn-outline-danger btn-sm" onclick="logoutMaster()">
-          <i class="fa-solid fa-lock me-1"></i>잠금
-        </button>
-      </div>
-    </header>
+  <!-- 상단 네비게이션 -->
+  <header class="admin-navbar">
+    <div class="admin-brand">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>ECLIPSE SaaS Master Portal</span>
+      <span class="badge bg-warning text-dark px-2 py-1 ms-2" style="font-size: 0.65rem; border-radius: 6px;">MASTER ADMIN</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <span class="text-secondary small d-none d-sm-inline" id="adminStatusText">
+        <i class="fa-solid fa-circle text-success me-1" style="font-size:0.5rem;"></i>시스템 정상 작동 중
+      </span>
+      <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1" style="font-size: 0.78rem;" onclick="adminLogout()">
+        <i class="fa-solid fa-right-from-bracket me-1"></i>로그아웃
+      </button>
+    </div>
+  </header>
 
-    <!-- KPI 요약 카드 그리드 -->
-    <div class="kpi-grid">
+  <!-- 대시보드 메인 컨테이너 -->
+  <main class="admin-container">
+    
+    <!-- KPI 핵심 통계 요약 그리드 -->
+    <section class="kpi-grid">
       <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+        <div>
+          <div class="kpi-label">활성 길드 (Active)</div>
+          <div class="kpi-value text-warning" id="kpiActiveGuilds">0</div>
+        </div>
+        <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
           <i class="fa-solid fa-shield-halved"></i>
         </div>
-        <div>
-          <div class="kpi-value" id="kpiActiveGuilds">0</div>
-          <div class="kpi-label">활성 길드 수</div>
-        </div>
       </div>
+
       <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">
+        <div>
+          <div class="kpi-label">전체 등록 길드원</div>
+          <div class="kpi-value text-primary" id="kpiTotalMembers">0</div>
+        </div>
+        <div class="kpi-icon-wrap" style="background: rgba(59, 130, 246, 0.15); color: #3b82f6;">
           <i class="fa-solid fa-users"></i>
         </div>
+      </div>
+
+      <div class="kpi-card">
         <div>
-          <div class="kpi-value" id="kpiTotalMembers">0</div>
-          <div class="kpi-label">총 이용 길드원 수</div>
+          <div class="kpi-label">신청 대기 (Pending)</div>
+          <div class="kpi-value text-danger" id="kpiPendingRequests">0</div>
+        </div>
+        <div class="kpi-icon-wrap" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+          <i class="fa-solid fa-clock"></i>
         </div>
       </div>
+
       <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
-          <i class="fa-solid fa-inbox"></i>
-        </div>
         <div>
-          <div class="kpi-value" id="kpiPendingRequests">0</div>
-          <div class="kpi-label">대기 중인 발급 신청</div>
+          <div class="kpi-label">총 발급된 라이선스</div>
+          <div class="kpi-value text-success" id="kpiTotalLicenses">0</div>
         </div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+        <div class="kpi-icon-wrap" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
           <i class="fa-solid fa-key"></i>
         </div>
-        <div>
-          <div class="kpi-value" id="kpiTotalLicenses">0</div>
-          <div class="kpi-label">누적 발급 라이선스</div>
-        </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 탭 네비게이션 -->
-    <div class="admin-tabs">
-      <button type="button" class="admin-tab-btn active" onclick="switchAdminTab('guilds', this)">
-        <i class="fa-solid fa-users-gear"></i>구매 길드 및 인원 관리 (<span id="tabCountGuilds">0</span>)
-      </button>
-      <button type="button" class="admin-tab-btn" onclick="switchAdminTab('issue', this)">
-        <i class="fa-solid fa-plus-circle"></i>다이렉트 즉시 발급 (카톡/디코 전달)
-      </button>
-      <button type="button" class="admin-tab-btn" onclick="switchAdminTab('requests', this)">
-        <i class="fa-solid fa-envelope-open-text"></i>신청 접수함 (<span id="tabCountRequests">0</span>)
-      </button>
-    </div>
-
-    <!-- [탭 1] 구매 길드 및 이용 인원 관리 -->
-    <div id="tabPanelGuilds" class="admin-panel">
-      <div class="panel-header">
-        <div class="panel-title">
-          <i class="fa-solid fa-building-user text-primary"></i>
-          <span>현재 서비스 이용 중인 길드 및 인원 현황</span>
-        </div>
-        <div style="max-width: 280px; width: 100%;">
-          <input type="text" class="form-control-custom" placeholder="게임명, 길드명, 길드장 검색..." oninput="filterGuildTable(this.value)">
-        </div>
+    <!-- 메인 관리 탭 컨테이너 -->
+    <section class="admin-main-card">
+      <div class="admin-nav-tabs">
+        <button type="button" class="admin-tab-btn active" onclick="switchAdminTab('guilds', this)">
+          <i class="fa-solid fa-building"></i>
+          <span>길드 라이선스 현황</span>
+        </button>
+        <button type="button" class="admin-tab-btn" onclick="switchAdminTab('requests', this)">
+          <i class="fa-solid fa-inbox"></i>
+          <span>신규 신청서 관리</span>
+          <span class="badge bg-danger ms-1" id="tabReqBadge" style="font-size:0.65rem; display:none;">0</span>
+        </button>
+        <button type="button" class="admin-tab-btn" onclick="switchAdminTab('issue', this)">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span>새 라이선스 수동 발급</span>
+        </button>
       </div>
 
-      <div class="table-responsive">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>게임 / 길드명</th>
-              <th>길드장 / 연락처</th>
-              <th>소속 인원수</th>
-              <th>라이선스 키</th>
-              <th>만료일 (남은 기간)</th>
-              <th>상태</th>
-              <th>관리</th>
-            </tr>
-          </thead>
-          <tbody id="guildListTableBody">
-            <tr>
-              <td colspan="7" class="text-center py-4 text-secondary">
-                <i class="fa-solid fa-spinner fa-spin me-2"></i>길드 목록을 불러오는 중...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- [탭 2] 다이렉트 즉시 발급 폼 -->
-    <div id="tabPanelIssue" class="admin-panel" style="display: none;">
-      <div class="panel-header">
-        <div class="panel-title">
-          <i class="fa-solid fa-paper-plane text-warning"></i>
-          <span>새 길드 라이선스 즉시 생성 & 카톡 전달 메시지 복사</span>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label class="small text-secondary mb-1">게임명</label>
-          <input type="text" id="directGameName" class="form-control-custom" placeholder="예: 리니지M, 오딘, 로아 등">
-        </div>
-        <div class="col-md-4">
-          <label class="small text-secondary mb-1">길드명</label>
-          <input type="text" id="directGuildName" class="form-control-custom" placeholder="예: 정예기사단">
-        </div>
-        <div class="col-md-4">
-          <label class="small text-secondary mb-1">구매자(길드장) 닉네임</label>
-          <input type="text" id="directApplicantNick" class="form-control-custom" placeholder="예: 대장님">
-        </div>
-
-        <div class="col-md-4">
-          <label class="small text-secondary mb-1">연락처 (카카오톡 ID / 디스코드 / 폰번호)</label>
-          <input type="text" id="directContactInfo" class="form-control-custom" placeholder="예: kakao_id_1234">
-        </div>
-        <div class="col-md-4">
-          <label class="small text-secondary mb-1">이용 기간</label>
-          <select id="directDuration" class="form-control-custom">
-            <option value="30">30일 (1개월)</option>
-            <option value="90">90일 (3개월)</option>
-            <option value="180">180일 (6개월)</option>
-            <option value="365">365일 (1년)</option>
-            <option value="99999">무제한 (영구)</option>
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="small text-secondary mb-1">최대 허용 인원</label>
-          <select id="directMaxMembers" class="form-control-custom">
-            <option value="50">50명</option>
-            <option value="100" selected>100명</option>
-            <option value="200">200명</option>
-            <option value="500">500명</option>
-          </select>
-        </div>
-
-        <div class="col-12 mt-4 text-end">
-          <button type="button" class="btn btn-primary fw-bold px-4 py-2" onclick="executeDirectIssue()">
-            <i class="fa-solid fa-wand-magic-sparkles me-2"></i>라이선스 발급 및 전달 메시지 복사
+      <!-- [탭 1] 길드 라이선스 목록 테이블 -->
+      <div id="tabGuildsContent" class="p-0">
+        <div class="p-3 d-flex align-items-center justify-content-between border-bottom" style="border-color: var(--admin-card-border) !important;">
+          <div class="d-flex align-items-center gap-2">
+            <input type="text" id="guildSearchInput" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="길드명 또는 게임명 검색..." style="width: 240px;" oninput="filterGuildsList(this.value)">
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadAllDashboardData()">
+            <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
           </button>
         </div>
-      </div>
-    </div>
 
-    <!-- [탭 3] 라이선스 신청 접수함 -->
-    <div id="tabPanelRequests" class="admin-panel" style="display: none;">
-      <div class="panel-header">
-        <div class="panel-title">
-          <i class="fa-solid fa-inbox text-info"></i>
-          <span>웹 로그인 창에서 접수된 라이선스 신청서 목록</span>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>게임 / 길드명</th>
+                <th>길드장 / 연락처</th>
+                <th>라이선스 키</th>
+                <th>만료일 (D-Day)</th>
+                <th>상태</th>
+                <th>관리 액션</th>
+              </tr>
+            </thead>
+            <tbody id="guildsTableBody">
+              <tr>
+                <td colspan="6" class="text-center py-4 text-secondary">
+                  <i class="fa-solid fa-spinner fa-spin me-2"></i>데이터를 불러오는 중입니다...
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div class="table-responsive">
-        <table class="custom-table">
-          <thead>
-            <tr>
-              <th>신청 일시</th>
-              <th>게임 / 길드명</th>
-              <th>신청자 닉네임</th>
-              <th>이메일 / 연락처</th>
-              <th>상태</th>
-              <th>승인 및 발급</th>
-            </tr>
-          </thead>
-          <tbody id="requestListTableBody">
-            <tr>
-              <td colspan="6" class="text-center py-4 text-secondary">
-                <i class="fa-solid fa-spinner fa-spin me-2"></i>신청 내역을 불러오는 중...
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- [탭 2] 신규 신청서 관리 목록 -->
+      <div id="tabRequestsContent" class="p-0" style="display: none;">
+        <div class="p-3 d-flex align-items-center justify-content-between border-bottom" style="border-color: var(--admin-card-border) !important;">
+          <span class="text-secondary small fw-bold">사용자가 메신저 로그인 창에서 접수한 라이선스 신청 목록입니다.</span>
+          <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadAllDashboardData()">
+            <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>신청 일시</th>
+                <th>게임명 / 길드명</th>
+                <th>신청자 (길드장)</th>
+                <th>이메일 / 연락처</th>
+                <th>접수 상태</th>
+                <th>발급 액션</th>
+              </tr>
+            </thead>
+            <tbody id="requestsTableBody">
+              <tr>
+                <td colspan="6" class="text-center py-4 text-secondary">
+                  <i class="fa-solid fa-spinner fa-spin me-2"></i>신청 목록을 불러오는 중입니다...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-  </div>
+      <!-- [탭 3] 새 라이선스 수동 직접 발급 폼 -->
+      <div id="tabIssueContent" class="p-4" style="display: none; max-width: 600px;">
+        <h6 class="fw-bold mb-3 text-warning"><i class="fa-solid fa-key me-2"></i>신규 길드 라이선스 즉시 생성</h6>
+        
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">대상 게임명</label>
+          <input type="text" id="directGameName" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="예: 리니지M, 오딘, 로스트아크">
+        </div>
 
-  <!-- 3. 길드 정보 수정 모달 (길드명, 이메일, 전화번호, 만료일 수정) -->
-  <div id="modalEditGuild" class="kakao-modal-backdrop" style="display: none; z-index: 10000;">
-    <div class="lock-card" style="max-width: 420px; text-align: left;">
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <h6 class="fw-bold mb-0 text-info" style="font-size: 1rem;">
-          <i class="fa-solid fa-pen-to-square me-2"></i>길드 정보 및 라이선스 수정
-        </h6>
-        <button type="button" class="btn btn-sm btn-link text-secondary p-0" onclick="closeEditGuildModal()">
-          <i class="fa-solid fa-xmark fs-5"></i>
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">길드 이름</label>
+          <input type="text" id="directGuildName" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="예: ECLIPSE, 전설길드">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">신청자 닉네임 (최초 길드장)</label>
+          <input type="text" id="directApplicantNick" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="예: 마스터이클">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label text-secondary small fw-bold">연락처 또는 이메일 (발송용 메모)</label>
+          <input type="text" id="directContactInfo" class="form-control form-control-sm bg-dark text-white border-secondary" placeholder="예: user@example.com 또는 카톡ID">
+        </div>
+
+        <div class="row g-2 mb-4">
+          <div class="col-6">
+            <label class="form-label text-secondary small fw-bold">이용 기간 (일수)</label>
+            <select id="directDurationDays" class="form-select form-select-sm bg-dark text-white border-secondary">
+              <option value="30">30일 (1개월)</option>
+              <option value="90">90일 (3개월)</option>
+              <option value="180">180일 (6개월)</option>
+              <option value="365">365일 (1년)</option>
+              <option value="0">무제한 (영구)</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label text-secondary small fw-bold">최대 길드원 정원</label>
+            <input type="number" id="directMaxMembers" class="form-control form-control-sm bg-dark text-white border-secondary" value="100">
+          </div>
+        </div>
+
+        <button type="button" class="btn btn-warning fw-bold px-4 py-2" style="background:#fee500; border:none;" onclick="executeDirectIssueLicense()">
+          <i class="fa-solid fa-paper-plane me-1"></i>라이선스 키 발급하기
         </button>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- 길드 정보 수정 모달 -->
+  <div id="modalEditGuild" class="admin-modal-backdrop" style="display: none;">
+    <div class="admin-modal-card">
+      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2" style="border-color: var(--admin-card-border) !important;">
+        <h6 class="fw-bold mb-0 text-white"><i class="fa-solid fa-pen-to-square text-warning me-2"></i>길드 정보 수정</h6>
+        <button type="button" class="btn-close btn-close-white" onclick="closeEditGuildModal()"></button>
       </div>
 
       <input type="hidden" id="editGuildId">
-      
-      <div class="mb-2">
-        <label class="small text-secondary mb-1">게임명</label>
-        <input type="text" id="editGameName" class="form-control-custom" placeholder="게임명">
+
+      <div class="mb-3 text-start">
+        <label class="form-label text-secondary small fw-bold">게임명</label>
+        <input type="text" id="editGameName" class="form-control form-control-sm bg-dark text-white border-secondary">
       </div>
 
-      <div class="mb-2">
-        <label class="small text-secondary mb-1">길드명</label>
-        <input type="text" id="editGuildName" class="form-control-custom" placeholder="길드명">
+      <div class="mb-3 text-start">
+        <label class="form-label text-secondary small fw-bold">길드명</label>
+        <input type="text" id="editGuildName" class="form-control form-control-sm bg-dark text-white border-secondary">
       </div>
 
-      <div class="mb-2">
-        <label class="small text-secondary mb-1">길드장 닉네임</label>
-        <input type="text" id="editApplicantNick" class="form-control-custom" placeholder="길드장 닉네임">
+      <div class="mb-3 text-start">
+        <label class="form-label text-secondary small fw-bold">길드장 닉네임</label>
+        <input type="text" id="editApplicantNick" class="form-control form-control-sm bg-dark text-white border-secondary">
       </div>
 
-      <div class="mb-2">
-        <label class="small text-secondary mb-1">연락처 / 이메일 / 카카오톡 ID</label>
-        <input type="text" id="editContactInfo" class="form-control-custom" placeholder="연락처">
+      <div class="mb-3 text-start">
+        <label class="form-label text-secondary small fw-bold">연락처 / 이메일</label>
+        <input type="text" id="editContactInfo" class="form-control form-control-sm bg-dark text-white border-secondary">
       </div>
 
-      <div class="mb-3">
-        <label class="small text-secondary mb-1">만료일 (비워둘 시 무제한)</label>
-        <input type="date" id="editExpiresAt" class="form-control-custom">
+      <div class="mb-4 text-start">
+        <label class="form-label text-secondary small fw-bold">만료일 변경</label>
+        <input type="date" id="editExpiresAt" class="form-control form-control-sm bg-dark text-white border-secondary">
       </div>
 
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeEditGuildModal()">
-          취소
-        </button>
-        <button type="button" class="btn btn-primary flex-fill fw-bold py-2" onclick="saveGuildEdit()">
-          수정 완료
-        </button>
+      <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeEditGuildModal()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm px-3 fw-bold" onclick="saveGuildEditAction()">저장하기</button>
       </div>
     </div>
   </div>
 
-  <script>
-    // 1. 보안 인증 로직
-    const MASTER_PIN = "master7777"; // 마스터 기본 비밀번호
 
-    // Supabase 클라이언트 초기화 함수
+  <!-- ========================================================
+       [마스터 어드민 스크립트]
+       ======================================================== -->
+  <script>
+    const MASTER_PIN_SECRET = "master7777";
+    let cachedGuilds = [];
+    let cachedLicenses = [];
+    let cachedRequests = [];
+
     function ensureSupabaseClient() {
       if (!window.supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
         window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
       }
+      return window.supabaseClient;
     }
 
+    // 1. 마스터 인증 검증
     function checkAuthOnLoad() {
-      ensureSupabaseClient();
-      if (sessionStorage.getItem("master_authenticated") === "true") {
-        document.getElementById("lockScreen").style.display = "none";
-        document.getElementById("adminMainContent").style.display = "block";
+      const isAuth = sessionStorage.getItem("master_admin_auth");
+      const overlay = document.getElementById("adminAuthOverlay");
+      if (isAuth === "true") {
+        overlay.style.display = "none";
         loadAllDashboardData();
       } else {
-        document.getElementById("lockScreen").style.display = "flex";
-        document.getElementById("adminMainContent").style.display = "none";
+        overlay.style.display = "flex";
+        document.getElementById("masterPinInput").focus();
       }
     }
 
     function verifyMasterPin() {
-      const pin = (document.getElementById("masterPinInput").value || "").trim();
-      if (pin === MASTER_PIN) {
-        sessionStorage.setItem("master_authenticated", "true");
-        document.getElementById("lockScreen").style.display = "none";
-        document.getElementById("adminMainContent").style.display = "block";
+      const input = document.getElementById("masterPinInput").value.trim();
+      if (input === MASTER_PIN_SECRET) {
+        sessionStorage.setItem("master_admin_auth", "true");
+        document.getElementById("adminAuthOverlay").style.display = "none";
         loadAllDashboardData();
       } else {
-        alert("비밀번호가 올바르지 않습니다.");
+        alert("마스터 PIN 번호가 일치하지 않습니다!");
         document.getElementById("masterPinInput").value = "";
         document.getElementById("masterPinInput").focus();
       }
     }
 
-    function logoutMaster() {
-      sessionStorage.removeItem("master_authenticated");
+    function adminLogout() {
+      sessionStorage.removeItem("master_admin_auth");
       location.reload();
     }
 
     // 2. 탭 전환
     function switchAdminTab(tabName, btnElem) {
       document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("active"));
-      btnElem.classList.add("active");
+      if (btnElem) btnElem.classList.add("active");
 
-      document.getElementById("tabPanelGuilds").style.display = (tabName === 'guilds') ? 'block' : 'none';
-      document.getElementById("tabPanelIssue").style.display = (tabName === 'issue') ? 'block' : 'none';
-      document.getElementById("tabPanelRequests").style.display = (tabName === 'requests') ? 'block' : 'none';
+      document.getElementById("tabGuildsContent").style.display = (tabName === 'guilds') ? 'block' : 'none';
+      document.getElementById("tabRequestsContent").style.display = (tabName === 'requests') ? 'block' : 'none';
+      document.getElementById("tabIssueContent").style.display = (tabName === 'issue') ? 'block' : 'none';
     }
 
-    // 3. 데이터 로딩 & 대시보드 집계
-    let cachedGuilds = [];
-    let cachedRequests = [];
-
+    // 3. 통합 대시보드 데이터 로드
     async function loadAllDashboardData() {
       ensureSupabaseClient();
       if (!window.supabaseClient) {
-        console.warn("Supabase 클라이언트를 초기화할 수 없습니다.");
+        console.error("Supabase client init failed");
         return;
       }
 
       try {
-        // 1. 길드 데이터 로드
         let guilds = [];
+        let licenses = [];
+        let requests = [];
+
+        // 1. guilds 테이블 조회
         try {
           const { data, error: gErr } = await window.supabaseClient
             .from('guilds')
@@ -590,8 +577,7 @@
           console.warn("guilds fetch error:", e);
         }
 
-        // 2. 라이선스 데이터 로드
-        let licenses = [];
+        // 2. app_licenses 테이블 조회
         try {
           const { data, error: lErr } = await window.supabaseClient
             .from('app_licenses')
@@ -601,13 +587,7 @@
           console.warn("app_licenses fetch error:", e);
         }
 
-        // 길드와 라이선스 1:N 매핑
-        guilds.forEach(g => {
-          g.app_licenses = licenses.filter(l => l.guild_id === g.id);
-        });
-
-        // 3. 신청서 데이터 로드 (신청 접수함)
-        let requests = [];
+        // 3. license_requests 테이블 조회
         try {
           const { data, error: rErr } = await window.supabaseClient
             .from('license_requests')
@@ -628,6 +608,7 @@
         } catch(e) {}
 
         cachedGuilds = guilds;
+        cachedLicenses = licenses;
         cachedRequests = requests;
 
         // KPI 집계
@@ -639,60 +620,59 @@
         document.getElementById("kpiPendingRequests").innerText = pendingReqs;
         document.getElementById("kpiTotalLicenses").innerText = cachedGuilds.length;
 
-        document.getElementById("tabCountGuilds").innerText = cachedGuilds.length;
-        document.getElementById("tabCountRequests").innerText = pendingReqs;
+        const reqBadge = document.getElementById("tabReqBadge");
+        if (reqBadge) {
+          reqBadge.innerText = pendingReqs;
+          reqBadge.style.display = (pendingReqs > 0) ? "inline-block" : "none";
+        }
 
-        renderGuildTable(cachedGuilds);
+        renderGuildsTable(cachedGuilds);
         renderRequestsTable(cachedRequests);
+
       } catch (err) {
-        console.error("데이터 로드 오류:", err);
+        console.error("Dashboard data load error:", err);
       }
     }
 
-    // 4. 구매 길드 테이블 렌더링 (수정 / 조기종료 / 삭제 버튼 추가)
-    function renderGuildTable(list) {
-      const tbody = document.getElementById("guildListTableBody");
+    // 4. 길드 테이블 렌더링
+    function renderGuildsTable(list) {
+      const tbody = document.getElementById("guildsTableBody");
+      if (!tbody) return;
+
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-secondary">등록된 길드가 아직 없습니다. [다이렉트 즉시 발급]에서 길드를 개설해 보세요.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">등록된 길드 라이선스가 없습니다.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = list.map(g => {
-        const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : null;
+        const lic = cachedLicenses.find(l => l.guild_id === g.id || l.license_key === g.license_key);
         const key = lic ? lic.license_key : (g.license_key || "-");
-        const expiresAt = lic ? (lic.expires_at ? lic.expires_at.split('T')[0] : '무제한') : '미설정';
+        const expiresAt = lic ? (lic.expires_at ? lic.expires_at.split('T')[0] : '무제한') : '-';
         const contact = lic ? (lic.contact_info || lic.applicant_nickname || "-") : "-";
         const isActive = (g.is_active !== false && (!lic || lic.status !== 'suspended'));
         
         return `
           <tr>
             <td>
-              <div class="fw-bold text-info">${g.game_name || '일반'}</div>
-              <div style="font-size:0.95rem; font-weight:700;">${g.guild_name}</div>
+              <div class="fw-bold text-white">${g.guild_name}</div>
+              <div class="text-secondary small">${g.game_name || '게임 미지정'}</div>
             </td>
             <td>
-              <div>${lic?.applicant_nickname || '길드장'}</div>
+              <div class="text-white">${lic ? lic.applicant_nickname || '길드장' : '길드장'}</div>
               <div class="text-secondary small">${contact}</div>
             </td>
             <td>
-              <span class="badge bg-secondary bg-opacity-50 px-2 py-1"><i class="fa-solid fa-users me-1"></i>${g.member_count || 1}명</span>
+              <span class="badge bg-secondary bg-opacity-50 px-2 py-1"><i class="fa-solid fa-key me-1"></i>${key}</span>
             </td>
             <td>
-              <code style="color:#38bdf8; cursor:pointer;" title="클릭하여 키 복사" onclick="copyTextToClipboard('${key}')">
-                ${key} <i class="fa-regular fa-copy ms-1"></i>
-              </code>
+              <div class="text-white">${expiresAt}</div>
             </td>
             <td>
-              <div>${expiresAt}</div>
+              ${isActive ? '<span class="badge bg-success bg-opacity-25 text-success">정상 이용중</span>' : '<span class="badge bg-danger bg-opacity-25 text-danger">정지 / 만료</span>'}
             </td>
             <td>
-              <span class="badge-status ${isActive ? 'badge-active' : 'badge-expired'}">
-                ${isActive ? '정상 사용' : '조기종료(정지)'}
-              </span>
-            </td>
-            <td>
-              <div class="d-flex gap-1 flex-wrap">
-                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;" onclick="copyGuildInviteMessage('${g.game_name}', '${g.guild_name}', '${key}', '${expiresAt}')">
+              <div class="d-flex align-items-center gap-1">
+                <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.75rem;" onclick="copyGuildInviteMessage('${g.game_name}', '${g.guild_name}', '${key}', '${expiresAt}')">
                   안내문 복사
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.75rem;" onclick="extendGuildLicense('${g.id}', 30)">
@@ -714,50 +694,42 @@
       }).join('');
     }
 
-    function filterGuildTable(keyword) {
-      const q = (keyword || "").toLowerCase().trim();
-      const filtered = cachedGuilds.filter(g => {
-        return (g.game_name && g.game_name.toLowerCase().includes(q)) ||
-               (g.guild_name && g.guild_name.toLowerCase().includes(q));
-      });
-      renderGuildTable(filtered);
-    }
-
-    // 5. 신청서 목록 렌더링 & 승인
+    // 5. 신청서 테이블 렌더링
     function renderRequestsTable(list) {
-      const tbody = document.getElementById("requestListTableBody");
+      const tbody = document.getElementById("requestsTableBody");
+      if (!tbody) return;
+
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">대기 중인 발급 신청서가 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">접수된 라이선스 신청서가 없습니다.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = list.map(r => {
         const isPending = (r.status === 'pending');
-        const dt = r.created_at ? r.created_at.replace('T', ' ').substring(0, 16) : '-';
+        const dateStr = r.created_at ? r.created_at.split('T')[0] : '-';
+
         return `
           <tr>
-            <td class="text-secondary small">${dt}</td>
+            <td class="text-secondary">${dateStr}</td>
             <td>
-              <span class="badge bg-primary bg-opacity-25 text-info me-1">${r.game_name}</span>
-              <strong>${r.guild_name}</strong>
+              <div class="fw-bold text-white">${r.guild_name}</div>
+              <div class="text-secondary small">${r.game_name}</div>
             </td>
-            <td>${r.applicant_nickname}</td>
+            <td class="text-white">${r.applicant_nickname}</td>
             <td>
               <div>${r.email || '-'}</div>
               <div class="text-secondary small">${r.contact_info || '-'}</div>
             </td>
             <td>
-              <span class="badge-status ${isPending ? 'badge-pending' : 'badge-active'}">
-                ${isPending ? '대기 중' : '승인 완료'}
-              </span>
+              ${isPending ? '<span class="badge bg-warning text-dark">신청 대기</span>' : '<span class="badge bg-secondary">발급 완료</span>'}
             </td>
             <td>
               ${isPending ? `
-                <button type="button" class="btn btn-sm btn-success py-1 px-2" style="font-size:0.75rem;" onclick="approveRequest('${r.id}', '${r.game_name}', '${r.guild_name}', '${r.applicant_nickname}', '${r.contact_info || r.email}')">
+                <button type="button" class="btn btn-sm btn-primary py-1 px-3 fw-bold" onclick="approveRequest('${r.id}', '${r.game_name}', '${r.guild_name}', '${r.applicant_nickname}', '${r.contact_info || r.email}')">
                   <i class="fa-solid fa-check me-1"></i>승인 & 발급
                 </button>
               ` : `
-                <span class="text-secondary small">처리 완료</span>
+                <span class="text-secondary small">처리됨</span>
               `}
             </td>
           </tr>
@@ -765,18 +737,18 @@
       }).join('');
     }
 
-    // 6. 다이렉트 라이선스 생성 및 전달 메시지 복사
-    async function executeDirectIssue() {
+    // 6. 수동 직접 발급 실행
+    async function executeDirectIssueLicense() {
       ensureSupabaseClient();
-      const gameName = (document.getElementById("directGameName").value || "").trim();
-      const guildName = (document.getElementById("directGuildName").value || "").trim();
-      const applicantNick = (document.getElementById("directApplicantNick").value || "").trim();
-      const contactInfo = (document.getElementById("directContactInfo").value || "").trim();
-      const durationDays = parseInt(document.getElementById("directDuration").value, 10);
-      const maxMembers = parseInt(document.getElementById("directMaxMembers").value, 10);
+      const gameName = document.getElementById("directGameName").value.trim();
+      const guildName = document.getElementById("directGuildName").value.trim();
+      const applicantNick = document.getElementById("directApplicantNick").value.trim();
+      const contactInfo = document.getElementById("directContactInfo").value.trim();
+      const durationDays = parseInt(document.getElementById("directDurationDays").value);
+      const maxMembers = parseInt(document.getElementById("directMaxMembers").value) || 100;
 
       if (!gameName || !guildName) {
-        alert("게임명과 길드명을 입력해 주세요.");
+        alert("게임명과 길드명은 필수 입력 항목입니다.");
         return;
       }
 
@@ -786,7 +758,7 @@
       const licenseKey = `ECL-${datePart}-${randomPart}`;
 
       let expiresAt = null;
-      if (durationDays < 90000) {
+      if (durationDays > 0) {
         const expDate = new Date();
         expDate.setDate(expDate.getDate() + durationDays);
         expiresAt = expDate.toISOString();
@@ -883,54 +855,103 @@
           .update({ status: 'approved' })
           .eq('id', reqId);
 
-        const expStr = expiresAt.split('T')[0];
-        copyGuildInviteMessage(gameName, guildName, licenseKey, expStr);
-
-        alert(`신청이 승인되어 라이선스가 발급되었습니다!\n전달용 안내문이 클립보드에 복사되었습니다.`);
+        copyGuildInviteMessage(gameName, guildName, licenseKey, expDate.toISOString().split('T')[0]);
+        alert(`[${guildName}] 라이선스 발급 완료!\n안내문이 클립보드에 복사되었습니다.`);
         loadAllDashboardData();
       } catch (err) {
-        alert("승인 처리 오류: " + err.message);
+        alert("승인 처리 실패: " + err.message);
       }
     }
 
-    // 8. 기간 연장 (+30일)
-    async function extendGuildLicense(guildId, addDays) {
+    // 8. 30일 연장
+    async function extendGuildLicense(guildId, days = 30) {
       ensureSupabaseClient();
-      if (!confirm(`해당 길드의 라이선스를 ${addDays}일 연장하시겠습니까?`)) return;
-      try {
-        const { data: lic } = await window.supabaseClient
-          .from('app_licenses')
-          .select('*')
-          .eq('guild_id', guildId)
-          .single();
+      if (!confirm(`해당 길드의 라이선스를 ${days}일 연장하시겠습니까?`)) return;
 
+      try {
+        const lic = cachedLicenses.find(l => l.guild_id === guildId);
         let baseDate = new Date();
         if (lic && lic.expires_at) {
           const currentExp = new Date(lic.expires_at);
           if (currentExp > baseDate) baseDate = currentExp;
         }
-        baseDate.setDate(baseDate.getDate() + addDays);
+        baseDate.setDate(baseDate.getDate() + days);
 
         await window.supabaseClient
           .from('app_licenses')
           .update({ expires_at: baseDate.toISOString(), status: 'active' })
           .eq('guild_id', guildId);
 
-        alert(`만료일이 ${baseDate.toISOString().split('T')[0]}까지로 연장되었습니다.`);
+        await window.supabaseClient
+          .from('guilds')
+          .update({ is_active: true })
+          .eq('id', guildId);
+
+        alert(`라이선스가 ${baseDate.toISOString().split('T')[0]} 까지 연장되었습니다.`);
         loadAllDashboardData();
-      } catch(err) {
-        alert("연장 처리 오류: " + err.message);
+      } catch (err) {
+        alert("연장 실패: " + err.message);
       }
     }
 
-    // 9. 길드 정보 수정 (모달 열기 / 저장)
+    // 9. 조기종료 및 재개 토글
+    async function toggleGuildActive(guildId, guildName, currentIsActive) {
+      ensureSupabaseClient();
+      const actionText = currentIsActive ? "조기종료(정지)" : "재개(활성화)";
+      if (!confirm(`정말로 [${guildName}] 길드를 ${actionText} 하시겠습니까?`)) return;
+
+      try {
+        const nextActive = !currentIsActive;
+        const nextStatus = nextActive ? 'active' : 'suspended';
+
+        await window.supabaseClient
+          .from('guilds')
+          .update({ is_active: nextActive })
+          .eq('id', guildId);
+
+        await window.supabaseClient
+          .from('app_licenses')
+          .update({ status: nextStatus })
+          .eq('guild_id', guildId);
+
+        alert(`[${guildName}] 길드가 ${actionText} 되었습니다.`);
+        loadAllDashboardData();
+      } catch (err) {
+        alert("상태 변경 실패: " + err.message);
+      }
+    }
+
+    // 10. 길드 영구 삭제
+    async function deleteGuildAction(guildId, guildName) {
+      ensureSupabaseClient();
+      const check = prompt(`[경고] 길드를 삭제하면 대화방과 길드원 정보가 영구 삭제됩니다.\n삭제하려면 길드 이름 [ ${guildName} ] 을 똑같이 입력하세요:`);
+      if (check !== guildName) {
+        if (check !== null) alert("길드명이 일치하지 않아 삭제가 취소되었습니다.");
+        return;
+      }
+
+      try {
+        await window.supabaseClient.from('chat_messages').delete().eq('guild_id', guildId);
+        await window.supabaseClient.from('chat_rooms').delete().eq('guild_id', guildId);
+        await window.supabaseClient.from('guild_members').delete().eq('guild_id', guildId);
+        await window.supabaseClient.from('app_licenses').delete().eq('guild_id', guildId);
+        await window.supabaseClient.from('guilds').delete().eq('id', guildId);
+
+        alert(`[${guildName}] 길드가 영구 삭제되었습니다.`);
+        loadAllDashboardData();
+      } catch (err) {
+        alert("삭제 처리 실패: " + err.message);
+      }
+    }
+
+    // 11. 길드 정보 수정 모달
     function openEditGuildModal(guildId) {
-      const g = cachedGuilds.find(x => x.id === guildId);
+      const g = cachedGuilds.find(item => item.id === guildId);
       if (!g) return;
 
-      const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : null;
+      const lic = cachedLicenses.find(item => item.guild_id === guildId);
 
-      document.getElementById("editGuildId").value = g.id;
+      document.getElementById("editGuildId").value = guildId;
       document.getElementById("editGameName").value = g.game_name || "";
       document.getElementById("editGuildName").value = g.guild_name || "";
       document.getElementById("editApplicantNick").value = lic?.applicant_nickname || "";
@@ -949,30 +970,34 @@
       document.getElementById("modalEditGuild").style.display = "none";
     }
 
-    async function saveGuildEdit() {
+    async function saveGuildEditAction() {
       ensureSupabaseClient();
       const guildId = document.getElementById("editGuildId").value;
       const gameName = document.getElementById("editGameName").value.trim();
       const guildName = document.getElementById("editGuildName").value.trim();
       const applicantNick = document.getElementById("editApplicantNick").value.trim();
       const contactInfo = document.getElementById("editContactInfo").value.trim();
-      const expDateVal = document.getElementById("editExpiresAt").value.trim();
+      const expDateVal = document.getElementById("editExpiresAt").value;
 
-      if (!guildName) return alert("길드명을 입력해 주세요.");
+      if (!guildName) {
+        alert("길드명은 필수입니다.");
+        return;
+      }
 
       let expiresAt = null;
       if (expDateVal) {
-        expiresAt = new Date(expDateVal + "T23:59:59Z").toISOString();
+        expiresAt = new Date(expDateVal + "T23:59:59").toISOString();
       }
 
       try {
-        // 1. guilds 테이블 업데이트
         await window.supabaseClient
           .from('guilds')
-          .update({ game_name: gameName, guild_name: guildName })
+          .update({
+            game_name: gameName,
+            guild_name: guildName
+          })
           .eq('id', guildId);
 
-        // 2. app_licenses 테이블 업데이트
         await window.supabaseClient
           .from('app_licenses')
           .update({
@@ -992,62 +1017,17 @@
       }
     }
 
-    // 10. 조기 종료 / 정지 / 재개 토글
-    async function toggleGuildActive(guildId, guildName, currentActive) {
-      ensureSupabaseClient();
-      const actionText = currentActive ? "조기 종료(정지)" : "정상 사용으로 재개";
-      if (!confirm(`[${guildName}] 길드를 정말로 ${actionText} 처리하시겠습니까?`)) return;
-
-      const newIsActive = !currentActive;
-      const newStatus = newIsActive ? "active" : "suspended";
-
-      try {
-        await window.supabaseClient
-          .from('guilds')
-          .update({ is_active: newIsActive })
-          .eq('id', guildId);
-
-        await window.supabaseClient
-          .from('app_licenses')
-          .update({ status: newStatus })
-          .eq('guild_id', guildId);
-
-        alert(`[${guildName}] 길드가 ${actionText}되었습니다.`);
-        loadAllDashboardData();
-      } catch (err) {
-        alert("상태 변경 실패: " + err.message);
-      }
-    }
-
-    // 11. 길드 영구 삭제
-    async function deleteGuildAction(guildId, guildName) {
-      ensureSupabaseClient();
-      if (!confirm(`⚠️ [${guildName}] 길드를 완전히 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며 라이선스, 대화방, 길드원 등 해당 길드의 모든 데이터가 영구 삭제됩니다.`)) return;
-
-      try {
-        const { error } = await window.supabaseClient
-          .from('guilds')
-          .delete()
-          .eq('id', guildId);
-
-        if (error) throw error;
-
-        alert(`[${guildName}] 길드가 완전히 삭제되었습니다.`);
-        loadAllDashboardData();
-      } catch (err) {
-        alert("삭제 실패: " + err.message);
-      }
-    }
-
-    // 12. 클립보드 복사 유틸
-    function copyTextToClipboard(text) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert("클립보드에 복사되었습니다: " + text);
-      }).catch(() => {
-        prompt("복사하세요:", text);
+    // 12. 테이블 검색 필터
+    function filterGuildsList(query) {
+      const q = (query || "").toLowerCase().trim();
+      const filtered = cachedGuilds.filter(g => {
+        return (g.guild_name && g.guild_name.toLowerCase().includes(q)) ||
+               (g.game_name && g.game_name.toLowerCase().includes(q));
       });
+      renderGuildsTable(filtered);
     }
 
+    // 13. 클립보드 안내문 복사 유틸 (길드원 초대 코드 안내 문구 완비)
     function copyGuildInviteMessage(gameName, guildName, licenseKey, expiresAt) {
       const origin = window.location.origin;
       const text = `[길드톡 메신저 라이선스 발급 안내]
@@ -1059,10 +1039,14 @@
 ▶ 라이선스 키: ${licenseKey}
 ▶ 이용 만료일: ${expiresAt}
 
-[최초 시작 방법]
-1. 위 주소(${origin})로 접속하세요.
-2. 로그인 창에서 [🔑 라이선스 키로 길드 시작하기]를 누르고 전달받은 라이선스 키와 길드장 비밀번호를 설정하시면 본인 길드가 개설됩니다.
-3. 길드원들에게 주소를 공유하고 바로 실시간 대화와 보스 타임을 공유하실 수 있습니다!`;
+[최초 길드 개설 (길드장)]
+1. 위 주소(${origin}) 또는 전용 앱(PC exe / 모바일 apk)을 실행하세요.
+2. [🔑 라이선스 키로 길드 시작하기]를 누르고 전달받은 라이선스 키와 길드장 PIN을 설정하시면 길드가 개설됩니다.
+
+[길드원 초대 안내 (일반 길드원)]
+1. 길드원에게 앱 실행 후 [초대 코드로 길드 참여]를 누르도록 안내하세요.
+2. 아래 길드 초대 코드를 입력하면 즉시 본인 길드로 참여됩니다!
+▶ 길드 초대 코드: ${licenseKey}`;
 
       navigator.clipboard.writeText(text).catch(() => {});
     }
