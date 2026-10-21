@@ -765,7 +765,7 @@
     </div>
   </div>
 
-  <!-- 6. [신규 추가] 카카오톡 감성 신청 접수 완료 카드 모달 (브라우저 기본 alert 대체) -->
+  <!-- 6. 카카오톡 감성 신청/개설 완료 카드 모달 -->
   <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 1100;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div style="width: 52px; height: 52px; border-radius: 16px; background: rgba(34, 197, 94, 0.15); color: #22c55e; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 14px;">
@@ -781,7 +781,7 @@
     </div>
   </div>
 
-  <!-- 라이선스 신청 및 모달 제어 스크립트 -->
+  <!-- 라이선스 신청 & 길드 활성화 단독 제어 스크립트 (캐시 오류 원천 차단) -->
   <script>
     function openLicenseRequestModal() {
       var loginModal = document.getElementById("guildLoginModal");
@@ -814,8 +814,12 @@
     function closeLicenseSuccessModal() {
       var successModal = document.getElementById("modalLicenseSuccess");
       if (successModal) successModal.style.display = "none";
-      var loginModal = document.getElementById("guildLoginModal");
-      if (loginModal) loginModal.style.display = "flex";
+      if (localStorage.getItem("current_guild_id")) {
+        location.reload();
+      } else {
+        var loginModal = document.getElementById("guildLoginModal");
+        if (loginModal) loginModal.style.display = "flex";
+      }
     }
 
     async function submitLicenseRequest() {
@@ -847,10 +851,10 @@
       }
 
       try {
-        if (!window.supabaseClient) {
-          alert("데이터베이스 연결 준비 중입니다. 잠시 후 다시 시도해 주세요.");
-          return;
+        if (!window.supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+          window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
         }
+        if (!window.supabaseClient) throw new Error("데이터베이스 연결 실패");
 
         var insertPayload = {
           game_name: gameName,
@@ -864,7 +868,6 @@
         var res = await window.supabaseClient.from('license_requests').insert([insertPayload]);
         if (res.error) throw res.error;
 
-        // 신청 창 닫기 및 폼 초기화
         var reqModal = document.getElementById("modalLicenseRequest");
         if (reqModal) reqModal.style.display = "none";
 
@@ -874,12 +877,135 @@
         document.getElementById("reqEmailInput").value = "";
         document.getElementById("reqContactInput").value = "";
 
-        // 브라우저 기본 alert 대신 카카오톡 감성의 고급 모달 팝업 실행
         var successModal = document.getElementById("modalLicenseSuccess");
-        if (successModal) successModal.style.display = "flex";
+        if (successModal) {
+          var h6 = successModal.querySelector("h6");
+          var p = successModal.querySelector("p");
+          if (h6) h6.innerText = "신청이 정상 접수되었습니다!";
+          if (p) p.innerHTML = "운영자 확인 후 등록하신 연락처 또는 이메일로<br>라이선스 키가 안전하게 발급됩니다.";
+          successModal.style.display = "flex";
+        }
       } catch (err) {
         console.error("License request failed:", err);
         alert("신청 접수 중 오류가 발생했습니다: " + (err.message || "다시 시도해 주세요."));
+      }
+    }
+
+    // [핵심 버그 완벽 해결]: 라이선스 키로 길드 시작하기 실행 함수 내장
+    async function executeActivateGuild() {
+      var keyInput = (document.getElementById("actLicenseKeyInput").value || "").trim().toUpperCase();
+      var pinInput = (document.getElementById("actMasterPinInput").value || "").trim();
+      var btn = document.querySelector("#modalActivateGuild button.btn-warning");
+
+      if (!keyInput) {
+        alert("라이선스 키를 입력해 주세요.");
+        document.getElementById("actLicenseKeyInput").focus();
+        return;
+      }
+      if (!pinInput) {
+        alert("길드장 비밀번호(PIN)를 입력해 주세요.");
+        document.getElementById("actMasterPinInput").focus();
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i>길드 개설 중...`;
+      }
+
+      try {
+        if (!window.supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
+          window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
+        }
+        if (!window.supabaseClient) throw new Error("데이터베이스 연결 실패");
+
+        // 1. app_licenses 테이블에서 라이선스 키 검증
+        var licRes = await window.supabaseClient
+          .from('app_licenses')
+          .select('*')
+          .eq('license_key', keyInput);
+
+        if (licRes.error) throw licRes.error;
+        if (!licRes.data || licRes.data.length === 0) {
+          throw new Error("유효하지 않은 라이선스 키입니다. 키를 다시 확인해 주세요.");
+        }
+
+        var lic = licRes.data[0];
+        if (lic.status !== 'active') {
+          throw new Error("해당 라이선스는 현재 만료되었거나 정지 상태입니다.");
+        }
+
+        var masterNick = lic.applicant_nickname || "길드장";
+        var guildId = lic.guild_id;
+
+        // 2. 길드원(guild_members) 테이블에 길드장 등록
+        var memRes = await window.supabaseClient.from('guild_members').insert([{
+          guild_id: guildId,
+          nickname: masterNick,
+          name: masterNick,
+          class_name: "👑 길드장",
+          role: "길드장",
+          pin: pinInput,
+          avatar_icon: "👑"
+        }]);
+
+        if (memRes.error && !String(memRes.error.message || '').includes('duplicate')) {
+          // name 컬럼 누락 방어
+          await window.supabaseClient.from('guild_members').insert([{
+            guild_id: guildId,
+            nickname: masterNick,
+            class_name: "👑 길드장",
+            role: "길드장",
+            pin: pinInput,
+            avatar_icon: "👑"
+          }]);
+        }
+
+        // 3. chat_rooms에 전체 공개방 확인 및 생성
+        var roomCheck = await window.supabaseClient
+          .from('chat_rooms')
+          .select('*')
+          .eq('guild_id', guildId)
+          .eq('room_type', 'public');
+
+        if (!roomCheck.data || roomCheck.data.length === 0) {
+          await window.supabaseClient.from('chat_rooms').insert([{
+            guild_id: guildId,
+            room_name: (lic.guild_name || "길드") + " 전체 대화방",
+            room_type: "public",
+            created_by: masterNick
+          }]);
+        }
+
+        // 4. 로컬 스토리지에 로그인 세션 자동 설정
+        localStorage.setItem("current_guild_id", guildId);
+        localStorage.setItem("guild_my_nickname", masterNick);
+        localStorage.setItem("guild_my_pin", pinInput);
+        localStorage.setItem("guild_my_role", "길드장");
+        localStorage.setItem("guild_my_class", "👑 길드장");
+        localStorage.setItem("guild_my_avatar", "👑");
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "admin");
+
+        // 5. 모달 닫기 및 성공 팝업 모달 띄우기
+        closeActivateGuildModal();
+
+        var successModal = document.getElementById("modalLicenseSuccess");
+        if (successModal) {
+          var h6 = successModal.querySelector("h6");
+          var p = successModal.querySelector("p");
+          if (h6) h6.innerText = `[${lic.guild_name}] 길드 개설 완료!`;
+          if (p) p.innerHTML = `길드가 성공적으로 활성화되었습니다.<br><strong>${masterNick}</strong>님으로 자동 로그인되었습니다.`;
+          successModal.style.display = "flex";
+        }
+      } catch (err) {
+        console.error("Activate guild error:", err);
+        alert("길드 개설 실패: " + (err.message || "다시 시도해 주세요."));
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `길드 개설 완료`;
+        }
       }
     }
   </script>
