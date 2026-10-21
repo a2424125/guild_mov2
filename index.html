@@ -256,7 +256,8 @@
       <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageNotice')">
         <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
       </li>
-      <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageMembers')">
+      <!-- 길드원목록 클릭 시 슬라이드 서랍으로 바로 전환 (스크린샷 2 형태) -->
+      <li class="sidebar-menu-item guild-room-feature-item" onclick="toggleMenuDrawer(false); toggleMembersDrawer(true);">
         <i class="fa-solid fa-users text-primary"></i><span>길드원목록</span>
       </li>
       <li class="sidebar-menu-item guild-room-feature-item" onclick="openModulePage('PageRegister')">
@@ -291,7 +292,7 @@
   </aside>
 
   <!-- ========================================================
-       [길드원 서랍]
+       [길드원 서랍] (스크린샷 2 형태)
        ======================================================== -->
   <aside id="membersSidebarDrawer" class="app-members-drawer">
     <div class="boss-drawer-header-bar">
@@ -445,9 +446,10 @@
           <i class="fa-solid fa-coins more-menu-icon text-success"></i>
           <span class="more-menu-label">정산내역</span>
         </div>
-        <div class="more-menu-item" onclick="openModulePage('PageMembers')">
+        <!-- 더보기에서도 드로어 서랍으로 연결 -->
+        <div class="more-menu-item" onclick="toggleMembersDrawer(true)">
           <i class="fa-solid fa-users more-menu-icon text-primary"></i>
-          <span class="more-menu-label">길드원관리</span>
+          <span class="more-menu-label">길드원목록</span>
         </div>
         <div class="more-menu-item" onclick="openModulePage('PageSettings')">
           <i class="fa-solid fa-gear more-menu-icon text-secondary"></i>
@@ -633,7 +635,7 @@
     </div>
   </div>
 
-  <!-- 2. 라이선스 키로 길드 최초 개설 모달 -->
+  <!-- 2. 라이선스 키로 길드 최초 개설 모달 (길드장 닉네임 입력칸 정식 추가) -->
   <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 340px;">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: rgba(254, 229, 0, 0.2); color: #eab308; display: inline-flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 10px;">
@@ -645,6 +647,11 @@
       <div style="text-align: left; margin-bottom: 8px;">
         <label class="text-secondary small mb-1" style="font-size: 0.68rem;">라이선스 키</label>
         <input type="text" id="actLicenseKeyInput" placeholder="예: ECL-20261021-ABCD" style="height: 36px; margin-bottom: 0; text-transform: uppercase;">
+      </div>
+
+      <div style="text-align: left; margin-bottom: 8px;">
+        <label class="text-secondary small mb-1" style="font-size: 0.68rem;">길드장 닉네임 (본인 캐릭터명)</label>
+        <input type="text" id="actMasterNickInput" placeholder="게임 내 길드장 닉네임 입력" style="height: 36px; margin-bottom: 0;">
       </div>
 
       <div style="text-align: left; margin-bottom: 12px;">
@@ -1113,9 +1120,10 @@
       }
     }
 
-    // [핵심 버그 해결]: 라이선스 키로 길드 시작하기 실행 함수 (nickname 우선 규격 준수)
+    // [길드 개설 함수]: nickname 컬럼 인서트 규격 준수 & 6자리 PIN 설정
     async function executeActivateGuild() {
       var keyInput = (document.getElementById("actLicenseKeyInput").value || "").trim().toUpperCase();
+      var nickInput = (document.getElementById("actMasterNickInput") ? document.getElementById("actMasterNickInput").value : "").trim();
       var pinInput = (document.getElementById("actMasterPinInput").value || "").trim();
       var btn = document.querySelector("#modalActivateGuild button.btn-warning");
 
@@ -1124,8 +1132,13 @@
         document.getElementById("actLicenseKeyInput").focus();
         return;
       }
+      if (!nickInput) {
+        alert("길드장 닉네임을 입력해 주세요.");
+        if (document.getElementById("actMasterNickInput")) document.getElementById("actMasterNickInput").focus();
+        return;
+      }
       if (!pinInput) {
-        alert("길드장 비밀번호(PIN)를 입력해 주세요.");
+        alert("길드장 비밀번호(6자리 PIN)를 입력해 주세요.");
         document.getElementById("actMasterPinInput").focus();
         return;
       }
@@ -1157,7 +1170,7 @@
           throw new Error("해당 라이선스는 현재 만료되었거나 정지 상태입니다.");
         }
 
-        var masterNick = lic.applicant_nickname || "길드장";
+        var masterNick = nickInput || lic.applicant_nickname || "길드장";
         var guildId = lic.guild_id;
 
         // 2. 길드원(guild_members) 테이블에 길드장 등록 (nickname 컬럼 우선 규격 준수)
@@ -1355,7 +1368,7 @@
         return;
       }
       if (!pin) {
-        alert("개인 로그인용 비밀번호(PIN)를 입력해 주세요.");
+        alert("개인 로그인용 비밀번호(6자리 PIN)를 입력해 주세요.");
         document.getElementById("joinMemberPinInput").focus();
         return;
       }
