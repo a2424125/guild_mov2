@@ -464,11 +464,61 @@
 
   </div>
 
+  <!-- 3. 길드 정보 수정 모달 (길드명, 이메일, 전화번호, 만료일 수정) -->
+  <div id="modalEditGuild" class="kakao-modal-backdrop" style="display: none; z-index: 10000;">
+    <div class="lock-card" style="max-width: 420px; text-align: left;">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0 text-info" style="font-size: 1rem;">
+          <i class="fa-solid fa-pen-to-square me-2"></i>길드 정보 및 라이선스 수정
+        </h6>
+        <button type="button" class="btn btn-sm btn-link text-secondary p-0" onclick="closeEditGuildModal()">
+          <i class="fa-solid fa-xmark fs-5"></i>
+        </button>
+      </div>
+
+      <input type="hidden" id="editGuildId">
+      
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">게임명</label>
+        <input type="text" id="editGameName" class="form-control-custom" placeholder="게임명">
+      </div>
+
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">길드명</label>
+        <input type="text" id="editGuildName" class="form-control-custom" placeholder="길드명">
+      </div>
+
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">길드장 닉네임</label>
+        <input type="text" id="editApplicantNick" class="form-control-custom" placeholder="길드장 닉네임">
+      </div>
+
+      <div class="mb-2">
+        <label class="small text-secondary mb-1">연락처 / 이메일 / 카카오톡 ID</label>
+        <input type="text" id="editContactInfo" class="form-control-custom" placeholder="연락처">
+      </div>
+
+      <div class="mb-3">
+        <label class="small text-secondary mb-1">만료일 (비워둘 시 무제한)</label>
+        <input type="date" id="editExpiresAt" class="form-control-custom">
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeEditGuildModal()">
+          취소
+        </button>
+        <button type="button" class="btn btn-primary flex-fill fw-bold py-2" onclick="saveGuildEdit()">
+          수정 완료
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // 1. 보안 인증 로직
     const MASTER_PIN = "master7777"; // 마스터 기본 비밀번호
 
-    // Supabase 클라이언트 초기화 함수 (누락 방지)
+    // Supabase 클라이언트 초기화 함수
     function ensureSupabaseClient() {
       if (!window.supabaseClient && window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
         window.supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
@@ -516,7 +566,7 @@
       document.getElementById("tabPanelRequests").style.display = (tabName === 'requests') ? 'block' : 'none';
     }
 
-    // 3. 데이터 로딩 & 대시보드 집계 (독립적이고 안전한 쿼리 분리)
+    // 3. 데이터 로딩 & 대시보드 집계
     let cachedGuilds = [];
     let cachedRequests = [];
 
@@ -599,7 +649,7 @@
       }
     }
 
-    // 4. 구매 길드 테이블 렌더링
+    // 4. 구매 길드 테이블 렌더링 (수정 / 조기종료 / 삭제 버튼 추가)
     function renderGuildTable(list) {
       const tbody = document.getElementById("guildListTableBody");
       if (!list || list.length === 0) {
@@ -612,6 +662,7 @@
         const key = lic ? lic.license_key : (g.license_key || "-");
         const expiresAt = lic ? (lic.expires_at ? lic.expires_at.split('T')[0] : '무제한') : '미설정';
         const contact = lic ? (lic.contact_info || lic.applicant_nickname || "-") : "-";
+        const isActive = (g.is_active !== false && (!lic || lic.status !== 'suspended'));
         
         return `
           <tr>
@@ -635,17 +686,26 @@
               <div>${expiresAt}</div>
             </td>
             <td>
-              <span class="badge-status ${g.is_active ? 'badge-active' : 'badge-expired'}">
-                ${g.is_active ? '정상 사용' : '정지됨'}
+              <span class="badge-status ${isActive ? 'badge-active' : 'badge-expired'}">
+                ${isActive ? '정상 사용' : '조기종료(정지)'}
               </span>
             </td>
             <td>
-              <div class="d-flex gap-1">
+              <div class="d-flex gap-1 flex-wrap">
                 <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;" onclick="copyGuildInviteMessage('${g.game_name}', '${g.guild_name}', '${key}', '${expiresAt}')">
                   안내문 복사
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.75rem;" onclick="extendGuildLicense('${g.id}', 30)">
-                  +30일 연장
+                  +30일
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="openEditGuildModal('${g.id}')">
+                  수정
+                </button>
+                <button type="button" class="btn btn-sm ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'} py-0 px-2" style="font-size:0.75rem;" onclick="toggleGuildActive('${g.id}', '${g.guild_name}', ${isActive})">
+                  ${isActive ? '조기종료' : '재개'}
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.75rem;" onclick="deleteGuildAction('${g.id}', '${g.guild_name}')">
+                  삭제
                 </button>
               </div>
             </td>
@@ -863,7 +923,123 @@
       }
     }
 
-    // 9. 클립보드 복사 유틸
+    // 9. 길드 정보 수정 (모달 열기 / 저장)
+    function openEditGuildModal(guildId) {
+      const g = cachedGuilds.find(x => x.id === guildId);
+      if (!g) return;
+
+      const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : null;
+
+      document.getElementById("editGuildId").value = g.id;
+      document.getElementById("editGameName").value = g.game_name || "";
+      document.getElementById("editGuildName").value = g.guild_name || "";
+      document.getElementById("editApplicantNick").value = lic?.applicant_nickname || "";
+      document.getElementById("editContactInfo").value = lic?.contact_info || "";
+
+      let expDateVal = "";
+      if (lic && lic.expires_at) {
+        expDateVal = lic.expires_at.split('T')[0];
+      }
+      document.getElementById("editExpiresAt").value = expDateVal;
+
+      document.getElementById("modalEditGuild").style.display = "flex";
+    }
+
+    function closeEditGuildModal() {
+      document.getElementById("modalEditGuild").style.display = "none";
+    }
+
+    async function saveGuildEdit() {
+      ensureSupabaseClient();
+      const guildId = document.getElementById("editGuildId").value;
+      const gameName = document.getElementById("editGameName").value.trim();
+      const guildName = document.getElementById("editGuildName").value.trim();
+      const applicantNick = document.getElementById("editApplicantNick").value.trim();
+      const contactInfo = document.getElementById("editContactInfo").value.trim();
+      const expDateVal = document.getElementById("editExpiresAt").value.trim();
+
+      if (!guildName) return alert("길드명을 입력해 주세요.");
+
+      let expiresAt = null;
+      if (expDateVal) {
+        expiresAt = new Date(expDateVal + "T23:59:59Z").toISOString();
+      }
+
+      try {
+        // 1. guilds 테이블 업데이트
+        await window.supabaseClient
+          .from('guilds')
+          .update({ game_name: gameName, guild_name: guildName })
+          .eq('id', guildId);
+
+        // 2. app_licenses 테이블 업데이트
+        await window.supabaseClient
+          .from('app_licenses')
+          .update({
+            game_name: gameName,
+            guild_name: guildName,
+            applicant_nickname: applicantNick,
+            contact_info: contactInfo,
+            expires_at: expiresAt
+          })
+          .eq('guild_id', guildId);
+
+        alert("길드 및 라이선스 정보가 성공적으로 수정되었습니다.");
+        closeEditGuildModal();
+        loadAllDashboardData();
+      } catch (err) {
+        alert("수정 실패: " + err.message);
+      }
+    }
+
+    // 10. 조기 종료 / 정지 / 재개 토글
+    async function toggleGuildActive(guildId, guildName, currentActive) {
+      ensureSupabaseClient();
+      const actionText = currentActive ? "조기 종료(정지)" : "정상 사용으로 재개";
+      if (!confirm(`[${guildName}] 길드를 정말로 ${actionText} 처리하시겠습니까?`)) return;
+
+      const newIsActive = !currentActive;
+      const newStatus = newIsActive ? "active" : "suspended";
+
+      try {
+        await window.supabaseClient
+          .from('guilds')
+          .update({ is_active: newIsActive })
+          .eq('id', guildId);
+
+        await window.supabaseClient
+          .from('app_licenses')
+          .update({ status: newStatus })
+          .eq('guild_id', guildId);
+
+        alert(`[${guildName}] 길드가 ${actionText}되었습니다.`);
+        loadAllDashboardData();
+      } catch (err) {
+        alert("상태 변경 실패: " + err.message);
+      }
+    }
+
+    // 11. 길드 영구 삭제
+    async function deleteGuildAction(guildId, guildName) {
+      ensureSupabaseClient();
+      if (!confirm(`⚠️ [${guildName}] 길드를 완전히 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며 라이선스, 대화방, 길드원 등 해당 길드의 모든 데이터가 영구 삭제됩니다.`)) return;
+
+      try {
+        const { error } = await window.supabaseClient
+          .from('guilds')
+          .delete()
+          .eq('id', guildId);
+
+        if (error) throw error;
+
+        alert(`[${guildName}] 길드가 완전히 삭제되었습니다.`);
+        loadAllDashboardData();
+      } catch (err) {
+        alert("삭제 실패: " + err.message);
+      }
+    }
+
+    // 12. 클립보드 복사 유틸
     function copyTextToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
         alert("클립보드에 복사되었습니다: " + text);
