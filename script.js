@@ -1,5 +1,5 @@
 // ========================================================
-// [길드톡 메신저] 메인 클라이언트 스크립 (script.js)
+// [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
 // 카카오톡 인터페이스 / 실시간 채팅 스트림 / 계정 세션 / 모듈 로더
 // ========================================================
 
@@ -8,7 +8,7 @@ var cachedMemberList = [];
 var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
 var myCurrentPin = localStorage.getItem("guild_my_pin") || "";
 var myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-var myCurrentClass = localStorage.getItem("guild_my_class") || "미설정";
+var myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
 var deferredPrompt = null;
 var kakaoToastTimer = null;
 var pendingOptimisticMessages = [];
@@ -121,6 +121,12 @@ async function initApp() {
     supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
     window.supabaseClient = supabaseClient;
   }
+
+  // ⚡ [세션 보호]: 저장된 로그인 닉네임과 직업이 유실되지 않도록 항상 동기화
+  myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
+  myCurrentPin = localStorage.getItem("guild_my_pin") || "";
+  myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
+  myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
   await loadGuildSettings();
   await window.loadGuildMembersData();
@@ -247,6 +253,9 @@ function toggleMenuDrawer(isOpen) {
   if (isOpen) {
     toggleMembersDrawer(false);
     toggleBossDrawer(false);
+    if (typeof window.updateProfileUI === "function") {
+      window.updateProfileUI(localStorage.getItem("guild_my_nickname") || "");
+    }
     if (drawer) drawer.classList.add("open");
     if (backdrop) backdrop.classList.add("show");
   } else {
@@ -467,7 +476,7 @@ async function executeGuildLogin() {
     localStorage.setItem("guild_my_class", myCurrentClass);
     localStorage.setItem("guild_my_avatar", myCurrentAvatar);
 
-    updateProfileUI("슈퍼관리자");
+    window.updateProfileUI("슈퍼관리자");
     document.getElementById("guildLoginModal").style.display = "none";
     resetAndReloadChatAfterAuth();
     return showKakaoToast("👑 슈퍼관리자(Master)로 로그인되었습니다.", "🎉");
@@ -526,7 +535,7 @@ async function executeGuildLogin() {
     sessionStorage.removeItem("admin_role");
   }
 
-  updateProfileUI(memberName);
+  window.updateProfileUI(memberName);
   document.getElementById("guildLoginModal").style.display = "none";
   showKakaoToast(`[${memberName}] 님 반갑습니다!`, "🎉");
 
@@ -592,15 +601,28 @@ function resetAndReloadChatAfterAuth() {
   if (typeof window.loadMainTabRoomsList === "function") window.loadMainTabRoomsList();
 }
 
-function updateProfileUI(nick) {
+window.updateProfileUI = function(nick) {
+  myCurrentNick = nick || localStorage.getItem("guild_my_nickname") || "";
+  myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+  myCurrentClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
+
   const nickElem = document.getElementById("sidebarUserNickName");
   const avatarElem = document.getElementById("sidebarAvatarIcon");
   const classElem = document.getElementById("sidebarUserClassText");
 
-  if (nickElem) nickElem.innerText = nick;
+  if (nickElem) nickElem.innerText = myCurrentNick || "로그인 필요";
   if (avatarElem) avatarElem.innerText = myCurrentAvatar;
   if (classElem) classElem.innerText = myCurrentClass;
-}
+
+  const tabNick = document.getElementById("mainTabMyNick");
+  const tabAvatar = document.getElementById("mainTabMyAvatar");
+  const tabClass = document.getElementById("mainTabMyClass");
+
+  if (tabNick) tabNick.innerText = myCurrentNick || "내 프로필";
+  if (tabAvatar) tabAvatar.innerText = myCurrentAvatar;
+  if (tabClass) tabClass.innerText = myCurrentClass;
+};
+function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
 // 5. 과거 대화 로드 & 실시간 대화 수신 (방별 격리 & 노란색 읽음 계산)
