@@ -649,7 +649,7 @@
 
       <div style="text-align: left; margin-bottom: 12px;">
         <label class="text-secondary small mb-1" style="font-size: 0.68rem;">길드장 비밀번호(PIN) 설정</label>
-        <input type="password" id="actMasterPinInput" placeholder="4자리 숫자" maxlength="10" style="height: 36px; margin-bottom: 0;">
+        <input type="password" id="actMasterPinInput" placeholder="6자리 숫자 (PIN)" maxlength="10" style="height: 36px; margin-bottom: 0;">
       </div>
 
       <div class="d-flex gap-2">
@@ -750,7 +750,7 @@
         <option value="">닉네임을 선택하세요...</option>
       </select>
 
-      <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 입력" maxlength="20" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
+      <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(6자리 PIN) 입력" maxlength="20" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
 
       <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; font-size: 0.88rem; border-radius: 8px;" onclick="executeGuildLogin()">
         로그인
@@ -860,7 +860,7 @@
       <div style="text-align: left; margin-bottom: 8px;">
         <label class="text-secondary small mb-1" style="font-size: 0.68rem;">길드 초대 코드</label>
         <div class="d-flex gap-2">
-          <input type="text" id="joinInviteCodeInput" placeholder="예: ECL-XXXX" style="height: 36px; margin-bottom: 0; text-transform: uppercase;">
+          <input type="text" id="joinInviteCodeInput" placeholder="예: ECL-XXXX 또는 INV-XXXX" style="height: 36px; margin-bottom: 0; text-transform: uppercase;">
           <button type="button" class="btn btn-outline-primary btn-sm px-3 fw-bold" style="font-size:0.75rem; border-radius: 7px; white-space: nowrap;" onclick="verifyGuildInviteCode()">
             확인
           </button>
@@ -886,7 +886,7 @@
 
         <div style="margin-bottom: 12px;">
           <label class="text-secondary small mb-1" style="font-size: 0.68rem;">개인 비밀번호(PIN) 설정</label>
-          <input type="password" id="joinMemberPinInput" placeholder="4자리 숫자 (로그인용)" maxlength="10" style="height: 36px; margin-bottom: 0;">
+          <input type="password" id="joinMemberPinInput" placeholder="6자리 숫자 (PIN)" maxlength="10" style="height: 36px; margin-bottom: 0;">
         </div>
       </div>
 
@@ -1113,7 +1113,7 @@
       }
     }
 
-    // [핵심 버그 해결 & 초대코드 연동]: 라이선스 키로 길드 시작하기 실행 함수
+    // [핵심 버그 해결]: 라이선스 키로 길드 시작하기 실행 함수 (nickname 우선 규격 준수)
     async function executeActivateGuild() {
       var keyInput = (document.getElementById("actLicenseKeyInput").value || "").trim().toUpperCase();
       var pinInput = (document.getElementById("actMasterPinInput").value || "").trim();
@@ -1160,9 +1160,9 @@
         var masterNick = lic.applicant_nickname || "길드장";
         var guildId = lic.guild_id;
 
-        // 2. 길드원(guild_members) 테이블에 길드장 등록 (DB 정규 컬럼 준수)
+        // 2. 길드원(guild_members) 테이블에 길드장 등록 (nickname 컬럼 우선 규격 준수)
         var memberPayload = {
-          name: masterNick,
+          nickname: masterNick,
           role: "길드장",
           pin: pinInput
         };
@@ -1170,7 +1170,7 @@
 
         var memRes = await window.supabaseClient.from('guild_members').insert([memberPayload]);
         if (memRes.error && !String(memRes.error.message || '').includes('duplicate')) {
-          // guild_id 미존재 컬럼 스키마 방어: name, role, pin 만 인서트
+          // name 컬럼 스키마 환경 대비 자동 2차 인서트 시도
           await window.supabaseClient.from('guild_members').insert([{
             name: masterNick,
             role: "길드장",
@@ -1370,7 +1370,7 @@
         }
 
         var memPayload = {
-          name: nick,
+          nickname: nick,
           role: "일반",
           pin: pin
         };
@@ -1460,7 +1460,7 @@
                 '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || '게임') + '</span>' +
                 '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
               '</div>' +
-              '<div class="text-secondary small" style="font-size: 0.68rem;">내 닉네임: ' + g.nickname + ' (' + (g.role || '일반') + ')</div>' +
+              '<div class="text-secondary small" style="font-size: 0.68rem;">내 닉네임: ' + (g.nickname || g.name) + ' (' + (g.role || '일반') + ')</div>' +
             '</div>' +
           '</div>' + badgeHtml +
         '</div>';
@@ -1474,7 +1474,7 @@
       if (!target) return;
 
       localStorage.setItem("current_guild_id", target.guild_id);
-      localStorage.setItem("guild_my_nickname", target.nickname);
+      localStorage.setItem("guild_my_nickname", target.nickname || target.name);
       localStorage.setItem("guild_my_role", target.role || "일반");
       closeGuildSwitcherModal();
       location.reload();
