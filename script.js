@@ -113,7 +113,12 @@ function checkAuthAndOpenAppropriateModal() {
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
 
   if (!myCurrentNick) {
-    showGuildLoginModal();
+    // 게이트웨이 허브가 존재하면 게이트웨이를 띄우고, 아니면 기본 로그인 모달 노출
+    if (typeof openWelcomeGatewayModal === 'function') {
+      openWelcomeGatewayModal();
+    } else {
+      showGuildLoginModal();
+    }
     const chatContainer = document.getElementById("chatMessagesView");
     if (chatContainer) {
       chatContainer.innerHTML = `
@@ -130,7 +135,7 @@ function checkAuthAndOpenAppropriateModal() {
 
 async function loadGuildSettings() {
   try {
-    // 1. 현재 활성 길드(my_joined_guilds) 정보 우선 반영
+    // 1. 현재 선택된 활성 길드(my_joined_guilds) 정보 우선 반영
     const currentGid = localStorage.getItem("current_guild_id");
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
@@ -155,7 +160,7 @@ async function loadGuildSettings() {
       if (t4) t4.innerText = gGame + " · " + gName;
     }
 
-    // 2. 서버 설정 조회 동기화
+    // 2. 서버 설정 조회 시 특정 길드명이 없는 일반 상태라면 중립 텍스트 유지
     const res = await apiRequest("guild_settings?select=key,value");
     if (res && res.length > 0) {
       res.forEach(item => {
@@ -164,10 +169,10 @@ async function loadGuildSettings() {
           const t2 = document.getElementById("menuGuildNameText");
           const t3 = document.getElementById("loginGuildTitle");
           const t4 = document.getElementById("mainTabHeaderSubtitle");
-          if (t1) t1.innerText = item.value + " 대화방";
-          if (t2) t2.innerText = item.value;
-          if (t3) t3.innerText = item.value + " 메신저 로그인";
-          if (t4) t4.innerText = item.value;
+          if (t1) t1.innerText = "전체 대화방";
+          if (t2) t2.innerText = "길드 메신저";
+          if (t3) t3.innerText = "길드 메신저 로그인";
+          if (t4) t4.innerText = "길드 메신저";
         }
       });
     }
@@ -529,7 +534,11 @@ window.executeLogoutProcess = function() {
   lastRenderedSender = null;
 
   toggleMenuDrawer(false);
-  showGuildLoginModal();
+  if (typeof openWelcomeGatewayModal === 'function') {
+    openWelcomeGatewayModal();
+  } else {
+    showGuildLoginModal();
+  }
 };
 
 window.switchActiveGuild = function(guildId) {
@@ -726,7 +735,8 @@ async function sendMessageAction() {
   if (!content) return;
 
   if (!myCurrentNick) {
-    showGuildLoginModal();
+    if (typeof openWelcomeGatewayModal === 'function') openWelcomeGatewayModal();
+    else showGuildLoginModal();
     return showKakaoToast("로그인 후 메시지를 전송할 수 있습니다.", "⚠️");
   }
 
