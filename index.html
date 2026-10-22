@@ -23,6 +23,54 @@
 
   <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
   <script>
+    // ⚡ [메시지 전송 & 엔터키 즉시 처리 & 전송버튼 노란색 활성화]
+    function handleInputState(textarea) {
+      if (!textarea) return;
+      textarea.style.height = "auto";
+      var newH = Math.min(textarea.scrollHeight, 100);
+      textarea.style.height = (newH > 36 ? newH : 36) + "px";
+
+      var btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
+      if (btn) {
+        if (textarea.value.trim().length > 0) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      }
+    }
+
+    function checkEnterKey(event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        if (event.isComposing) return;
+        event.preventDefault();
+        handleSendMessage();
+      }
+    }
+    window.checkEnterKey = checkEnterKey;
+    window.handleChatInputKeydown = checkEnterKey;
+
+    function handleSendMessage() {
+      if (typeof window.executeSendMessage === "function") {
+        window.executeSendMessage();
+        return;
+      }
+      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+      if (!input) return;
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      handleInputState(input);
+      if (typeof showKakaoToast === "function") showKakaoToast("전송 중...", "💬");
+    }
+    window.handleSendMessage = handleSendMessage;
+
+    function focusChatInput() {
+      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+      if (input) input.focus();
+    }
+    window.focusChatInput = focusChatInput;
+
     (function() {
       try {
         var theme = localStorage.getItem("guild_theme_mode") || "dark";
@@ -150,7 +198,7 @@
         </div>
       </div>
 
-      <!-- 상단 우측 툴: 검색(돋보기), 보스타임(시계), 길드원(사람들) 순정 3개 복원 -->
+      <!-- 상단 우측 순정 툴: 검색(돋보기), 보스타임 채팅 브리핑(시계), 길드원 목록(사람들) 복원 -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
           <i class="fa-solid fa-download"></i>
@@ -158,7 +206,7 @@
         <button type="button" class="btn-kakao-head" title="대화 내용 검색" onclick="focusChatInput()">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>
-        <button type="button" class="btn-kakao-head" title="보스타임" onclick="toggleBossDrawer(true)">
+        <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
           <i class="fa-regular fa-clock"></i>
         </button>
         <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
@@ -183,7 +231,7 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 입력바: 왼쪽 하단 아이콘 제거 및 엔터 전송 완벽 연동 -->
+    <!-- 하단 입력바: 왼쪽 하단 아이콘 제거, 버튼 활성화 및 엔터 전송 완벽 연동 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
@@ -376,45 +424,6 @@
 
   <!-- 게이트웨이 및 전송 보조 스크립트 -->
   <script>
-    // ⚡ [메시지 전송 & 엔터키 즉시 처리]: 줄바꿈 스크롤 방지 및 안전 전송
-    function handleInputState(textarea) {
-      if (!textarea) return;
-      textarea.style.height = "auto";
-      var newH = Math.min(textarea.scrollHeight, 100);
-      textarea.style.height = (newH > 36 ? newH : 36) + "px";
-    }
-
-    function checkEnterKey(event) {
-      if (event.key === "Enter" && !event.shiftKey) {
-        if (event.isComposing) return;
-        event.preventDefault();
-        handleSendMessage();
-      }
-    }
-    window.checkEnterKey = checkEnterKey;
-    window.handleChatInputKeydown = checkEnterKey;
-
-    function handleSendMessage() {
-      if (typeof window.executeSendMessage === "function") {
-        window.executeSendMessage();
-        return;
-      }
-      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
-      if (!input) return;
-      var text = input.value.trim();
-      if (!text) return;
-      input.value = "";
-      handleInputState(input);
-      if (typeof showKakaoToast === "function") showKakaoToast("전송 중...", "💬");
-    }
-    window.handleSendMessage = handleSendMessage;
-
-    function focusChatInput() {
-      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
-      if (input) input.focus();
-    }
-    window.focusChatInput = focusChatInput;
-
     async function openWelcomeGatewayModal() {
       var gateway = document.getElementById("modalWelcomeGateway");
       var loginModal = document.getElementById("guildLoginModal");
