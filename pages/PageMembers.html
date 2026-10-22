@@ -490,8 +490,24 @@
 
     try {
       var curGid = localStorage.getItem("current_guild_id");
-      var endpoint = curGid ? ("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=*") : "guild_members?select=*";
+      var endpoint = (curGid && curGid !== "null" && curGid !== "undefined")
+        ? ("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=*")
+        : "guild_members?select=*";
       var data = await apiRequest(endpoint);
+
+      // ⚡ [스마트 길드원 복구]: 혹시 guild_id가 불일치하거나 비어있어 0명으로 나올 경우 전체 멤버에서 자동 매칭 복구
+      if (!data || data.length === 0) {
+        try {
+          var allMembers = await apiRequest("guild_members?select=*");
+          if (allMembers && allMembers.length > 0) {
+            data = allMembers;
+            if (data[0].guild_id) {
+              localStorage.setItem("current_guild_id", data[0].guild_id);
+            }
+          }
+        } catch(fallbackErr) {}
+      }
+
       pmMemberListData = data || [];
 
       pmMemberListData.sort(function(a, b) {
@@ -525,7 +541,7 @@
       return;
     }
 
-    var myNick = localStorage.getItem("guild_my_nickname") || "";
+    var myNick = (localStorage.getItem("guild_my_nickname") || "").trim();
     var myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
     var myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
 
@@ -546,9 +562,9 @@
         avatarClass = "elite";
       }
 
-      var isMe = (memberNick === myNick);
+      var isMe = (myNick !== "" && memberNick.toLowerCase() === myNick.toLowerCase());
       var displayAvatar = isMe ? myAvatar : (m.avatar || (memberNick ? memberNick.charAt(0) : '👤'));
-      var displayClass = isMe ? myClass : (m.job_class || '직업 미지정');
+      var displayClass = isMe ? myClass : (m.job_class || m.class_name || '직업 미지정');
 
       var safeName = escapeHtml(memberNick);
       var safeClass = escapeHtml(displayClass);
@@ -582,7 +598,7 @@
     var filtered = pmMemberListData.filter(function(m) {
       var n = (m.nickname || m.name || "").toLowerCase();
       var r = (m.role || "").toLowerCase();
-      var c = (m.job_class || "").toLowerCase();
+      var c = (m.job_class || m.class_name || "").toLowerCase();
       return n.includes(q) || r.includes(q) || c.includes(q);
     });
     pmRenderMemberList(filtered);
@@ -622,7 +638,7 @@
     try {
       var curGid = localStorage.getItem("current_guild_id");
       var newMember = { nickname: name, name: name, role: role, pin: "000000" };
-      if (curGid) newMember.guild_id = curGid;
+      if (curGid && curGid !== "null") newMember.guild_id = curGid;
       await apiRequest("guild_members", "POST", [newMember]);
       if (typeof showKakaoToast === 'function') showKakaoToast("[" + name + "] 길드원 등록 완료!", "🎉");
       pmCloseAddModal();
