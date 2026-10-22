@@ -1,13 +1,13 @@
 // ========================================================
 // [길드톡 메신저] 카카오톡 스타일 메인 3탭 & 다중 톡방 관리 모듈 (rooms.js)
-// 친구 목록 / 대화방 목록 / 더보기 탭 제어 및 방 개설(운영진방, 1:1 개인톡)
+// 친구 목록 / 대화방 목록 / 개인설정 탭 제어 및 방 개설(운영진방, 1:1 개인톡)
 // ========================================================
 
 window.currentActiveRoomId = null;
 window.cachedChatRoomsList = [];
 
 // --------------------------------------------------------
-// 1. 하단 3탭 전환 제어 (친구 / 채팅 / 더보기)
+// 1. 하단 3탭 전환 제어 (친구 / 채팅 / 설정)
 // --------------------------------------------------------
 window.switchMainBottomTab = function(tabName) {
   const tabFriends = document.getElementById("tabFriendsContent");
@@ -45,6 +45,7 @@ window.switchMainBottomTab = function(tabName) {
     if (headerTitle) headerTitle.innerText = "설정";
     if (headerSubtitle) headerSubtitle.innerText = "";
     if (btnCreateRoom) btnCreateRoom.style.display = "none";
+    loadMainTabSettingsPage();
   } else {
     // 기본값: chats (대화방 목록)
     if (navChats) navChats.classList.add("active");
@@ -57,7 +58,7 @@ window.switchMainBottomTab = function(tabName) {
 };
 
 // --------------------------------------------------------
-// 2. [친구 탭] 길드원 리스트 렌더링 & 1:1 대화 시작
+// 2. [친구 탭] 길드원 리스트 렌더링 & 1:1 대화 연결
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
@@ -107,6 +108,7 @@ window.loadMainTabFriendsList = async function() {
       return;
     }
 
+    // 길드원 목록: 본인은 상단 프로필 카드에 위치하므로 아래 목록에서는 다른 길드원과 본인 모두 깔끔하게 나열
     container.innerHTML = members.map(m => {
       const mName = m.nickname || m.name || "길드원";
       const isMe = (m.nickname === myNick || m.name === myNick);
@@ -123,8 +125,8 @@ window.loadMainTabFriendsList = async function() {
         roleBadge = `<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.62rem;">정예</span>`;
       }
 
-      // 길드원 클릭 시 1:1 대화 모달 호출
-      const clickAction = isMe ? "openProfileEditModal()" : `confirmDirectChat('${mName}', '${mAvatar}', '${mClass}', '${mRole}')`;
+      // 길드원 카드 클릭 액션: 본인이면 프로필 변경 모달, 타인이면 1:1 대화 모달 호출
+      const clickAction = isMe ? "openProfileEditModal()" : `openMemberProfileCard('${mName}', '${mAvatar}', '${mClass}', '${mRole}')`;
 
       return `
         <div class="friend-item-card" onclick="${clickAction}">
@@ -137,24 +139,13 @@ window.loadMainTabFriendsList = async function() {
             </div>
             <p class="room-msg-preview">${mClass}</p>
           </div>
-          ${!isMe ? '<i class="fa-regular fa-comment text-secondary" style="font-size:0.85rem;"></i>' : '<i class="fa-solid fa-pen text-secondary" style="font-size:0.75rem;"></i>'}
+          ${!isMe ? '<i class="fa-regular fa-comment text-secondary" style="font-size:0.85rem;" title="1:1 대화하기"></i>' : '<i class="fa-solid fa-pen text-secondary" style="font-size:0.75rem;" title="내 프로필 변경"></i>'}
         </div>
       `;
     }).join("");
   } catch (err) {
     console.error("Friends list load error:", err);
     container.innerHTML = `<div class="text-danger small text-center py-4">길드원 목록을 불러오지 못했습니다.</div>`;
-  }
-};
-
-// 1:1 대화 의사 확인 팝업
-window.confirmDirectChat = function(targetNick, avatar, className, role) {
-  if (typeof window.openMemberProfileCard === "function") {
-    window.openMemberProfileCard(targetNick, avatar, className, role);
-    return;
-  }
-  if (confirm(`[${targetNick}] 님과 1:1 대화를 시작하시겠습니까?`)) {
-    startDirectChatWith(targetNick);
   }
 };
 
@@ -244,7 +235,33 @@ window.loadMainTabRoomsList = async function() {
 };
 
 // --------------------------------------------------------
-// 4. 개별 대화방 입장 및 퇴장
+// 4. [설정 탭] 개인 설정 전용 페이지 로더
+// --------------------------------------------------------
+window.loadMainTabSettingsPage = async function() {
+  const container = document.getElementById("tabMoreContent");
+  if (!container) return;
+
+  container.innerHTML = `<div class="text-secondary small text-center py-5"><i class="fa-solid fa-spinner fa-spin me-2"></i>설정을 불러오는 중...</div>`;
+
+  try {
+    const res = await fetch(`pages/PageProfileSettings.html?_t=${Date.now()}`);
+    if (!res.ok) throw new Error("로드 실패");
+    const html = await res.text();
+    container.innerHTML = html;
+
+    // 동적 스크립트 실행
+    container.querySelectorAll("script").forEach(s => {
+      const sc = document.createElement("script");
+      if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
+      document.body.appendChild(sc);
+    });
+  } catch (e) {
+    container.innerHTML = `<div class="text-danger small text-center py-5">설정 페이지를 불러올 수 없습니다: ${e.message}</div>`;
+  }
+};
+
+// --------------------------------------------------------
+// 5. 개별 대화방 입장 및 퇴장
 // --------------------------------------------------------
 window.openChatRoom = function(roomId, roomTitle, roomType) {
   window.currentActiveRoomId = roomId;
@@ -290,7 +307,7 @@ window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
 };
 
 // --------------------------------------------------------
-// 5. 1:1 개인톡 생성 및 즉시 입장
+// 6. 1:1 개인톡 생성 및 즉시 입장
 // --------------------------------------------------------
 window.startDirectChatWith = async function(targetNick) {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
