@@ -8,7 +8,7 @@
   <!-- PWA 앱 설정 -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#bacee0">
-  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="길드톡">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
@@ -150,18 +150,16 @@
         </div>
       </div>
 
+      <!-- 상단 우측 툴: 검색(돋보기), 보스타임(시계), 길드원(사람들) 순정 3개 복원 -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
           <i class="fa-solid fa-download"></i>
         </button>
-        <button type="button" class="btn-kakao-head" id="btnToggleAppTheme" title="테마 전환" onclick="toggleThemeMode()">
-          <i class="fa-solid fa-moon"></i>
+        <button type="button" class="btn-kakao-head" title="대화 내용 검색" onclick="focusChatInput()">
+          <i class="fa-solid fa-magnifying-glass"></i>
         </button>
-        <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
+        <button type="button" class="btn-kakao-head" title="보스타임" onclick="toggleBossDrawer(true)">
           <i class="fa-regular fa-clock"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="보스참여등록" onclick="openModulePage('PageRegister')">
-          <i class="fa-solid fa-crosshairs text-danger"></i>
         </button>
         <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
           <i class="fa-solid fa-user-group"></i>
@@ -185,14 +183,11 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
+    <!-- 하단 입력바: 왼쪽 하단 아이콘 제거 및 엔터 전송 완벽 연동 -->
     <footer class="kakao-input-area">
-      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지 입력... (!컷 보스명 시간, !예약 보스명 시간)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
+      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
-      <div class="input-bottom-tools">
-        <div class="input-tool-icons">
-          <i class="fa-regular fa-face-smile" title="내 직업/프로필 설정" onclick="openProfileEditModal()"></i>
-          <i class="fa-solid fa-paperclip" title="보스 토벌 스샷 등록" onclick="openModulePage('PageRegister')"></i>
-        </div>
+      <div class="input-bottom-tools" style="justify-content: flex-end;">
         <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
           전송
         </button>
@@ -264,7 +259,7 @@
       <h6 class="fw-bold mb-1" style="font-size: 1.02rem;">길드톡 메신저</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">원하시는 시작 방식을 선택하세요.</p>
 
-      <!-- 최근 참여한 길드 -->
+      <!-- 최근 참여한 길드 (1클릭 삭제 지원) -->
       <div id="gatewayJoinedGuildsBox" style="display: none; margin-bottom: 12px; text-align: left;">
         <div class="d-flex align-items-center justify-content-between mb-1">
           <label class="text-secondary small mb-0 fw-bold" style="font-size: 0.68rem;">최근 참여한 길드</label>
@@ -379,8 +374,47 @@
     </div>
   </div>
 
-  <!-- 게이트웨이 및 길드 가입/개설 제어 스크립트 -->
+  <!-- 게이트웨이 및 전송 보조 스크립트 -->
   <script>
+    // ⚡ [메시지 전송 & 엔터키 즉시 처리]: 줄바꿈 스크롤 방지 및 안전 전송
+    function handleInputState(textarea) {
+      if (!textarea) return;
+      textarea.style.height = "auto";
+      var newH = Math.min(textarea.scrollHeight, 100);
+      textarea.style.height = (newH > 36 ? newH : 36) + "px";
+    }
+
+    function checkEnterKey(event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        if (event.isComposing) return;
+        event.preventDefault();
+        handleSendMessage();
+      }
+    }
+    window.checkEnterKey = checkEnterKey;
+    window.handleChatInputKeydown = checkEnterKey;
+
+    function handleSendMessage() {
+      if (typeof window.executeSendMessage === "function") {
+        window.executeSendMessage();
+        return;
+      }
+      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+      if (!input) return;
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      handleInputState(input);
+      if (typeof showKakaoToast === "function") showKakaoToast("전송 중...", "💬");
+    }
+    window.handleSendMessage = handleSendMessage;
+
+    function focusChatInput() {
+      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+      if (input) input.focus();
+    }
+    window.focusChatInput = focusChatInput;
+
     async function openWelcomeGatewayModal() {
       var gateway = document.getElementById("modalWelcomeGateway");
       var loginModal = document.getElementById("guildLoginModal");
@@ -682,12 +716,6 @@
         if (typeof showKakaoToast === "function") showKakaoToast("신청 실패: " + err.message, "⚠️");
         else alert("신청 실패: " + err.message);
       }
-    }
-
-    function toggleThemeMode() {
-      var current = localStorage.getItem("guild_theme_mode") || "dark";
-      var next = (current === "dark") ? "light" : "dark";
-      if (typeof window.applyAppTheme === "function") window.applyAppTheme(next);
     }
   </script>
 
