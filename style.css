@@ -231,7 +231,6 @@ body.theme-light {
   background: var(--kakao-scroll-thumb) !important;
   border-radius: 10px !important;
   border: none !important;
-  box-shadow: none !important;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--kakao-scroll-thumb-hover) !important;
@@ -282,15 +281,12 @@ html, body {
   -moz-osx-font-smoothing: auto !important;
   text-rendering: auto !important;
   height: 100vh;
-  margin: 0 !important;
-  padding: 0 !important;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   display: flex;
   position: relative;
   width: 100%;
-  box-shadow: none !important;
-  border: none !important;
-  outline: none !important;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -309,7 +305,6 @@ html, body {
   opacity: 1;
 }
 
-/* 닫혀 있을 때 화면 안쪽으로 그림자 번짐 방지 (box-shadow: none) */
 .app-sidebar-drawer {
   position: fixed;
   top: 0; left: 0;
@@ -421,7 +416,6 @@ html, body {
 }
 body.theme-dark .user-sub-class { color: #38bdf8 !important; }
 
-/* 닫혀 있을 때 그림자 번짐 방지 */
 .app-members-drawer,
 .app-boss-drawer {
   position: fixed;
@@ -485,7 +479,6 @@ body.theme-dark .user-sub-class { color: #38bdf8 !important; }
   100% { transform: rotate(360deg); }
 }
 
-/* 카카오톡 규격: 좌우 가상자리 100% 플랫 및 그림자 제거 */
 .app-main-layout {
   flex: 1;
   width: 100%;
@@ -1124,13 +1117,136 @@ body.theme-dark .raid-hero-box {
   z-index: 1050 !important;
 }
 
-.chat-room-card {
+/* ========================================================
+   [카카오톡 스타일 메인 3탭: 친구 / 대화방 카드 & 리스트 전용 스타일]
+   ======================================================== */
+.chat-room-card,
+.friend-item-card {
+  display: flex !important;
+  align-items: center !important;
+  padding: 12px 16px !important;
+  gap: 13px !important;
   background: var(--main-card-bg) !important;
-  border: 1px solid var(--main-card-border) !important;
+  border: none !important;
+  border-bottom: 1px solid var(--main-card-border) !important;
+  cursor: pointer !important;
+  transition: background 0.15s ease !important;
+  box-sizing: border-box !important;
+  text-decoration: none !important;
+  user-select: none !important;
 }
-.chat-room-card:hover {
-  background: var(--main-card-hover) !important;
-}
+.chat-room-card:hover,
 .friend-item-card:hover {
   background: var(--main-card-hover) !important;
+}
+.chat-room-card:active,
+.friend-item-card:active {
+  background: var(--main-card-hover) !important;
+  opacity: 0.92 !important;
+}
+
+/* 내 프로필 카드 (친구 탭 상단) */
+#tabFriendsContent .chat-room-card {
+  margin: 12px 14px 8px 14px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(56, 189, 248, 0.22) !important;
+  background: rgba(56, 189, 248, 0.06) !important;
+  padding: 12px 14px !important;
+}
+#tabFriendsContent .chat-room-card:hover {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border-color: rgba(56, 189, 248, 0.35) !important;
+}
+
+/* 아바타 아이콘 (대화방 및 친구) */
+.room-avatar-large,
+.friend-avatar {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--main-card-border) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.35rem !important;
+  flex-shrink: 0 !important;
+  color: var(--main-header-text) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+html.theme-light .room-avatar-large,
+html.theme-light .friend-avatar,
+body.theme-light .room-avatar-large,
+body.theme-light .friend-avatar {
+  background: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+
+/* 대화방 유형별 아바타 색상 포인트 */
+.room-avatar-large.private {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #ef4444 !important;
+  border-color: rgba(239, 68, 68, 0.25) !important;
+}
+.room-avatar-large.direct {
+  background: rgba(14, 165, 233, 0.12) !important;
+  color: #0ea5e9 !important;
+  border-color: rgba(14, 165, 233, 0.25) !important;
+}
+.room-avatar-large i {
+  font-size: 1.25rem !important;
+}
+
+/* 카드 내부 텍스트 콘텐츠 영역 */
+.room-content-box {
+  flex: 1 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 3px !important;
+}
+.room-title-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+.room-name-text {
+  font-size: 0.96rem !important;
+  font-weight: 700 !important;
+  color: var(--main-header-text) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.3 !important;
+}
+.room-msg-preview,
+.room-last-message {
+  font-size: 0.8rem !important;
+  color: var(--main-header-subtext) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin: 0 !important;
+  line-height: 1.3 !important;
+}
+.room-time-text {
+  font-size: 0.72rem !important;
+  color: var(--main-header-subtext) !important;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+/* 탭 내부 섹션 헤더 (길드원 수, 새로고침, 방 만들기 등) */
+#kakaoMainTabsView .border-bottom {
+  border-bottom: 1px solid var(--main-header-border) !important;
+  background: var(--main-view-bg) !important;
 }
