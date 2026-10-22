@@ -21,17 +21,21 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
+  <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 (기본 순정 라이트 모드) -->
   <script>
     (function() {
       try {
-        var theme = localStorage.getItem("guild_theme_mode") || "dark";
-        if (theme === "light") {
-          document.documentElement.classList.add("theme-light");
-          document.documentElement.classList.remove("theme-dark");
-        } else {
+        var theme = localStorage.getItem("guild_theme_mode") || "light";
+        if (theme === "dark") {
           document.documentElement.classList.add("theme-dark");
           document.documentElement.classList.remove("theme-light");
+          document.body.classList.add("theme-dark");
+          document.body.classList.remove("theme-light");
+        } else {
+          document.documentElement.classList.add("theme-light");
+          document.documentElement.classList.remove("theme-dark");
+          document.body.classList.add("theme-light");
+          document.body.classList.remove("theme-dark");
         }
       } catch (e) {}
     })();
@@ -45,8 +49,8 @@
     .kakao-bottom-tabbar {
       height: 52px;
       min-height: 52px;
-      background: var(--main-bottom-bg, #181d24);
-      border-top: 1px solid var(--main-bottom-border, #282f3a);
+      background: var(--main-bottom-bg, #ffffff);
+      border-top: 1px solid var(--main-bottom-border, #e2e8f0);
       display: flex;
       align-items: center;
       justify-content: space-around;
@@ -59,14 +63,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--main-tab-inactive, #64748b);
+      color: var(--main-tab-inactive, #8c8c8c);
       cursor: pointer;
       padding: 4px 0;
       transition: color 0.15s ease;
       user-select: none;
     }
     .kakao-tab-item.active {
-      color: var(--main-tab-active, #fee500);
+      color: var(--main-tab-active, #191919);
     }
     .kakao-tab-item i {
       font-size: 1.15rem;
@@ -94,8 +98,8 @@
       width: 48px;
       height: 48px;
       border-radius: 16px;
-      background: var(--main-card-bg, #1c222b);
-      border: 1px solid var(--main-card-border, #28303c);
+      background: var(--main-card-bg, #ffffff);
+      border: 1px solid var(--main-card-border, #e8ecf1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -108,12 +112,12 @@
     }
     .more-menu-label {
       font-size: 0.72rem;
-      color: var(--main-header-text, #f3f4f6);
+      color: var(--main-header-text, #191919);
       font-weight: 600;
     }
   </style>
 </head>
-<body class="theme-dark in-main-tabs">
+<body class="in-main-tabs">
 
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
@@ -158,7 +162,6 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
-
     </ul>
 
     <div class="sidebar-footer">
@@ -203,9 +206,8 @@
     </div>
   </aside>
 
-
   <!-- ========================================================
-       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 더보기 3탭)
+       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 설정 3탭)
        ======================================================== -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header main-tabs-header">
@@ -215,7 +217,7 @@
       </div>
 
       <div class="header-right-tools">
-        <!-- 대화방 입장 전 헤더: 군더더기 버튼 숨김 -->
+        <!-- 대화방 입장 전 헤더: 불필요한 버튼 숨김 -->
       </div>
     </header>
 
@@ -256,7 +258,7 @@
       </div>
     </div>
 
-    <!-- [탭 3] 더보기 -->
+    <!-- [탭 3] 설정 (구 더보기) -->
     <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
       <div class="more-menu-grid">
         <div class="more-menu-item" onclick="openModulePage('PageNotice')">
@@ -311,13 +313,12 @@
     </nav>
   </div>
 
-
   <!-- ========================================================
        [VIEW 2] 개별 대화방 화면
        ======================================================== -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header">
-      <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 (절대 줄바꿈 금지 단일행) -->
+      <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 (단일행 수평 정렬) -->
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.15rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
           <i class="fa-solid fa-chevron-left"></i>
@@ -361,6 +362,7 @@
       <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.72rem;"></i>
     </div>
 
+    <!-- 대화 스트림 영역 (flex: 1로 바닥까지 전체 채움) -->
     <div class="chat-messages-container" id="chatMessagesView">
       <div class="text-center my-1">
         <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
@@ -369,7 +371,7 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 입력바: 텍스트 입력 시 전송버튼 노란색 활성화 & 엔터키 즉시 전송 -->
+    <!-- 하단 메시지 입력바 (화면 최하단 밀착) -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
@@ -380,7 +382,8 @@
       </div>
     </footer>
 
-    <div id="moduleOverlay" class="module-display-overlay">
+    <!-- 기능 화면 오버레이 (초기 display: none으로 대화창 침범 차단) -->
+    <div id="moduleOverlay" class="module-display-overlay" style="display: none;">
       <div class="module-nav-header">
         <button type="button" class="btn-kakao-overlay-back" onclick="closeModuleOverlay()" title="대화방으로 복귀">
           <i class="fa-solid fa-chevron-left" style="font-size: 0.95rem;"></i>
@@ -745,10 +748,10 @@
       if (joined.length > 0 && box && list) {
         box.style.display = "block";
         list.innerHTML = joined.map(function(g) {
-          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #1c222b); border-color:var(--main-card-border, #28303c) !important;">' +
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #ffffff); border-color:var(--main-card-border, #e8ecf1) !important;">' +
             '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
               '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || "게임") + '</span>' +
-              '<span class="fw-bold text-light text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
+              '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
             '</div>' +
             '<div class="d-flex align-items-center gap-1 ms-2">' +
               '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem; cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">로그인</span>' +
@@ -1021,7 +1024,7 @@
     }
 
     function toggleThemeMode() {
-      var current = localStorage.getItem("guild_theme_mode") || "dark";
+      var current = localStorage.getItem("guild_theme_mode") || "light";
       var next = (current === "dark") ? "light" : "dark";
       if (typeof window.applyAppTheme === "function") window.applyAppTheme(next);
     }
