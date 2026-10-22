@@ -878,6 +878,11 @@ body.theme-dark .mention-tag {
    [카카오톡 스타일 메인 3탭 vs 대화방 배경 분리]
    ======================================================== */
 #kakaoMainTabsView {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100vh !important;
+  overflow: hidden !important;
   background: var(--main-view-bg) !important;
   box-shadow: none !important;
   border-left: none !important;
@@ -885,11 +890,8 @@ body.theme-dark .mention-tag {
 }
 #kakaoMainTabsView .kakao-chat-header {
   background: var(--main-header-bg) !important;
-  color: var(--main-header-text) !important;
   border-bottom: 1px solid var(--main-header-border) !important;
   box-shadow: none !important;
-  height: 48px !important;
-  padding: 0 14px !important;
 }
 #kakaoMainTabsView .room-title-text {
   color: var(--main-header-text) !important;
@@ -904,6 +906,11 @@ body.theme-dark .mention-tag {
 }
 
 #chatRoomView {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: 100vh !important;
+  overflow: hidden !important;
   background: var(--kakao-bg) !important;
   box-shadow: none !important;
   border-left: none !important;
