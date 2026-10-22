@@ -1,20 +1,62 @@
 /* ========================================================
-   [길드톡 메신저] 통합 카카오톡 순정 스타일시트 (style.css)
-   카카오톡 순정 라이트/스카이블루 테마 및 다크모드 대응
+   [기본 테마 변수]
    ======================================================== */
-
-/* 1. 기본 색상 변수 및 순정 카카오톡 테마 정의 */
 :root {
-  --kakao-yellow: #fee500;
-  --kakao-yellow-hover: #fada0a;
-  --kakao-bg: #bacee0;                 /* 카카오톡 순정 대화방 하늘색 배경 */
-  --kakao-header-bg: #a1b6c7;          /* 순정 대화방 상단 헤더 */
+  --kakao-bg: #bacee0;
+  --kakao-header-bg: #bacee0;
   --kakao-header-text: #191919;
-  --kakao-bubble-me: #fee500;          /* 내 말풍선 노란색 */
-  --kakao-bubble-me-text: #191919;
-  --kakao-bubble-other: #ffffff;       /* 상대방 말풍선 흰색 */
-  --kakao-bubble-other-text: #191919;
-  --kakao-unread-yellow: #fee500;      /* 안 읽은 숫자 노란색 */
+  --kakao-header-subtext: #556677;
+  --kakao-header-icon-btn: #3b4b59;
+  --kakao-header-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #ffeb3b;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #ffffff;
+  --kakao-bubble-other-text: #000000;
+  --kakao-time-gray: #556677;
+
+  --kakao-notice-bg: #ffffff;
+  --kakao-notice-text: #000000;
+  --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-input-bg: #ffffff;
+  --kakao-input-border: #d4d4d4;
+  --kakao-input-text: #000000;
+  --kakao-input-placeholder: #94a3b8;
+  --kakao-input-icon: #64748b;
+
+  --drawer-width: 260px;
+  --drawer-bg: #ffffff;
+  --drawer-border: #dcdcdc;
+  --drawer-header-bg: #f7f7f7;
+  --drawer-header-border: #ececec;
+  --drawer-title: #191919;
+  --drawer-item-text: #333333;
+  --drawer-item-hover-bg: #f0f0f0;
+  --drawer-footer-bg: #fafafa;
+  --drawer-footer-border: #ececec;
+  --drawer-sub-text: #64748b;
+
+  --drawer-card-bg: #ffffff;
+  --drawer-card-border: #e2e8f0;
+
+  --modal-bg: #ffffff;
+  --modal-text: #191919;
+  --modal-input-bg: #f7f7f7;
+  --modal-input-border: #e2e8f0;
+  --modal-input-text: #191919;
+
+  --overlay-bg: #f1f5f9;
+  --overlay-header-bg: #ffffff;
+  --overlay-header-border: #e2e8f0;
+  --overlay-header-title: #191919;
+  --overlay-back-btn-color: #334155;
+  --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+  --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
 
   /* 메인 3탭 화면 (순정 밝은 그레이 & 화이트) */
   --main-view-bg: #f4f6f8;
@@ -26,50 +68,64 @@
   --main-bottom-border: #e2e8f0;
   --main-tab-inactive: #94a3b8;
   --main-tab-active: #191919;
-
-  /* 서랍 및 모달 */
-  --drawer-bg: #ffffff;
-  --drawer-text: #191919;
-  --drawer-border: #e2e8f0;
-  --modal-bg: #ffffff;
-  --modal-text: #191919;
-  --input-bg: #f8fafc;
-  --input-border: #cbd5e1;
 }
 
-/* 라이트 모드 명시적 활성화 시 */
-body.theme-light, html.theme-light {
-  --kakao-bg: #bacee0;
-  --kakao-header-bg: #a1b6c7;
-  --kakao-header-text: #191919;
-  --main-view-bg: #f4f6f8;
-  --main-header-bg: #ffffff;
-  --main-header-text: #191919;
-  --main-card-bg: #ffffff;
-  --main-card-border: #eef1f4;
-  --main-bottom-bg: #ffffff;
-  --main-bottom-border: #e2e8f0;
-  --main-tab-inactive: #94a3b8;
-  --main-tab-active: #191919;
-  --drawer-bg: #ffffff;
-  --drawer-text: #191919;
-  --drawer-border: #e2e8f0;
-  --modal-bg: #ffffff;
-  --modal-text: #191919;
-  --input-bg: #f8fafc;
-  --input-border: #cbd5e1;
-}
-
-/* 다크 모드 활성화 시 */
-body.theme-dark, html.theme-dark {
+html.theme-dark,
+body.theme-dark {
   --kakao-bg: #1e232a;
-  --kakao-header-bg: #15191f;
+  --kakao-header-bg: #181d24;
   --kakao-header-text: #f3f4f6;
+  --kakao-header-subtext: #9ca3af;
+  --kakao-header-icon-btn: #cbd5e1;
+  --kakao-header-border: #282f3a;
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #facc15;
   --kakao-bubble-me: #fee500;
-  --kakao-bubble-me-text: #191919;
-  --kakao-bubble-other: #2a313d;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #2b323c;
   --kakao-bubble-other-text: #f3f4f6;
-  --kakao-unread-yellow: #fee500;
+  --kakao-time-gray: #9ca3af;
+
+  --kakao-notice-bg: #262d37;
+  --kakao-notice-text: #f3f4f6;
+  --kakao-notice-border: #374151;
+
+  --kakao-input-bg: #181d24;
+  --kakao-input-border: #282f3a;
+  --kakao-input-text: #f3f4f6;
+  --kakao-input-placeholder: #6b7280;
+  --kakao-input-icon: #9ca3af;
+
+  --drawer-bg: #181d24;
+  --drawer-border: #282f3a;
+  --drawer-header-bg: #13171d;
+  --drawer-header-border: #282f3a;
+  --drawer-title: #f3f4f6;
+  --drawer-item-text: #e5e7eb;
+  --drawer-item-hover-bg: #262d37;
+  --drawer-footer-bg: #13171d;
+  --drawer-footer-border: #282f3a;
+  --drawer-sub-text: #9ca3af;
+
+  --drawer-card-bg: #262d37;
+  --drawer-card-border: #374151;
+
+  --modal-bg: #1e2530;
+  --modal-text: #f3f4f6;
+  --modal-input-bg: #141922;
+  --modal-input-border: #2c3545;
+  --modal-input-text: #ffffff;
+
+  --overlay-bg: #0b1120;
+  --overlay-header-bg: #0f172a;
+  --overlay-header-border: #1e293b;
+  --overlay-header-title: #f8fafc;
+  --overlay-back-btn-color: #cbd5e1;
+  --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
+
+  --kakao-scroll-thumb: rgba(255, 255, 255, 0.22);
+  --kakao-scroll-thumb-hover: rgba(255, 255, 255, 0.42);
 
   --main-view-bg: #11151b;
   --main-header-bg: #181d24;
@@ -80,73 +136,379 @@ body.theme-dark, html.theme-dark {
   --main-bottom-border: #282f3a;
   --main-tab-inactive: #64748b;
   --main-tab-active: #fee500;
-
-  --drawer-bg: #181d24;
-  --drawer-text: #f3f4f6;
-  --drawer-border: #282f3a;
-  --modal-bg: #1c222b;
-  --modal-text: #f3f4f6;
-  --input-bg: #11151b;
-  --input-border: #28303c;
 }
 
-/* 2. 전역 리셋 & 레이아웃 */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+html.theme-light,
+body.theme-light {
+  --kakao-bg: #bacee0;
+  --kakao-header-bg: #bacee0;
+  --kakao-header-text: #191919;
+  --kakao-header-subtext: #556677;
+  --kakao-header-icon-btn: #3b4b59;
+  --kakao-header-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #ffeb3b;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #ffffff;
+  --kakao-bubble-other-text: #000000;
+  --kakao-time-gray: #556677;
+
+  --kakao-notice-bg: #ffffff;
+  --kakao-notice-text: #000000;
+  --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-input-bg: #ffffff;
+  --kakao-input-border: #d4d4d4;
+  --kakao-input-text: #000000;
+  --kakao-input-placeholder: #94a3b8;
+  --kakao-input-icon: #64748b;
+
+  --drawer-width: 260px;
+  --drawer-bg: #ffffff;
+  --drawer-border: #dcdcdc;
+  --drawer-header-bg: #f7f7f7;
+  --drawer-header-border: #ececec;
+  --drawer-title: #191919;
+  --drawer-item-text: #333333;
+  --drawer-item-hover-bg: #f0f0f0;
+  --drawer-footer-bg: #fafafa;
+  --drawer-footer-border: #ececec;
+  --drawer-sub-text: #64748b;
+
+  --drawer-card-bg: #ffffff;
+  --drawer-card-border: #e2e8f0;
+
+  --modal-bg: #ffffff;
+  --modal-text: #191919;
+  --modal-input-bg: #f7f7f7;
+  --modal-input-border: #e2e8f0;
+  --modal-input-text: #191919;
+
+  --overlay-bg: #f1f5f9;
+  --overlay-header-bg: #ffffff;
+  --overlay-header-border: #e2e8f0;
+  --overlay-header-title: #191919;
+  --overlay-back-btn-color: #334155;
+  --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
+  --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
+  --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
+
+  --main-view-bg: #f4f6f8;
+  --main-header-bg: #ffffff;
+  --main-header-text: #191919;
+  --main-card-bg: #ffffff;
+  --main-card-border: #eef1f4;
+  --main-bottom-bg: #ffffff;
+  --main-bottom-border: #e2e8f0;
+  --main-tab-inactive: #94a3b8;
+  --main-tab-active: #191919;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box !important;
   -webkit-tap-highlight-color: transparent;
 }
 
+::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--kakao-scroll-thumb) !important;
+  border-radius: 10px !important;
+  border: none !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--kakao-scroll-thumb-hover) !important;
+}
+::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:single-button,
+::-webkit-scrollbar-button:start,
+::-webkit-scrollbar-button:end {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+* {
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  -moz-osx-font-smoothing: auto !important;
+  text-rendering: auto !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--kakao-scroll-thumb) transparent !important;
+}
+
+.fa, .fas, .far, .fal, .fad, .fab, .fa-solid, .fa-regular, .fa-brands, [class*="fa-"] {
+  font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "FontAwesome" !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-rendering: auto !important;
+  line-height: 1 !important;
+}
+.fa-solid, .fas { font-weight: 900 !important; }
+.fa-regular, .far { font-weight: 400 !important; }
+.fa-brands, .fab { font-family: "Font Awesome 6 Brands" !important; font-weight: 400 !important; }
+
+button, input, textarea, select {
+  font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
 html, body {
-  width: 100%;
-  height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
-  background-color: var(--main-view-bg);
-  color: var(--main-header-text);
+  background-color: var(--kakao-bg) !important;
+  color: var(--kakao-header-text);
+  font-family: "Malgun Gothic", "맑은 고딕", "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  letter-spacing: 0;
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  -moz-osx-font-smoothing: auto !important;
+  text-rendering: auto !important;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
+  display: flex;
+  position: relative;
+  width: 100%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.drawer-backdrop {
   position: fixed;
-  left: 0;
-  top: 0;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99998;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.drawer-backdrop.show {
+  display: block;
+  opacity: 1;
 }
 
-/* 뷰 전환 레이아웃 */
-.app-main-layout {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
+.app-sidebar-drawer {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--drawer-width) !important;
+  height: 100vh;
+  background: var(--drawer-bg) !important;
+  border-right: 1px solid var(--drawer-border) !important;
+  z-index: 99999;
+  transform: translateX(-100%);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none;
+  visibility: hidden;
+}
+.app-sidebar-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
 }
 
-#kakaoMainTabsView {
-  background-color: var(--main-view-bg);
-  z-index: 5;
-}
-
-#chatRoomView {
-  background-color: var(--kakao-bg);
-  z-index: 10;
-}
-
-/* 3. 상단 헤더 공통 */
-.kakao-chat-header {
-  height: 52px;
-  min-height: 52px;
-  background: var(--main-header-bg);
-  border-bottom: 1px solid var(--main-card-border);
+.sidebar-header {
+  height: 50px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
-  z-index: 20;
+  border-bottom: 1px solid var(--drawer-header-border) !important;
+  background: var(--drawer-header-bg) !important;
   flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+.sidebar-brand {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--drawer-title) !important;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sidebar-close-btn {
+  background: none; border: none;
+  color: var(--drawer-sub-text) !important; font-size: 1.15rem;
+  cursor: pointer;
 }
 
-#chatRoomView .kakao-chat-header {
-  background: var(--kakao-header-bg);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+.sidebar-menu-list {
+  list-style: none;
+  padding: 8px 6px;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--drawer-item-text) !important;
+  font-size: 0.84rem;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  margin-bottom: 2px;
+}
+.sidebar-menu-item:hover {
+  background: var(--drawer-item-hover-bg) !important;
+  color: var(--drawer-title) !important;
+}
+.sidebar-menu-item i { width: 20px; text-align: center; font-size: 0.95rem; }
+
+.sidebar-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--drawer-footer-border) !important;
+  background: var(--drawer-footer-bg) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  cursor: pointer;
+}
+.user-avatar {
+  width: 34px; height: 34px;
+  border-radius: 12px;
+  background: var(--drawer-card-bg) !important;
+  border: 1px solid var(--drawer-card-border) !important;
+  display: flex;
+  align-items: center; justify-content: center;
+  color: var(--drawer-title) !important; font-size: 1.1rem; font-weight: 800;
+  flex-shrink: 0;
+}
+.user-name-text {
+  font-size: 0.82rem; font-weight: 700; color: var(--drawer-title) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.user-sub-class {
+  font-size: 0.68rem; color: #0284c7; font-weight: 600;
+}
+body.theme-dark .user-sub-class { color: #38bdf8 !important; }
+
+.app-members-drawer,
+.app-boss-drawer {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--drawer-width) !important;
+  height: 100vh;
+  background: var(--drawer-bg) !important;
+  border-right: 1px solid var(--drawer-border) !important;
+  z-index: 99999;
+  transform: translateX(-100%);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  visibility: hidden;
+}
+.app-members-drawer.open,
+.app-boss-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25);
+}
+.boss-drawer-header-bar {
+  height: 50px !important;
+  padding: 0 14px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid var(--drawer-header-border) !important;
+  background: var(--drawer-header-bg) !important;
+  flex-shrink: 0 !important;
+}
+.boss-drawer-title-box {
+  font-weight: 800 !important;
+  font-size: 0.95rem !important;
+  color: var(--drawer-title) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap !important;
+}
+.boss-drawer-title-box i { font-size: 0.95rem; color: #f59e0b; }
+.boss-header-tools-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-tool-icon {
+  background: transparent !important;
+  border: none !important;
+  color: var(--drawer-sub-text) !important;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  transition: all 0.15s ease;
+}
+.btn-tool-icon:hover {
+  background: var(--drawer-item-hover-bg) !important;
+  color: var(--drawer-title) !important;
+}
+.btn-tool-icon.rotating i {
+  animation: spinTool 0.5s linear infinite;
+}
+@keyframes spinTool {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 메인 프레임 레이아웃 */
+.app-main-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: var(--kakao-bg);
+}
+
+#kakaoMainTabsView {
+  background: var(--main-view-bg) !important;
+}
+
+/* 상단 헤더 */
+.kakao-chat-header {
+  height: 50px;
+  padding: 0 12px;
+  background: var(--kakao-header-bg) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--kakao-header-border) !important;
+  flex-shrink: 0;
+  z-index: 10;
+  transition: background 0.2s ease;
+}
+
+.main-tabs-header {
+  background: var(--main-header-bg) !important;
+  border-bottom: 1px solid var(--main-card-border) !important;
 }
 
 .header-left-area {
@@ -158,749 +520,387 @@ html, body {
   overflow: hidden;
 }
 
-.header-right-tools {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.btn-kakao-head {
-  background: transparent;
-  border: none;
-  color: var(--kakao-header-text);
-  font-size: 1.05rem;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.btn-kakao-head:active {
-  background: rgba(0, 0, 0, 0.08);
+.btn-kakao-menu {
+  background: none; border: none;
+  color: var(--kakao-header-icon-btn) !important; font-size: 1.15rem;
+  cursor: pointer; padding: 4px;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 
 .room-avatar-circle {
-  background: #cbd5e1;
-  color: #334155;
-  font-size: 0.95rem;
-}
-
-.room-title-text {
-  font-weight: 700;
-  color: var(--kakao-header-text);
-}
-
-.room-count-text {
-  color: #64748b;
-  cursor: pointer;
-}
-
-/* 4. 상단 공지사항 바 */
-.kakao-notice-banner {
-  height: 38px;
-  min-height: 38px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  cursor: pointer;
-  z-index: 15;
+  width: 32px; height: 32px;
+  border-radius: 11px;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--kakao-header-icon-btn); font-size: 0.95rem;
   flex-shrink: 0;
 }
-
-body.theme-dark .kakao-notice-banner {
-  background: rgba(24, 29, 36, 0.92);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+body.theme-dark .room-avatar-circle {
+  background: rgba(255, 255, 255, 0.1);
 }
 
+.room-info-box {
+  min-width: 0; flex: 1; overflow: hidden;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.room-title-text {
+  font-size: 0.92rem; font-weight: 700;
+  color: var(--kakao-header-text) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.25;
+}
+.room-count-text {
+  font-size: 0.68rem; color: var(--kakao-header-subtext) !important;
+  cursor: pointer; line-height: 1.2; margin-top: 1px;
+}
+.room-count-text:hover { text-decoration: underline; }
+
+.header-right-tools {
+  display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+}
+.btn-kakao-head {
+  background: none; border: none;
+  color: var(--kakao-header-icon-btn) !important;
+  font-size: 1.05rem; padding: 6px;
+  cursor: pointer; border-radius: 6px;
+  transition: background 0.15s ease;
+}
+.btn-kakao-head:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+body.theme-dark .btn-kakao-head:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* 상단 공지사항 배너 */
+.kakao-notice-banner {
+  background: var(--kakao-notice-bg) !important;
+  border-bottom: 1px solid var(--kakao-notice-border) !important;
+  padding: 8px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; flex-shrink: 0; z-index: 9;
+  transition: background 0.2s ease;
+}
 .notice-icon-part {
-  color: #f59e0b;
-  font-size: 0.85rem;
-  margin-right: 8px;
+  color: #f59e0b; font-size: 0.85rem; margin-right: 8px; flex-shrink: 0;
 }
-
 .notice-text-content {
-  font-size: 0.78rem;
-  color: var(--main-header-text);
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--kakao-notice-text) !important;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 1;
 }
 
-/* 5. 대화창 메시지 스크롤 영역 */
+/* 대화 메시지 컨테이너 */
 .chat-messages-container {
   flex: 1;
-  width: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 14px 16px 14px;
+  padding: 12px 12px 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  -webkit-overflow-scrolling: touch;
+  gap: 8px;
 }
 
-.chat-messages-container::-webkit-scrollbar {
-  width: 4px;
-}
-
-.chat-messages-container::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 4px;
-}
-
-/* 말풍선 기본 구조 */
+/* 말풍선 공통 */
 .chat-item-row {
   display: flex;
-  width: 100%;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  position: relative;
+  max-width: 100%;
 }
-
 .chat-item-row.me {
   justify-content: flex-end;
 }
-
 .chat-item-row.other {
   justify-content: flex-start;
-  align-items: flex-start;
   gap: 8px;
 }
 
 .chat-sender-avatar {
-  width: 38px;
-  height: 38px;
+  width: 38px; height: 38px;
   border-radius: 14px;
-  background: #cbd5e1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.15rem;
-  flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; flex-shrink: 0;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  user-select: none;
+}
+body.theme-dark .chat-sender-avatar {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .chat-msg-body {
-  display: flex;
-  flex-direction: column;
-  max-width: calc(100% - 70px);
+  display: flex; flex-direction: column;
+  max-width: calc(100% - 90px);
 }
-
 .chat-sender-name {
-  font-size: 0.72rem;
-  color: #475569;
-  margin-bottom: 4px;
-  margin-left: 2px;
+  font-size: 0.72rem; color: #475569;
+  margin-bottom: 3px; font-weight: 600;
 }
-
-body.theme-dark .chat-sender-name {
-  color: #94a3b8;
-}
+body.theme-dark .chat-sender-name { color: #94a3b8; }
 
 .chat-bubble-flex {
-  display: flex;
-  align-items: flex-end;
-  gap: 5px;
+  display: flex; align-items: flex-end; gap: 4px;
 }
-
 .chat-item-row.me .chat-bubble-flex {
   flex-direction: row;
 }
 
 .chat-bubble {
-  padding: 8px 12px;
-  border-radius: 14px;
-  font-size: 0.88rem;
-  line-height: 1.35;
+  padding: 8px 11px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.4;
   word-break: break-word;
   white-space: pre-wrap;
-  position: relative;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
-
 .chat-item-row.me .chat-bubble {
-  background-color: var(--kakao-bubble-me);
-  color: var(--kakao-bubble-me-text);
+  background: var(--kakao-bubble-me) !important;
+  color: var(--kakao-bubble-me-text) !important;
   border-top-right-radius: 2px;
 }
-
 .chat-item-row.other .chat-bubble {
-  background-color: var(--kakao-bubble-other);
-  color: var(--kakao-bubble-other-text);
+  background: var(--kakao-bubble-other) !important;
+  color: var(--kakao-bubble-other-text) !important;
   border-top-left-radius: 2px;
 }
 
-/* 연속된 메시지 처리 */
-.chat-item-row.other.consecutive {
-  margin-top: -6px;
-}
-
-.chat-item-row.other.consecutive .chat-sender-avatar {
-  visibility: hidden;
-}
-
-.chat-item-row.me.consecutive {
-  margin-top: -6px;
-}
-
-/* 메타 정보 (노란색 읽음 카운트 & 시간) */
 .chat-meta-box {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  font-size: 0.62rem;
-  line-height: 1.15;
-  color: #64748b;
-  flex-shrink: 0;
-  user-select: none;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  font-size: 0.62rem; color: var(--kakao-time-gray);
+  line-height: 1.15; flex-shrink: 0; user-select: none;
 }
-
-.chat-item-row.me .chat-meta-box {
-  align-items: flex-end;
-  margin-right: 2px;
-}
-
-.chat-item-row.other .chat-meta-box {
-  align-items: flex-start;
-  margin-left: 2px;
-}
+.chat-item-row.me .chat-meta-box { align-items: flex-end; margin-right: 2px; }
+.chat-item-row.other .chat-meta-box { align-items: flex-start; margin-left: 2px; }
 
 .chat-unread-count {
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #ca8a04;
-  margin-bottom: 2px;
-}
-
-body.theme-dark .chat-unread-count {
   color: var(--kakao-unread-yellow);
+  font-weight: 800; font-size: 0.65rem; margin-bottom: 1px;
 }
-
 .chat-timestamp {
-  white-space: nowrap;
+  white-space: nowrap; font-size: 0.62rem;
 }
 
-.mention-tag {
-  color: #2563eb;
-  font-weight: 700;
-  background: rgba(37, 99, 235, 0.1);
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-
-/* 특수 카드 (보스 브리핑 / 토벌 알림 / 즉시컷) */
+/* 카드형 브리핑/토벌 리포트 */
 .boss-briefing-card,
 .raid-report-card,
 .boss-alert-mini-card {
-  background: var(--modal-bg);
-  border: 1px solid var(--main-card-border);
-  border-radius: 12px;
+  background: var(--modal-bg) !important;
+  color: var(--modal-text) !important;
+  border: 1px solid var(--drawer-card-border);
+  border-radius: 10px;
   padding: 10px 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  font-size: 0.82rem;
-  line-height: 1.4;
-  color: var(--main-header-text);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
-
 .raid-hero-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 800;
-  margin-bottom: 6px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px; padding-bottom: 4px;
+  border-bottom: 1px dashed var(--drawer-border);
 }
-
 .raid-hero-badge {
-  background: #f59e0b;
-  color: #ffffff;
-  padding: 2px 6px;
-  border-radius: 6px;
-  font-size: 0.65rem;
+  background: #f59e0b; color: #fff; font-size: 0.65rem;
+  padding: 1px 5px; border-radius: 4px; font-weight: 700;
 }
-
-.raid-hero-title {
-  font-size: 0.9rem;
-}
-
-.raid-hero-score {
-  color: #10b981;
-  font-size: 0.75rem;
-}
+.raid-hero-title { font-weight: 800; font-size: 0.88rem; }
+.raid-hero-score { color: #10b981; font-weight: 800; font-size: 0.75rem; }
 
 .raid-report-footer-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 8px;
-  padding-top: 6px;
-  border-top: 1px solid var(--main-card-border);
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 8px; padding-top: 6px;
+  border-top: 1px solid var(--drawer-border);
 }
 
 .btn-chat-cut {
-  margin-top: 6px;
-  background: #ef4444;
-  color: #ffffff;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  cursor: pointer;
+  margin-top: 6px; background: #ef4444; color: #fff;
+  border: none; padding: 3px 8px; border-radius: 5px;
+  font-size: 0.7rem; font-weight: 700; cursor: pointer;
 }
 
-/* 6. 하단 메시지 입력창 */
+/* 하단 입력 영역 */
 .kakao-input-area {
-  background: #ffffff;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 8px 12px 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex-shrink: 0;
-  z-index: 20;
+  background: var(--kakao-input-bg) !important;
+  border-top: 1px solid var(--kakao-input-border) !important;
+  padding: 6px 10px 8px 10px;
+  display: flex; flex-direction: column;
+  flex-shrink: 0; z-index: 10;
+  transition: background 0.2s ease;
 }
-
-body.theme-dark .kakao-input-area {
-  background: #181d24;
-  border-top: 1px solid #282f3a;
-}
-
 .input-textarea-custom {
-  width: 100%;
-  min-height: 36px;
-  max-height: 100px;
-  border: none;
-  outline: none;
-  resize: none;
-  font-size: 0.88rem;
-  background: transparent;
-  color: var(--main-header-text);
-  line-height: 1.35;
-  font-family: inherit;
-  padding: 4px 0;
+  width: 100%; min-height: 34px; max-height: 90px;
+  background: transparent !important;
+  border: none !important; outline: none !important;
+  resize: none !important;
+  font-size: 0.84rem !important; line-height: 1.35;
+  color: var(--kakao-input-text) !important;
+  padding: 2px 0 4px 0;
 }
-
 .input-textarea-custom::placeholder {
-  color: #94a3b8;
+  color: var(--kakao-input-placeholder) !important;
 }
 
 .input-bottom-tools {
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center; justify-content: flex-end;
+  margin-top: 2px;
 }
-
 .btn-kakao-send {
-  background: #e2e8f0;
-  color: #94a3b8;
-  border: none;
-  font-weight: 700;
-  font-size: 0.78rem;
-  padding: 6px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  background: #e2e8f0; color: #94a3b8;
+  border: none; border-radius: 6px;
+  padding: 5px 13px; font-size: 0.76rem; font-weight: 700;
+  cursor: pointer; transition: all 0.15s ease;
 }
-
 .btn-kakao-send.active {
-  background: var(--kakao-yellow);
-  color: #191919;
-  cursor: pointer;
+  background: var(--kakao-yellow) !important;
+  color: #191919 !important;
 }
 
-.btn-kakao-send.active:active {
-  background: var(--kakao-yellow-hover);
-}
-
-/* 7. 기능 화면 오버레이 (순정 화면 분할 버그 방어: absolute 전체 덮음) */
+/* 기능 화면 전체 오버레이 */
 .module-display-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--main-view-bg);
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: var(--overlay-bg) !important;
   z-index: 50;
   display: none;
   flex-direction: column;
 }
-
 .module-nav-header {
-  height: 52px;
-  min-height: 52px;
-  background: var(--main-header-bg);
-  border-bottom: 1px solid var(--main-card-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 12px;
-  flex-shrink: 0;
+  height: 48px; min-height: 48px;
+  background: var(--overlay-header-bg) !important;
+  border-bottom: 1px solid var(--overlay-header-border) !important;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 10px; flex-shrink: 0;
 }
-
 .btn-kakao-overlay-back {
-  background: transparent;
-  border: none;
-  color: var(--main-header-text);
-  font-size: 0.88rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 6px;
+  background: none; border: none;
+  color: var(--overlay-back-btn-color) !important;
+  font-size: 0.85rem; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 4px;
+  cursor: pointer; padding: 4px 6px; border-radius: 6px;
 }
-
-.btn-kakao-overlay-back:active {
-  background: rgba(0, 0, 0, 0.05);
-}
-
 .overlay-nav-title-text {
-  font-size: 0.95rem;
-  font-weight: 800;
-  color: var(--main-header-text);
+  font-size: 0.92rem; font-weight: 800;
+  color: var(--overlay-header-title) !important;
 }
-
 .module-scroll-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px;
-  -webkit-overflow-scrolling: touch;
+  flex: 1; overflow-y: auto; padding: 12px;
 }
 
-/* 8. 메인 3탭 화면 내부 카드 */
+/* 3탭 화면 컴팩트 리스트 카드 */
 .kakao-tab-body {
-  width: 100%;
-  height: calc(100vh - 104px);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  flex: 1; overflow-y: auto;
 }
-
 .chat-room-card {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
   background: var(--main-card-bg);
   border-bottom: 1px solid var(--main-card-border);
-  cursor: pointer;
-  transition: background 0.15s ease;
-  gap: 12px;
+  cursor: pointer; transition: background 0.12s ease;
 }
-
 .chat-room-card:active {
   background: rgba(0, 0, 0, 0.03);
 }
-
 .room-avatar-large {
-  width: 48px;
-  height: 48px;
-  border-radius: 17px;
-  background: #cbd5e1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  flex-shrink: 0;
+  width: 42px; height: 42px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; flex-shrink: 0;
 }
-
 .room-content-box {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  min-width: 0; flex: 1;
 }
-
 .room-name-text {
-  font-size: 0.92rem;
-  font-weight: 700;
+  font-size: 0.86rem; font-weight: 700;
   color: var(--main-header-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
 .room-msg-preview {
-  font-size: 0.78rem;
-  color: #64748b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 0;
+  font-size: 0.74rem; color: #64748b;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 1px; margin-bottom: 0;
 }
 
-/* 9. 슬라이드 서랍 드로어 */
-.drawer-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
-  z-index: 1000;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s;
-}
-
-.drawer-backdrop.show {
-  opacity: 1;
-  visibility: visible;
-}
-
-.app-sidebar-drawer,
-.app-members-drawer,
-.app-boss-drawer {
-  position: fixed;
-  top: 0;
-  right: -300px;
-  width: 280px;
-  height: 100%;
-  background: var(--drawer-bg);
-  color: var(--drawer-text);
-  z-index: 1001;
-  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.15);
-  display: flex;
-  flex-direction: column;
-  transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.app-sidebar-drawer.open,
-.app-members-drawer.open,
-.app-boss-drawer.open {
-  right: 0;
-}
-
-.sidebar-header,
-.boss-drawer-header-bar {
-  height: 52px;
-  min-height: 52px;
-  border-bottom: 1px solid var(--drawer-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  font-weight: 800;
-  font-size: 0.95rem;
-}
-
-.sidebar-brand,
-.boss-drawer-title-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.sidebar-close-btn,
-.btn-tool-icon {
-  background: transparent;
-  border: none;
-  color: var(--drawer-text);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.sidebar-menu-list {
-  list-style: none;
-  padding: 8px 0;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.sidebar-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 18px;
-  cursor: pointer;
-  font-size: 0.88rem;
-  font-weight: 600;
-  transition: background 0.15s ease;
-}
-
-.sidebar-menu-item:active {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-.sidebar-footer {
-  padding: 12px 16px;
-  border-top: 1px solid var(--drawer-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.user-profile-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* 친구 탭 개별 아이템 카드 */
+.friend-item-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--main-card-border);
+  background: var(--main-card-bg);
   cursor: pointer;
 }
-
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: #cbd5e1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.1rem;
+.friend-item-card:active {
+  background: rgba(0, 0, 0, 0.03);
+}
+.friend-avatar {
+  width: 38px; height: 38px;
+  border-radius: 13px;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.15rem; flex-shrink: 0;
 }
 
-.user-name-text {
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.user-sub-class {
-  font-size: 0.7rem;
-  color: #0284c7;
-}
-
-/* 10. 모달 팝업 공통 */
+/* 모달 공통 */
 .kakao-modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(3px);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 100000;
+  display: flex; align-items: center; justify-content: center;
   padding: 16px;
 }
-
 .kakao-modal-card {
-  width: 100%;
-  max-width: 320px;
-  background: var(--modal-bg);
-  color: var(--modal-text);
-  border-radius: 16px;
-  padding: 20px 16px;
+  width: 100%; max-width: 310px;
+  background: var(--modal-bg) !important;
+  color: var(--modal-text) !important;
+  border-radius: 14px;
+  padding: 18px 16px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   text-align: center;
 }
-
 .kakao-modal-card input,
 .kakao-modal-card select {
-  width: 100%;
-  height: 38px;
-  border-radius: 8px;
-  border: 1px solid var(--input-border);
-  background: var(--input-bg);
-  color: var(--modal-text);
-  padding: 0 10px;
-  font-size: 0.85rem;
-  outline: none;
-  margin-bottom: 8px;
+  width: 100%; height: 36px;
+  border-radius: 7px;
+  border: 1px solid var(--modal-input-border) !important;
+  background: var(--modal-input-bg) !important;
+  color: var(--modal-input-text) !important;
+  padding: 0 10px; font-size: 0.82rem; outline: none; margin-bottom: 8px;
 }
 
-.kakao-modal-card input:focus,
-.kakao-modal-card select:focus {
-  border-color: #3b82f6;
-}
-
-/* 직업 선택 그리드 */
+/* 직업 프리셋 그리드 */
 .class-preset-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 6px; margin-bottom: 12px;
 }
-
 .class-preset-cell {
-  background: var(--main-view-bg);
-  border: 1px solid var(--main-card-border);
-  border-radius: 10px;
-  padding: 8px 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--drawer-card-border);
+  border-radius: 8px; padding: 6px 2px;
+  display: flex; flex-direction: column; align-items: center;
   cursor: pointer;
-  transition: transform 0.1s ease;
 }
+.class-icon-big { font-size: 1.25rem; margin-bottom: 2px; }
+.class-title-small { font-size: 0.66rem; font-weight: 700; }
 
-.class-preset-cell:active {
-  transform: scale(0.95);
-}
-
-.class-icon-big {
-  font-size: 1.3rem;
-  margin-bottom: 2px;
-}
-
-.class-title-small {
-  font-size: 0.68rem;
-  font-weight: 700;
-}
-
-/* 11. 토스트 알림 */
+/* 토스트 박스 */
 .kakao-toast-box {
-  position: fixed;
-  bottom: 70px;
-  left: 50%;
+  position: fixed; bottom: 65px; left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: rgba(0, 0, 0, 0.82);
-  color: #ffffff;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.2s ease;
-  z-index: 99999;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.85); color: #fff;
+  padding: 7px 15px; border-radius: 20px;
+  font-size: 0.75rem; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+  opacity: 0; visibility: hidden; transition: all 0.2s ease;
+  z-index: 999999;
 }
-
 .kakao-toast-box.show {
-  opacity: 1;
-  visibility: visible;
+  opacity: 1; visibility: visible;
   transform: translateX(-50%) translateY(0);
-}
-
-/* 12. 멘션 팝업 */
-.mention-popup-container {
-  position: absolute;
-  bottom: 58px;
-  left: 12px;
-  background: var(--modal-bg);
-  border: 1px solid var(--main-card-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  display: none;
-  max-height: 140px;
-  overflow-y: auto;
-  z-index: 30;
-  min-width: 130px;
-}
-
-.mention-item {
-  padding: 6px 12px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--modal-text);
-  cursor: pointer;
-}
-
-.mention-item:hover,
-.mention-item:active {
-  background: rgba(0, 0, 0, 0.05);
 }
