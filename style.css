@@ -19,43 +19,59 @@
   --kakao-header-bg: #bacee0;
   --kakao-header-text: #191919;
   --kakao-header-subtext: #556677;
-  --kakao-my-bubble-bg: #fee500;
-  --kakao-my-bubble-text: #191919;
-  --kakao-other-bubble-bg: #ffffff;
-  --kakao-other-bubble-text: #191919;
-  --kakao-notice-bg: rgba(255, 255, 255, 0.75);
-  --kakao-notice-border: rgba(0, 0, 0, 0.08);
+  --kakao-header-icon-btn: #3b4b59;
+  --kakao-header-border: rgba(0, 0, 0, 0.05);
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #ffeb3b;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #ffffff;
+  --kakao-bubble-other-text: #000000;
+  --kakao-time-gray: #556677;
+
+  --kakao-notice-bg: #ffffff;
+  --kakao-notice-text: #000000;
+  --kakao-notice-border: rgba(0, 0, 0, 0.05);
+
   --kakao-input-bg: #ffffff;
-  --kakao-input-border: #d0d7de;
-  --kakao-input-text: #191919;
-  --kakao-input-placeholder: #8c8c8c;
-  --kakao-sidebar-bg: #ffffff;
-  --kakao-sidebar-text: #191919;
-  --kakao-sidebar-border: #e5e7eb;
-  --kakao-sidebar-hover: #f3f4f6;
-  --kakao-sidebar-header-bg: #f8fafc;
-  --kakao-date-divider-bg: rgba(0, 0, 0, 0.12);
-  --kakao-date-divider-text: #ffffff;
-  --kakao-time-text: #707b88;
-  --kakao-unread-count-text: #fee500;
-  --kakao-toast-bg: rgba(30, 35, 42, 0.92);
-  --kakao-toast-text: #ffffff;
-  --kakao-bubble-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --kakao-input-border: #d4d4d4;
+  --kakao-input-text: #000000;
+  --kakao-input-placeholder: #94a3b8;
+  --kakao-input-icon: #64748b;
+
+  --drawer-width: 260px;
+  --drawer-bg: #ffffff;
+  --drawer-border: #dcdcdc;
+  --drawer-header-bg: #f7f7f7;
+  --drawer-header-border: #ececec;
+  --drawer-title: #191919;
+  --drawer-item-text: #333333;
+  --drawer-item-hover-bg: #f0f0f0;
+  --drawer-footer-bg: #fafafa;
+  --drawer-footer-border: #ececec;
+  --drawer-sub-text: #64748b;
+
+  --drawer-card-bg: #ffffff;
+  --drawer-card-border: #e2e8f0;
+
+  --modal-bg: #ffffff;
+  --modal-text: #191919;
+  --modal-input-bg: #f7f7f7;
+  --modal-input-border: #e2e8f0;
+  --modal-input-text: #191919;
+
+  --overlay-bg: #f1f5f9;
+  --overlay-header-bg: #ffffff;
+  --overlay-header-border: #e2e8f0;
+  --overlay-header-title: #191919;
+  --overlay-back-btn-color: #334155;
+  --overlay-back-btn-hover-bg: rgba(0, 0, 0, 0.05);
+
   --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
-  --boss-timer-bg: #ffffff;
-  --boss-timer-border: #e5e7eb;
-  --boss-timer-text: #191919;
-  --boss-timer-subtext: #6b7280;
-  --boss-timer-card-bg: #f9fafb;
-  --boss-timer-card-border: #e5e7eb;
-  --boss-timer-accent-alive: #10b981;
-  --boss-timer-accent-imminent: #f59e0b;
-  --boss-timer-accent-dead: #ef4444;
+  --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
 }
 
-/* ========================================================
-   [다크 테마 (Dark Slate Theme) - 정밀 오버라이드]
-   ======================================================== */
 html.theme-dark,
 body.theme-dark {
   --kakao-bg: #1e232a;
@@ -75,134 +91,335 @@ body.theme-dark {
   --kakao-header-bg: #181d24;
   --kakao-header-text: #f3f4f6;
   --kakao-header-subtext: #9ca3af;
-  --kakao-my-bubble-bg: #fee500;
-  --kakao-my-bubble-text: #191919;
-  --kakao-other-bubble-bg: #2b313a;
-  --kakao-other-bubble-text: #f3f4f6;
-  --kakao-notice-bg: rgba(24, 29, 36, 0.88);
-  --kakao-notice-border: rgba(255, 255, 255, 0.08);
-  --kakao-input-bg: #222730;
+  --kakao-header-icon-btn: #cbd5e1;
+  --kakao-header-border: #282f3a;
+
+  --kakao-yellow: #fee500;
+  --kakao-unread-yellow: #facc15;
+  --kakao-bubble-me: #fee500;
+  --kakao-bubble-me-text: #000000;
+  --kakao-bubble-other: #2b323c;
+  --kakao-bubble-other-text: #f3f4f6;
+  --kakao-time-gray: #9ca3af;
+
+  --kakao-notice-bg: #222831;
+  --kakao-notice-text: #f3f4f6;
+  --kakao-notice-border: #2f3642;
+
+  --kakao-input-bg: #1e232a;
   --kakao-input-border: #333a45;
   --kakao-input-text: #f3f4f6;
   --kakao-input-placeholder: #64748b;
-  --kakao-sidebar-bg: #181d24;
-  --kakao-sidebar-text: #f3f4f6;
-  --kakao-sidebar-border: #2b313a;
-  --kakao-sidebar-hover: #222730;
-  --kakao-sidebar-header-bg: #13171d;
-  --kakao-date-divider-bg: rgba(0, 0, 0, 0.45);
-  --kakao-date-divider-text: #9ca3af;
-  --kakao-time-text: #64748b;
-  --kakao-unread-count-text: #fee500;
-  --kakao-toast-bg: rgba(15, 18, 23, 0.95);
-  --kakao-toast-text: #f3f4f6;
-  --kakao-bubble-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-  --kakao-scroll-thumb: rgba(255, 255, 255, 0.18);
-  --boss-timer-bg: #181d24;
-  --boss-timer-border: #282f3a;
-  --boss-timer-text: #f3f4f6;
-  --boss-timer-subtext: #9ca3af;
-  --boss-timer-card-bg: #222730;
-  --boss-timer-card-border: #2f3642;
-  --boss-timer-accent-alive: #34d399;
-  --boss-timer-accent-imminent: #fbbf24;
-  --boss-timer-accent-dead: #f87171;
+  --kakao-input-icon: #9ca3af;
+
+  --drawer-width: 260px;
+  --drawer-bg: #181d24;
+  --drawer-border: #2b323c;
+  --drawer-header-bg: #13171d;
+  --drawer-header-border: #222831;
+  --drawer-title: #f3f4f6;
+  --drawer-item-text: #e2e8f0;
+  --drawer-item-hover-bg: #222831;
+  --drawer-footer-bg: #13171d;
+  --drawer-footer-border: #222831;
+  --drawer-sub-text: #9ca3af;
+
+  --drawer-card-bg: #1e232a;
+  --drawer-card-border: #2b323c;
+
+  --modal-bg: #181d24;
+  --modal-text: #f3f4f6;
+  --modal-input-bg: #13171d;
+  --modal-input-border: #2b323c;
+  --modal-input-text: #f3f4f6;
+
+  --overlay-bg: #13171d;
+  --overlay-header-bg: #181d24;
+  --overlay-header-border: #282f3a;
+  --overlay-header-title: #f3f4f6;
+  --overlay-back-btn-color: #cbd5e1;
+  --overlay-back-btn-hover-bg: rgba(255, 255, 255, 0.08);
+
+  --kakao-scroll-thumb: rgba(255, 255, 255, 0.2);
+  --kakao-scroll-thumb-hover: rgba(255, 255, 255, 0.35);
 }
 
 /* ========================================================
-   [기본 리셋 & 전체 레이아웃 (반응형 모바일 뷰)]
+   [기본 리셋 & 레이아웃]
    ======================================================== */
 * {
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html {
+  font-size: 14px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Pretendard", "Segoe UI", Roboto, sans-serif;
+  background-color: var(--kakao-bg) !important;
+  color: var(--modal-text) !important;
+  -webkit-font-smoothing: subpixel-antialiased !important;
+  -moz-osx-font-smoothing: auto !important;
+  text-rendering: auto !important;
+  height: 100vh;
   margin: 0;
   padding: 0;
-  width: 100%;
-  height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Pretendard", "Segoe UI", Roboto, sans-serif;
-  background-color: #0b0e14;
-  color: var(--kakao-other-bubble-text);
   overflow: hidden;
-  user-select: none;
+  display: flex;
+  position: relative;
+  width: 100%;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* 앱 메인 컨테이너 (스마트폰 형태 중앙 정렬 프레임) */
-.kakao-app-container {
+.drawer-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99998;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.drawer-backdrop.show {
+  display: block;
+  opacity: 1;
+}
+
+.app-sidebar-drawer {
+  position: fixed;
+  top: 0; left: 0;
+  width: var(--drawer-width) !important;
+  height: 100vh;
+  background: var(--drawer-bg) !important;
+  border-right: 1px solid var(--drawer-border) !important;
+  z-index: 99999;
+  transform: translateX(-100%);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 480px;
-  height: 100%;
-  margin: 0 auto;
-  background-color: var(--kakao-bg);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-  transition: background-color 0.25s ease;
+  box-shadow: none !important;
+  visibility: hidden;
+}
+.app-sidebar-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25) !important;
 }
 
-/* ========================================================
-   [상단 헤더 (헤더 영역 & 툴바)]
-   ======================================================== */
-.kakao-chat-header {
+.sidebar-header {
+  height: 50px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
-  min-height: 48px;
-  padding: 0 10px 0 6px;
-  background-color: var(--kakao-header-bg);
-  color: var(--kakao-header-text);
-  border-bottom: 1px solid var(--kakao-notice-border);
-  z-index: 10;
+  border-bottom: 1px solid var(--drawer-header-border) !important;
+  background: var(--drawer-header-bg) !important;
   flex-shrink: 0;
-  transition: background-color 0.25s ease, border-color 0.25s ease;
+  transition: background 0.2s ease;
+}
+.sidebar-brand {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--drawer-title) !important;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.sidebar-close-btn {
+  background: none; border: none;
+  color: var(--drawer-sub-text) !important; font-size: 1.15rem;
+  cursor: pointer;
+}
+
+.sidebar-menu-list {
+  list-style: none;
+  padding: 8px 6px;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--drawer-item-text) !important;
+  font-size: 0.85rem;
+  font-weight: 700 !important;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  margin-bottom: 2px;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  text-rendering: optimizeLegibility !important;
+}
+.sidebar-menu-item:hover {
+  background: var(--drawer-item-hover-bg) !important;
+  color: var(--drawer-title) !important;
+}
+.sidebar-menu-item i {
+  width: 20px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+.sidebar-footer {
+  padding: 12px 14px;
+  border-top: 1px solid var(--drawer-footer-border) !important;
+  background: var(--drawer-footer-bg) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.user-profile-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+body.theme-dark .user-avatar {
+  background: rgba(255, 255, 255, 0.1);
+}
+.user-name-text {
+  font-weight: 800;
+  font-size: 0.84rem;
+  color: var(--drawer-title) !important;
+  line-height: 1.2;
+}
+.user-sub-class {
+  font-size: 0.68rem;
+  color: var(--drawer-sub-text) !important;
+  line-height: 1.2;
+}
+
+.app-members-drawer,
+.app-boss-drawer {
+  position: fixed;
+  top: 0;
+  height: 100vh;
+  background: var(--drawer-bg) !important;
+  z-index: 99999;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.22s, background 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: none !important;
+  visibility: hidden;
+}
+.app-members-drawer.open,
+.app-boss-drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+.app-members-drawer {
+  left: 0;
+  width: 280px;
+  border-right: 1px solid var(--drawer-border) !important;
+  transform: translateX(-100%);
+}
+
+.app-boss-drawer {
+  right: 0;
+  width: 320px;
+  border-left: 1px solid var(--drawer-border) !important;
+  transform: translateX(100%);
+}
+
+.boss-drawer-header {
+  height: 50px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--drawer-header-border) !important;
+  background: var(--drawer-header-bg) !important;
+  flex-shrink: 0;
+}
+.boss-drawer-title {
+  font-weight: 800;
+  font-size: 0.92rem;
+  color: var(--drawer-title) !important;
+  display: flex;
+  align-items: center;
+}
+.boss-drawer-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.app-main-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: var(--kakao-bg) !important;
+}
+
+/* ========================================================
+   [상단 헤더 네비게이션]
+   ======================================================== */
+.kakao-chat-header {
+  height: 48px;
+  background-color: var(--kakao-header-bg) !important;
+  border-bottom: 1px solid var(--kakao-header-border) !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 6px;
+  flex-shrink: 0;
+  z-index: 10;
+  transition: background-color 0.2s ease;
 }
 
 .header-left-area {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  flex-wrap: nowrap;
   gap: 8px;
   min-width: 0;
   flex: 1;
-  overflow: hidden;
-  height: 100%;
 }
 
 .btn-kakao-menu {
+  background: none;
+  border: none;
+  color: var(--kakao-header-icon-btn) !important;
+  font-size: 1.15rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--kakao-header-text);
-  font-size: 1.15rem;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.15s ease, color 0.15s ease;
-  flex-shrink: 0;
+  transition: background-color 0.15s;
 }
-
 .btn-kakao-menu:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 body.theme-dark .btn-kakao-menu:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .room-avatar-circle {
   width: 32px;
   height: 32px;
-  min-width: 32px;
   border-radius: 11px;
   background: rgba(0, 0, 0, 0.08);
   display: flex;
@@ -222,14 +439,12 @@ body.theme-dark .room-avatar-circle {
   justify-content: center;
   min-width: 0;
   flex: 1;
-  overflow: hidden;
-  gap: 1px;
 }
 
 .room-title-text {
+  font-weight: 800;
   font-size: 0.92rem;
-  font-weight: 700;
-  color: var(--kakao-header-text);
+  color: var(--kakao-header-text) !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -237,8 +452,8 @@ body.theme-dark .room-avatar-circle {
 }
 
 .room-count-text {
-  font-size: 0.68rem;
-  color: var(--kakao-header-subtext);
+  font-size: 0.7rem;
+  color: var(--kakao-header-subtext) !important;
   line-height: 1.2;
 }
 
@@ -250,60 +465,44 @@ body.theme-dark .room-avatar-circle {
 }
 
 .btn-kakao-head {
+  background: none;
+  border: none;
+  color: var(--kakao-header-icon-btn) !important;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border: none;
-  background: transparent;
-  color: var(--kakao-header-text);
-  font-size: 0.95rem;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.15s ease;
+  transition: background-color 0.15s;
 }
-
 .btn-kakao-head:hover {
-  background: rgba(0, 0, 0, 0.08);
+  background-color: rgba(0, 0, 0, 0.05);
 }
 body.theme-dark .btn-kakao-head:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 /* ========================================================
-   [상단 접이식 공지사항 배너 (KakaoNotice Banner)]
+   [상단 접이식 공지사항 배너]
    ======================================================== */
 .kakao-notice-banner {
-  background-color: var(--kakao-notice-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-bottom: 1px solid var(--kakao-notice-border);
+  background-color: var(--kakao-notice-bg) !important;
+  border-bottom: 1px solid var(--kakao-notice-border) !important;
   padding: 8px 12px;
+  font-size: 0.78rem;
   position: relative;
   z-index: 9;
-  transition: max-height 0.25s ease, padding 0.25s ease, opacity 0.2s ease;
-  overflow: hidden;
-  max-height: 44px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.2s ease;
 }
-
-.kakao-notice-banner.expanded {
-  max-height: 220px;
-}
-
-.kakao-notice-banner.collapsed {
-  display: none !important;
-}
-
 .notice-header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  cursor: pointer;
 }
-
 .notice-title-wrap {
   display: flex;
   align-items: center;
@@ -311,1035 +510,368 @@ body.theme-dark .btn-kakao-head:hover {
   min-width: 0;
   flex: 1;
 }
-
 .notice-icon-badge {
   color: #f59e0b;
   font-size: 0.85rem;
   flex-shrink: 0;
 }
-
 .notice-summary-text {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--kakao-header-text);
+  font-weight: 700;
+  color: var(--kakao-notice-text) !important;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3;
+  cursor: pointer;
 }
-
 .notice-toggle-arrow {
-  color: var(--kakao-header-subtext);
+  color: var(--kakao-header-subtext) !important;
   font-size: 0.75rem;
-  transition: transform 0.25s ease;
-  flex-shrink: 0;
+  cursor: pointer;
+  padding: 2px 4px;
 }
-
-.kakao-notice-banner.expanded .notice-toggle-arrow {
-  transform: rotate(180deg);
-}
-
 .notice-detail-body {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px dashed var(--kakao-notice-border);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--kakao-notice-border) !important;
+  color: var(--kakao-notice-text) !important;
   font-size: 0.76rem;
-  color: var(--kakao-header-text);
   line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-all;
-  max-height: 150px;
+  max-height: 120px;
   overflow-y: auto;
-  user-select: text;
 }
 
 /* ========================================================
-   [채팅 메시지 스크롤 영역]
+   [채팅 메시지 스트림]
    ======================================================== */
 .kakao-chat-scroller {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 12px 10px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--kakao-scroll-thumb) transparent;
+  gap: 8px;
+  -webkit-overflow-scrolling: touch;
 }
-
 .kakao-chat-scroller::-webkit-scrollbar {
   width: 5px;
 }
-.kakao-chat-scroller::-webkit-scrollbar-track {
-  background: transparent;
-}
 .kakao-chat-scroller::-webkit-scrollbar-thumb {
-  background-color: var(--kakao-scroll-thumb);
+  background: var(--kakao-scroll-thumb);
   border-radius: 4px;
 }
-
-/* 날짜 구분선 */
-.kakao-date-divider {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 10px 0;
+.kakao-chat-scroller::-webkit-scrollbar-thumb:hover {
+  background: var(--kakao-scroll-thumb-hover);
 }
 
-.date-divider-pill {
-  background-color: var(--kakao-date-divider-bg);
-  color: var(--kakao-date-divider-text);
-  font-size: 0.7rem;
-  font-weight: 500;
-  padding: 3px 12px;
-  border-radius: 12px;
-  letter-spacing: -0.2px;
-}
-
-/* ========================================================
-   [말풍선 컴포넌트 (상대방 vs 내 메시지)]
-   ======================================================== */
-.chat-bubble-row {
+.chat-item-row {
   display: flex;
+  align-items: flex-start;
   gap: 8px;
-  width: 100%;
-  animation: fadeInMsg 0.15s ease-out;
+  max-width: 100%;
+}
+.chat-item-row.me {
+  flex-direction: row-reverse;
+}
+.chat-item-row.consecutive {
+  margin-top: -4px;
 }
 
-@keyframes fadeInMsg {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* 1. 상대방 말풍선 (좌측 정렬) */
-.chat-bubble-row.other {
-  justify-content: flex-start;
-}
-
-.chat-bubble-row.other .msg-avatar {
-  width: 38px;
-  height: 38px;
+.chat-sender-avatar {
+  width: 36px;
+  height: 36px;
   border-radius: 14px;
-  background-color: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.15rem;
   flex-shrink: 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+body.theme-dark .chat-sender-avatar {
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.chat-bubble-row.other .msg-body-col {
+.chat-msg-body {
   display: flex;
   flex-direction: column;
-  max-width: calc(100% - 100px);
-  min-width: 0;
+  max-width: calc(100% - 80px);
+}
+.chat-item-row.me .chat-msg-body {
+  align-items: flex-end;
 }
 
-.chat-bubble-row.other .msg-sender-name {
+.chat-sender-name {
   font-size: 0.72rem;
-  color: var(--kakao-header-subtext);
-  margin-bottom: 3px;
+  color: var(--kakao-header-subtext) !important;
+  margin-bottom: 2px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
-.chat-bubble-row.other .msg-content-line {
+.chat-bubble-flex {
   display: flex;
   align-items: flex-end;
   gap: 4px;
 }
+.chat-item-row.me .chat-bubble-flex {
+  flex-direction: row-reverse;
+}
 
-.chat-bubble-row.other .msg-bubble {
-  background-color: var(--kakao-other-bubble-bg);
-  color: var(--kakao-other-bubble-text);
-  padding: 8px 11px;
-  border-radius: 4px 13px 13px 13px;
+.chat-bubble {
+  padding: 7px 11px;
+  border-radius: 14px;
   font-size: 0.84rem;
   line-height: 1.4;
   word-break: break-word;
   white-space: pre-wrap;
-  box-shadow: var(--kakao-bubble-shadow);
-  user-select: text;
+  position: relative;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08);
 }
-
-.chat-bubble-row.other .msg-meta-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-  flex-shrink: 0;
-}
-
-/* 2. 내 말풍선 (우측 정렬) */
-.chat-bubble-row.mine {
-  justify-content: flex-end;
-}
-
-.chat-bubble-row.mine .msg-content-line {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  gap: 4px;
-  max-width: calc(100% - 50px);
-}
-
-.chat-bubble-row.mine .msg-meta-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-  flex-shrink: 0;
-}
-
-.chat-bubble-row.mine .msg-bubble {
-  background-color: var(--kakao-my-bubble-bg);
-  color: var(--kakao-my-bubble-text);
-  padding: 8px 11px;
-  border-radius: 13px 4px 13px 13px;
-  font-size: 0.84rem;
-  line-height: 1.4;
-  word-break: break-word;
-  white-space: pre-wrap;
-  box-shadow: var(--kakao-bubble-shadow);
+.chat-item-row.me .chat-bubble {
+  background-color: var(--kakao-bubble-me) !important;
+  color: var(--kakao-bubble-me-text) !important;
+  border-top-right-radius: 2px;
   font-weight: 500;
-  user-select: text;
+}
+.chat-item-row.other .chat-bubble {
+  background-color: var(--kakao-bubble-other) !important;
+  color: var(--kakao-bubble-other-text) !important;
+  border-top-left-radius: 2px;
 }
 
-/* 읽지 않음 숫자 및 시간 표시 */
-.msg-unread-count {
+.chat-meta-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 1px;
+  flex-shrink: 0;
+}
+.chat-item-row.me .chat-meta-box {
+  align-items: flex-end;
+}
+.chat-item-row.other .chat-meta-box {
+  align-items: flex-start;
+}
+
+.chat-unread-count {
   font-size: 0.62rem;
-  color: var(--kakao-unread-count-text);
-  font-weight: 700;
+  font-weight: 800;
+  color: var(--kakao-unread-yellow) !important;
   line-height: 1;
 }
 
-.msg-time-stamp {
+.chat-timestamp {
   font-size: 0.62rem;
-  color: var(--kakao-time-text);
+  color: var(--kakao-time-gray) !important;
   white-space: nowrap;
   line-height: 1;
 }
 
-/* 연속 메시지일 때 아바타/닉네임 생략 시 여백 보정 */
-.chat-bubble-row.consecutive {
-  margin-top: -5px;
+.mention-tag {
+  background: rgba(245, 158, 11, 0.2);
+  color: #d97706;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 700;
 }
-.chat-bubble-row.other.consecutive .msg-avatar {
-  visibility: hidden;
-  height: 0;
-}
-
-/* 시스템 알림 메시지 (보스 출현/처치 알림 등) */
-.chat-bubble-row.system {
-  justify-content: center;
-  margin: 6px 0;
-}
-
-.system-msg-pill {
-  background-color: rgba(0, 0, 0, 0.28);
-  color: #e2e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 0.72rem;
-  padding: 4px 14px;
-  border-radius: 14px;
-  text-align: center;
-  max-width: 85%;
-  line-height: 1.4;
-}
-body.theme-dark .system-msg-pill {
-  background-color: rgba(255, 255, 255, 0.06);
+body.theme-dark .mention-tag {
+  color: #fbbf24;
 }
 
 /* ========================================================
-   [하단 메시지 입력창 바 (Kakao Input Bar)]
+   [하단 메시지 입력 바]
    ======================================================== */
 .kakao-input-area {
+  background-color: var(--kakao-input-bg) !important;
+  border-top: 1px solid var(--kakao-input-border) !important;
+  padding: 8px 10px;
   display: flex;
-  flex-direction: column;
-  background-color: var(--kakao-header-bg);
-  border-top: 1px solid var(--kakao-notice-border);
-  padding: 6px 10px 8px 10px;
-  flex-shrink: 0;
-  z-index: 10;
+  align-items: flex-end;
   gap: 6px;
-  transition: background-color 0.25s ease;
-}
-
-.input-top-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+  transition: background-color 0.2s ease;
 }
 
 .btn-tool-icon {
-  background: transparent;
+  background: none;
   border: none;
-  color: var(--kakao-header-subtext);
-  font-size: 0.95rem;
-  padding: 4px 6px;
-  border-radius: 6px;
+  color: var(--kakao-input-icon) !important;
+  font-size: 1.15rem;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.btn-tool-icon:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--kakao-header-text);
-}
-body.theme-dark .btn-tool-icon:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.input-box-wrapper {
-  display: flex;
-  align-items: flex-end;
-  background-color: var(--kakao-input-bg);
-  border: 1px solid var(--kakao-input-border);
-  border-radius: 18px;
-  padding: 4px 6px 4px 12px;
-  gap: 6px;
-  transition: border-color 0.2s;
-}
-
-.input-box-wrapper:focus-within {
-  border-color: #f59e0b;
+  padding: 4px;
+  border-radius: 4px;
+  margin-bottom: 4px;
 }
 
 .kakao-msg-textarea {
   flex: 1;
-  background: transparent;
+  background: none;
   border: none;
   outline: none;
-  color: var(--kakao-input-text);
+  resize: none;
   font-size: 0.86rem;
   line-height: 1.4;
-  resize: none;
-  max-height: 80px;
-  min-height: 22px;
-  padding: 3px 0;
-  user-select: text;
+  color: var(--kakao-input-text) !important;
+  max-height: 90px;
+  min-height: 36px;
+  padding: 7px 4px;
 }
-
 .kakao-msg-textarea::placeholder {
-  color: var(--kakao-input-placeholder);
+  color: var(--kakao-input-placeholder) !important;
 }
 
 .btn-kakao-send {
-  background-color: #fee500;
-  color: #191919;
-  border: none;
-  border-radius: 14px;
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.1s, background-color 0.15s, opacity 0.15s;
-  flex-shrink: 0;
-}
-
-.btn-kakao-send:disabled {
-  background-color: rgba(140, 140, 140, 0.3);
-  color: rgba(140, 140, 140, 0.7);
-  cursor: not-allowed;
-}
-
-.btn-kakao-send:not(:disabled):hover {
-  background-color: #fada0a;
-}
-.btn-kakao-send:not(:disabled):active {
-  transform: scale(0.94);
-}
-
-/* ========================================================
-   [우측 슬라이드 햄버거 서랍 메뉴 (Drawer)]
-   ======================================================== */
-.kakao-drawer-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
-  z-index: 99;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s ease;
-}
-
-.kakao-drawer-overlay.active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.kakao-drawer-content {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 82%;
-  max-width: 320px;
-  background-color: var(--kakao-sidebar-bg);
-  color: var(--kakao-sidebar-text);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.4);
-  transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.kakao-drawer-overlay.active .kakao-drawer-content {
-  transform: translateX(0);
-}
-
-.drawer-header {
-  padding: 16px 14px 12px 14px;
-  background-color: var(--kakao-sidebar-header-bg);
-  border-bottom: 1px solid var(--kakao-sidebar-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.drawer-header-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-drawer-close {
-  background: transparent;
-  border: none;
-  font-size: 1.15rem;
-  color: var(--kakao-sidebar-text);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-}
-
-.drawer-body-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.drawer-section-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--kakao-header-subtext);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-  padding-left: 4px;
-}
-
-.drawer-menu-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.drawer-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 10px;
-  border-radius: 8px;
-  color: var(--kakao-sidebar-text);
-  text-decoration: none;
-  font-size: 0.84rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.drawer-menu-item:hover {
-  background-color: var(--kakao-sidebar-hover);
-}
-
-.drawer-menu-item i {
-  font-size: 0.95rem;
-  width: 18px;
-  text-align: center;
-  color: #f59e0b;
-}
-
-.drawer-member-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 7px 10px;
-  border-radius: 8px;
-  background-color: var(--kakao-sidebar-hover);
-  margin-bottom: 4px;
-  font-size: 0.8rem;
-}
-
-.drawer-footer {
-  padding: 10px 14px;
-  border-top: 1px solid var(--kakao-sidebar-border);
-  background-color: var(--kakao-sidebar-header-bg);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-/* ========================================================
-   🔍 카카오톡 스타일 슬라이드 대화 검색 바 (선택지 A 규격)
-   ======================================================== */
-.chat-search-bar-wrap {
-  background: var(--kakao-notice-bg);
-  border-bottom: 1px solid var(--kakao-notice-border);
-  padding: 6px 12px;
-  transition: max-height 0.22s ease, opacity 0.2s ease, padding 0.22s ease;
-  overflow: hidden;
-  max-height: 48px;
-  z-index: 10;
-}
-.chat-search-bar-wrap.d-none {
-  display: none !important;
-  max-height: 0 !important;
-  padding: 0 12px !important;
-  opacity: 0 !important;
-}
-.chat-search-input-box {
-  background: var(--kakao-input-bg);
-  border: 1px solid var(--kakao-input-border);
-  border-radius: 16px;
-  padding: 3px 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.chat-search-input-box:focus-within {
-  border-color: #f59e0b;
-}
-.chat-search-input-box input {
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--kakao-input-text);
-  font-size: 0.8rem;
-  flex: 1;
-}
-.chat-search-input-box input::placeholder {
-  color: var(--kakao-input-placeholder);
-}
-.chat-search-counter {
-  font-size: 0.7rem;
-  color: var(--kakao-header-subtext);
-  font-weight: 600;
-  white-space: nowrap;
-}
-.btn-search-nav {
-  background: transparent;
-  border: none;
-  color: var(--kakao-header-subtext);
-  font-size: 0.75rem;
-  padding: 2px 4px;
-  cursor: pointer;
-  border-radius: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.btn-search-nav:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: var(--kakao-header-text);
-}
-body.theme-dark .btn-search-nav:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-.highlight-search-kw {
-  background: #fef08a !important;
+  background-color: var(--kakao-yellow) !important;
   color: #191919 !important;
-  border-radius: 2px;
-  padding: 0 2px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
   font-weight: 700;
+  padding: 7px 12px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: opacity 0.15s;
 }
-.highlight-search-current {
-  background: #f59e0b !important;
-  color: #ffffff !important;
-  border-radius: 2px;
-  padding: 0 2px;
-  font-weight: 700;
-  outline: 2px solid #ea580c;
+.btn-kakao-send:hover {
+  opacity: 0.9;
 }
 
 /* ========================================================
-   [토스트 알림 팝업 (Toast Notification)]
+   [모달 및 알림 토스트]
    ======================================================== */
-.kakao-toast-container {
-  position: absolute;
-  top: 58px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  pointer-events: none;
-  width: 90%;
-  max-width: 380px;
-}
-
-.kakao-toast {
-  background-color: var(--kakao-toast-bg);
-  color: var(--kakao-toast-text);
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+.kakao-modal-backdrop {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100000;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  animation: toastPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(4px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
 }
 
-@keyframes toastPop {
-  from { opacity: 0; transform: translateY(-8px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ========================================================
-   [보스 타이머 컴포넌트 전용 스타일]
-   ======================================================== */
-.boss-timer-panel {
-  background-color: var(--boss-timer-bg);
-  border: 1px solid var(--boss-timer-border);
+.kakao-modal-card {
+  background: var(--modal-bg) !important;
+  color: var(--modal-text) !important;
   border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
-  transition: background-color 0.25s, border-color 0.25s;
-}
-
-.boss-timer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.boss-timer-title {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--boss-timer-text);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.boss-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-  gap: 8px;
-}
-
-.boss-card {
-  background-color: var(--boss-timer-card-bg);
-  border: 1px solid var(--boss-timer-card-border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  transition: transform 0.15s, border-color 0.15s;
-}
-
-.boss-card:hover {
-  transform: translateY(-1px);
-}
-
-.boss-card.status-alive {
-  border-left: 3px solid var(--boss-timer-accent-alive);
-}
-.boss-card.status-imminent {
-  border-left: 3px solid var(--boss-timer-accent-imminent);
-  animation: pulseCard 1.5s infinite;
-}
-.boss-card.status-dead {
-  border-left: 3px solid var(--boss-timer-accent-dead);
-  opacity: 0.75;
-}
-
-@keyframes pulseCard {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
-  50% { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
-}
-
-.boss-name-text {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--boss-timer-text);
-}
-
-.boss-time-text {
-  font-size: 0.95rem;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--boss-timer-accent-alive);
-}
-.boss-card.status-imminent .boss-time-text {
-  color: var(--boss-timer-accent-imminent);
-}
-.boss-card.status-dead .boss-time-text {
-  color: var(--boss-timer-accent-dead);
-}
-
-/* ========================================================
-   [모달 및 팝업 (Bootstrap Modal 오버라이드)]
-   ======================================================== */
-.modal-content {
-  background-color: var(--kakao-sidebar-bg) !important;
-  color: var(--kakao-sidebar-text) !important;
-  border: 1px solid var(--kakao-sidebar-border) !important;
-  border-radius: 14px !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
-}
-
-.modal-header {
-  border-bottom: 1px solid var(--kakao-sidebar-border) !important;
-  padding: 12px 16px !important;
-}
-
-.modal-footer {
-  border-top: 1px solid var(--kakao-sidebar-border) !important;
-  padding: 10px 16px !important;
-}
-
-.form-control, .form-select {
-  background-color: var(--kakao-input-bg) !important;
-  border-color: var(--kakao-input-border) !important;
-  color: var(--kakao-input-text) !important;
-  border-radius: 8px !important;
-  font-size: 0.85rem !important;
-}
-
-.form-control:focus, .form-select:focus {
-  border-color: #f59e0b !important;
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25) !important;
-}
-
-/* 카카오톡 노란색 버튼 규격 */
-.btn-kakao-primary {
-  background-color: #fee500 !important;
-  color: #191919 !important;
-  border: none !important;
-  font-weight: 700 !important;
-  border-radius: 8px !important;
-  transition: background-color 0.15s, transform 0.1s !important;
-}
-
-.btn-kakao-primary:hover {
-  background-color: #fada0a !important;
-}
-.btn-kakao-primary:active {
-  transform: scale(0.98) !important;
-}
-
-/* ========================================================
-   [반응형 분기점 (모바일 최적화)]
-   ======================================================== */
-@media (max-width: 480px) {
-  .kakao-app-container {
-    max-width: 100%;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  
-  .kakao-chat-header {
-    height: 48px;
-    padding: 0 8px 0 4px;
-  }
-  
-  .chat-bubble-row.other .msg-body-col {
-    max-width: 78%;
-  }
-  .chat-bubble-row.mine .msg-content-line {
-    max-width: 82%;
-  }
-  
-  .kakao-drawer-content {
-    width: 85%;
-  }
-}
-
-/* ========================================================
-   📊 [통계알리미] 카카오톡 정품 규격 통계 보고서 카드 전용 스타일
-   ======================================================== */
-
-.records-report-card {
   width: 100%;
-  max-width: 320px;
-  background-color: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Pretendard", sans-serif;
-  color: #191919;
-  user-select: text;
-  margin: 2px 0;
+  max-width: 340px;
+  padding: 18px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
 }
 
-body.theme-dark .records-report-card {
-  background-color: #242a34;
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #f3f4f6;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-}
-
-.report-header-banner {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
+.kakao-toast-box {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20px);
+  background: rgba(25, 25, 25, 0.92);
   color: #ffffff;
-  padding: 10px 14px;
-  border-bottom: 2px solid #f59e0b;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 100005;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+.kakao-toast-box.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
-.report-header-banner.weekly {
-  background: linear-gradient(135deg, #3b281e, #1c140f);
-  border-bottom-color: #f97316;
+/* ========================================================
+   [보스 타이머 / 보고서 카드 규격]
+   ======================================================== */
+.boss-briefing-card {
+  background: #2b323c;
+  border: 1px solid #3f4756;
+  border-radius: 10px;
+  padding: 10px;
+  color: #f3f4f6;
+  font-size: 0.8rem;
+  line-height: 1.45;
 }
 
-.report-banner-top {
+.raid-report-card {
+  background: #181d24;
+  border: 1px solid #282f3a;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #f3f4f6;
+  width: 250px;
+}
+.raid-hero-box {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 3px;
+  margin-bottom: 6px;
 }
-
-.report-type-badge {
+.raid-hero-badge {
   font-size: 0.65rem;
   font-weight: 800;
   padding: 2px 6px;
   border-radius: 4px;
-  background-color: #f59e0b;
-  color: #191919;
-  letter-spacing: -0.2px;
-}
-
-.report-type-badge.weekly {
-  background-color: #f97316;
+  background: #d97706;
   color: #ffffff;
 }
-
-.report-date-text {
-  font-size: 0.68rem;
-  color: #94a3b8;
-  font-variant-numeric: tabular-nums;
-}
-
-.report-guild-title {
+.raid-hero-title {
   font-size: 0.88rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin: 0;
-}
-
-.report-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  padding: 10px 12px;
-  background-color: rgba(0, 0, 0, 0.02);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-body.theme-dark .report-kpi-grid {
-  background-color: rgba(0, 0, 0, 0.2);
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
-.report-kpi-box {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 6px 4px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-body.theme-dark .report-kpi-box {
-  background: #1a1f26;
-  border-color: #2e3642;
-}
-
-.report-kpi-label {
-  font-size: 0.62rem;
-  color: #64748b;
-  margin-bottom: 2px;
-  font-weight: 500;
-}
-
-body.theme-dark .report-kpi-label {
-  color: #94a3b8;
-}
-
-.report-kpi-value {
-  font-size: 0.85rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: #0f172a;
-  line-height: 1.1;
 }
-
-body.theme-dark .report-kpi-value {
-  color: #f8fafc;
+.raid-hero-score {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f59e0b;
 }
-
-.report-kpi-value.accent {
-  color: #d97706;
+.raid-report-body {
+  font-size: 0.74rem;
+  color: #9ca3af;
+  line-height: 1.4;
+  margin-bottom: 8px;
 }
-
-body.theme-dark .report-kpi-value.accent {
-  color: #fbbf24;
-}
-
-.report-section {
-  padding: 8px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-body.theme-dark .report-section {
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
-
-.report-section-header {
+.raid-report-footer-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  border-top: 1px solid #282f3a;
+  padding-top: 8px;
+}
+.raid-countdown-timer {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ef4444;
 }
 
-.report-section-title {
+.boss-alert-mini-card {
+  background: #2b323c;
+  border: 1px solid #3f4756;
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #f3f4f6;
+  font-size: 0.78rem;
+}
+.btn-chat-cut {
+  background: #ef4444;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #475569;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-body.theme-dark .report-section-title {
-  color: #cbd5e1;
-}
-
-.report-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.7rem;
-}
-
-.report-table th {
-  padding: 3px 4px;
-  background-color: #f1f5f9;
-  color: #475569;
-  font-weight: 600;
-  text-align: left;
-  border-radius: 4px;
-}
-
-body.theme-dark .report-table th {
-  background-color: #1e242d;
-  color: #94a3b8;
-}
-
-.report-table td {
-  padding: 4px 4px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #334155;
-  font-variant-numeric: tabular-nums;
-}
-
-body.theme-dark .report-table td {
-  border-bottom-color: #1e242d;
-  color: #e2e8f0;
-}
-
-.report-table tr:last-child td {
-  border-bottom: none;
-}
-
-.rank-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  font-size: 0.6rem;
-  font-weight: 700;
-  background-color: #e2e8f0;
-  color: #475569;
-  margin-right: 4px;
-}
-
-.rank-badge.rank-1 {
-  background-color: #fef08a;
-  color: #854d0e;
-}
-
-.rank-badge.rank-2 {
-  background-color: #e2e8f0;
-  color: #334155;
-}
-
-.rank-badge.rank-3 {
-  background-color: #fed7aa;
-  color: #9a3412;
-}
-
-.report-footer-bar {
-  padding: 6px 12px;
-  background-color: #f8fafc;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.62rem;
-  color: #94a3b8;
-}
-
-body.theme-dark .report-footer-bar {
-  background-color: #181d24;
-  color: #64748b;
-}
-
-.report-footer-link {
-  color: #3b82f6;
-  text-decoration: none;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.report-footer-link:hover {
-  text-decoration: underline;
+  padding: 4px 8px;
+  margin-top: 4px;
+  cursor: pointer;
 }
 
 /* ========================================================
@@ -1455,14 +987,6 @@ body.theme-dark #chatRoomView .btn-kakao-menu:hover {
   box-shadow: none !important;
 }
 
-/* 모달 레이어 클릭 겹침 방지 */
-.kakao-modal-backdrop {
-  z-index: 1000 !important;
-}
-#modalLicenseRequest {
-  z-index: 1050 !important;
-}
-
 /* ========================================================
    [카카오톡 스타일 메인 3탭: 친구 / 대화방 슬림 컴팩트 리스트 규격]
    ======================================================== */
@@ -1486,7 +1010,6 @@ body.theme-dark #chatRoomView .btn-kakao-menu:hover {
   transform: translateY(-1px) !important;
 }
 
-/* 톡방 / 친구 아바타 규격 (36x36px 고정) */
 .room-avatar-large,
 .friend-avatar {
   width: 36px !important;
@@ -1510,7 +1033,6 @@ body.theme-dark #chatRoomView .btn-kakao-menu:hover {
   color: #3b82f6 !important;
 }
 
-/* 방 정보 텍스트 박스 */
 .room-content-box {
   flex: 1 !important;
   min-width: 0 !important;
