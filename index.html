@@ -41,12 +41,12 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* 하단 3탭 네비게이션 & 더보기 그리드 순정 테마 연동 */
+    /* 하단 3탭 네비게이션 & 더보기 그리드 순정 테마 연동 (카카오 PC 소프트 탭바 스타일) */
     .kakao-bottom-tabbar {
       height: 52px;
       min-height: 52px;
-      background: var(--main-bottom-bg, #ffffff);
-      border-top: 1px solid var(--main-bottom-border, #e2e8f0);
+      background: var(--main-bottom-bg, #eaecf0);
+      border-top: 1px solid var(--main-bottom-border, #dcdfe4);
       display: flex;
       align-items: center;
       justify-content: space-around;
@@ -59,7 +59,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--main-tab-inactive, #94a3b8);
+      color: var(--main-tab-inactive, #8c96a5);
       cursor: pointer;
       padding: 4px 0;
       transition: color 0.15s ease;
@@ -95,7 +95,7 @@
       height: 48px;
       border-radius: 16px;
       background: var(--main-card-bg, #ffffff);
-      border: 1px solid var(--main-card-border, #eef1f4);
+      border: 1px solid var(--main-card-border, #e6e8eb);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -220,7 +220,8 @@
 
     <!-- [탭 1] 친구 (길드원 목록) -->
     <div id="tabFriendsContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
-      <div class="chat-room-card my-profile-card" onclick="openProfileEditModal()">
+      <!-- 최상단 내 프로필 카드 (누르면 즉시 직업/프로필 모달 실행) -->
+      <div class="chat-room-card my-profile-card" onclick="openProfileEditModal()" style="cursor: pointer;">
         <div class="room-avatar-large" id="mainTabMyAvatar">👤</div>
         <div class="room-content-box">
           <div class="room-name-text" id="mainTabMyNick">내 프로필</div>
@@ -229,7 +230,7 @@
         <i class="fa-solid fa-pen text-secondary" style="font-size: 0.8rem;"></i>
       </div>
 
-      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background: var(--main-view-bg);">
         <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">길드원 (<span id="mainTabMemberCount">0</span>)</span>
         <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary" style="font-size: 0.7rem;" onclick="loadMainTabFriendsList()">
           <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
@@ -243,7 +244,7 @@
 
     <!-- [탭 2] 대화방 목록 (채팅) -->
     <div id="tabChatRoomsContent" class="kakao-tab-body" style="display: block; flex: 1; overflow-y: auto;">
-      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background: var(--main-view-bg);">
         <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
         <button type="button" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size: 0.74rem;" onclick="openCreateRoomModal()">
           <i class="fa-solid fa-plus me-1"></i>방 만들기
@@ -744,7 +745,7 @@
       if (joined.length > 0 && box && list) {
         box.style.display = "block";
         list.innerHTML = joined.map(function(g) {
-          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #ffffff); border-color:var(--main-card-border, #eef1f4) !important;">' +
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #ffffff); border-color:var(--main-card-border, #e6e8eb) !important;">' +
             '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
               '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || "게임") + '</span>' +
               '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
@@ -1020,7 +1021,7 @@
     }
 
     function toggleThemeMode() {
-      var current = localStorage.getItem("guild_theme_mode") || "light";
+      var current = localStorage.getItem("guild_theme_mode") || "dark";
       var next = (current === "dark") ? "light" : "dark";
       if (typeof window.applyAppTheme === "function") window.applyAppTheme(next);
     }
