@@ -58,15 +58,15 @@
   --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
   --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
 
-  /* 메인 3탭 화면 (순정 밝은 그레이 & 화이트) */
-  --main-view-bg: #f4f6f8;
-  --main-header-bg: #ffffff;
+  /* 메인 3탭 화면 (카카오톡 PC 음영 조화: 소프트 쿨그레이 & 화이트) */
+  --main-view-bg: #f5f6f8;
+  --main-header-bg: #eef0f3;
   --main-header-text: #191919;
   --main-card-bg: #ffffff;
-  --main-card-border: #eef1f4;
-  --main-bottom-bg: #ffffff;
-  --main-bottom-border: #e2e8f0;
-  --main-tab-inactive: #94a3b8;
+  --main-card-border: #e6e8eb;
+  --main-bottom-bg: #eaecf0;
+  --main-bottom-border: #dcdfe4;
+  --main-tab-inactive: #8c96a5;
   --main-tab-active: #191919;
 }
 
@@ -196,14 +196,14 @@ body.theme-light {
   --kakao-scroll-thumb: rgba(0, 0, 0, 0.2);
   --kakao-scroll-thumb-hover: rgba(0, 0, 0, 0.38);
 
-  --main-view-bg: #f4f6f8;
-  --main-header-bg: #ffffff;
+  --main-view-bg: #f5f6f8;
+  --main-header-bg: #eef0f3;
   --main-header-text: #191919;
   --main-card-bg: #ffffff;
-  --main-card-border: #eef1f4;
-  --main-bottom-bg: #ffffff;
-  --main-bottom-border: #e2e8f0;
-  --main-tab-inactive: #94a3b8;
+  --main-card-border: #e6e8eb;
+  --main-bottom-bg: #eaecf0;
+  --main-bottom-border: #dcdfe4;
+  --main-tab-inactive: #8c96a5;
   --main-tab-active: #191919;
 }
 
@@ -796,18 +796,18 @@ body.theme-dark .chat-sender-name { color: #94a3b8; }
 }
 .chat-room-card {
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 12px;
+  padding: 10px 14px;
   background: var(--main-card-bg);
   border-bottom: 1px solid var(--main-card-border);
   cursor: pointer; transition: background 0.12s ease;
 }
 .chat-room-card:active {
-  background: rgba(0, 0, 0, 0.03);
+  background: #f0f2f5;
 }
 .room-avatar-large {
   width: 42px; height: 42px;
   border-radius: 14px;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.05);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.25rem; flex-shrink: 0;
 }
@@ -815,7 +815,7 @@ body.theme-dark .chat-sender-name { color: #94a3b8; }
   min-width: 0; flex: 1;
 }
 .room-name-text {
-  font-size: 0.86rem; font-weight: 700;
+  font-size: 0.88rem; font-weight: 700;
   color: var(--main-header-text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
@@ -828,18 +828,19 @@ body.theme-dark .chat-sender-name { color: #94a3b8; }
 /* 친구 탭 개별 아이템 카드 */
 .friend-item-card {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 14px;
+  padding: 9px 14px;
   border-bottom: 1px solid var(--main-card-border);
   background: var(--main-card-bg);
   cursor: pointer;
+  transition: background 0.12s ease;
 }
 .friend-item-card:active {
-  background: rgba(0, 0, 0, 0.03);
+  background: #f0f2f5;
 }
 .friend-avatar {
   width: 38px; height: 38px;
   border-radius: 13px;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgba(0, 0, 0, 0.05);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.15rem; flex-shrink: 0;
 }
