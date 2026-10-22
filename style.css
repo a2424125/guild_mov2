@@ -878,7 +878,6 @@ body.theme-dark .mention-tag {
    [카카오톡 스타일 메인 3탭 vs 대화방 배경 분리]
    ======================================================== */
 #kakaoMainTabsView {
-  display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
   height: 100vh !important;
@@ -906,7 +905,6 @@ body.theme-dark .mention-tag {
 }
 
 #chatRoomView {
-  display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
   height: 100vh !important;
