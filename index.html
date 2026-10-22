@@ -183,9 +183,10 @@
   <!-- 3. 메인 대화방 (순정 카카오톡 풀스크린 레이아웃) -->
   <div class="app-main-layout">
     <header class="kakao-chat-header">
+      <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 -->
       <div class="header-left-area">
-        <button type="button" class="btn-kakao-menu" title="메뉴 열기" onclick="toggleMenuDrawer(true)">
-          <i class="fa-solid fa-bars"></i>
+        <button type="button" class="btn-kakao-menu text-primary fw-bold" title="대화방 나가기" onclick="exitChatRoomToMain()">
+          <i class="fa-solid fa-chevron-left" style="font-size: 1.1rem;"></i>
         </button>
         <div class="room-avatar-circle" id="chatRoomAvatar">
           <i class="fa-solid fa-users"></i>
@@ -198,7 +199,7 @@
         </div>
       </div>
 
-      <!-- 상단 우측 순정 툴: 검색(돋보기), 보스타임 채팅 브리핑(시계), 길드원 목록(사람들) 복원 -->
+      <!-- 상단 우측: 검색(돋보기), 보스타임 채팅 브리핑(시계), 길드원 목록(사람들), 햄버거 메뉴(삼선) -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
           <i class="fa-solid fa-download"></i>
@@ -211,6 +212,9 @@
         </button>
         <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
           <i class="fa-solid fa-user-group"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleMenuDrawer(true)">
+          <i class="fa-solid fa-bars"></i>
         </button>
       </div>
     </header>
@@ -231,7 +235,7 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 입력바: 왼쪽 하단 아이콘 제거, 버튼 활성화 및 엔터 전송 완벽 연동 -->
+    <!-- 하단 입력바 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
@@ -424,6 +428,22 @@
 
   <!-- 게이트웨이 및 전송 보조 스크립트 -->
   <script>
+    function exitChatRoomToMain() {
+      var mainTabs = document.getElementById("mainTabsContainer") || document.getElementById("kakaoMainTabsView");
+      var chatView = document.getElementById("singleChatRoomContainer") || document.getElementById("chatRoomView");
+
+      if (mainTabs && chatView) {
+        chatView.style.display = "none";
+        mainTabs.style.display = "flex";
+        if (typeof switchMainBottomTab === "function") switchMainBottomTab("chats");
+        return;
+      }
+      if (typeof openWelcomeGatewayModal === "function") {
+        openWelcomeGatewayModal();
+      }
+    }
+    window.exitChatRoomToMain = exitChatRoomToMain;
+
     async function openWelcomeGatewayModal() {
       var gateway = document.getElementById("modalWelcomeGateway");
       var loginModal = document.getElementById("guildLoginModal");
