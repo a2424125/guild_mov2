@@ -158,9 +158,6 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); openActivateGuildModal();">
-        <i class="fa-solid fa-key text-warning"></i><span>라이선스 등록</span>
-      </li>
     </ul>
 
     <div class="sidebar-footer">
@@ -207,7 +204,7 @@
 
 
   <!-- ========================================================
-       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 더보기 3탭)
+       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 설정 3탭)
        ======================================================== -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex;">
     <header class="kakao-chat-header main-tabs-header">
@@ -217,9 +214,7 @@
       </div>
 
       <div class="header-right-tools">
-        <button type="button" class="btn-kakao-head" title="길드 메뉴 열기" onclick="toggleMenuDrawer(true)">
-          <i class="fa-solid fa-bars"></i>
-        </button>
+        <!-- 대화방 입장 전 헤더: 군더더기 버튼 숨김 -->
       </div>
     </header>
 
@@ -260,7 +255,7 @@
       </div>
     </div>
 
-    <!-- [탭 3] 더보기 -->
+    <!-- [탭 3] 설정 -->
     <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
       <div class="more-menu-grid">
         <div class="more-menu-item" onclick="openModulePage('PageNotice')">
@@ -309,8 +304,8 @@
         <span>채팅</span>
       </div>
       <div class="kakao-tab-item" id="tabItemMore" onclick="switchMainBottomTab('more')">
-        <i class="fa-solid fa-ellipsis"></i>
-        <span>더보기</span>
+        <i class="fa-solid fa-gear"></i>
+        <span>설정</span>
       </div>
     </nav>
   </div>
