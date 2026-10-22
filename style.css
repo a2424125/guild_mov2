@@ -511,7 +511,7 @@ body.theme-dark .user-sub-class { color: #38bdf8 !important; }
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .header-left-area {
-  display: flex align-items: center; gap: 10px; min-width: 0 !important; flex: 1; overflow: hidden;
+  display: flex; align-items: center; gap: 10px; min-width: 0 !important; flex: 1; overflow: hidden;
 }
 .btn-kakao-menu {
   background: none; border: none;
@@ -1104,6 +1104,77 @@ body.theme-dark .raid-hero-box {
 }
 #chatRoomView .kakao-chat-header {
   box-shadow: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  height: 48px !important;
+  padding: 0 10px 0 6px !important;
+}
+#chatRoomView .header-left-area {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  height: 100% !important;
+}
+#chatRoomView .btn-kakao-menu {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--kakao-header-text) !important;
+  font-size: 1.15rem !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  border-radius: 6px !important;
+}
+#chatRoomView .btn-kakao-menu:hover {
+  background: rgba(0, 0, 0, 0.08) !important;
+}
+body.theme-dark #chatRoomView .btn-kakao-menu:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+#chatRoomView .room-avatar-circle {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  border-radius: 11px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+#chatRoomView .room-info-box {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  gap: 1px !important;
+}
+#chatRoomView .room-title-text {
+  font-size: 0.92rem !important;
+  font-weight: 700 !important;
+  color: var(--kakao-header-text) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.25 !important;
+}
+#chatRoomView .room-count-text {
+  font-size: 0.68rem !important;
+  color: var(--kakao-header-subtext) !important;
+  line-height: 1.2 !important;
 }
 #chatRoomView .kakao-input-area {
   box-shadow: none !important;
