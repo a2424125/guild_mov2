@@ -39,10 +39,10 @@ window.switchMainBottomTab = function(tabName) {
     if (headerSubtitle) headerSubtitle.innerText = "";
     if (btnCreateRoom) btnCreateRoom.style.display = "none";
     loadMainTabFriendsList();
-  } else if (tabName === "more") {
+  } else if (tabName === "more" || tabName === "settings") {
     if (navMore) navMore.classList.add("active");
     if (tabMore) tabMore.style.display = "block";
-    if (headerTitle) headerTitle.innerText = "더보기";
+    if (headerTitle) headerTitle.innerText = "설정";
     if (headerSubtitle) headerSubtitle.innerText = "";
     if (btnCreateRoom) btnCreateRoom.style.display = "none";
   } else {
