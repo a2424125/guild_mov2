@@ -1,0 +1,202 @@
+<!-- ========================================================
+     [길드톡 메신저] 개인 환경설정 전용 모듈
+     경로: pages/PageProfileSettings.html
+     ======================================================== -->
+<div class="profile-settings-container">
+  <!-- 1. 상단 내 계정 프로필 위젯 -->
+  <div class="user-card-widget">
+    <div class="user-card-main">
+      <div class="user-avatar-box" id="mySettingsAvatar">👤</div>
+      <div class="user-meta-info">
+        <div class="d-flex align-items-center gap-1">
+          <span class="user-nick-title" id="mySettingsNick">로그인 필요</span>
+          <span class="badge bg-warning text-dark px-1 py-0 fw-bold" id="mySettingsRole" style="font-size:0.65rem;">길드원</span>
+        </div>
+        <div class="user-class-desc" id="mySettingsClass">직업 설정하기</div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-warning btn-sm fw-bold px-3 py-1" style="border-radius: 8px; font-size: 0.78rem; background: var(--kakao-yellow); border: none; color: #191919;" onclick="openProfileEditModal()">
+      <i class="fa-solid fa-wand-magic-sparkles me-1"></i>직업 변경
+    </button>
+  </div>
+
+  <!-- 2. 환경설정 그룹 리스트 -->
+  <div class="settings-group-card">
+    <div class="settings-group-header">
+      <i class="fa-solid fa-display me-1 text-primary"></i>화면 및 테마
+    </div>
+    <div class="settings-action-row" onclick="toggleThemeMode()">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-moon text-secondary" style="width: 20px;"></i>
+        <span class="settings-row-label">다크 / 라이트 모드 전환</span>
+      </div>
+      <div class="d-flex align-items-center gap-1 text-secondary" style="font-size: 0.78rem;">
+        <span id="txtCurrentThemeName">라이트</span>
+        <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem;"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-group-card">
+    <div class="settings-group-header">
+      <i class="fa-solid fa-shield-halved me-1 text-success"></i>보안 및 계정
+    </div>
+    <div class="settings-action-row" onclick="openChangePinPrompt()">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-key text-secondary" style="width: 20px;"></i>
+        <span class="settings-row-label">개인 비밀번호(PIN) 변경</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.7rem;"></i>
+    </div>
+    <div class="settings-action-row" onclick="handleUserLogout()">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-right-from-bracket text-danger" style="width: 20px;"></i>
+        <span class="settings-row-label text-danger fw-bold">로그아웃</span>
+      </div>
+      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.7rem;"></i>
+    </div>
+  </div>
+
+  <!-- 3. 길드 앱 정보 -->
+  <div class="text-center text-secondary py-3" style="font-size: 0.68rem;">
+    길드 메신저 v2.0.4 · MMORPG ECLIPSE
+  </div>
+</div>
+
+<style>
+  .profile-settings-container {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .user-card-widget {
+    background: var(--main-card-bg);
+    border: 1px solid var(--main-card-border);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .user-card-main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .user-avatar-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    background: rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 1px solid var(--main-card-border);
+  }
+  .user-meta-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .user-nick-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: var(--main-header-text);
+  }
+  .user-class-desc {
+    font-size: 0.74rem;
+    color: #0284c7;
+    margin-top: 1px;
+    font-weight: 600;
+  }
+  .settings-group-card {
+    background: var(--main-card-bg);
+    border: 1px solid var(--main-card-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .settings-group-header {
+    padding: 10px 14px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #64748b;
+    border-bottom: 1px solid var(--main-card-border);
+    background: rgba(0,0,0,0.02);
+  }
+  .settings-action-row {
+    padding: 13px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    border-bottom: 1px solid var(--main-card-border);
+    transition: background 0.12s ease;
+  }
+  .settings-action-row:last-child {
+    border-bottom: none;
+  }
+  .settings-action-row:active {
+    background: #f0f2f5;
+  }
+  .settings-row-label {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--main-header-text);
+  }
+</style>
+
+<script>
+  (function initProfileSettingsPage() {
+    var nick = localStorage.getItem("guild_my_nickname") || "로그인 필요";
+    var avatar = localStorage.getItem("guild_my_avatar") || "👤";
+    var cls = localStorage.getItem("guild_my_class") || "직업 설정하기";
+    var role = localStorage.getItem("guild_my_role") || "길드원";
+
+    var nElem = document.getElementById("mySettingsNick");
+    var aElem = document.getElementById("mySettingsAvatar");
+    var cElem = document.getElementById("mySettingsClass");
+    var rElem = document.getElementById("mySettingsRole");
+
+    if (nElem) nElem.innerText = nick;
+    if (aElem) aElem.innerText = avatar;
+    if (cElem) cElem.innerText = cls;
+    if (rElem) rElem.innerText = role;
+
+    var curTheme = localStorage.getItem("guild_theme_mode") || "light";
+    var themeLabel = document.getElementById("txtCurrentThemeName");
+    if (themeLabel) themeLabel.innerText = (curTheme === "dark") ? "다크" : "라이트";
+  })();
+
+  function openChangePinPrompt() {
+    var currentPin = localStorage.getItem("guild_my_pin") || "";
+    var nick = localStorage.getItem("guild_my_nickname");
+    if (!nick) {
+      if (typeof showKakaoToast === "function") showKakaoToast("로그인이 필요합니다.", "⚠️");
+      return;
+    }
+    var oldPinInput = prompt("현재 6자리 비밀번호(PIN)를 입력하세요:");
+    if (!oldPinInput) return;
+    if (oldPinInput.trim() !== currentPin.trim()) {
+      alert("현재 비밀번호가 일치하지 않습니다.");
+      return;
+    }
+    var newPinInput = prompt("변경할 새 6자리 비밀번호(PIN)를 입력하세요:");
+    if (!newPinInput || newPinInput.trim().length !== 6) {
+      alert("비밀번호는 반드시 숫자 6자리여야 합니다.");
+      return;
+    }
+    if (typeof apiRequest === "function") {
+      apiRequest("guild_members?nickname=eq." + encodeURIComponent(nick), "PATCH", { pin: newPinInput.trim() })
+        .then(function() {
+          localStorage.setItem("guild_my_pin", newPinInput.trim());
+          if (typeof showKakaoToast === "function") showKakaoToast("비밀번호가 안전하게 변경되었습니다.", "🔑");
+        })
+        .catch(function(err) {
+          alert("비밀번호 변경 실패: " + err.message);
+        });
+    }
+  }
+</script>
