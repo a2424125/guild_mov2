@@ -23,54 +23,6 @@
 
   <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
   <script>
-    // ⚡ [메시지 전송 & 엔터키 즉시 처리 & 전송버튼 노란색 활성화]
-    function handleInputState(textarea) {
-      if (!textarea) return;
-      textarea.style.height = "auto";
-      var newH = Math.min(textarea.scrollHeight, 100);
-      textarea.style.height = (newH > 36 ? newH : 36) + "px";
-
-      var btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
-      if (btn) {
-        if (textarea.value.trim().length > 0) {
-          btn.classList.add("active");
-        } else {
-          btn.classList.remove("active");
-        }
-      }
-    }
-
-    function checkEnterKey(event) {
-      if (event.key === "Enter" && !event.shiftKey) {
-        if (event.isComposing) return;
-        event.preventDefault();
-        handleSendMessage();
-      }
-    }
-    window.checkEnterKey = checkEnterKey;
-    window.handleChatInputKeydown = checkEnterKey;
-
-    function handleSendMessage() {
-      if (typeof window.executeSendMessage === "function") {
-        window.executeSendMessage();
-        return;
-      }
-      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
-      if (!input) return;
-      var text = input.value.trim();
-      if (!text) return;
-      input.value = "";
-      handleInputState(input);
-      if (typeof showKakaoToast === "function") showKakaoToast("전송 중...", "💬");
-    }
-    window.handleSendMessage = handleSendMessage;
-
-    function focusChatInput() {
-      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
-      if (input) input.focus();
-    }
-    window.focusChatInput = focusChatInput;
-
     (function() {
       try {
         var theme = localStorage.getItem("guild_theme_mode") || "dark";
@@ -87,8 +39,81 @@
 
   <!-- 외부 분리 스타일시트 연결 (순정 100%) -->
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    /* 하단 3탭 네비게이션 & 더보기 그리드 순정 테마 연동 */
+    .kakao-bottom-tabbar {
+      height: 52px;
+      min-height: 52px;
+      background: var(--main-bottom-bg, #181d24);
+      border-top: 1px solid var(--main-bottom-border, #282f3a);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .kakao-tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--main-tab-inactive, #64748b);
+      cursor: pointer;
+      padding: 4px 0;
+      transition: color 0.15s ease;
+      user-select: none;
+    }
+    .kakao-tab-item.active {
+      color: var(--main-tab-active, #fee500);
+    }
+    .kakao-tab-item i {
+      font-size: 1.15rem;
+      margin-bottom: 2px;
+    }
+    .kakao-tab-item span {
+      font-size: 0.65rem;
+      font-weight: 700;
+    }
+    .more-menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      padding: 20px 16px;
+    }
+    .more-menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-align: center;
+    }
+    .more-menu-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: var(--main-card-bg, #1c222b);
+      border: 1px solid var(--main-card-border, #28303c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 6px;
+      transition: transform 0.15s ease, background 0.15s;
+    }
+    .more-menu-item:active .more-menu-icon {
+      transform: scale(0.92);
+    }
+    .more-menu-label {
+      font-size: 0.72rem;
+      color: var(--main-header-text, #f3f4f6);
+      font-weight: 600;
+    }
+  </style>
 </head>
-<body class="theme-dark">
+<body class="theme-dark in-main-tabs">
 
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
@@ -180,8 +205,132 @@
     </div>
   </aside>
 
-  <!-- 3. 메인 대화방 (순정 카카오톡 풀스크린 레이아웃) -->
-  <div class="app-main-layout">
+
+  <!-- ========================================================
+       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 더보기 3탭)
+       ======================================================== -->
+  <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex;">
+    <header class="kakao-chat-header">
+      <div class="header-left-area">
+        <div class="room-avatar-circle">
+          <i class="fa-solid fa-shield-halved text-warning"></i>
+        </div>
+        <div class="room-info-box">
+          <div class="room-title-text" id="mainTabHeaderTitle">대화방 목록</div>
+          <div class="room-count-text" id="mainTabHeaderSubtitle">참여 중인 톡방</div>
+        </div>
+      </div>
+
+      <div class="header-right-tools">
+        <button type="button" class="btn-kakao-head" id="btnToggleAppTheme" title="테마 전환" onclick="toggleThemeMode()">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button type="button" class="btn-kakao-head text-primary fw-bold" id="btnOpenCreateRoomModal" title="새 대화방 개설" onclick="openCreateRoomModal()">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+        <button type="button" class="btn-kakao-head" title="길드 메뉴 열기" onclick="toggleMenuDrawer(true)">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- [탭 1] 친구 (길드원 목록) -->
+    <div id="tabFriendsContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
+      <div class="chat-room-card" onclick="openProfileEditModal()" style="margin: 10px 12px; background: rgba(56, 189, 248, 0.06); border-color: rgba(56, 189, 248, 0.18);">
+        <div class="room-avatar-large" id="mainTabMyAvatar">👤</div>
+        <div class="room-content-box">
+          <div class="room-name-text" id="mainTabMyNick" style="font-size: 0.98rem;">내 프로필</div>
+          <p class="room-msg-preview" id="mainTabMyClass" style="color: #0284c7;">직업 설정하기</p>
+        </div>
+        <i class="fa-solid fa-pen text-secondary" style="font-size: 0.8rem;"></i>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+        <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">길드원 (<span id="mainTabMemberCount">0</span>)</span>
+        <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary" style="font-size: 0.7rem;" onclick="loadMainTabFriendsList()">
+          <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
+        </button>
+      </div>
+
+      <div id="mainTabFriendsList">
+        <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>길드원을 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- [탭 2] 대화방 목록 (채팅) -->
+    <div id="tabChatRoomsContent" class="kakao-tab-body" style="display: block; flex: 1; overflow-y: auto;">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+        <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
+        <button type="button" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size: 0.74rem;" onclick="openCreateRoomModal()">
+          <i class="fa-solid fa-plus me-1"></i>방 만들기
+        </button>
+      </div>
+
+      <div id="mainTabRoomsList">
+        <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>대화방 목록을 불러오는 중...</div>
+      </div>
+    </div>
+
+    <!-- [탭 3] 더보기 -->
+    <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
+      <div class="more-menu-grid">
+        <div class="more-menu-item" onclick="openModulePage('PageNotice')">
+          <div class="more-menu-icon text-info"><i class="fa-solid fa-bullhorn"></i></div>
+          <span class="more-menu-label">공지사항</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageRegister')">
+          <div class="more-menu-icon text-danger"><i class="fa-solid fa-crosshairs"></i></div>
+          <span class="more-menu-label">보스등록</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageRecords')">
+          <div class="more-menu-icon text-warning"><i class="fa-solid fa-scroll"></i></div>
+          <span class="more-menu-label">보스참여자</span>
+        </div>
+        <div class="more-menu-item" onclick="toggleBossDrawer(true)">
+          <div class="more-menu-icon text-warning"><i class="fa-solid fa-hourglass-half"></i></div>
+          <span class="more-menu-label">보스타임</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageWish')">
+          <div class="more-menu-icon" style="color:#f472b6;"><i class="fa-solid fa-gift"></i></div>
+          <span class="more-menu-label">분배희망</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageSettle')">
+          <div class="more-menu-icon text-success"><i class="fa-solid fa-coins"></i></div>
+          <span class="more-menu-label">정산내역</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageFinance')">
+          <div class="more-menu-icon text-secondary"><i class="fa-solid fa-landmark"></i></div>
+          <span class="more-menu-label">길드비용</span>
+        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageSettings')">
+          <div class="more-menu-icon text-secondary"><i class="fa-solid fa-gear"></i></div>
+          <span class="more-menu-label">설정</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 3탭 네비게이션 바 -->
+    <nav class="kakao-bottom-tabbar">
+      <div class="kakao-tab-item" id="tabItemFriends" onclick="switchMainBottomTab('friends')">
+        <i class="fa-solid fa-user"></i>
+        <span>친구</span>
+      </div>
+      <div class="kakao-tab-item active" id="tabItemChats" onclick="switchMainBottomTab('chats')">
+        <i class="fa-solid fa-comment"></i>
+        <span>채팅</span>
+      </div>
+      <div class="kakao-tab-item" id="tabItemMore" onclick="switchMainBottomTab('more')">
+        <i class="fa-solid fa-ellipsis"></i>
+        <span>더보기</span>
+      </div>
+    </nav>
+  </div>
+
+
+  <!-- ========================================================
+       [VIEW 2] 개별 대화방 화면
+       ======================================================== -->
+  <div id="chatRoomView" class="app-main-layout" style="display: none;">
     <header class="kakao-chat-header">
       <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 -->
       <div class="header-left-area">
@@ -235,7 +384,7 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 입력바 -->
+    <!-- 하단 입력바: 텍스트 입력 시 전송버튼 노란색 활성화 & 엔터키 즉시 전송 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
@@ -396,6 +545,33 @@
     </div>
   </div>
 
+  <!-- 1:1 / 비밀 운영진 새 대화방 개설 모달 -->
+  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
+    <div class="kakao-modal-card" style="max-width: 320px;">
+      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 대화방 만들기</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">개설할 대화방 종류를 선택하세요.</p>
+
+      <select id="newRoomTypeSelect" class="form-select form-select-sm mb-2" onchange="onRoomTypeChange(this.value)">
+        <option value="group">공개 그룹 대화방</option>
+        <option value="secret">비밀 운영진방</option>
+        <option value="one_on_one">1:1 개인 대화방</option>
+      </select>
+
+      <div id="roomTitleInputGroup" class="mb-2">
+        <input type="text" id="newRoomTitleInput" class="form-control form-control-sm" placeholder="대화방 이름 입력">
+      </div>
+
+      <div id="oneOnOneTargetGroup" class="mb-2" style="display: none;">
+        <select id="oneOnOneTargetSelect" class="form-select form-select-sm"></select>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeCreateRoomModal()">취소</button>
+        <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeCreateNewRoom()">개설하기</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 기존 길드 로그인 모달 (G 엠블럼) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
@@ -428,13 +604,62 @@
 
   <!-- 게이트웨이 및 전송 보조 스크립트 -->
   <script>
+    // ⚡ [메시지 전송 & 엔터키 즉시 처리 & 전송버튼 노란색 활성화]
+    function handleInputState(textarea) {
+      if (!textarea) return;
+      textarea.style.height = "auto";
+      var newH = Math.min(textarea.scrollHeight, 100);
+      textarea.style.height = (newH > 36 ? newH : 36) + "px";
+
+      var btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
+      if (btn) {
+        if (textarea.value.trim().length > 0) {
+          btn.classList.add("active");
+        } else {
+          btn.classList.remove("active");
+        }
+      }
+    }
+
+    function checkEnterKey(event) {
+      if (event.key === "Enter" && !event.shiftKey) {
+        if (event.isComposing) return;
+        event.preventDefault();
+        handleSendMessage();
+      }
+    }
+    window.checkEnterKey = checkEnterKey;
+    window.handleChatInputKeydown = checkEnterKey;
+
+    function handleSendMessage() {
+      if (typeof window.executeSendMessage === "function") {
+        window.executeSendMessage();
+        return;
+      }
+      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+      if (!input) return;
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      handleInputState(input);
+      if (typeof showKakaoToast === "function") showKakaoToast("전송 중...", "💬");
+    }
+    window.handleSendMessage = handleSendMessage;
+
+    function focusChatInput() {
+      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+      if (input) input.focus();
+    }
+    window.focusChatInput = focusChatInput;
+
     function exitChatRoomToMain() {
-      var mainTabs = document.getElementById("mainTabsContainer") || document.getElementById("kakaoMainTabsView");
-      var chatView = document.getElementById("singleChatRoomContainer") || document.getElementById("chatRoomView");
+      var mainTabs = document.getElementById("kakaoMainTabsView") || document.getElementById("mainTabsContainer");
+      var chatView = document.getElementById("chatRoomView") || document.getElementById("singleChatRoomContainer");
 
       if (mainTabs && chatView) {
         chatView.style.display = "none";
         mainTabs.style.display = "flex";
+        document.body.classList.add("in-main-tabs");
         if (typeof switchMainBottomTab === "function") switchMainBottomTab("chats");
         return;
       }
@@ -472,7 +697,7 @@
       if (joined.length > 0 && box && list) {
         box.style.display = "block";
         list.innerHTML = joined.map(function(g) {
-          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--input-bg, #262a33); border-color:var(--border-color, rgba(255,255,255,0.08)) !important;">' +
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #1c222b); border-color:var(--main-card-border, #28303c) !important;">' +
             '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
               '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || "게임") + '</span>' +
               '<span class="fw-bold text-light text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
@@ -746,9 +971,16 @@
         else alert("신청 실패: " + err.message);
       }
     }
+
+    function toggleThemeMode() {
+      var current = localStorage.getItem("guild_theme_mode") || "dark";
+      var next = (current === "dark") ? "light" : "dark";
+      if (typeof window.applyAppTheme === "function") window.applyAppTheme(next);
+    }
   </script>
 
   <!-- 외부 분리 스크립트 연결 -->
   <script src="script.js"></script>
+  <script src="rooms.js"></script>
 </body>
 </html>
