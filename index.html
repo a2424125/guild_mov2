@@ -76,41 +76,6 @@
       font-size: 0.65rem;
       font-weight: 700;
     }
-    .more-menu-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      padding: 20px 16px;
-    }
-    .more-menu-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      text-align: center;
-    }
-    .more-menu-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      background: var(--main-card-bg, #ffffff);
-      border: 1px solid var(--main-card-border, #e6e8eb);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      margin-bottom: 6px;
-      transition: transform 0.15s ease, background 0.15s;
-    }
-    .more-menu-item:active .more-menu-icon {
-      transform: scale(0.92);
-    }
-    .more-menu-label {
-      font-size: 0.72rem;
-      color: var(--main-header-text, #191919);
-      font-weight: 600;
-    }
   </style>
 </head>
 <body class="theme-light in-main-tabs">
@@ -156,7 +121,7 @@
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
-        <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
+        <i class="fa-solid fa-gear text-secondary"></i><span>시스템 설정</span>
       </li>
     </ul>
 
@@ -256,41 +221,10 @@
       </div>
     </div>
 
-    <!-- [탭 3] 더보기/설정 -->
+    <!-- [탭 3] 개인 환경설정 (독립 모듈 로드) -->
     <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
-      <div class="more-menu-grid">
-        <div class="more-menu-item" onclick="openModulePage('PageNotice')">
-          <div class="more-menu-icon text-info"><i class="fa-solid fa-bullhorn"></i></div>
-          <span class="more-menu-label">공지사항</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageRegister')">
-          <div class="more-menu-icon text-danger"><i class="fa-solid fa-crosshairs"></i></div>
-          <span class="more-menu-label">보스등록</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageRecords')">
-          <div class="more-menu-icon text-warning"><i class="fa-solid fa-scroll"></i></div>
-          <span class="more-menu-label">보스참여자</span>
-        </div>
-        <div class="more-menu-item" onclick="toggleBossDrawer(true)">
-          <div class="more-menu-icon text-warning"><i class="fa-solid fa-hourglass-half"></i></div>
-          <span class="more-menu-label">보스타임</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageWish')">
-          <div class="more-menu-icon" style="color:#f472b6;"><i class="fa-solid fa-gift"></i></div>
-          <span class="more-menu-label">분배희망</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageSettle')">
-          <div class="more-menu-icon text-success"><i class="fa-solid fa-coins"></i></div>
-          <span class="more-menu-label">정산내역</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageFinance')">
-          <div class="more-menu-icon text-secondary"><i class="fa-solid fa-landmark"></i></div>
-          <span class="more-menu-label">길드비용</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageSettings')">
-          <div class="more-menu-icon text-secondary"><i class="fa-solid fa-gear"></i></div>
-          <span class="more-menu-label">설정</span>
-        </div>
+      <div class="text-secondary small text-center py-5">
+        <i class="fa-solid fa-spinner fa-spin me-2"></i>설정을 불러오는 중...
       </div>
     </div>
 
@@ -317,7 +251,7 @@
        ======================================================== -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header">
-      <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 (줄바꿈 방지) -->
+      <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 -->
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.15rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
           <i class="fa-solid fa-chevron-left"></i>
@@ -333,7 +267,7 @@
         </div>
       </div>
 
-      <!-- 상단 우측: 검색(돋보기), 보스타임 채팅 브리핑(시계), 길드원 목록(사람들), 햄버거 메뉴(삼선) -->
+      <!-- 상단 우측: 검색(돋보기), 보스타임 브리핑(시계), 길드원 목록(사람들), 햄버거 메뉴(삼선) -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
           <i class="fa-solid fa-download"></i>
@@ -400,7 +334,7 @@
   </div>
 
   <!-- 길드원 미니 프로필 카드 모달 (카카오톡 프로필 뷰) -->
-  <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
+  <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 290px; padding: 22px 18px 16px 18px;">
       <div id="profCardAvatar" style="width: 60px; height: 60px; border-radius: 20px; background: rgba(0, 0, 0, 0.06); display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 10px; border: 1px solid var(--main-card-border); box-shadow: 0 4px 12px rgba(0,0,0,0.08);">👤</div>
       <div class="d-flex align-items-center justify-content-center gap-1 mb-1">
@@ -415,7 +349,7 @@
     </div>
   </div>
 
-  <!-- 프로필 직업 설정 모달 -->
+  <!-- 프로필 직업 설정 모달 (최상위 z-index 보장) -->
   <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
@@ -453,7 +387,7 @@
   </div>
 
   <!-- 0. 최초 진입 게이트웨이 모달 (신규 시작 허브) -->
-  <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none; z-index: 99999;">
+  <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
         G
@@ -485,7 +419,7 @@
   </div>
 
   <!-- 라이선스 키로 길드 신규 개설 모달 -->
-  <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
+  <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-key text-warning me-1"></i>라이선스 키로 길드 시작</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">발급받으신 라이선스 키를 입력하세요.</p>
@@ -502,7 +436,7 @@
   </div>
 
   <!-- 초대 코드로 길드 가입 모달 -->
-  <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
+  <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">길드장에게 전달받은 초대 코드를 입력하세요.</p>
@@ -519,7 +453,7 @@
   </div>
 
   <!-- 신규 라이선스 신청 모달 -->
-  <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
+  <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-paper-plane text-primary me-1"></i>신규 길드 라이선스 신청</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">MMORPG 길드 전용 라이선스를 신청하세요.</p>
@@ -537,7 +471,7 @@
   </div>
 
   <!-- 라이선스 발급 완료 안내 팝업 -->
-  <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
+  <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 300px;">
       <div class="mb-2"><i class="fa-solid fa-circle-check text-success" style="font-size: 2.2rem;"></i></div>
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">라이선스 등록 성공</h6>
@@ -547,7 +481,7 @@
   </div>
 
   <!-- 1:1 / 비밀 운영진 새 대화방 개설 모달 -->
-  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
+  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 대화방 만들기</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">개설할 대화방 종류를 선택하세요.</p>
@@ -1021,9 +955,11 @@
     }
 
     function toggleThemeMode() {
-      var current = localStorage.getItem("guild_theme_mode") || "dark";
+      var current = localStorage.getItem("guild_theme_mode") || "light";
       var next = (current === "dark") ? "light" : "dark";
       if (typeof window.applyAppTheme === "function") window.applyAppTheme(next);
+      var themeLabel = document.getElementById("txtCurrentThemeName");
+      if (themeLabel) themeLabel.innerText = (next === "dark") ? "다크" : "라이트";
     }
   </script>
 
