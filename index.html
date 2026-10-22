@@ -158,6 +158,7 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
+
     </ul>
 
     <div class="sidebar-footer">
@@ -204,9 +205,9 @@
 
 
   <!-- ========================================================
-       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 설정 3탭)
+       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 더보기 3탭)
        ======================================================== -->
-  <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex;">
+  <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area">
         <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px;">대화방</div>
@@ -255,7 +256,7 @@
       </div>
     </div>
 
-    <!-- [탭 3] 설정 -->
+    <!-- [탭 3] 더보기 -->
     <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
       <div class="more-menu-grid">
         <div class="more-menu-item" onclick="openModulePage('PageNotice')">
@@ -314,7 +315,7 @@
   <!-- ========================================================
        [VIEW 2] 개별 대화방 화면
        ======================================================== -->
-  <div id="chatRoomView" class="app-main-layout" style="display: none;">
+  <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header">
       <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 (절대 줄바꿈 금지 단일행) -->
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
