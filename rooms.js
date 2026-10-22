@@ -124,7 +124,7 @@ window.loadMainTabFriendsList = async function() {
       }
 
       return `
-        <div class="friend-item-card" onclick="${isMe ? 'openProfileEditModal()' : `startDirectChatWith('${mName}')`}">
+        <div class="friend-item-card" onclick="openMemberProfileCard('${mName}', '${mAvatar}', '${mClass}', '${mRole}')">
           <div class="friend-avatar">${mAvatar}</div>
           <div class="room-content-box">
             <div class="d-flex align-items-center" style="gap: 4px;">
@@ -134,7 +134,7 @@ window.loadMainTabFriendsList = async function() {
             </div>
             <p class="room-msg-preview">${mClass}</p>
           </div>
-          ${!isMe ? '<button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size:0.68rem; border-radius:5px;"><i class="fa-solid fa-comment-dots me-1"></i>1:1 대화</button>' : ''}
+          ${!isMe ? '<button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size:0.68rem; border-radius:5px;" onclick="event.stopPropagation(); startDirectChatWith(\'' + mName + '\');"><i class="fa-solid fa-comment-dots me-1"></i>1:1 대화</button>' : ''}
         </div>
       `;
     }).join("");
