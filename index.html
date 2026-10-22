@@ -21,32 +21,32 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <!-- 초기 렌더링 깜빡임 방지: 순정 라이트 모드를 기본값으로 적용 -->
+  <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
   <script>
     (function() {
       try {
         var theme = localStorage.getItem("guild_theme_mode") || "light";
-        if (theme === "dark") {
-          document.documentElement.classList.add("theme-dark");
-          document.documentElement.classList.remove("theme-light");
-        } else {
+        if (theme === "light") {
           document.documentElement.classList.add("theme-light");
           document.documentElement.classList.remove("theme-dark");
+        } else {
+          document.documentElement.classList.add("theme-dark");
+          document.documentElement.classList.remove("theme-light");
         }
       } catch (e) {}
     })();
   </script>
 
-  <!-- 외부 분리 스타일시트 연결 -->
+  <!-- 외부 분리 스타일시트 연결 (순정 100%) -->
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* 하단 3탭 네비게이션 & 더보기 그리드 순정 테마 연동 (카카오 PC 소프트 탭바 스타일) */
+    /* 하단 3탭 네비게이션 & 더보기 그리드 순정 테마 연동 */
     .kakao-bottom-tabbar {
       height: 52px;
       min-height: 52px;
-      background: var(--main-bottom-bg, #eaecf0);
-      border-top: 1px solid var(--main-bottom-border, #dcdfe4);
+      background: var(--main-bottom-bg, #181d24);
+      border-top: 1px solid var(--main-bottom-border, #282f3a);
       display: flex;
       align-items: center;
       justify-content: space-around;
@@ -59,14 +59,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--main-tab-inactive, #8c96a5);
+      color: var(--main-tab-inactive, #64748b);
       cursor: pointer;
       padding: 4px 0;
       transition: color 0.15s ease;
       user-select: none;
     }
     .kakao-tab-item.active {
-      color: var(--main-tab-active, #191919);
+      color: var(--main-tab-active, #fee500);
     }
     .kakao-tab-item i {
       font-size: 1.15rem;
@@ -83,7 +83,7 @@
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
 
-  <!-- 1. 햄버거 메뉴 서랍 (260px) -->
+  <!-- 1. 햄버거 메뉴 서랍 (순정 260px 슬라이드 드로어) -->
   <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -121,7 +121,7 @@
         <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
       </li>
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
-        <i class="fa-solid fa-gear text-secondary"></i><span>시스템 설정</span>
+        <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
     </ul>
 
@@ -146,7 +146,7 @@
     </div>
   </aside>
 
-  <!-- 3. 보스타임 전용 서랍 -->
+  <!-- 4. 보스타임 전용 서랍 -->
   <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header-bar">
       <div class="boss-drawer-title-box">
@@ -167,7 +167,6 @@
     </div>
   </aside>
 
-
   <!-- ========================================================
        [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 설정 3탭)
        ======================================================== -->
@@ -179,13 +178,12 @@
       </div>
 
       <div class="header-right-tools">
-        <!-- 대화방 입장 전에는 햄버거 버튼 숨김 -->
+        <!-- 메인 헤더 도구 -->
       </div>
     </header>
 
     <!-- [탭 1] 친구 (길드원 목록) -->
     <div id="tabFriendsContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
-      <!-- 최상단 내 프로필 카드 (누르면 즉시 직업/프로필 모달 실행) -->
       <div class="chat-room-card my-profile-card" onclick="openProfileEditModal()" style="cursor: pointer;">
         <div class="room-avatar-large" id="mainTabMyAvatar">👤</div>
         <div class="room-content-box">
@@ -195,7 +193,7 @@
         <i class="fa-solid fa-pen text-secondary" style="font-size: 0.8rem;"></i>
       </div>
 
-      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background: var(--main-view-bg);">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
         <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">길드원 (<span id="mainTabMemberCount">0</span>)</span>
         <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary" style="font-size: 0.7rem;" onclick="loadMainTabFriendsList()">
           <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
@@ -209,7 +207,7 @@
 
     <!-- [탭 2] 대화방 목록 (채팅) -->
     <div id="tabChatRoomsContent" class="kakao-tab-body" style="display: block; flex: 1; overflow-y: auto;">
-      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="background: var(--main-view-bg);">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
         <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
         <button type="button" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size: 0.74rem;" onclick="openCreateRoomModal()">
           <i class="fa-solid fa-plus me-1"></i>방 만들기
@@ -221,11 +219,9 @@
       </div>
     </div>
 
-    <!-- [탭 3] 개인 환경설정 (독립 모듈 로드) -->
+    <!-- [탭 3] 개인 환경설정 -->
     <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
-      <div class="text-secondary small text-center py-5">
-        <i class="fa-solid fa-spinner fa-spin me-2"></i>설정을 불러오는 중...
-      </div>
+      <!-- PageProfileSettings.html 동적 로드 -->
     </div>
 
     <!-- 하단 3탭 네비게이션 바 -->
@@ -238,20 +234,18 @@
         <i class="fa-solid fa-comment"></i>
         <span>채팅</span>
       </div>
-      <div class="kakao-tab-item" id="tabItemMore" onclick="switchMainBottomTab('more')">
+      <div class="kakao-tab-item" id="tabItemMore" onclick="switchMainBottomTab('settings')">
         <i class="fa-solid fa-gear"></i>
         <span>설정</span>
       </div>
     </nav>
   </div>
 
-
   <!-- ========================================================
        [VIEW 2] 개별 대화방 화면
        ======================================================== -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header">
-      <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 -->
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.15rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
           <i class="fa-solid fa-chevron-left"></i>
@@ -267,7 +261,6 @@
         </div>
       </div>
 
-      <!-- 상단 우측: 검색(돋보기), 보스타임 브리핑(시계), 길드원 목록(사람들), 햄버거 메뉴(삼선) -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
           <i class="fa-solid fa-download"></i>
@@ -303,7 +296,6 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 입력바: 텍스트 입력 시 전송버튼 노란색 활성화 & 엔터키 즉시 전송 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
@@ -334,9 +326,9 @@
   </div>
 
   <!-- 길드원 미니 프로필 카드 모달 (카카오톡 프로필 뷰) -->
-  <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none;">
+  <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeMemberProfileCard()">
     <div class="kakao-modal-card" style="max-width: 290px; padding: 22px 18px 16px 18px;">
-      <div id="profCardAvatar" style="width: 60px; height: 60px; border-radius: 20px; background: rgba(0, 0, 0, 0.06); display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 10px; border: 1px solid var(--main-card-border); box-shadow: 0 4px 12px rgba(0,0,0,0.08);">👤</div>
+      <div id="profCardAvatar" style="width: 60px; height: 60px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 10px; border: 1px solid var(--main-card-border); box-shadow: 0 4px 12px rgba(0,0,0,0.15);">👤</div>
       <div class="d-flex align-items-center justify-content-center gap-1 mb-1">
         <span id="profCardBadge"></span>
         <h6 class="fw-bold mb-0" id="profCardNick" style="font-size: 1rem; color: var(--modal-text);">닉네임</h6>
@@ -349,8 +341,8 @@
     </div>
   </div>
 
-  <!-- 프로필 직업 설정 모달 (최상위 z-index 보장) -->
-  <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none;">
+  <!-- 프로필 직업 설정 모달 -->
+  <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeProfileEditModal()">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">프로필과 대화창에 표기될 직업을 선택하세요.</p>
@@ -387,15 +379,14 @@
   </div>
 
   <!-- 0. 최초 진입 게이트웨이 모달 (신규 시작 허브) -->
-  <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none;">
+  <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none; z-index: 99999;">
     <div class="kakao-modal-card" style="max-width: 320px;">
-      <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
         G
       </div>
       <h6 class="fw-bold mb-1" style="font-size: 1.02rem;">길드톡 메신저</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">원하시는 시작 방식을 선택하세요.</p>
 
-      <!-- 최근 참여한 길드 (1클릭 삭제 지원) -->
       <div id="gatewayJoinedGuildsBox" style="display: none; margin-bottom: 12px; text-align: left;">
         <div class="d-flex align-items-center justify-content-between mb-1">
           <label class="text-secondary small mb-0 fw-bold" style="font-size: 0.68rem;">최근 참여한 길드</label>
@@ -419,7 +410,7 @@
   </div>
 
   <!-- 라이선스 키로 길드 신규 개설 모달 -->
-  <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none;">
+  <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-key text-warning me-1"></i>라이선스 키로 길드 시작</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">발급받으신 라이선스 키를 입력하세요.</p>
@@ -436,7 +427,7 @@
   </div>
 
   <!-- 초대 코드로 길드 가입 모달 -->
-  <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none;">
+  <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">길드장에게 전달받은 초대 코드를 입력하세요.</p>
@@ -453,7 +444,7 @@
   </div>
 
   <!-- 신규 라이선스 신청 모달 -->
-  <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none;">
+  <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-paper-plane text-primary me-1"></i>신규 길드 라이선스 신청</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">MMORPG 길드 전용 라이선스를 신청하세요.</p>
@@ -471,7 +462,7 @@
   </div>
 
   <!-- 라이선스 발급 완료 안내 팝업 -->
-  <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none;">
+  <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
     <div class="kakao-modal-card" style="max-width: 300px;">
       <div class="mb-2"><i class="fa-solid fa-circle-check text-success" style="font-size: 2.2rem;"></i></div>
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">라이선스 등록 성공</h6>
@@ -481,7 +472,7 @@
   </div>
 
   <!-- 1:1 / 비밀 운영진 새 대화방 개설 모달 -->
-  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none;">
+  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 대화방 만들기</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">개설할 대화방 종류를 선택하세요.</p>
@@ -539,6 +530,18 @@
 
   <!-- 게이트웨이 및 전송 보조 스크립트 -->
   <script>
+    function openProfileEditModal() {
+      var modal = document.getElementById("modalProfileEdit");
+      if (modal) modal.style.display = "flex";
+    }
+    window.openProfileEditModal = openProfileEditModal;
+
+    function closeProfileEditModal() {
+      var modal = document.getElementById("modalProfileEdit");
+      if (modal) modal.style.display = "none";
+    }
+    window.closeProfileEditModal = closeProfileEditModal;
+
     // 👤 [길드원 미니 프로필 카드 모달 제어]
     function openMemberProfileCard(nick, avatar, className, role) {
       var modal = document.getElementById("modalMemberProfileCard");
@@ -572,7 +575,7 @@
         if (isMe) {
           actElem.innerHTML = '<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); openProfileEditModal();"><i class="fa-solid fa-pen me-1"></i>내 프로필 변경하기</button>';
         } else {
-          actElem.innerHTML = '<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); startDirectChatWith(\'' + nick + '\');"><i class="fa-solid fa-comment me-1"></i>1:1 대화하기</button>';
+          actElem.innerHTML = '<p class="text-secondary small mb-2 text-center" style="font-size:0.75rem;"><strong>' + nick + '</strong>님과 1:1 대화를 시작하시겠습니까?</p><button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-1" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); startDirectChatWith(\'' + nick + '\');"><i class="fa-solid fa-comment me-1"></i>1:1 대화하기</button>';
         }
       }
 
@@ -586,12 +589,12 @@
     }
     window.closeMemberProfileCard = closeMemberProfileCard;
 
-    // ⚡ [메시지 전송 & 엔터키 즉시 처리 & 전송버튼 노란색 활성화]
+    // ⚡ [메시지 전송 & 엔터키 즉시 처리 & 전송버튼 활성화]
     function handleInputState(textarea) {
       if (!textarea) return;
       textarea.style.height = "auto";
       var newH = Math.min(textarea.scrollHeight, 100);
-      textarea.style.height = (newH > 34 ? newH : 34) + "px";
+      textarea.style.height = (newH > 36 ? newH : 36) + "px";
 
       var btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
       if (btn) {
@@ -679,10 +682,10 @@
       if (joined.length > 0 && box && list) {
         box.style.display = "block";
         list.innerHTML = joined.map(function(g) {
-          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #ffffff); border-color:var(--main-card-border, #e6e8eb) !important;">' +
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #1c222b); border-color:var(--main-card-border, #28303c) !important;">' +
             '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
               '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || "게임") + '</span>' +
-              '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
+              '<span class="fw-bold text-light text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
             '</div>' +
             '<div class="d-flex align-items-center gap-1 ms-2">' +
               '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem; cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">로그인</span>' +
@@ -935,7 +938,8 @@
       var contact = (document.getElementById("reqContactInput")?.value || "").trim();
 
       if (!game || !guild || !nick || !contact) {
-        return (typeof showKakaoToast === "function") ? showKakaoToast("모든 항목을 입력하세요.", "⚠️") : alert("모든 항목 입력");
+        return (typeof showKakaoToast === "function") ? showKakaoToast("모든 항목을 입력하세요.", "⚠️");
+        else alert("모든 항목 입력");
       }
 
       try {
@@ -958,8 +962,6 @@
       var current = localStorage.getItem("guild_theme_mode") || "light";
       var next = (current === "dark") ? "light" : "dark";
       if (typeof window.applyAppTheme === "function") window.applyAppTheme(next);
-      var themeLabel = document.getElementById("txtCurrentThemeName");
-      if (themeLabel) themeLabel.innerText = (next === "dark") ? "다크" : "라이트";
     }
   </script>
 
