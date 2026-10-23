@@ -3,7 +3,7 @@
 // 친구 목록 / 대화방 목록 / 개인설정 탭 제어 및 방 개설(운영진방, 1:1 개인톡)
 // ========================================================
 
-window.currentActiveRoomId = null;
+window.currentActiveRoomId = "default_public";
 window.cachedChatRoomsList = [];
 
 // --------------------------------------------------------
@@ -58,23 +58,23 @@ window.switchMainBottomTab = function(tabName) {
 };
 
 // --------------------------------------------------------
-// 2. [친구 탭] 길드원 목록 로딩 & 렌더링
+// 2. [친구 탭] 길드원 리스트 렌더링 & 클릭 제어
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
   if (!container) return;
 
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
-  const myClass = (localStorage.getItem("guild_my_class") || "직업 설정하기");
-  const myAvatar = (localStorage.getItem("guild_my_avatar") || "👤");
+  const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+  const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
 
-  // 내 프로필 카드 동기화
   const myNickElem = document.getElementById("mainTabMyNick");
-  const myClassElem = document.getElementById("mainTabMyClass");
   const myAvatarElem = document.getElementById("mainTabMyAvatar");
+  const myClassElem = document.getElementById("mainTabMyClass");
+
   if (myNickElem) myNickElem.innerText = myNick || "로그인 필요";
-  if (myClassElem) myClassElem.innerText = myClass;
   if (myAvatarElem) myAvatarElem.innerText = myAvatar;
+  if (myClassElem) myClassElem.innerText = myClass;
 
   try {
     let members = window.cachedMemberList || [];
@@ -102,28 +102,22 @@ window.loadMainTabFriendsList = async function() {
     const countElem = document.getElementById("mainTabMemberCount");
     if (countElem) countElem.innerText = members.length;
 
-    if (!members || members.length === 0) {
-      container.innerHTML = `<div class="text-secondary small text-center py-4">등록된 길드원이 없습니다.</div>`;
-      return;
-    }
-
     container.innerHTML = members.map(m => {
       const mName = m.nickname || m.name || "길드원";
-      const isMe = (mName === myNick);
-      const mAvatar = m.avatar_icon || m.avatar || "👤";
-      const mClass = m.class_name || m.job_class || "클래스 미지정";
       const mRole = m.role || "일반";
+      const mClass = m.job_class || m.class_name || "직업 미설정";
+      const mAvatar = (m.avatar && m.avatar !== "👤") ? m.avatar : (mClass.split(" ")[0] || "👤");
+      const isMe = (mName === myNick);
 
       let roleBadge = "";
       if (mRole === "길드장" || mRole === "길마") {
-        roleBadge = `<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.62rem;">길마</span>`;
+        roleBadge = '<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.6rem;">길마</span>';
       } else if (mRole === "부길드장" || mRole === "부길마") {
-        roleBadge = `<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.62rem;">부길마</span>`;
+        roleBadge = '<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.6rem;">부길마</span>';
       } else if (mRole === "정예") {
-        roleBadge = `<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.62rem;">정예</span>`;
+        roleBadge = '<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.6rem;">정예</span>';
       }
 
-      // 안전한 파라미터 이스케이프
       const safeName = mName.replace(/'/g, "\\'");
       const safeAvatar = mAvatar.replace(/'/g, "\\'");
       const safeClass = mClass.replace(/'/g, "\\'");
@@ -153,7 +147,6 @@ window.loadMainTabFriendsList = async function() {
   }
 };
 
-// 길드원 항목 클릭 핸들러
 window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
   if (mName === myNick) {
@@ -164,7 +157,7 @@ window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
 };
 
 // --------------------------------------------------------
-// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (방 나오기 버튼 지원)
+// 3. [대화방 탭] 대화방 목록 렌더링 (1:1 방 영구 보존 및 복원)
 // --------------------------------------------------------
 window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
@@ -173,37 +166,62 @@ window.loadMainTabRoomsList = async function() {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
 
   try {
-    let rooms = [];
+    let serverRooms = [];
     const currentGid = localStorage.getItem("current_guild_id");
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
     const curGuild = joined.find(g => g.guild_id === currentGid);
     const guildTitle = (curGuild && curGuild.guild_name) ? `${curGuild.guild_name} 전체 대화방` : "길드 전체 대화방";
 
+    // 1) 서버 대화방 조회 (관계 조인 실패 방어)
     if (typeof apiRequest === "function" && currentGid) {
       try {
-        rooms = await apiRequest("chat_rooms?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*,room_members(*)&order=created_at.asc");
-      } catch(e) {}
+        serverRooms = await apiRequest("chat_rooms?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=created_at.asc");
+      } catch(e) {
+        try {
+          serverRooms = await apiRequest("chat_rooms?select=*&order=created_at.asc");
+        } catch(e2) {}
+      }
     }
 
-    if (!rooms || rooms.length === 0) {
-      rooms = [{
-        id: "default_public",
-        room_name: guildTitle,
-        room_type: "public",
-        created_at: new Date().toISOString()
-      }];
-    }
+    // 2) 로컬 보존 1:1 대화방 및 생성 대화방 복원 (증발 방지 핵심)
+    let localRooms = [];
+    try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
 
-    // 나간 방 필터링 (localStorage 동기화)
+    // 기본 전체 대화방
+    const defaultRoom = {
+      id: "default_public",
+      room_name: guildTitle,
+      room_type: "public",
+      created_at: new Date().toISOString()
+    };
+
+    // 3) 통합 및 중복 제거
+    const roomMap = new Map();
+    roomMap.set("default_public", defaultRoom);
+
+    (serverRooms || []).forEach(r => {
+      if (r && r.id) roomMap.set(r.id, r);
+    });
+
+    (localRooms || []).forEach(r => {
+      if (r && r.id) {
+        if (r.room_type === "direct") {
+          const names = r.room_name || "";
+          const isMember = (Array.isArray(r.members) && r.members.includes(myNick)) || names.includes(myNick);
+          if (isMember) roomMap.set(r.id, r);
+        } else {
+          roomMap.set(r.id, r);
+        }
+      }
+    });
+
     let leftRoomIds = [];
     try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
 
-    const myRooms = rooms.filter(r => {
+    const myRooms = Array.from(roomMap.values()).filter(r => {
       if (leftRoomIds.includes(r.id)) return false;
-      if (r.room_type === "public") return true;
-      if (!r.room_members || r.room_members.length === 0) return true;
-      return r.room_members.some(m => (m.member_nickname === myNick || m.nickname === myNick));
+      return true;
     });
 
     window.cachedChatRoomsList = myRooms;
@@ -230,17 +248,6 @@ window.loadMainTabRoomsList = async function() {
 
       const safeRoomName = (r.room_name || "대화방").replace(/'/g, "\\'");
 
-      // 1:1 대화방 및 개설방일 경우 [방 나오기] 버튼 표기
-      const isDefaultPublic = (r.id === "default_public");
-      const actionHtml = isDefaultPublic ? 
-        `<span class="room-time-text">입장 <i class="fa-solid fa-chevron-right ms-1"></i></span>` :
-        `<div class="d-flex align-items-center gap-1" onclick="event.stopPropagation();">
-          <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size:0.68rem; border-radius:6px; font-weight:600; line-height:1.2;" onclick="handleLeaveChatRoom('${r.id}', '${safeRoomName}')" title="대화방 나가기">
-            <i class="fa-solid fa-arrow-right-from-bracket me-1"></i>방 나오기
-          </button>
-          <span class="room-time-text ms-1" style="cursor:pointer;" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">입장 <i class="fa-solid fa-chevron-right ms-1"></i></span>
-        </div>`;
-
       return `
         <div class="chat-room-card" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">
           <div class="room-avatar-large ${typeClass}">
@@ -252,7 +259,16 @@ window.loadMainTabRoomsList = async function() {
                 <span class="room-name-text">${r.room_name}</span>
                 ${typeBadge}
               </div>
-              ${actionHtml}
+              ${(r.id !== "default_public") ? `
+                <div class="d-flex align-items-center gap-1" onclick="event.stopPropagation();">
+                  <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size:0.68rem; border-radius:6px; font-weight:600; line-height:1.2;" onclick="handleLeaveChatRoom('${r.id}', '${safeRoomName}')" title="대화방 나가기">
+                    <i class="fa-solid fa-arrow-right-from-bracket me-1"></i>방 나오기
+                  </button>
+                  <span class="room-time-text ms-1" style="cursor:pointer;" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">입장 <i class="fa-solid fa-chevron-right ms-1"></i></span>
+                </div>
+              ` : `
+                <span class="room-time-text">입장 <i class="fa-solid fa-chevron-right ms-1"></i></span>
+              `}
             </div>
             <p class="room-msg-preview">터치하여 대화방에 참여하세요.</p>
           </div>
@@ -293,7 +309,12 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
       localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
     }
 
-    // 현재 열려있는 대화방에서 나온 경우 메인 화면으로 전환
+    // 로컬 보존 목록에서도 해제
+    let localRooms = [];
+    try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
+    localRooms = localRooms.filter(r => r.id !== roomId);
+    localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
+
     if (window.currentActiveRoomId === roomId) {
       exitChatRoomToMain();
     }
@@ -308,11 +329,8 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
   }
 };
 
-// --------------------------------------------------------
-// 4. 개별 대화방 입장 및 퇴장 (화면 전환 & 메뉴 토글)
-// --------------------------------------------------------
 window.openChatRoom = function(roomId, roomTitle, roomType) {
-  window.currentActiveRoomId = roomId;
+  window.currentActiveRoomId = roomId || "default_public";
 
   const mainView = document.getElementById("kakaoMainTabsView");
   const chatView = document.getElementById("chatRoomView");
@@ -321,7 +339,6 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   if (chatView) chatView.style.display = "flex";
   document.body.classList.remove("in-main-tabs");
 
-  // 대화방 타이틀 및 아바타 갱신
   const titleElem = document.getElementById("chatRoomTitle");
   const avatarElem = document.getElementById("chatRoomAvatar");
 
@@ -336,13 +353,11 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
     }
   }
 
-  // 1:1 대화방 입장 시 헤더에 [방 나오기] 버튼 활성화
   const btnLeave = document.getElementById("btnLeaveCurrentRoom");
   if (btnLeave) {
-    btnLeave.style.display = (roomId !== "default_public") ? "inline-flex" : "none";
+    btnLeave.style.display = (roomId && roomId !== "default_public") ? "inline-flex" : "none";
   }
 
-  // 해당 방의 대화 내역 불러오기
   if (typeof loadPastChatMessages === "function") {
     loadPastChatMessages();
   }
@@ -356,14 +371,14 @@ window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
   if (mainView) mainView.style.display = "flex";
   document.body.classList.add("in-main-tabs");
 
-  window.currentActiveRoomId = null;
+  window.currentActiveRoomId = "default_public";
   if (typeof window.switchMainBottomTab === 'function') {
     window.switchMainBottomTab("chats");
   }
 };
 
 // --------------------------------------------------------
-// 5. 1:1 개인톡 즉시 생성 및 입장 (길드원끼리만 허용)
+// 5. 1:1 개인톡 즉시 생성 및 입장 (길드원끼리만 허용 & 영구 보존)
 // --------------------------------------------------------
 window.startDirectChatWith = async function(targetNick) {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
@@ -378,43 +393,50 @@ window.startDirectChatWith = async function(targetNick) {
 
   try {
     const currentGid = localStorage.getItem("current_guild_id");
-    const directRooms = (window.cachedChatRoomsList || []).filter(r => r.room_type === "direct");
-    const existing = directRooms.find(r => {
-      const names = (r.room_name || "");
-      return names.includes(myNick) && names.includes(targetNick);
-    });
+    // 안정적인 1:1 방 고유 식별자 생성
+    const sortedPair = [myNick, targetNick].sort().join("_");
+    const newRoomId = "direct_" + sortedPair;
+    const roomTitle = `${myNick} & ${targetNick} 1:1 톡방`;
 
+    // 1) 나간 방 목록에 있었다면 해제
     let leftRoomIds = [];
     try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
-
-    if (existing) {
-      if (leftRoomIds.includes(existing.id)) {
-        leftRoomIds = leftRoomIds.filter(id => id !== existing.id);
-        localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
-      }
-      openChatRoom(existing.id, existing.room_name, "direct");
-      return;
+    if (leftRoomIds.includes(newRoomId)) {
+      leftRoomIds = leftRoomIds.filter(id => id !== newRoomId);
+      localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
     }
 
-    const roomTitle = `${myNick} & ${targetNick} 1:1 톡방`;
-    const roomPayload = {
-      room_name: roomTitle,
-      room_type: "direct",
-      created_by: myNick
-    };
-    if (currentGid) roomPayload.guild_id = currentGid;
+    // 2) 로컬 1:1 대화방 목록 영구 보존 등록 (목록 증발 방지)
+    let localRooms = [];
+    try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
+    let existing = localRooms.find(r => r.id === newRoomId);
+    if (!existing) {
+      existing = {
+        id: newRoomId,
+        room_name: roomTitle,
+        room_type: "direct",
+        created_by: myNick,
+        members: [myNick, targetNick],
+        created_at: new Date().toISOString()
+      };
+      localRooms.push(existing);
+      localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
+    }
 
-    let newRoomId = "direct_" + Date.now();
+    // 3) 서버 DB 등록 시도 (실패해도 로컬 캐시로 안전하게 진행)
     try {
       if (typeof apiRequest === "function") {
-        const createRes = await apiRequest("chat_rooms", "POST", [roomPayload]);
-        if (createRes && createRes[0] && createRes[0].id) {
-          newRoomId = createRes[0].id;
-          await apiRequest("room_members", "POST", [
-            { room_id: newRoomId, member_nickname: myNick, role: "member" },
-            { room_id: newRoomId, member_nickname: targetNick, role: "member" }
-          ]);
-        }
+        const roomPayload = {
+          room_name: roomTitle,
+          room_type: "direct",
+          created_by: myNick
+        };
+        if (currentGid) roomPayload.guild_id = currentGid;
+        await apiRequest("chat_rooms", "POST", [roomPayload]);
+        await apiRequest("room_members", "POST", [
+          { room_id: newRoomId, member_nickname: myNick, role: "member" },
+          { room_id: newRoomId, member_nickname: targetNick, role: "member" }
+        ]);
       }
     } catch(dbErr) {
       console.warn("Direct chat DB insert error (fallback to local):", dbErr);
@@ -455,17 +477,8 @@ window.loadMainTabSettingsPage = async function() {
 };
 
 // --------------------------------------------------------
-// 7. 모달 제어 전역 함수 보장 (프로필 변경 & 1:1 대화 팝업)
+// 7. 길드원 미니 프로필 카드 및 1:1 시작
 // --------------------------------------------------------
-window.openProfileEditModal = function() {
-  const modal = document.getElementById("modalProfileEdit");
-  if (modal) modal.style.display = "flex";
-};
-window.closeProfileEditModal = function() {
-  const modal = document.getElementById("modalProfileEdit");
-  if (modal) modal.style.display = "none";
-};
-
 window.openMemberProfileCard = function(nick, avatar, className, role) {
   const modal = document.getElementById("modalMemberProfileCard");
   if (!modal) return;
@@ -513,6 +526,7 @@ window.openMemberProfileCard = function(nick, avatar, className, role) {
 
   modal.style.display = "flex";
 };
+
 window.closeMemberProfileCard = function() {
   const modal = document.getElementById("modalMemberProfileCard");
   if (modal) modal.style.display = "none";
@@ -525,36 +539,29 @@ window.selectClassProfile = async function(icon, className) {
   localStorage.setItem("guild_my_avatar", icon);
   localStorage.setItem("guild_my_class", myCurrentClass);
 
+  const mainAvatar = document.getElementById("mainTabMyAvatar");
+  const mainClass = document.getElementById("mainTabMyClass");
+  if (mainAvatar) mainAvatar.innerText = icon;
+  if (mainClass) mainClass.innerText = myCurrentClass;
+
   const aIcon = document.getElementById("sidebarAvatarIcon");
   const uClass = document.getElementById("sidebarUserClassText");
   if (aIcon) aIcon.innerText = icon;
   if (uClass) uClass.innerText = myCurrentClass;
 
-  const tabAvatar = document.getElementById("mainTabMyAvatar");
-  const tabClass = document.getElementById("mainTabMyClass");
-  if (tabAvatar) tabAvatar.innerText = icon;
-  if (tabClass) tabClass.innerText = myCurrentClass;
-
   if (myCurrentNick && typeof apiRequest === "function") {
     try {
       await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
-        job_class: myCurrentClass
+        job_class: myCurrentClass,
+        avatar: icon
       });
-    } catch (e) {
-      try {
-        await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
-          job_class: myCurrentClass
-        });
-      } catch (e2) {}
-    }
+    } catch (e) {}
   }
-  closeProfileEditModal();
-  if (typeof showKakaoToast === "function") {
-    showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
-  }
-  if (typeof loadMainTabFriendsList === "function") {
-    loadMainTabFriendsList();
-  }
+  
+  const modal = document.getElementById("modalProfileEdit");
+  if (modal) modal.style.display = "none";
+  if (typeof showKakaoToast === "function") showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
+  if (typeof loadMainTabFriendsList === "function") loadMainTabFriendsList();
 };
 
 // --------------------------------------------------------
@@ -562,8 +569,7 @@ window.selectClassProfile = async function(icon, className) {
 // --------------------------------------------------------
 window.openCreateRoomModal = function() {
   const modal = document.getElementById("modalCreateRoom");
-  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
-  if (modal) modal.style.display = "flex";
+  if (!modal) return;
 
   const titleInput = document.getElementById("newRoomTitleInput");
   if (titleInput) titleInput.value = "";
@@ -572,6 +578,7 @@ window.openCreateRoomModal = function() {
   if (typeSelect) typeSelect.value = "group";
 
   onRoomTypeChange("group");
+  modal.style.display = "flex";
 };
 
 window.closeCreateRoomModal = function() {
@@ -583,14 +590,15 @@ window.onRoomTypeChange = function(type) {
   const titleGroup = document.getElementById("roomTitleInputGroup");
   const targetGroup = document.getElementById("oneOnOneTargetGroup");
   const targetSelect = document.getElementById("oneOnOneTargetSelect");
-  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
 
   if (type === "one_on_one") {
     if (titleGroup) titleGroup.style.display = "none";
     if (targetGroup) targetGroup.style.display = "block";
+
     if (targetSelect) {
-      const others = (window.cachedMemberList || []).filter(m => (m.nickname || m.name) !== myNick);
-      targetSelect.innerHTML = others.map(m => {
+      const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+      const friends = (window.cachedMemberList || []).filter(m => (m.nickname !== myNick && m.name !== myNick));
+      targetSelect.innerHTML = friends.map(m => {
         const name = m.nickname || m.name;
         return `<option value="${name}">${name}</option>`;
       }).join("");
@@ -627,11 +635,19 @@ window.executeCreateNewRoom = async function() {
     };
     if (currentGid) roomPayload.guild_id = currentGid;
 
-    let newRoom = { id: "room_" + Date.now(), room_name: title, room_type: roomPayload.room_type };
+    let newRoom = { id: "room_" + Date.now(), room_name: title, room_type: roomPayload.room_type, created_by: myNick, created_at: new Date().toISOString() };
     if (typeof apiRequest === "function") {
-      const res = await apiRequest("chat_rooms", "POST", [roomPayload]);
-      if (res && res[0]) newRoom = res[0];
+      try {
+        const res = await apiRequest("chat_rooms", "POST", [roomPayload]);
+        if (res && res[0]) newRoom = res[0];
+      } catch(e) {}
     }
+
+    // 로컬 보존 등록
+    let localRooms = [];
+    try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
+    localRooms.push(newRoom);
+    localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
 
     closeCreateRoomModal();
     loadMainTabRoomsList();
