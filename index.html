@@ -25,7 +25,6 @@
   <script>
     (function() {
       try {
-        // 이전 버그로 저장된 다크모드 캐시 무력화 및 순정 라이트 테마 복원
         if (localStorage.getItem("guild_theme_mode") === "dark" && !localStorage.getItem("user_explicit_dark")) {
           localStorage.setItem("guild_theme_mode", "light");
         }
@@ -41,11 +40,10 @@
     })();
   </script>
 
-  <!-- 외부 분리 스타일시트 연결 (순정 100%) -->
+  <!-- 외부 분리 스타일시트 연결 -->
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* 하단 3탭 네비게이션 & 더보기 그리드 순정 테마 연동 */
     .kakao-bottom-tabbar {
       height: 52px;
       min-height: 52px;
@@ -87,7 +85,7 @@
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
 
-  <!-- 1. 햄버거 메뉴 서랍 (순정 260px 슬라이드 드로어) -->
+  <!-- 1. 햄버거 메뉴 서랍 -->
   <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -171,19 +169,14 @@
     </div>
   </aside>
 
-  <!-- ========================================================
-       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 설정 3탭)
-       ======================================================== -->
+  <!-- [VIEW 1] 메인 홈 화면 -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area">
         <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px;">대화방</div>
         <span id="mainTabHeaderSubtitle" style="display:none;"></span>
       </div>
-
-      <div class="header-right-tools">
-        <!-- 대화방 입장 전 헤더: 군더더기 버튼 숨김 -->
-      </div>
+      <div class="header-right-tools"></div>
     </header>
 
     <!-- [탭 1] 친구 (길드원 목록) -->
@@ -224,9 +217,7 @@
     </div>
 
     <!-- [탭 3] 개인 환경설정 -->
-    <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
-      <!-- PageProfileSettings.html 동적 로드 -->
-    </div>
+    <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;"></div>
 
     <!-- 하단 3탭 네비게이션 바 -->
     <nav class="kakao-bottom-tabbar">
@@ -245,9 +236,7 @@
     </nav>
   </div>
 
-  <!-- ========================================================
-       [VIEW 2] 개별 대화방 화면
-       ======================================================== -->
+  <!-- [VIEW 2] 개별 대화방 화면 -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header">
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
@@ -329,7 +318,7 @@
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
-  <!-- 길드원 미니 프로필 카드 모달 (카카오톡 프로필 뷰) -->
+  <!-- 길드원 미니 프로필 카드 모달 -->
   <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeMemberProfileCard()">
     <div class="kakao-modal-card" style="max-width: 290px; padding: 22px 18px 16px 18px;">
       <div id="profCardAvatar" style="width: 60px; height: 60px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 10px; border: 1px solid var(--main-card-border); box-shadow: 0 4px 12px rgba(0,0,0,0.15);">👤</div>
@@ -338,9 +327,7 @@
         <h6 class="fw-bold mb-0" id="profCardNick" style="font-size: 1rem; color: var(--modal-text);">닉네임</h6>
       </div>
       <div class="text-secondary small mb-3" id="profCardClass" style="font-size: 0.78rem; color: #0284c7;">클래스 미지정</div>
-      <div id="profCardActionArea" class="d-flex flex-column gap-2 mb-2">
-        <!-- 1:1 대화하기 버튼 또는 프로필 변경하기 버튼 동적 렌더링 -->
-      </div>
+      <div id="profCardActionArea" class="d-flex flex-column gap-2 mb-2"></div>
       <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0" style="font-size: 0.75rem;" onclick="closeMemberProfileCard()">닫기</button>
     </div>
   </div>
@@ -382,9 +369,10 @@
     </div>
   </div>
 
-  <!-- 0. 최초 진입 게이트웨이 모달 (신규 시작 허브) -->
+  <!-- 0. 최초 진입 게이트웨이 모달 (순정 G 엠블럼) -->
   <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none; z-index: 99999;">
     <div class="kakao-modal-card" style="max-width: 320px;">
+      <!-- 🌟 순정 G 엠블럼 로고 -->
       <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
         G
       </div>
@@ -502,11 +490,12 @@
     </div>
   </div>
 
-  <!-- 기존 길드 로그인 모달 (G 엠블럼 - 화이트 순정 규격) -->
+  <!-- 기존 길드 로그인 모달 (🌟 순정 G 엠블럼으로 100% 복원) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
-      <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
-        <i class="fa-solid fa-comment text-dark"></i>
+      <!-- 🌟 순정 G 엠블럼 로고 복원 -->
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
+        G
       </div>
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 닉네임과 개인 비밀번호를 입력하세요.</p>
