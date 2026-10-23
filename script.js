@@ -566,11 +566,16 @@ async function loadPastChatMessages() {
     `;
   }
 
-  // 2) 서버에서 최신 대화 목록 조회 및 방별 격리 필터링
+  // 2) 서버에서 최신 대화 목록 조회 및 방별 격리 필터링 (현재 길드 id 엄격 반영)
   try {
+    const currentGid = localStorage.getItem("current_guild_id");
     let endpoint = "guild_chats?select=*&order=id.desc&limit=150";
-    if (!isPublic) {
-      endpoint = `guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`;
+    if (activeRoom !== "default_public") {
+      endpoint = currentGid 
+        ? `guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`
+        : `guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`;
+    } else if (currentGid) {
+      endpoint = `guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&select=*&order=id.desc&limit=150`;
     }
 
     let list = [];
@@ -610,14 +615,16 @@ async function loadPastChatMessages() {
         sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
       } catch(e) {}
 
-      // ⚡ 현재 방의 최신 메시지 ID를 last_read_chat_id로 저장 (읽음 처리)
+      // ⚡ 현재 방의 최신 메시지 ID를 last_read_chat_id로 저장 (읽음 처리 및 뱃지 완전 숨김)
       const maxId = Math.max(...finalSorted.map(m => m.id || 0));
       if (maxId > 0) {
         localStorage.setItem("last_read_chat_id_" + activeRoom, String(maxId));
         const badgeElem = document.getElementById("room_badge_" + activeRoom);
         if (badgeElem) {
+          badgeElem.innerText = "";
+          badgeElem.setAttribute("data-count", "0");
+          badgeElem.classList.add("d-none");
           badgeElem.style.display = "none";
-          badgeElem.innerText = "0";
         }
       }
 
