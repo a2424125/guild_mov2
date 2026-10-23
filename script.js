@@ -140,6 +140,10 @@ async function initApp() {
     }
   } else {
     updateProfileUI(myCurrentNick);
+    // ⚡ [새로고침 즉시 대화방 목록 렌더링]: 스피너 무한 로딩 해결
+    if (typeof window.loadMainTabRoomsList === 'function') {
+      window.loadMainTabRoomsList();
+    }
     loadPastChatMessages();
   }
 }
@@ -606,6 +610,17 @@ async function loadPastChatMessages() {
         sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
       } catch(e) {}
 
+      // ⚡ 현재 방의 최신 메시지 ID를 last_read_chat_id로 저장 (읽음 처리)
+      const maxId = Math.max(...finalSorted.map(m => m.id || 0));
+      if (maxId > 0) {
+        localStorage.setItem("last_read_chat_id_" + activeRoom, String(maxId));
+        const badgeElem = document.getElementById("room_badge_" + activeRoom);
+        if (badgeElem) {
+          badgeElem.style.display = "none";
+          badgeElem.innerText = "0";
+        }
+      }
+
       renderMessageHistoryList(finalSorted);
     }
   } catch (e) {
@@ -651,7 +666,12 @@ function listenRealtimeChatMessages() {
       const newMsg = payload.new;
       const activeRoom = window.currentActiveRoomId || "default_public";
       const isPublic = (activeRoom === "default_public");
-      const msgRoom = newMsg.room_id || "default_public";
+      const msgRoom = (!newMsg.room_id || newMsg.room_id === "default_public" || newMsg.room_id === "public") ? "default_public" : newMsg.room_id;
+
+      // ⚡ 대화방 목록 미리보기 텍스트 및 붉은색 안 읽은 메시지 뱃지 실시간 갱신
+      if (typeof window.updateRoomCardRealtime === "function") {
+        window.updateRoomCardRealtime(msgRoom, newMsg);
+      }
 
       // 1) 해당 방의 로컬 캐시 실시간 업데이트 (뒤로가기 후 재입장 시 대화 보존)
       try {
@@ -694,7 +714,7 @@ function listenRealtimeChatMessages() {
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링 (노란색 읽음 숫자 & 나/상대방 분리)
+// 6. 카카오톡 말풍선 렌더링 (노란색 읽음 숫자 & 나/상대방 완벽 분리)
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -975,7 +995,7 @@ async function handleSendMessage() {
     try {
       insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
     } catch (postErr) {
-      // 만약 신규 컬럼 관련 에러 시 필수 컬럼으로 안전 재전송
+      // 신규 컬럼 에러 시 필수 컬럼으로 안전 재전송
       const minimalPayload = {
         sender_name: myCurrentNick,
         message: text,
