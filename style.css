@@ -2,7 +2,7 @@
    [기본 테마 변수]
    ======================================================== */
 :root {
-  /* [카카오톡 메인 3탭 화면 전용 - 화이트 테마] */
+  /* [카카오톡 메인 3탭 화면 전용 - 순정 화이트 테마] */
   --main-view-bg: #ffffff;
   --main-header-bg: #ffffff;
   --main-header-text: #191919;
@@ -149,10 +149,8 @@ body.theme-dark {
 /* ========================================================
    [기본 리셋 및 전역 스타일]
    ======================================================== */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*, *::before, *::after {
+  box-sizing: border-box !important;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -160,12 +158,14 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  overflow-x: hidden !important;
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   font-size: 14px;
   background-color: var(--kakao-bg);
   color: var(--kakao-header-text);
   user-select: none;
   -webkit-user-select: none;
+  box-shadow: none !important;
 }
 
 input, textarea, select, button {
@@ -173,20 +173,20 @@ input, textarea, select, button {
   font-size: inherit;
 }
 
-/* 스크롤바 미니멀 커스텀 */
+/* 스크롤바 미니멀 커스텀 (외곽 번짐 방지) */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 5px !important;
+  height: 5px !important;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: transparent !important;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--kakao-scroll-thumb);
-  border-radius: 4px;
+  background: var(--kakao-scroll-thumb) !important;
+  border-radius: 4px !important;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--kakao-scroll-thumb-hover);
+  background: var(--kakao-scroll-thumb-hover) !important;
 }
 
 /* ========================================================
@@ -304,7 +304,7 @@ body.theme-dark .btn-kakao-head:active {
 }
 
 /* ========================================================
-   [상단 얇은 공지사항 띠 배너 (접이식/단일행)]
+   [상단 얇은 공지사항 띠 배너]
    ======================================================== */
 .kakao-notice-banner {
   background-color: var(--kakao-notice-bg);
@@ -649,24 +649,6 @@ body.theme-dark .raid-hero-score {
   justify-content: space-between;
 }
 
-.input-left-icons {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.btn-input-tool {
-  background: transparent;
-  border: none;
-  color: var(--kakao-input-icon);
-  font-size: 1.15rem;
-  cursor: pointer;
-  padding: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .btn-kakao-send {
   background: #e2e8f0;
   color: #94a3b8;
@@ -693,7 +675,7 @@ body.theme-dark .btn-kakao-send.active {
 }
 
 /* ========================================================
-   [슬라이드 드로어 서랍 (순정 260px 우측/좌측 슬라이드)]
+   [슬라이드 드로어 서랍 - 닫힘 시 그림자 번짐 완벽 차단]
    ======================================================== */
 .drawer-backdrop {
   position: fixed;
@@ -712,6 +694,7 @@ body.theme-dark .btn-kakao-send.active {
   opacity: 1;
 }
 
+/* 닫혀 있을 때 box-shadow: none 및 visibility: hidden으로 화면 외각 그라데이션 원천 방지 */
 .app-sidebar-drawer,
 .app-members-drawer,
 .app-boss-drawer {
@@ -721,10 +704,12 @@ body.theme-dark .btn-kakao-send.active {
   width: var(--drawer-width);
   height: 100%;
   background: var(--drawer-bg);
-  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.2);
+  box-shadow: none !important;
   z-index: 9999;
   transform: translateX(100%);
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
   display: flex;
   flex-direction: column;
 }
@@ -733,6 +718,9 @@ body.theme-dark .btn-kakao-send.active {
 .app-members-drawer.open,
 .app-boss-drawer.open {
   transform: translateX(0);
+  visibility: visible !important;
+  pointer-events: auto !important;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* 햄버거 메뉴 서랍 헤더 */
@@ -891,7 +879,9 @@ body.theme-dark .user-sub-class {
   background: var(--kakao-bg) !important;
   min-width: 0 !important;
   overflow: hidden;
+  overflow-x: hidden !important;
   transition: background-color 0.2s ease;
+  box-shadow: none !important;
 }
 
 /* ========================================================
@@ -1064,77 +1054,6 @@ body.theme-dark .class-preset-cell {
 }
 
 /* ========================================================
-   [보스타임 등록/수정/관리 카드 뷰 규격]
-   ======================================================== */
-.boss-item-card {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 8px 10px !important;
-  margin-bottom: 6px !important;
-  border-radius: 8px !important;
-  border: 1px solid var(--drawer-card-border) !important;
-  background: var(--drawer-card-bg) !important;
-  color: var(--drawer-item-text) !important;
-}
-
-.boss-item-name-box {
-  display: flex !important;
-  flex-direction: column !important;
-  min-width: 0 !important;
-  flex: 1 !important;
-}
-
-.boss-item-name-text {
-  font-size: 0.85rem !important;
-  font-weight: 700 !important;
-  color: var(--drawer-title) !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-  line-height: 1.2 !important;
-}
-
-.boss-item-time-text {
-  font-size: 0.7rem !important;
-  color: #ef4444 !important;
-  font-family: monospace !important;
-  font-weight: 700 !important;
-  line-height: 1.2 !important;
-}
-
-.boss-item-btns-box {
-  display: flex !important;
-  align-items: center !important;
-  gap: 4px !important;
-  margin-left: 6px !important;
-}
-
-.btn-boss-action-cut {
-  background: #ef4444 !important;
-  color: #ffffff !important;
-  border: none !important;
-  border-radius: 6px !important;
-  padding: 3px 6px !important;
-  font-size: 0.7rem !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-}
-
-.btn-boss-action-edit {
-  background: rgba(0, 0, 0, 0.06) !important;
-  color: var(--drawer-item-text) !important;
-  border: none !important;
-  border-radius: 6px !important;
-  padding: 3px 6px !important;
-  font-size: 0.7rem !important;
-  cursor: pointer !important;
-}
-body.theme-dark .btn-boss-action-edit {
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* ========================================================
    [친구 / 대화방 둥근 카드 규격 & 마우스 오버 하이라이트]
    ======================================================== */
 .chat-room-card,
@@ -1279,6 +1198,8 @@ body.theme-dark .friend-avatar {
    ======================================================== */
 #kakaoMainTabsView {
   background: var(--main-view-bg, #ffffff) !important;
+  box-shadow: none !important;
+  overflow-x: hidden !important;
 }
 #kakaoMainTabsView .main-tabs-header {
   background: var(--main-header-bg, #ffffff) !important;
@@ -1287,6 +1208,7 @@ body.theme-dark .friend-avatar {
 }
 #kakaoMainTabsView .kakao-tab-body {
   background: var(--main-view-bg, #ffffff) !important;
+  overflow-x: hidden !important;
 }
 .kakao-bottom-tabbar {
   background: var(--main-bottom-bg, #f5f6f8) !important;
@@ -1294,4 +1216,22 @@ body.theme-dark .friend-avatar {
 }
 #chatRoomView {
   background: var(--kakao-bg, #bacee0) !important;
+  box-shadow: none !important;
+  overflow-x: hidden !important;
+}
+
+/* ========================================================
+   [화면 외곽 그라데이션 및 닫힌 서랍 그림자 번짐 완벽 차단]
+   ======================================================== */
+html, body, .app-main-layout, #kakaoMainTabsView, #chatRoomView {
+  overflow-x: hidden !important;
+  box-shadow: none !important;
+}
+
+.app-sidebar-drawer:not(.open),
+.app-members-drawer:not(.open),
+.app-boss-drawer:not(.open) {
+  box-shadow: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
