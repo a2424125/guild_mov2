@@ -13,7 +13,6 @@ var deferredPrompt = null;
 var kakaoToastTimer = null;
 var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
-window.currentActiveRoomId = "default_public";
 
 // --------------------------------------------------------
 // 1. 공통 토스트 및 시간 유틸리티
@@ -114,11 +113,11 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
+  // ⚡ 세션 정보 동기화
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-  window.currentActiveRoomId = "default_public";
 
   await loadGuildSettings();
   await window.loadGuildMembersData();
@@ -214,7 +213,9 @@ window.loadGuildMembersData = async function() {
     });
 
     const countElem = document.getElementById("roomMemberCountText");
-    if (countElem) countElem.innerText = cachedMemberList.length;
+    if (countElem) {
+      countElem.innerText = (window.currentActiveRoomType === "direct") ? "2" : cachedMemberList.length;
+    }
 
     renderLoginMemberDropdown("");
   } catch (e) {}
@@ -229,7 +230,7 @@ function getRolePriority(role) {
 }
 
 // --------------------------------------------------------
-// 3. 서랍(드로어) 및 프로필 편집 모달 제어
+// 3. 서랍(드로어) 제어
 // --------------------------------------------------------
 function toggleMenuDrawer(isOpen) {
   const drawer = document.getElementById("menuSidebarDrawer");
@@ -323,19 +324,6 @@ async function loadDrawerPageTimer() {
   }
 }
 
-window.handleBossDrawerRefresh = async function() {
-  const btn = document.getElementById("btnRefreshBossDrawer");
-  if (btn) btn.classList.add("rotating");
-
-  if (typeof window.loadBossTimersList === "function") await window.loadBossTimersList();
-  await loadDrawerPageTimer();
-
-  setTimeout(() => {
-    if (btn) btn.classList.remove("rotating");
-    showKakaoToast("보스타임 현황이 갱신되었습니다.", "⏰");
-  }, 400);
-};
-
 function closeAllDrawers() {
   toggleMenuDrawer(false);
   toggleMembersDrawer(false);
@@ -353,38 +341,8 @@ function checkBackdropState() {
   if (!isOpen && backdrop) backdrop.classList.remove("show");
 }
 
-function openProfileEditModal() {
-  document.getElementById("modalProfileEdit").style.display = "flex";
-}
-function closeProfileEditModal() {
-  document.getElementById("modalProfileEdit").style.display = "none";
-}
-
-async function selectClassProfile(icon, className) {
-  myCurrentAvatar = icon;
-  myCurrentClass = `${icon} ${className}`;
-  
-  localStorage.setItem("guild_my_avatar", icon);
-  localStorage.setItem("guild_my_class", myCurrentClass);
-
-  const aIcon = document.getElementById("sidebarAvatarIcon");
-  const uClass = document.getElementById("sidebarUserClassText");
-  if (aIcon) aIcon.innerText = icon;
-  if (uClass) uClass.innerText = myCurrentClass;
-
-  if (myCurrentNick) {
-    try {
-      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
-        job_class: myCurrentClass
-      });
-    } catch (e) {}
-  }
-  closeProfileEditModal();
-  showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
-}
-
 // --------------------------------------------------------
-// 4. 길드 로그인 / 로그아웃
+// 4. 로그인 / 로그아웃 제어
 // --------------------------------------------------------
 function renderLoginMemberDropdown(query = "") {
   const selectElem = document.getElementById("loginMemberSelect");
@@ -519,14 +477,6 @@ async function executeGuildLogin() {
 }
 
 function handleUserLogout() {
-  if (typeof openConfirmLogoutModal === "function") {
-    openConfirmLogoutModal();
-    return;
-  }
-  executeLogoutProcess();
-}
-
-window.executeLogoutProcess = function() {
   localStorage.removeItem("guild_my_nickname");
   localStorage.removeItem("guild_my_pin");
   localStorage.removeItem("guild_my_role");
@@ -544,22 +494,9 @@ window.executeLogoutProcess = function() {
     `;
   }
   lastRenderedSender = null;
-
   toggleMenuDrawer(false);
   showGuildLoginModal();
-};
-
-window.switchActiveGuild = function(guildId) {
-  let joined = [];
-  try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-  const target = joined.find(g => g.guild_id === guildId);
-  if (!target) return;
-
-  localStorage.setItem("current_guild_id", target.guild_id);
-  localStorage.setItem("guild_my_nickname", target.nickname || "");
-  localStorage.setItem("guild_my_role", target.role || "일반");
-  location.reload();
-};
+}
 
 function resetAndReloadChatAfterAuth() {
   const chatContainer = document.getElementById("chatMessagesView");
@@ -598,17 +535,17 @@ window.updateProfileUI = function(nick) {
   if (tabAvatar) tabAvatar.innerText = myCurrentAvatar;
   if (tabClass) tabClass.innerText = myCurrentClass;
 };
-function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 (대규모 최적화 & 완벽한 방 격리)
+// 5. 과거 대화 로드 & 실시간 대화 수신 (방별 격리 & 노란색 읽음 계산)
 // --------------------------------------------------------
 async function loadPastChatMessages() {
   const activeRoom = window.currentActiveRoomId || "default_public";
+  const isPublic = (activeRoom === "default_public");
   const chatContainer = document.getElementById("chatMessagesView");
   if (!chatContainer) return;
 
-  // 1) 로컬 캐시에서 먼저 복원 (깜빡임 및 증발 방지)
+  // 1) 로컬 캐시에서 먼저 즉시 복원하여 화면 깜빡임 방지
   const cacheKey = "chat_history_cache_" + activeRoom;
   let cachedMessages = [];
   try {
@@ -625,13 +562,11 @@ async function loadPastChatMessages() {
     `;
   }
 
-  // 2) 서버 조회: 대규모 사용자(100~1000명)를 고려한 엄격한 방별 인덱스 쿼리
+  // 2) 서버에서 최신 대화 목록 조회 및 방별 격리 필터링
   try {
-    let endpoint = "";
-    if (activeRoom === "default_public") {
-      endpoint = "guild_chats?or=(room_id.eq.default_public,room_id.is.null,room_id.eq.public)&order=id.desc&limit=100";
-    } else {
-      endpoint = `guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&order=id.desc&limit=100`;
+    let endpoint = "guild_chats?select=*&order=id.desc&limit=150";
+    if (!isPublic) {
+      endpoint = `guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`;
     }
 
     let list = [];
@@ -639,35 +574,23 @@ async function loadPastChatMessages() {
       list = await apiRequest(endpoint);
     } catch (reqErr) {
       try {
-        if (activeRoom === "default_public") {
-          list = await apiRequest("guild_chats?room_id=eq.default_public&order=id.desc&limit=100");
-          if (!list || list.length === 0) {
-            const allFb = await apiRequest("guild_chats?order=id.desc&limit=100");
-            list = (allFb || []).filter(m => !m.room_id || m.room_id === "default_public" || m.room_id === "public");
-          }
-        } else {
-          list = await apiRequest(`guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&order=id.desc&limit=100`);
-          if (!list || list.length === 0) {
-            const allFb = await apiRequest("guild_chats?order=id.desc&limit=100");
-            list = (allFb || []).filter(m => m.room_id === activeRoom);
-          }
-        }
+        list = await apiRequest("guild_chats?select=*&order=id.desc&limit=150");
       } catch (err2) {
         console.warn("Server chat fetch fallback failed:", err2);
       }
     }
 
     if (list && list.length > 0) {
-      // 3) [이중 격리 방어]: 클라이언트 메모리 단에서 엄격한 방별 격리 필터링
+      // 3) [방 격리 보장]: 1:1 대화 내용과 전체 대화방 완전 분리
       let filtered = list.filter(c => {
-        const msgRoom = c.room_id || "default_public";
-        if (activeRoom === "default_public") {
-          return msgRoom === "default_public" || msgRoom === "public";
+        if (isPublic) {
+          return !c.room_id || c.room_id === "default_public" || c.room_id === "public";
         } else {
-          return msgRoom === activeRoom;
+          return c.room_id === activeRoom;
         }
       });
 
+      // 캐시와 병합하여 중복 제거 (id 기준)
       const mergedMap = new Map();
       cachedMessages.forEach(m => { if (m.id) mergedMap.set(String(m.id), m); });
       filtered.forEach(m => { if (m.id) mergedMap.set(String(m.id), m); });
@@ -678,13 +601,12 @@ async function loadPastChatMessages() {
         return tA - tB;
       });
 
-      const trimmed = finalSorted.slice(-100);
       try {
-        localStorage.setItem(cacheKey, JSON.stringify(trimmed));
-        sessionStorage.setItem(cacheKey, JSON.stringify(trimmed));
+        localStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
+        sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
       } catch(e) {}
 
-      renderMessageHistoryList(trimmed);
+      renderMessageHistoryList(finalSorted);
     }
   } catch (e) {
     console.warn("loadPastChatMessages error:", e);
@@ -719,9 +641,6 @@ async function cleanupOldChatsBackground() {
   } catch (e) {}
 }
 
-// --------------------------------------------------------
-// 실시간 대화 수신 (수천 명 트래픽 방어 & 다른 방 메시지 100% 차단)
-// --------------------------------------------------------
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
 
@@ -731,9 +650,10 @@ function listenRealtimeChatMessages() {
       if (!payload.new) return;
       const newMsg = payload.new;
       const activeRoom = window.currentActiveRoomId || "default_public";
+      const isPublic = (activeRoom === "default_public");
       const msgRoom = newMsg.room_id || "default_public";
 
-      // 1) 해당 방 로컬 캐시에 즉시 보존
+      // 1) 해당 방의 로컬 캐시 실시간 업데이트 (뒤로가기 후 재입장 시 대화 보존)
       try {
         const cacheKey = "chat_history_cache_" + msgRoom;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
@@ -744,14 +664,14 @@ function listenRealtimeChatMessages() {
         }
       } catch(e) {}
 
-      // 2) [대규모 격리 가드]: 현재 화면에 띄운 방의 메시지가 아니면 100% 렌더링 차단!
-      if (activeRoom === "default_public") {
-        if (msgRoom !== "default_public" && msgRoom !== "public") {
-          return;
+      // 2) [방별 격리]: 현재 화면에 표시 중인 방과 일치하지 않으면 렌더링 차단
+      if (isPublic) {
+        if (newMsg.room_id && newMsg.room_id !== "default_public" && newMsg.room_id !== "public") {
+          return; // 1:1 대화방 메시지는 전체 대화방에 절대 섞이지 않음
         }
       } else {
-        if (msgRoom !== activeRoom) {
-          return;
+        if (newMsg.room_id !== activeRoom) {
+          return; // 다른 방 메시지는 메인 대화창에 섞이지 않음
         }
       }
 
@@ -761,34 +681,22 @@ function listenRealtimeChatMessages() {
       );
       if (optimisticIdx !== -1) {
         pendingOptimisticMessages.splice(optimisticIdx, 1);
-        scrollChatBottom();
         return;
       }
 
-      // 4) 화면 렌더링 및 하단 자동 스크롤
       const isConsecutive = (newMsg.sender_name === lastRenderedSender && newMsg.msg_type === "chat");
       renderKakaoChatBubble(newMsg, true, isConsecutive);
       lastRenderedSender = (newMsg.msg_type === "chat") ? newMsg.sender_name : null;
       scrollChatBottom();
       if (typeof window.syncAllChatCutButtons === "function") window.syncAllChatCutButtons();
-
-      // 5) [대규모 메모리 보호]: DOM 노드가 150개 초과 시 상단 오래된 노드 제거
-      const container = document.getElementById("chatMessagesView");
-      if (container && container.children.length > 150) {
-        for (let i = 0; i < 20; i++) {
-          if (container.firstElementChild && !container.firstElementChild.classList.contains("my-1")) {
-            container.removeChild(container.firstElementChild);
-          }
-        }
-      }
     })
     .subscribe();
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링 (1:1 안 읽은 숫자 1 보장)
+// 6. 카카오톡 말풍선 렌더링 (노란색 읽음 숫자 & 나/상대방 분리)
 // --------------------------------------------------------
-function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
+function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
   if (!container) return;
 
@@ -797,9 +705,11 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
   const timeStr = formatKSTChatTime(msg.created_at);
 
-  // [대규모 및 1:1 최적화]: 1:1 대화방은 총 인원이 무조건 2명! (나+상대방)
+  // [노란색 안 읽은 숫자 계산]: 1:1 대화방은 총 인원 2명(상대방 1명) 기준
   const activeRoom = window.currentActiveRoomId || "default_public";
-  const isDirect = activeRoom.startsWith("direct_") || (msg.room_id && msg.room_id.startsWith("direct_"));
+  const isDirect = (window.currentActiveRoomType === "direct") || 
+                   (activeRoom && (activeRoom.startsWith("direct_") || (activeRoom.includes("-") && activeRoom !== "default_public"))) ||
+                   (msg.room_id && (msg.room_id.startsWith("direct_") || (msg.room_id.includes("-") && msg.room_id !== "default_public")));
   const totalMembers = isDirect ? 2 : ((cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 10);
   let unreadCount = 0;
 
@@ -816,11 +726,11 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   }
 
   const unreadSpanHtml = (unreadCount > 0) 
-    ? `<span class="chat-unread-count" style="text-align:left !important;">${unreadCount}</span>` 
+    ? `<span class="chat-unread-count">${unreadCount}</span>` 
     : `<span class="chat-unread-count" style="display:none;"></span>`;
 
   let html = "";
-  const cleanMessageText = (msg.message || msg.message_text || msg.content || '').trim();
+  const cleanMessageText = (msg.message || msg.message_text || '').trim();
 
   let senderAvatarIcon = (msg.sender_name || '?').charAt(0);
   const matchedSender = cachedMemberList.find(m => (m.name === msg.sender_name || m.nickname === msg.sender_name));
@@ -840,7 +750,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
           <div class="chat-sender-name"><span>보스알리미</span></div>
           <div class="chat-bubble-flex">
             <div class="boss-briefing-card">${cleanMessageText}</div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+            <div class="chat-meta-box">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
@@ -849,7 +759,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 2) 토벌 알리미 카드 (raid_report)
+  // 2) 토벌 알리미 카드
   else if (msg.msg_type === "raid_report") {
     const raidId = msg.meta_data?.raid_id || Date.now();
     const bossName = msg.meta_data?.boss_name || "보스";
@@ -878,7 +788,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
                 </button>
               </div>
             </div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+            <div class="chat-meta-box">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
@@ -889,7 +799,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   }
   // 3) 보스 즉시컷 / 젠 알림
   else if (msg.msg_type === "boss_alert") {
-    const bossNameInMsg = extractBossNameFromMessage(cleanMessageText);
+    const bossNameInMsg = (typeof extractBossNameFromMessage === "function") ? extractBossNameFromMessage(cleanMessageText) : "";
     const subCutBtn = bossNameInMsg ? `
       <button type="button" class="btn-chat-cut" id="btn_cut_${msgKey}" data-boss="${bossNameInMsg}" onclick="triggerQuickCutAction('${bossNameInMsg}', 'btn_cut_${msgKey}')">
         <i class="fa-solid fa-crosshairs"></i> 즉시컷
@@ -905,7 +815,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
               <div class="boss-alert-mini-card spawn-alert">${cleanMessageText}</div>
               ${subCutBtn}
             </div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+            <div class="chat-meta-box">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
@@ -914,14 +824,14 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 4) 내가 작성한 메시지 (노란색 말풍선 우측 정렬)
+  // 4) 내가 작성한 메시지
   else if (isMe) {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
       <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
         <div class="chat-msg-body">
           <div class="chat-bubble-flex">
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+            <div class="chat-meta-box">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
@@ -943,7 +853,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
           ${nameBlock}
           <div class="chat-bubble-flex">
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+            <div class="chat-meta-box">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
@@ -957,7 +867,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   tempWrapper.innerHTML = html.trim();
   container.appendChild(tempWrapper.firstElementChild);
 
-  if (doScroll) {
+  if (isRealtime) {
     scrollChatBottom();
   }
 }
@@ -968,7 +878,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 7. 메시지 입력 및 전송 제어 (전송버튼 노란색 활성화 & 최신 메시지 하단 스크롤 완벽 보장)
+// 7. 메시지 입력 및 전송 제어 (엔터키 즉시 전송 & 전송버튼 노란색 활성화)
 // --------------------------------------------------------
 function handleInputState(textarea) {
   if (!textarea) return;
@@ -976,7 +886,6 @@ function handleInputState(textarea) {
   const newH = Math.min(textarea.scrollHeight, 100);
   textarea.style.height = (newH > 36 ? newH : 36) + "px";
 
-  // 전송 버튼 노란색 활성화 토글 (카카오톡 순정)
   const btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
   if (btn) {
     if (textarea.value.trim().length > 0) {
@@ -986,6 +895,7 @@ function handleInputState(textarea) {
     }
   }
 }
+window.handleInputState = handleInputState;
 
 function checkEnterKey(event) {
   if (event.key === "Enter" && !event.shiftKey) {
@@ -994,6 +904,8 @@ function checkEnterKey(event) {
     handleSendMessage();
   }
 }
+window.checkEnterKey = checkEnterKey;
+window.handleChatInputKeydown = checkEnterKey;
 
 async function handleSendMessage() {
   const inputElem = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
@@ -1017,7 +929,9 @@ async function handleSendMessage() {
   inputElem.value = "";
   handleInputState(inputElem);
 
-  const targetRoomId = window.currentActiveRoomId || "default_public";
+  // ⚡ [UUID 완전 호환]: 전체 대화방은 null, 1:1 대화방은 정식 UUID 전달
+  const isPublicRoom = (!window.currentActiveRoomId || window.currentActiveRoomId === "default_public");
+  const targetRoomId = isPublicRoom ? null : window.currentActiveRoomId;
   const tempId = "tmp_" + Date.now();
   const optimisticMsg = {
     id: tempId,
@@ -1035,9 +949,9 @@ async function handleSendMessage() {
   scrollChatBottom();
   lastRenderedSender = myCurrentNick;
 
-  // 로컬 캐시 즉시 보관
+  // 로컬 캐시에도 즉시 저장
   try {
-    const cacheKey = "chat_history_cache_" + targetRoomId;
+    const cacheKey = "chat_history_cache_" + (targetRoomId || "default_public");
     let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
     localMsgs.push(optimisticMsg);
     sessionStorage.setItem(cacheKey, JSON.stringify(localMsgs.slice(-100)));
@@ -1045,28 +959,29 @@ async function handleSendMessage() {
   } catch(e) {}
 
   try {
-    const currentGid = localStorage.getItem("current_guild_id");
     const chatPayload = {
       sender_name: myCurrentNick,
       message: text,
       msg_type: "chat",
-      room_id: targetRoomId
+      mentions: detectedMentions
     };
-    if (currentGid) chatPayload.guild_id = currentGid;
-    if (detectedMentions && detectedMentions.length > 0) {
-      chatPayload.mentions = detectedMentions;
+    if (targetRoomId) {
+      chatPayload.room_id = targetRoomId;
     }
+    const currentGid = localStorage.getItem("current_guild_id");
+    if (currentGid) chatPayload.guild_id = currentGid;
 
     let insertRes;
     try {
       insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
     } catch (postErr) {
+      // 만약 신규 컬럼 관련 에러 시 필수 컬럼으로 안전 재전송
       const minimalPayload = {
         sender_name: myCurrentNick,
         message: text,
-        msg_type: "chat",
-        room_id: targetRoomId
+        msg_type: "chat"
       };
+      if (targetRoomId) minimalPayload.room_id = targetRoomId;
       if (currentGid) minimalPayload.guild_id = currentGid;
 
       try {
@@ -1089,7 +1004,7 @@ async function handleSendMessage() {
         rowElem.setAttribute("data-msg-id", realId);
       }
       try {
-        const cacheKey = "chat_history_cache_" + targetRoomId;
+        const cacheKey = "chat_history_cache_" + (targetRoomId || "default_public");
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
         const target = localMsgs.find(m => m.id === tempId);
         if (target) target.id = realId;
@@ -1098,7 +1013,12 @@ async function handleSendMessage() {
       } catch(e) {}
     }
   } catch (err) {
-    showKakaoToast("전송 실패: " + err.message, "❌");
+    let cleanErr = (err && err.message) ? err.message : String(err);
+    try {
+      const parsed = JSON.parse(cleanErr);
+      if (parsed && parsed.message) cleanErr = parsed.message;
+    } catch(e) {}
+    showKakaoToast("전송 실패: " + cleanErr, "❌");
   }
 }
 window.handleSendMessage = window.executeSendMessage = handleSendMessage;
@@ -1228,72 +1148,24 @@ window.closeModuleOverlay = function() {
 };
 
 // --------------------------------------------------------
-// 10. 대화 검색 및 다중 타이머 바닥 스크롤 유틸
+// 10. 스크롤 및 유틸리티 (최신 메시지 바닥 고정)
 // --------------------------------------------------------
-function scrollChatBottom(smooth = false) {
+function scrollChatBottom() {
   const container = document.getElementById("chatMessagesView");
   if (!container) return;
-
   const doScroll = () => {
-    container.scrollTo({
-      top: container.scrollHeight,
-      behavior: smooth ? "smooth" : "auto"
-    });
+    container.scrollTop = container.scrollHeight;
   };
-
-  doScroll();
   requestAnimationFrame(doScroll);
   setTimeout(doScroll, 40);
   setTimeout(doScroll, 120);
 }
+window.scrollChatBottom = scrollChatBottom;
 
 function escapeHtmlText(t) {
   if (!t) return "";
   return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-
-window.toggleChatSearchBar = function(forceState) {
-  const area = document.getElementById("chatSearchBarArea");
-  if (!area) return;
-  const isShow = (forceState !== undefined) ? forceState : (area.style.display === "none");
-  area.style.display = isShow ? "block" : "none";
-  if (isShow) {
-    const input = document.getElementById("chatSearchKeywordInput");
-    if (input) {
-      input.value = "";
-      setTimeout(() => input.focus(), 100);
-    }
-  } else {
-    window.clearChatSearch();
-  }
-};
-
-window.handleSearchChatMessages = function(rawKeyword) {
-  const keyword = (rawKeyword || "").trim().toLowerCase();
-  const rows = document.querySelectorAll("#chatMessagesView .chat-item-row");
-  let matchCount = 0;
-
-  rows.forEach(r => {
-    const text = (r.innerText || "").toLowerCase();
-    if (!keyword) {
-      r.style.display = "";
-    } else if (text.includes(keyword)) {
-      r.style.display = "";
-      matchCount++;
-    } else {
-      r.style.display = "none";
-    }
-  });
-
-  const countElem = document.getElementById("chatSearchMatchCount");
-  if (countElem) countElem.innerText = keyword ? `${matchCount}건 일치` : "";
-};
-
-window.clearChatSearch = function() {
-  const input = document.getElementById("chatSearchKeywordInput");
-  if (input) input.value = "";
-  window.handleSearchChatMessages("");
-};
 
 function setupPwaInstallation() {
   window.addEventListener("beforeinstallprompt", (e) => {
