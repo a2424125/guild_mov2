@@ -113,7 +113,6 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
-  // 세션 정보 동기화
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
@@ -607,7 +606,6 @@ async function loadPastChatMessages() {
   const chatContainer = document.getElementById("chatMessagesView");
   if (!chatContainer) return;
 
-  // 1) 로컬 캐시에서 먼저 즉각 복원 (화면 비워짐 방지)
   const cacheKey = "chat_history_cache_" + activeRoom;
   let cachedMessages = [];
   try {
@@ -624,7 +622,6 @@ async function loadPastChatMessages() {
     `;
   }
 
-  // 2) 서버에서 최신 대화 목록 조회 및 방별 엄격한 격리 필터링
   try {
     let endpoint = "guild_chats?select=*&order=id.desc&limit=150";
     if (activeRoom !== "default_public") {
@@ -643,7 +640,6 @@ async function loadPastChatMessages() {
     }
 
     if (list && list.length > 0) {
-      // 방별 격리 필터링
       let filtered = list.filter(c => {
         if (activeRoom === "default_public") {
           return !c.room_id || c.room_id === "default_public" || c.room_id === "public";
@@ -738,6 +734,7 @@ function listenRealtimeChatMessages() {
       );
       if (optimisticIdx !== -1) {
         pendingOptimisticMessages.splice(optimisticIdx, 1);
+        scrollChatBottom();
         return;
       }
 
@@ -753,7 +750,7 @@ function listenRealtimeChatMessages() {
 // --------------------------------------------------------
 // 6. 카카오톡 말풍선 렌더링
 // --------------------------------------------------------
-function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
+function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
   if (!container) return;
 
@@ -917,7 +914,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   tempWrapper.innerHTML = html.trim();
   container.appendChild(tempWrapper.firstElementChild);
 
-  if (isRealtime) {
+  if (doScroll) {
     scrollChatBottom();
   }
 }
@@ -928,12 +925,23 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 7. 메시지 입력 및 전송 제어 (content 변환 제거 및 안전 전송)
+// 7. 메시지 입력 및 전송 제어 (전송버튼 노란색 활성화 & 최신 메시지 하단 스크롤 완벽 보장)
 // --------------------------------------------------------
 function handleInputState(textarea) {
+  if (!textarea) return;
   textarea.style.height = "auto";
   const newH = Math.min(textarea.scrollHeight, 100);
   textarea.style.height = (newH > 36 ? newH : 36) + "px";
+
+  // 전송 버튼 노란색 활성화 토글 (카카오톡 순정)
+  const btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
+  if (btn) {
+    if (textarea.value.trim().length > 0) {
+      btn.classList.add("active");
+    } else {
+      btn.classList.remove("active");
+    }
+  }
 }
 
 function checkEnterKey(event) {
@@ -980,7 +988,8 @@ async function handleSendMessage() {
 
   pendingOptimisticMessages.push(optimisticMsg);
   const isConsecutive = (myCurrentNick === lastRenderedSender);
-  renderKakaoChatBubble(optimisticMsg, false, isConsecutive);
+  renderKakaoChatBubble(optimisticMsg, true, isConsecutive);
+  scrollChatBottom();
   lastRenderedSender = myCurrentNick;
 
   // 로컬 캐시 즉시 보관
@@ -1009,7 +1018,6 @@ async function handleSendMessage() {
     try {
       insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
     } catch (postErr) {
-      // room_id나 mentions 컬럼이 아직 DB에 없다면 기본 필수 데이터로 자동 안전 재전송
       const minimalPayload = {
         sender_name: myCurrentNick,
         message: text,
@@ -1020,7 +1028,6 @@ async function handleSendMessage() {
       try {
         insertRes = await apiRequest("guild_chats", "POST", [minimalPayload]);
       } catch (finalErr) {
-        // 실제 데이터베이스 오류 원인 메시지를 가공 없이 그대로 노출
         let cleanErr = (finalErr && finalErr.message) ? finalErr.message : String(finalErr);
         try {
           const parsed = JSON.parse(cleanErr);
@@ -1177,11 +1184,23 @@ window.closeModuleOverlay = function() {
 };
 
 // --------------------------------------------------------
-// 10. 대화 검색 및 기타 유틸
+// 10. 대화 검색 및 다중 타이머 바닥 스크롤 유틸
 // --------------------------------------------------------
-function scrollChatBottom() {
+function scrollChatBottom(smooth = false) {
   const container = document.getElementById("chatMessagesView");
-  if (container) container.scrollTop = container.scrollHeight;
+  if (!container) return;
+
+  const doScroll = () => {
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: smooth ? "smooth" : "auto"
+    });
+  };
+
+  doScroll();
+  requestAnimationFrame(doScroll);
+  setTimeout(doScroll, 40);
+  setTimeout(doScroll, 120);
 }
 
 function escapeHtmlText(t) {
