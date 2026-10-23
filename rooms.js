@@ -3,7 +3,6 @@
 // 친구 목록 / 대화방 목록 / 개인설정 탭 제어 및 방 개설(운영진방, 1:1 개인톡)
 // ========================================================
 
-// ⚡ [표준 UUID 결정론적 생성기]: 두 사람의 닉네임으로 항상 동일한 정식 UUID(36자리) 생성
 function generateDeterministicUUID(str) {
   let h1 = 0xdeadbeef, h2 = 0x41c6ce57, h3 = 0x67452301, h4 = 0xefcdab89;
   for (let i = 0; i < str.length; i++) {
@@ -36,7 +35,7 @@ function generateDeterministicUUID(str) {
 window.generateDeterministicUUID = generateDeterministicUUID;
 
 window.currentActiveRoomId = null;
-window.currentActiveRoomType = "public";
+window.currentActiveRoomType = null;
 window.currentActiveRoomTitle = "";
 window.cachedChatRoomsList = [];
 
@@ -56,12 +55,10 @@ window.switchMainBottomTab = function(tabName) {
   const headerSubtitle = document.getElementById("mainTabHeaderSubtitle");
   const btnCreateRoom = document.getElementById("btnOpenCreateRoomModal");
 
-  // 네비게이션 활성화 클래스 리셋
   if (navFriends) navFriends.classList.remove("active");
   if (navChats) navChats.classList.remove("active");
   if (navMore) navMore.classList.remove("active");
 
-  // 탭 본문 숨김
   if (tabFriends) tabFriends.style.display = "none";
   if (tabChats) tabChats.style.display = "none";
   if (tabMore) tabMore.style.display = "none";
@@ -81,7 +78,6 @@ window.switchMainBottomTab = function(tabName) {
     if (btnCreateRoom) btnCreateRoom.style.display = "none";
     loadMainTabSettingsPage();
   } else {
-    // 기본값: 채팅 탭
     if (navChats) navChats.classList.add("active");
     if (tabChats) tabChats.style.display = "block";
     if (headerTitle) headerTitle.innerText = "대화방";
@@ -92,107 +88,96 @@ window.switchMainBottomTab = function(tabName) {
 };
 
 // --------------------------------------------------------
-// 2. 친구 목록 로드 (친구 탭)
+// 2. [친구 탭] 길드원 리스트 렌더링 & 클릭 제어
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
   if (!container) return;
 
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
-  const currentGid = localStorage.getItem("current_guild_id");
+  const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+  const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
+
+  const myNickElem = document.getElementById("mainTabMyNick");
+  const myAvatarElem = document.getElementById("mainTabMyAvatar");
+  const myClassElem = document.getElementById("mainTabMyClass");
+
+  if (myNickElem) myNickElem.innerText = myNick || "로그인 필요";
+  if (myAvatarElem) myAvatarElem.innerText = myAvatar;
+  if (myClassElem) myClassElem.innerText = myClass;
 
   try {
     let members = window.cachedMemberList || [];
     if (!members || members.length === 0) {
-      if (typeof apiRequest === "function") {
-        if (currentGid) {
-          try {
-            members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=name.asc");
-          } catch(e) {}
-        }
-        if (!members || members.length === 0) {
-          members = await apiRequest("guild_members?select=*&order=name.asc");
-        }
+      if (typeof window.loadGuildMembersData === "function") {
+        await window.loadGuildMembersData();
+        members = window.cachedMemberList || [];
       }
-      window.cachedMemberList = members || [];
     }
 
     const countElem = document.getElementById("mainTabMemberCount");
     if (countElem) countElem.innerText = members.length;
 
     if (!members || members.length === 0) {
-      container.innerHTML = `<div class="text-center py-5 text-secondary small">등록된 길드원이 없습니다.</div>`;
+      container.innerHTML = `<div class="text-secondary small text-center py-4">등록된 길드원이 없습니다.</div>`;
       return;
     }
 
-    // 직책순 정렬: 길드장(1) -> 부길드장(2) -> 정예(3) -> 일반(4)
-    const sorted = [...members].sort((a, b) => {
-      const getPrio = r => {
-        r = String(r || '').trim();
-        if (r === '길드장' || r === '길마') return 1;
-        if (r === '부길드장' || r === '부길마') return 2;
-        if (r === '정예') return 3;
-        return 4;
-      };
-      const pDiff = getPrio(a.role) - getPrio(b.role);
-      if (pDiff !== 0) return pDiff;
-      const nA = a.name || a.nickname || "";
-      const nB = b.name || b.nickname || "";
-      return nA.localeCompare(nB, 'ko');
-    });
-
-    container.innerHTML = sorted.map(m => {
+    container.innerHTML = members.map(m => {
       const mName = m.name || m.nickname || "길드원";
-      const isMe = (mName === myNick);
+      const mAvatar = m.avatar || (m.job_class ? m.job_class.split(" ")[0] : "👤");
+      const mClass = m.job_class || m.class_name || "직업 미지정";
       const mRole = m.role || "일반";
-      const mClass = m.job_class || m.class_name || "직업 미설정";
-      const mAvatar = (m.avatar && m.avatar.trim()) ? m.avatar : (mClass.split(' ')[0] || "👤");
+      const isMe = (mName === myNick);
 
       let roleBadge = "";
       if (mRole === "길드장" || mRole === "길마") {
-        roleBadge = `<span class="badge bg-warning text-dark px-1 py-0" style="font-size:0.62rem;">길마</span>`;
+        roleBadge = `<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.62rem;">길마</span>`;
       } else if (mRole === "부길드장" || mRole === "부길마") {
-        roleBadge = `<span class="badge bg-primary text-white px-1 py-0" style="font-size:0.62rem;">부길마</span>`;
+        roleBadge = `<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.62rem;">부길마</span>`;
       } else if (mRole === "정예") {
-        roleBadge = `<span class="badge bg-info text-dark px-1 py-0" style="font-size:0.62rem;">정예</span>`;
+        roleBadge = `<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.62rem;">정예</span>`;
       }
 
+      const safeName = mName.replace(/'/g, "\\'");
+      const safeAvatar = mAvatar.replace(/'/g, "\\'");
+      const safeClass = mClass.replace(/'/g, "\\'");
+      const safeRole = mRole.replace(/'/g, "\\'");
+
       return `
-        <div class="chat-room-card friend-list-item" onclick="handleFriendItemClick('${mName}', '${mAvatar}', '${mClass}', '${mRole}')">
-          <div class="room-avatar-large">${mAvatar}</div>
+        <div class="friend-item-card" onclick="handleFriendItemClick('${safeName}', '${safeAvatar}', '${safeClass}', '${safeRole}')">
+          <div class="friend-avatar">${mAvatar}</div>
           <div class="room-content-box">
-            <div class="d-flex align-items-center gap-1">
-              <span class="room-name-text">${mName}</span>
+            <div class="d-flex align-items-center" style="gap: 4px;">
               ${roleBadge}
-              ${isMe ? '<span class="badge bg-secondary bg-opacity-25 text-secondary px-1" style="font-size:0.6rem;">나</span>' : ''}
+              <span class="room-name-text">${mName}</span>
+              ${isMe ? '<span class="badge bg-secondary bg-opacity-25 text-secondary ms-1" style="font-size:0.6rem;">나</span>' : ''}
             </div>
             <p class="room-msg-preview">${mClass}</p>
           </div>
-          <div class="chat-room-meta">
-            ${isMe ? '' : `
-              <button type="button" class="btn btn-outline-warning btn-xs px-2 py-1 fw-bold" style="font-size:0.7rem; border-radius:12px;" onclick="event.stopPropagation(); startDirectChatWith('${mName}')">
-                1:1 톡
-              </button>
-            `}
-          </div>
+          ${isMe ? 
+            '<i class="fa-solid fa-pen text-secondary me-1" style="font-size:0.8rem;" title="프로필 변경"></i>' : 
+            `<button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size:0.68rem; border-radius:5px;" onclick="event.stopPropagation(); startDirectChatWith('${safeName}');"><i class="fa-solid fa-comment-dots me-1"></i>1:1 대화</button>`
+          }
         </div>
       `;
     }).join("");
   } catch (err) {
-    container.innerHTML = `<div class="text-center py-4 text-danger small">길드원 목록 로드 실패: ${err.message}</div>`;
+    container.innerHTML = `<div class="text-danger small text-center py-4">길드원 목록을 불러오지 못했습니다.</div>`;
   }
 };
 
 window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
-  if (typeof openMemberProfileCard === "function") {
-    openMemberProfileCard(mName, mAvatar, mClass, mRole);
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+  if (mName === myNick) {
+    window.openProfileEditModal();
   } else {
-    startDirectChatWith(mName);
+    window.openMemberProfileCard(mName, mAvatar, mClass, mRole);
   }
 };
 
 // --------------------------------------------------------
-// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (최신 메시지 미리보기 & 붉은색 안 읽은 뱃지)
+// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링
 // --------------------------------------------------------
 window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
@@ -208,7 +193,6 @@ window.loadMainTabRoomsList = async function() {
     const curGuild = joined.find(g => g.guild_id === currentGid);
     const guildTitle = (curGuild && curGuild.guild_name) ? `${curGuild.guild_name} 전체 대화방` : "길드 전체 대화방";
 
-    // 1) 서버 대화방 조회 (관계 조인 실패 방어)
     if (typeof apiRequest === "function" && currentGid) {
       try {
         serverRooms = await apiRequest("chat_rooms?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=created_at.asc");
@@ -219,11 +203,9 @@ window.loadMainTabRoomsList = async function() {
       }
     }
 
-    // 2) 로컬 보존 1:1 대화방 및 생성 대화방 복원 & 레거시 ID 마이그레이션 (증발 방지 핵심)
     let localRooms = [];
     try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
 
-    // 레거시 direct_ 방 ID를 정식 결정론적 UUID로 마이그레이션
     let didMigrate = false;
     localRooms.forEach(r => {
       if (r && r.room_type === "direct") {
@@ -247,30 +229,42 @@ window.loadMainTabRoomsList = async function() {
       }
     });
     if (didMigrate) {
-      try { localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms)); } catch(e) {}
+      localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
     }
 
-    // 기본 전체 대화방
     const defaultRoom = {
       id: "default_public",
       room_name: guildTitle,
       room_type: "public",
-      created_at: new Date().toISOString()
+      is_default: true,
+      created_at: new Date(0).toISOString()
     };
 
-    // 3) 통합 및 중복 제거
     const roomMap = new Map();
-    roomMap.set("default_public", defaultRoom);
+    roomMap.set(defaultRoom.id, defaultRoom);
 
     (serverRooms || []).forEach(r => {
-      if (r && r.id) roomMap.set(r.id, r);
+      if (r.room_type === "direct") {
+        let isParticipant = false;
+        if (Array.isArray(r.members)) {
+          isParticipant = r.members.includes(myNick);
+        } else if (r.room_name && r.room_name.includes(myNick)) {
+          isParticipant = true;
+        } else if (r.created_by === myNick) {
+          isParticipant = true;
+        }
+        if (isParticipant) roomMap.set(r.id, r);
+      } else {
+        roomMap.set(r.id, r);
+      }
     });
 
     (localRooms || []).forEach(r => {
-      if (r && r.id) {
+      if (!roomMap.has(r.id)) {
         if (r.room_type === "direct") {
-          const names = r.room_name || "";
-          const isMember = (Array.isArray(r.members) && r.members.includes(myNick)) || names.includes(myNick);
+          const isMember = (Array.isArray(r.members) && r.members.includes(myNick)) ||
+                           (r.room_name && r.room_name.includes(myNick)) ||
+                           (r.created_by === myNick);
           if (isMember) roomMap.set(r.id, r);
         } else {
           roomMap.set(r.id, r);
@@ -291,7 +285,6 @@ window.loadMainTabRoomsList = async function() {
     const countElem = document.getElementById("mainTabRoomCount");
     if (countElem) countElem.innerText = myRooms.length;
 
-    // ⚡ [핵심 개선]: 현재 활성 길드(currentGid)의 최신 메시지만 엄격 조회 (타 길드/데모 메시지 유입 방지)
     let recentChats = [];
     if (typeof apiRequest === "function") {
       try {
@@ -302,20 +295,16 @@ window.loadMainTabRoomsList = async function() {
       if (!recentChats || recentChats.length === 0) {
         try {
           recentChats = await apiRequest("guild_chats?select=id,room_id,sender_name,message,created_at,msg_type&order=id.desc&limit=300");
-        } catch(e2) {
-          console.warn("Failed to fetch recent chats for room previews:", e2);
-        }
+        } catch(e2) {}
       }
     }
 
-    // 방별 메시지 그룹핑 (일반 대화 chat 만 필터 & 레거시 room_id 매핑)
     const roomMsgMap = new Map();
     (recentChats || []).forEach(c => {
-      if (c.msg_type && c.msg_type !== "chat") return; // 알림/브리핑 제외 순수 대화만 반영
+      if (c.msg_type && c.msg_type !== "chat") return;
 
       let rId = (!c.room_id || c.room_id === "default_public" || c.room_id === "public") ? "default_public" : c.room_id;
 
-      // 만약 레거시 direct_ 형식의 메시지라면 canonical UUID로 매핑하여 일치시킴
       if (rId && rId.startsWith("direct_")) {
         const clean = rId.replace("direct_", "").replace("direct__", "");
         const parts = clean.split("__");
@@ -350,11 +339,9 @@ window.loadMainTabRoomsList = async function() {
 
       const safeRoomName = (r.room_name || "대화방").replace(/'/g, "\\'");
 
-      // 해당 방의 메시지 목록 (id desc 정렬 상태)
       const msgs = roomMsgMap.get(r.id) || [];
       const lastMsg = msgs.length > 0 ? msgs[0] : null;
 
-      // ⚡ [작성자 닉네임 + 내용 미리보기]: 단체톡은 '누구: 내용', 1:1톡은 '내용'으로 카카오톡 규격 일치
       let lastText = "대화를 시작해 보세요.";
       if (lastMsg && lastMsg.message) {
         const cleanMsg = (typeof escapeHtmlText === "function") ? escapeHtmlText(lastMsg.message) : lastMsg.message;
@@ -366,7 +353,6 @@ window.loadMainTabRoomsList = async function() {
         }
       }
 
-      // 마지막 메시지 시간
       let lastTimeStr = "";
       if (lastMsg && lastMsg.created_at) {
         lastTimeStr = (typeof formatKSTChatTime === "function") ? formatKSTChatTime(lastMsg.created_at) : "";
@@ -374,20 +360,17 @@ window.loadMainTabRoomsList = async function() {
         lastTimeStr = (typeof formatTime24Hour === "function") ? formatTime24Hour(r.created_at || new Date()) : "";
       }
 
-      // 안 읽은 새 메시지 수 계산
+      // 안 읽은 새 메시지 수 계산 (방별 완벽 독립 격리)
       const lastReadId = parseInt(localStorage.getItem("last_read_chat_id_" + r.id) || "0", 10);
       let unreadCount = 0;
       if (lastReadId > 0) {
         unreadCount = msgs.filter(m => (m.id > lastReadId) && (m.sender_name !== myNick)).length;
       } else {
-        // 첫 진입 전: 현재 최신 메시지 id를 기준으로 기록해두어 이후 새 메시지만 카운트
-        if (lastMsg && lastMsg.id) {
-          localStorage.setItem("last_read_chat_id_" + r.id, String(lastMsg.id));
-        }
-        unreadCount = 0;
+        // 첫 진입 전: 사용자가 직접 방에 들어가서 확인하기 전까지는 상대방이 보낸 모든 메시지를 안 읽은 것으로 정상 집계!
+        // (절대로 임의로 last_read_chat_id를 덮어써서 0으로 지워버리지 않음)
+        unreadCount = msgs.filter(m => m.sender_name !== myNick).length;
       }
 
-      // ⚡ [빨강점 방지]: 0개일 때는 완전히 태그를 숨겨 빈 빨간 원이 노출되지 않도록 처리
       const unreadBadgeHtml = (unreadCount > 0)
         ? `<span class="kakao-room-unread-badge" id="room_badge_${r.id}" data-count="${unreadCount}">${unreadCount > 99 ? '99+' : unreadCount}</span>`
         : `<span class="kakao-room-unread-badge d-none" id="room_badge_${r.id}" data-count="0" style="display: none !important;"></span>`;
@@ -407,11 +390,6 @@ window.loadMainTabRoomsList = async function() {
           <div class="chat-room-meta">
             <span class="chat-room-time" id="room_time_${r.id}">${lastTimeStr}</span>
             <div class="chat-room-badge-row">
-              ${(r.id !== "default_public") ? `
-                <button type="button" class="btn-room-leave-action" title="방 나가기" onclick="event.stopPropagation(); handleLeaveChatRoom('${r.id}', '${safeRoomName}')">
-                  <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                </button>
-              ` : ''}
               ${unreadBadgeHtml}
             </div>
           </div>
@@ -419,19 +397,19 @@ window.loadMainTabRoomsList = async function() {
       `;
     }).join("");
   } catch (err) {
-    console.error("Chat rooms load error:", err);
     container.innerHTML = `<div class="text-danger small text-center py-4">대화방 목록을 불러오지 못했습니다.</div>`;
   }
 };
 
 // --------------------------------------------------------
-// ⚡ 실시간 대화방 목록 미리보기 & 붉은색 안 읽은 뱃지 갱신
+// 4. 실시간 대화 수신 시 목록의 미리보기 및 안 읽은 뱃지 갱신
 // --------------------------------------------------------
 window.updateRoomCardRealtime = function(roomId, newMsg) {
-  if (!roomId || !newMsg) return;
-  let targetId = (!roomId || roomId === "default_public" || roomId === "public") ? "default_public" : roomId;
+  let targetId = roomId;
+  if (!targetId || targetId === "public" || targetId === "default_public") {
+    targetId = "default_public";
+  }
 
-  // 만약 레거시 direct_ 형식의 메시지라면 canonical UUID로 매핑
   if (targetId && targetId.startsWith("direct_")) {
     const clean = targetId.replace("direct_", "").replace("direct__", "");
     const parts = clean.split("__");
@@ -463,11 +441,11 @@ window.updateRoomCardRealtime = function(roomId, newMsg) {
     }
   }
 
-  const activeRoom = window.currentActiveRoomId || "default_public";
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
+  const isViewingThisRoom = isInChatView && (window.currentActiveRoomId === targetId);
 
-  // 현재 이 방을 열어놓고 보고 있다면 바로 읽음 처리
-  if (isInChatView && activeRoom === targetId) {
+  // 현재 사용자가 실제로 이 방을 열어놓고 보고 있을 때만 즉시 읽음 처리
+  if (isViewingThisRoom) {
     if (newMsg.id) {
       localStorage.setItem("last_read_chat_id_" + targetId, String(newMsg.id));
     }
@@ -480,7 +458,7 @@ window.updateRoomCardRealtime = function(roomId, newMsg) {
   } else {
     // 다른 방에 있거나 메인 목록 화면에 있을 때: 내가 보낸 메시지가 아니면 카운트 증가
     if (newMsg.sender_name !== myNick && badgeElem) {
-      let currentCount = parseInt(badgeElem.getAttribute("data-count") || badgeElem.innerText || "0", 10);
+      let currentCount = parseInt(badgeElem.getAttribute("data-count") || "0", 10);
       if (isNaN(currentCount)) currentCount = 0;
       currentCount++;
       badgeElem.innerText = currentCount > 99 ? "99+" : currentCount;
@@ -491,17 +469,22 @@ window.updateRoomCardRealtime = function(roomId, newMsg) {
   }
 };
 
-// --------------------------------------------------------
-// 4. 대화방 나가기
-// --------------------------------------------------------
 window.handleLeaveChatRoom = async function(roomId, roomTitle) {
   if (!roomId || roomId === "default_public") {
     alert("기본 전체 대화방은 나갈 수 없습니다.");
     return;
   }
-  if (!confirm(`'${roomTitle}' 대화방을 나가시겠습니까?\n목록에서 숨김 처리됩니다.`)) return;
+
+  if (!confirm(`[${roomTitle}] 대화방에서 나가시겠습니까?\n목록에서 완전히 삭제됩니다.`)) {
+    return;
+  }
 
   try {
+    let localRooms = [];
+    try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
+    localRooms = localRooms.filter(r => r.id !== roomId);
+    localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
+
     let leftRoomIds = [];
     try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
     if (!leftRoomIds.includes(roomId)) {
@@ -509,30 +492,26 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
       localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
     }
 
-    let localRooms = [];
-    try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
-    localRooms = localRooms.filter(r => r.id !== roomId);
-    localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
-
     if (window.currentActiveRoomId === roomId) {
       exitChatRoomToMain();
     }
-    loadMainTabRoomsList();
-    if (typeof showKakaoToast === "function") showKakaoToast("대화방에서 퇴장했습니다.", "👋");
-  } catch (err) {
+
+    await loadMainTabRoomsList();
+
+    if (typeof showKakaoToast === "function") {
+      showKakaoToast(`[${roomTitle}] 에서 나왔습니다.`, "👋");
+    }
+  } catch(err) {
     alert("방 나가기 실패: " + err.message);
   }
 };
 
-// --------------------------------------------------------
-// 5. 대화방 입장 및 전환
-// --------------------------------------------------------
 window.openChatRoom = function(roomId, roomTitle, roomType) {
   window.currentActiveRoomId = roomId;
-  window.currentActiveRoomType = roomType || ((roomId && roomId.includes("-")) ? "direct" : "public");
-  window.currentActiveRoomTitle = roomTitle || "길드 대화방";
+  window.currentActiveRoomType = roomType || ((roomId && roomId.includes('-')) ? 'direct' : 'public');
+  window.currentActiveRoomTitle = roomTitle || '길드 대화방';
 
-  // 해당 방의 안 읽은 뱃지 즉시 숨김 및 초기화
+  // 해당 방의 안 읽은 뱃지 즉시 숨김 및 초기화 (오직 이 방만!)
   const badgeElem = document.getElementById('room_badge_' + roomId);
   if (badgeElem) {
     badgeElem.innerText = '';
@@ -548,7 +527,6 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   if (chatView) chatView.style.display = "flex";
   document.body.classList.remove("in-main-tabs");
 
-  // 대화방 타이틀 및 아바타 갱신
   const titleElem = document.getElementById("chatRoomTitle");
   const avatarElem = document.getElementById("chatRoomAvatar");
 
@@ -573,7 +551,6 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
     btnLeave.style.display = (roomId !== "default_public") ? "inline-flex" : "none";
   }
 
-  // 해당 방의 대화 내역 불러오기
   if (typeof loadPastChatMessages === "function") {
     loadPastChatMessages();
   }
@@ -587,14 +564,17 @@ window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
   if (mainView) mainView.style.display = "flex";
   document.body.classList.add("in-main-tabs");
 
-  window.currentActiveRoomId = "default_public";
-  window.currentActiveRoomType = "public";
-  window.switchMainBottomTab("chats");
+  // ⚡ [핵심 방 격리]: 메인 목록 화면으로 나올 때 활성 방 ID를 반드시 null로 초기화!
+  // 절대로 'default_public'으로 오지정하지 않아야 전체방 메시지가 멋대로 읽음 처리되지 않습니다.
+  window.currentActiveRoomId = null;
+  window.currentActiveRoomType = null;
+  window.currentActiveRoomTitle = "";
+
+  if (typeof window.switchMainBottomTab === 'function') {
+    window.switchMainBottomTab("chats");
+  }
 };
 
-// --------------------------------------------------------
-// 6. 1:1 대화방 시작 (표준 UUID 변환 및 상호 연동)
-// --------------------------------------------------------
 window.startDirectChatWith = async function(targetNick) {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
   if (!myNick) {
@@ -607,182 +587,98 @@ window.startDirectChatWith = async function(targetNick) {
   }
 
   try {
-    const currentGid = localStorage.getItem("current_guild_id");
-    // 안정적인 1:1 방 식별자 (표준 UUID 규격) 및 통일된 제목 생성 (두 사람 가나다순 정렬 결합)
-    const sortedNames = [myNick, targetNick].sort();
-    const rawDirectKey = "direct__" + sortedNames[0] + "__" + sortedNames[1];
-    const newRoomId = generateDeterministicUUID(rawDirectKey);
-    const roomTitle = `${sortedNames[0]} & ${sortedNames[1]} 1:1 톡방`;
+    const sorted = [myNick, targetNick].sort();
+    const rawKey = `direct__${sorted[0]}__${sorted[1]}`;
+    const newRoomId = generateDeterministicUUID(rawKey);
+    const roomTitle = `${myNick} & ${targetNick} 1:1 톡방`;
 
-    // 1) 나간 방 목록에 있었다면 해제
-    let leftRoomIds = [];
-    try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
-    if (leftRoomIds.includes(newRoomId)) {
-      leftRoomIds = leftRoomIds.filter(id => id !== newRoomId);
-      localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
-    }
-
-    // 2) 로컬 1:1 대화방 목록 영구 보존 등록 (목록 증발 방지)
     let localRooms = [];
     try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
-    let existing = localRooms.find(r => r.id === newRoomId);
-    if (!existing) {
-      existing = {
+
+    let leftRoomIds = [];
+    try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
+    leftRoomIds = leftRoomIds.filter(id => id !== newRoomId && id !== rawKey);
+    localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
+
+    let existingRoom = localRooms.find(r => r.id === newRoomId || r.id === rawKey);
+    if (!existingRoom) {
+      existingRoom = {
         id: newRoomId,
         room_name: roomTitle,
         room_type: "direct",
+        members: sorted,
         created_by: myNick,
-        members: [myNick, targetNick],
         created_at: new Date().toISOString()
       };
-      localRooms.push(existing);
+      localRooms.push(existingRoom);
+      localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
+    } else {
+      existingRoom.id = newRoomId;
+      existingRoom.members = sorted;
       localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
     }
 
-    // 3) 서버 DB 등록 시도 (실패해도 로컬 캐시로 안전하게 진행)
     try {
+      const currentGid = localStorage.getItem("current_guild_id");
       if (typeof apiRequest === "function") {
         const roomPayload = {
-          id: newRoomId,
           room_name: roomTitle,
           room_type: "direct",
           created_by: myNick
         };
         if (currentGid) roomPayload.guild_id = currentGid;
         await apiRequest("chat_rooms", "POST", [roomPayload]);
+        await apiRequest("room_members", "POST", [
+          { room_id: newRoomId, member_nickname: myNick, role: "member" },
+          { room_id: newRoomId, member_nickname: targetNick, role: "member" }
+        ]);
       }
-    } catch(dbErr) {
-      console.warn("Direct chat DB insert error (fallback to local):", dbErr);
-    }
+    } catch(dbErr) {}
 
     if (typeof showKakaoToast === "function") {
       showKakaoToast(`[${targetNick}] 님과의 1:1 대화방에 입장했습니다.`, "💬");
     }
     openChatRoom(newRoomId, roomTitle, "direct");
   } catch (err) {
-    console.error("startDirectChatWith error:", err);
-    if (typeof showKakaoToast === "function") {
-      showKakaoToast("1:1 대화 연결 실패: " + err.message, "❌");
-    }
+    if (typeof showKakaoToast === "function") showKakaoToast("1:1 대화방 연결 실패: " + err.message, "⚠️");
   }
 };
 
-// --------------------------------------------------------
-// 7. 개인 설정 탭 & 프로필 모달 제어
-// --------------------------------------------------------
 window.loadMainTabSettingsPage = async function() {
-  const container = document.getElementById("tabMoreContent");
-  if (!container) return;
+  const tabMore = document.getElementById("tabMoreContent");
+  if (!tabMore) return;
+  tabMore.innerHTML = `<div class="text-secondary small text-center py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>설정을 불러오는 중...</div>`;
 
-  const myNick = localStorage.getItem("guild_my_nickname") || "로그인 필요";
-  const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
-  const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-  const myRole = localStorage.getItem("guild_my_role") || "일반";
+  try {
+    const res = await fetch(`pages/PageProfileSettings.html?_t=${Date.now()}`);
+    if (!res.ok) throw new Error("로드 실패");
+    const html = await res.text();
+    tabMore.innerHTML = html;
 
-  const nickElem = document.getElementById("mainTabMyNick");
-  const classElem = document.getElementById("mainTabMyClass");
-  const avatarElem = document.getElementById("mainTabMyAvatar");
-
-  if (nickElem) nickElem.innerText = myNick;
-  if (classElem) classElem.innerText = myClass;
-  if (avatarElem) avatarElem.innerText = myAvatar;
-};
-
-window.openProfileEditModal = function() {
-  const modal = document.getElementById("modalProfileEdit");
-  if (modal) modal.style.display = "flex";
-};
-
-window.closeProfileEditModal = function() {
-  const modal = document.getElementById("modalProfileEdit");
-  if (modal) modal.style.display = "none";
-};
-
-window.openMemberProfileCard = function(nick, avatar, className, role) {
-  const modal = document.getElementById("modalMemberProfileCard");
-  if (!modal) return;
-  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
-  const isMe = (nick === myNick);
-
-  const avElem = document.getElementById("profCardAvatar");
-  const nickElem = document.getElementById("profCardNick");
-  const classElem = document.getElementById("profCardClass");
-  const badgeElem = document.getElementById("profCardBadge");
-  const actElem = document.getElementById("profCardActionArea");
-
-  if (avElem) avElem.innerText = avatar || "👤";
-  if (nickElem) nickElem.innerText = nick || "길드원";
-  if (classElem) classElem.innerText = className || "클래스 미지정";
-
-  if (badgeElem) {
-    if (role === "길드장" || role === "길마") {
-      badgeElem.innerHTML = '<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.65rem;">길마</span>';
-    } else if (role === "부길드장" || role === "부길마") {
-      badgeElem.innerHTML = '<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.65rem;">부길마</span>';
-    } else if (role === "정예") {
-      badgeElem.innerHTML = '<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.65rem;">정예</span>';
-    } else {
-      badgeElem.innerHTML = '<span class="badge bg-secondary bg-opacity-25 text-secondary px-1 py-0 me-1" style="font-size:0.65rem;">길드원</span>';
-    }
-  }
-
-  if (actElem) {
-    if (isMe) {
-      actElem.innerHTML = '<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); openProfileEditModal();"><i class="fa-solid fa-pen me-1"></i>내 프로필 변경하기</button>';
-    } else {
-      actElem.innerHTML = '<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); startDirectChatWith(\'' + nick + '\');"><i class="fa-solid fa-comment me-1"></i>1:1 대화하기</button>';
-    }
-  }
-
-  modal.style.display = "flex";
-};
-
-window.closeMemberProfileCard = function() {
-  const modal = document.getElementById("modalMemberProfileCard");
-  if (modal) modal.style.display = "none";
-};
-
-window.selectClassProfile = async function(icon, className) {
-  const myClass = `${icon} ${className}`;
-  localStorage.setItem("guild_my_avatar", icon);
-  localStorage.setItem("guild_my_class", myClass);
-
-  if (typeof updateProfileUI === "function") {
-    updateProfileUI();
-  }
-
-  const myNick = localStorage.getItem("guild_my_nickname") || "";
-  if (myNick && typeof apiRequest === "function") {
-    try {
-      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}`, "PATCH", {
-        job_class: myClass,
-        avatar: icon
-      });
-    } catch(e) {}
-  }
-
-  closeProfileEditModal();
-  if (typeof showKakaoToast === "function") {
-    showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
+    document.querySelectorAll(".settings-tab-script").forEach(s => s.remove());
+    tabMore.querySelectorAll("script").forEach(s => {
+      const sc = document.createElement("script");
+      sc.className = "settings-tab-script";
+      if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
+      document.body.appendChild(sc);
+    });
+  } catch (e) {
+    tabMore.innerHTML = `<div class="text-danger small text-center py-4">설정 로드 실패: ${e.message}</div>`;
   }
 };
 
-// --------------------------------------------------------
-// 8. 새 대화방 개설 모달 제어
-// --------------------------------------------------------
 window.openCreateRoomModal = function() {
   const modal = document.getElementById("modalCreateRoom");
   if (!modal) return;
 
-  const select = document.getElementById("oneOnOneTargetSelect");
-  if (select && window.cachedMemberList) {
-    const myNick = localStorage.getItem("guild_my_nickname") || "";
-    const targets = window.cachedMemberList.filter(m => (m.name || m.nickname) !== myNick);
-    select.innerHTML = targets.map(m => {
-      const n = m.name || m.nickname;
-      return `<option value="${n}">${n}</option>`;
-    }).join("");
-  }
+  const titleInput = document.getElementById("newRoomTitleInput");
+  if (titleInput) titleInput.value = "";
+
+  const typeSelect = document.getElementById("newRoomTypeSelect");
+  if (typeSelect) typeSelect.value = "group";
+
+  populateOneOnOneTargetDropdown();
+  onRoomTypeChange("group");
 
   modal.style.display = "flex";
 };
@@ -805,34 +701,68 @@ window.onRoomTypeChange = function(type) {
   }
 };
 
+function populateOneOnOneTargetDropdown() {
+  const select = document.getElementById("oneOnOneTargetSelect");
+  if (!select) return;
+
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+  const members = (window.cachedMemberList || []).filter(m => {
+    const name = m.name || m.nickname || "";
+    return name && name !== myNick;
+  });
+
+  if (members.length === 0) {
+    select.innerHTML = `<option value="">대화 가능한 길드원이 없습니다</option>`;
+    return;
+  }
+
+  select.innerHTML = `<option value="">1:1 대화 상대 선택...</option>` +
+    members.map(m => {
+      const name = m.name || m.nickname;
+      const cls = m.job_class || m.class_name || "";
+      return `<option value="${name}">${name} (${cls || '길드원'})</option>`;
+    }).join("");
+}
+
 window.executeCreateNewRoom = async function() {
-  const myNick = localStorage.getItem("guild_my_nickname") || "";
-  const currentGid = localStorage.getItem("current_guild_id");
   const typeSelect = document.getElementById("newRoomTypeSelect");
   const type = typeSelect ? typeSelect.value : "group";
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+
+  if (!myNick) {
+    alert("로그인이 필요합니다.");
+    return;
+  }
 
   if (type === "one_on_one") {
     const targetSelect = document.getElementById("oneOnOneTargetSelect");
-    const target = targetSelect ? targetSelect.value : "";
-    if (!target) return alert("대화 상대를 선택하세요.");
+    const targetNick = targetSelect ? targetSelect.value : "";
+    if (!targetNick) {
+      alert("대화 상대를 선택해 주세요.");
+      return;
+    }
     closeCreateRoomModal();
-    startDirectChatWith(target);
+    startDirectChatWith(targetNick);
     return;
   }
 
   const titleInput = document.getElementById("newRoomTitleInput");
-  const title = (titleInput ? titleInput.value : "").trim();
-  if (!title) return alert("대화방 이름을 입력하세요.");
+  const title = titleInput ? titleInput.value.trim() : "";
+  if (!title) {
+    alert("대화방 이름을 입력해 주세요.");
+    return;
+  }
 
   try {
+    const currentGid = localStorage.getItem("current_guild_id");
     const roomPayload = {
       room_name: title,
-      room_type: (type === "secret") ? "private" : "public",
+      room_type: (type === "secret" ? "private" : "group"),
       created_by: myNick
     };
     if (currentGid) roomPayload.guild_id = currentGid;
 
-    let newRoom = { id: generateDeterministicUUID("custom_" + Date.now()), room_name: title, room_type: roomPayload.room_type, created_by: myNick, created_at: new Date().toISOString() };
+    let newRoom = { id: "room_" + Date.now(), room_name: title, room_type: roomPayload.room_type, created_by: myNick, created_at: new Date().toISOString() };
     if (typeof apiRequest === "function") {
       try {
         const res = await apiRequest("chat_rooms", "POST", [roomPayload]);
@@ -840,7 +770,6 @@ window.executeCreateNewRoom = async function() {
       } catch(e) {}
     }
 
-    // 로컬 보존 등록
     let localRooms = [];
     try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
     localRooms.push(newRoom);
@@ -854,12 +783,8 @@ window.executeCreateNewRoom = async function() {
   }
 };
 
-// --------------------------------------------------------
-// 9. 실시간 대화방 생성 동기화 & 초기화
-// --------------------------------------------------------
 window.initRoomsRealtime = function() {
   if (!window.supabaseClient) return;
-
   try {
     window.supabaseClient
       .channel("public:chat_rooms")
@@ -867,21 +792,15 @@ window.initRoomsRealtime = function() {
         loadMainTabRoomsList();
       })
       .subscribe();
-  } catch(e) {}
+  } catch (e) {}
 };
 
-window.addEventListener("DOMContentLoaded", () => {
-  initRoomsRealtime();
-  if (typeof window.loadMainTabRoomsList === "function") {
-    window.loadMainTabRoomsList();
+window.addEventListener("DOMContentLoaded", function() {
+  const isMainTabs = document.body.classList.contains("in-main-tabs");
+  if (isMainTabs && typeof window.switchMainBottomTab === "function") {
+    window.switchMainBottomTab("chats");
+  }
+  if (typeof window.initRoomsRealtime === "function") {
+    window.initRoomsRealtime();
   }
 });
-
-// 브라우저 새로고침 시 대화방 목록 즉각 렌더링 (스피너 멈춤 완전 방지)
-if (document.readyState === "complete" || document.readyState === "interactive") {
-  setTimeout(() => {
-    if (typeof window.loadMainTabRoomsList === "function") {
-      window.loadMainTabRoomsList();
-    }
-  }, 50);
-}
