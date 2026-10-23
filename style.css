@@ -609,7 +609,7 @@ body.theme-dark .boss-brief-line.spawned { color: #ff6b6b !important; font-weigh
 .boss-alert-mini-card {
   background: var(--kakao-notice-bg) !important; color: var(--kakao-notice-text) !important;
   border-radius: 6px !important; padding: 8px 12px !important; font-size: 12px !important; font-weight: 400 !important; line-height: 1.42 !important;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.08) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08) !important;
 }
 .boss-alert-mini-card.alert-7m { border-left: 4px solid #eab308 !important; }
 .boss-alert-mini-card.alert-3m { border-left: 4px solid #f97316 !important; }
@@ -689,7 +689,7 @@ body.theme-dark .btn-kakao-send { background: #282f3a; color: #64748b; }
 .class-preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-height: 220px; overflow-y: auto; margin-bottom: 12px; }
 .class-preset-cell {
   padding: 6px 3px; border-radius: 8px; background: var(--modal-input-bg) !important;
-  border: 1px solid var(--modal-input-border) !important; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
+  border: 1px solid var(--modal-input-border) !important; display: flex flex-direction: column; align-items: center; justify-content: center; cursor: pointer;
 }
 .class-preset-cell:hover { background: var(--drawer-item-hover-bg) !important; }
 .class-icon-big { font-size: 1.2rem; line-height: 1; }
@@ -927,7 +927,6 @@ body.theme-dark .records-report-card .rec-date-badge {
   font-weight: 700 !important;
 }
 
-
 /* ========================================================
    [모달 레이어 제어: display: none 즉시 반영 보장]
    ======================================================== */
@@ -1068,7 +1067,6 @@ body.theme-dark .friend-item-card:hover {
   font-weight: 500 !important;
 }
 
-
 /* ========================================================
    [카카오톡 메인 3탭 화면 - 순정 화이트 바탕 & 음영 하단 바]
    ======================================================== */
@@ -1105,4 +1103,23 @@ html, body, .app-main-layout, #kakaoMainTabsView, #chatRoomView {
   box-shadow: none !important;
   visibility: hidden !important;
   pointer-events: none !important;
+}
+
+/* ========================================================
+   [카카오톡 스타일 톡방 목록 안 읽은 메시지 붉은색 뱃지]
+   ======================================================== */
+.kakao-room-unread-badge {
+  background: #ff4747 !important;
+  color: #ffffff !important;
+  font-size: 0.68rem !important;
+  font-weight: 700 !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  border-radius: 9px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 5px !important;
+  line-height: 1 !important;
+  box-shadow: 0 1px 3px rgba(255, 71, 71, 0.45) !important;
 }
