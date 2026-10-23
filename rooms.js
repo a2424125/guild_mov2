@@ -192,7 +192,7 @@ window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
 };
 
 // --------------------------------------------------------
-// 3. 대화방 목록 로드 (채팅 탭 & 로컬 캐시 증발 방지)
+// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (최신 메시지 미리보기 & 붉은색 안 읽은 뱃지)
 // --------------------------------------------------------
 window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
@@ -208,7 +208,7 @@ window.loadMainTabRoomsList = async function() {
     const curGuild = joined.find(g => g.guild_id === currentGid);
     const guildTitle = (curGuild && curGuild.guild_name) ? `${curGuild.guild_name} 전체 대화방` : "길드 전체 대화방";
 
-    // 1) 서버 대화방 조회
+    // 1) 서버 대화방 조회 (관계 조인 실패 방어)
     if (typeof apiRequest === "function" && currentGid) {
       try {
         serverRooms = await apiRequest("chat_rooms?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=created_at.asc");
@@ -219,7 +219,7 @@ window.loadMainTabRoomsList = async function() {
       }
     }
 
-    // 2) 로컬 보존 1:1 대화방 및 생성 대화방 복원
+    // 2) 로컬 보존 1:1 대화방 및 생성 대화방 복원 (증발 방지 핵심)
     let localRooms = [];
     try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
 
@@ -236,15 +236,7 @@ window.loadMainTabRoomsList = async function() {
     roomMap.set("default_public", defaultRoom);
 
     (serverRooms || []).forEach(r => {
-      if (r && r.id) {
-        if (r.room_type === "direct") {
-          const names = r.room_name || "";
-          const isMember = (Array.isArray(r.members) && r.members.includes(myNick)) || names.includes(myNick);
-          if (isMember) roomMap.set(r.id, r);
-        } else {
-          roomMap.set(r.id, r);
-        }
-      }
+      if (r && r.id) roomMap.set(r.id, r);
     });
 
     (localRooms || []).forEach(r => {
@@ -272,6 +264,26 @@ window.loadMainTabRoomsList = async function() {
     const countElem = document.getElementById("mainTabRoomCount");
     if (countElem) countElem.innerText = myRooms.length;
 
+    // ⚡ [핵심 개선]: 최근 메시지 목록 조회하여 각 방별 마지막 메시지 & 안 읽은 메시지 수 계산
+    let recentChats = [];
+    if (typeof apiRequest === "function") {
+      try {
+        recentChats = await apiRequest("guild_chats?select=id,room_id,sender_name,message,created_at&order=id.desc&limit=300");
+      } catch(e) {
+        console.warn("Failed to fetch recent chats for room previews:", e);
+      }
+    }
+
+    // 방별 메시지 그룹핑
+    const roomMsgMap = new Map();
+    (recentChats || []).forEach(c => {
+      const rId = (!c.room_id || c.room_id === "default_public" || c.room_id === "public") ? "default_public" : c.room_id;
+      if (!roomMsgMap.has(rId)) {
+        roomMsgMap.set(rId, []);
+      }
+      roomMsgMap.get(rId).push(c);
+    });
+
     container.innerHTML = myRooms.map(r => {
       let iconClass = "fa-users";
       let typeClass = "";
@@ -291,23 +303,58 @@ window.loadMainTabRoomsList = async function() {
 
       const safeRoomName = (r.room_name || "대화방").replace(/'/g, "\\'");
 
+      // 해당 방의 메시지 목록 (id desc 정렬 상태)
+      const msgs = roomMsgMap.get(r.id) || [];
+      const lastMsg = msgs.length > 0 ? msgs[0] : null;
+
+      // 마지막 메시지 내용
+      let lastText = "대화를 시작해 보세요.";
+      if (lastMsg && lastMsg.message) {
+        lastText = (typeof escapeHtmlText === "function") ? escapeHtmlText(lastMsg.message) : lastMsg.message;
+      }
+
+      // 마지막 메시지 시간
+      let lastTimeStr = "";
+      if (lastMsg && lastMsg.created_at) {
+        lastTimeStr = (typeof formatKSTChatTime === "function") ? formatKSTChatTime(lastMsg.created_at) : "";
+      } else {
+        lastTimeStr = (typeof formatTime24Hour === "function") ? formatTime24Hour(r.created_at || new Date()) : "";
+      }
+
+      // 안 읽은 새 메시지 수 계산
+      const lastReadId = parseInt(localStorage.getItem("last_read_chat_id_" + r.id) || "0", 10);
+      let unreadCount = 0;
+      if (lastReadId > 0) {
+        unreadCount = msgs.filter(m => (m.id > lastReadId) && (m.sender_name !== myNick)).length;
+      } else {
+        if (lastMsg && lastMsg.id) {
+          localStorage.setItem("last_read_chat_id_" + r.id, String(lastMsg.id));
+        }
+        unreadCount = 0;
+      }
+
+      const unreadBadgeHtml = (unreadCount > 0)
+        ? `<span class="kakao-room-unread-badge" id="room_badge_${r.id}">${unreadCount > 99 ? '99+' : unreadCount}</span>`
+        : `<span class="kakao-room-unread-badge" id="room_badge_${r.id}" style="display: none;"></span>`;
+
       return `
         <div class="chat-room-card" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">
-          <div class="room-avatar-circle ${typeClass}">
+          <div class="room-avatar-large ${typeClass}">
             <i class="fa-solid ${iconClass}"></i>
           </div>
           <div class="room-content-box">
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center gap-1">
               <span class="room-name-text">${r.room_name}</span>
               ${typeBadge}
             </div>
-            <p class="room-msg-preview" id="room_preview_${r.id}">대화를 시작해 보세요.</p>
+            <p class="room-msg-preview" id="room_preview_${r.id}">${lastText}</p>
           </div>
-          <div class="chat-room-meta">
-            <span class="chat-room-time">${formatTime24Hour(r.created_at || new Date())}</span>
-            <div class="d-flex align-items-center gap-1 mt-1 justify-content-end">
+          <div class="chat-room-meta" style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 3px; flex-shrink: 0;">
+            <span class="chat-room-time" id="room_time_${r.id}" style="font-size: 0.72rem; color: var(--main-header-subtext, #94a3b8);">${lastTimeStr}</span>
+            <div class="d-flex align-items-center gap-1 justify-content-end" style="min-height: 18px;">
+              ${unreadBadgeHtml}
               ${(r.id !== "default_public") ? `
-                <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none" title="방 나가기" style="font-size:0.75rem;" onclick="event.stopPropagation(); handleLeaveChatRoom('${r.id}', '${safeRoomName}')">
+                <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none ms-1" title="방 나가기" style="font-size:0.75rem;" onclick="event.stopPropagation(); handleLeaveChatRoom('${r.id}', '${safeRoomName}')">
                   <i class="fa-solid fa-arrow-right-from-bracket"></i>
                 </button>
               ` : ''}
@@ -316,8 +363,54 @@ window.loadMainTabRoomsList = async function() {
         </div>
       `;
     }).join("");
-  } catch (e) {
-    container.innerHTML = `<div class="text-center py-4 text-danger small">대화방 목록 로드 실패: ${e.message}</div>`;
+  } catch (err) {
+    console.error("Chat rooms load error:", err);
+    container.innerHTML = `<div class="text-danger small text-center py-4">대화방 목록을 불러오지 못했습니다.</div>`;
+  }
+};
+
+// --------------------------------------------------------
+// ⚡ 실시간 대화방 목록 미리보기 & 붉은색 안 읽은 뱃지 갱신
+// --------------------------------------------------------
+window.updateRoomCardRealtime = function(roomId, newMsg) {
+  if (!roomId || !newMsg) return;
+  const targetId = (!roomId || roomId === "default_public" || roomId === "public") ? "default_public" : roomId;
+
+  const previewElem = document.getElementById("room_preview_" + targetId);
+  const timeElem = document.getElementById("room_time_" + targetId);
+  const badgeElem = document.getElementById("room_badge_" + targetId);
+
+  if (previewElem && newMsg.message) {
+    previewElem.innerText = newMsg.message;
+  }
+  if (timeElem && newMsg.created_at) {
+    if (typeof formatKSTChatTime === "function") {
+      timeElem.innerText = formatKSTChatTime(newMsg.created_at);
+    }
+  }
+
+  const activeRoom = window.currentActiveRoomId || "default_public";
+  const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
+  const myNick = localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "";
+
+  // 현재 이 방을 열어놓고 보고 있다면 바로 읽음 처리
+  if (isInChatView && activeRoom === targetId) {
+    if (newMsg.id) {
+      localStorage.setItem("last_read_chat_id_" + targetId, String(newMsg.id));
+    }
+    if (badgeElem) {
+      badgeElem.style.display = "none";
+      badgeElem.innerText = "0";
+    }
+  } else {
+    // 다른 방에 있거나 메인 목록 화면에 있을 때: 내가 보낸 메시지가 아니면 카운트 증가
+    if (newMsg.sender_name !== myNick && badgeElem) {
+      let currentCount = parseInt(badgeElem.innerText || "0", 10);
+      if (isNaN(currentCount)) currentCount = 0;
+      currentCount++;
+      badgeElem.innerText = currentCount > 99 ? "99+" : currentCount;
+      badgeElem.style.display = "inline-flex";
+    }
   }
 };
 
@@ -361,6 +454,13 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   window.currentActiveRoomId = roomId;
   window.currentActiveRoomType = roomType || ((roomId && roomId.includes("-")) ? "direct" : "public");
   window.currentActiveRoomTitle = roomTitle || "길드 대화방";
+
+  // 해당 방의 안 읽은 뱃지 즉시 숨김
+  const badgeElem = document.getElementById('room_badge_' + roomId);
+  if (badgeElem) {
+    badgeElem.style.display = 'none';
+    badgeElem.innerText = '0';
+  }
 
   const mainView = document.getElementById("kakaoMainTabsView");
   const chatView = document.getElementById("chatRoomView");
@@ -693,4 +793,16 @@ window.initRoomsRealtime = function() {
 
 window.addEventListener("DOMContentLoaded", () => {
   initRoomsRealtime();
+  if (typeof window.loadMainTabRoomsList === "function") {
+    window.loadMainTabRoomsList();
+  }
 });
+
+// 브라우저 새로고침 시 대화방 목록 즉각 렌더링 (스피너 멈춤 완전 방지)
+if (document.readyState === "complete" || document.readyState === "interactive") {
+  setTimeout(() => {
+    if (typeof window.loadMainTabRoomsList === "function") {
+      window.loadMainTabRoomsList();
+    }
+  }, 50);
+}
