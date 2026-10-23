@@ -201,14 +201,23 @@ window.loadMainTabRoomsList = async function() {
     roomMap.set("default_public", defaultRoom);
 
     (serverRooms || []).forEach(r => {
-      if (r && r.id) roomMap.set(r.id, r);
+      if (r && r.id) {
+        if (r.room_type === "direct") {
+          // 1:1 방은 참여자에 myNick이 포함된 경우만 노출
+          if ((r.id && r.id.includes(myNick)) || (r.room_name && r.room_name.includes(myNick))) {
+            roomMap.set(r.id, r);
+          }
+        } else {
+          roomMap.set(r.id, r);
+        }
+      }
     });
 
     (localRooms || []).forEach(r => {
       if (r && r.id) {
         if (r.room_type === "direct") {
           const names = r.room_name || "";
-          const isMember = (Array.isArray(r.members) && r.members.includes(myNick)) || names.includes(myNick);
+          const isMember = (Array.isArray(r.members) && r.members.includes(myNick)) || names.includes(myNick) || r.id.includes(myNick);
           if (isMember) roomMap.set(r.id, r);
         } else {
           roomMap.set(r.id, r);
@@ -378,7 +387,7 @@ window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
 };
 
 // --------------------------------------------------------
-// 5. 1:1 개인톡 즉시 생성 및 입장 (길드원끼리만 허용 & 영구 보존)
+// 5. 1:1 개인톡 즉시 생성 및 입장 (가나다 정렬 결합 단일 고유 방)
 // --------------------------------------------------------
 window.startDirectChatWith = async function(targetNick) {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
@@ -393,10 +402,10 @@ window.startDirectChatWith = async function(targetNick) {
 
   try {
     const currentGid = localStorage.getItem("current_guild_id");
-    // 안정적인 1:1 방 고유 식별자 생성
-    const sortedPair = [myNick, targetNick].sort().join("_");
-    const newRoomId = "direct_" + sortedPair;
-    const roomTitle = `${myNick} & ${targetNick} 1:1 톡방`;
+    // 안정적인 1:1 방 식별자 및 통일된 제목 생성 (두 사람 가나다순 정렬 결합)
+    const sortedNames = [myNick, targetNick].sort();
+    const newRoomId = "direct_" + sortedNames[0] + "__" + sortedNames[1];
+    const roomTitle = `${sortedNames[0]} & ${sortedNames[1]} 1:1 톡방`;
 
     // 1) 나간 방 목록에 있었다면 해제
     let leftRoomIds = [];
