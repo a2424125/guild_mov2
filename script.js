@@ -113,7 +113,7 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
-  // 저장된 로그인 닉네임과 직업 동기화
+  // 세션 정보 동기화
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
@@ -600,14 +600,14 @@ window.updateProfileUI = function(nick) {
 function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 & 실시간 대화 수신 (방별 격리 & 캐싱으로 대화 증발 방지)
+// 5. 과거 대화 로드 & 실시간 대화 수신
 // --------------------------------------------------------
 async function loadPastChatMessages() {
   const activeRoom = window.currentActiveRoomId || "default_public";
   const chatContainer = document.getElementById("chatMessagesView");
   if (!chatContainer) return;
 
-  // 1) [대화 내역 사라짐 방지]: 로컬 캐시에서 먼저 즉시 복원하여 화면 깜빡임 및 빈 화면 방지
+  // 1) 로컬 캐시에서 먼저 즉각 복원 (화면 비워짐 방지)
   const cacheKey = "chat_history_cache_" + activeRoom;
   let cachedMessages = [];
   try {
@@ -643,7 +643,7 @@ async function loadPastChatMessages() {
     }
 
     if (list && list.length > 0) {
-      // 3) [방 격리 보장]: 1:1 대화 내용이 단체 대화방에 절대 노출되지 않도록 필터링
+      // 방별 격리 필터링
       let filtered = list.filter(c => {
         if (activeRoom === "default_public") {
           return !c.room_id || c.room_id === "default_public" || c.room_id === "public";
@@ -652,7 +652,6 @@ async function loadPastChatMessages() {
         }
       });
 
-      // 캐시와 병합하여 중복 제거 (id 기준)
       const mergedMap = new Map();
       cachedMessages.forEach(m => { if (m.id) mergedMap.set(String(m.id), m); });
       filtered.forEach(m => { if (m.id) mergedMap.set(String(m.id), m); });
@@ -714,7 +713,6 @@ function listenRealtimeChatMessages() {
       const activeRoom = window.currentActiveRoomId || "default_public";
       const msgRoom = newMsg.room_id || "default_public";
 
-      // 1) 해당 방 로컬 캐시 실시간 업데이트 (재입장 시 대화 보존)
       try {
         const cacheKey = "chat_history_cache_" + msgRoom;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
@@ -725,7 +723,6 @@ function listenRealtimeChatMessages() {
         }
       } catch(e) {}
 
-      // 2) [방별 격리]: 현재 화면에 표시 중인 방과 일치하지 않으면 렌더링 차단
       if (activeRoom === "default_public") {
         if (newMsg.room_id && newMsg.room_id !== "default_public" && newMsg.room_id !== "public") {
           return;
@@ -736,7 +733,6 @@ function listenRealtimeChatMessages() {
         }
       }
 
-      // 3) 내가 전송한 낙관적 메시지 중복 방어
       const optimisticIdx = pendingOptimisticMessages.findIndex(m => 
         m.sender_name === newMsg.sender_name && (m.message === newMsg.message || m.message === newMsg.message_text)
       );
@@ -755,7 +751,7 @@ function listenRealtimeChatMessages() {
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링 (읽음 숫자 위치 정밀 배치 & 나/상대방 분리)
+// 6. 카카오톡 말풍선 렌더링
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -779,13 +775,12 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
     unreadCount = isMe ? Math.max(0, totalMembers - 1) : totalMembers;
   }
 
-  // [버그 수정]: 숫자 1이 시간 시작점('오' 위) 말풍선 끝자락에 정확히 위치하도록 좌측 정렬 고정
   const unreadSpanHtml = (unreadCount > 0) 
     ? `<span class="chat-unread-count" style="text-align:left !important;">${unreadCount}</span>` 
     : `<span class="chat-unread-count" style="display:none;"></span>`;
 
   let html = "";
-  const cleanMessageText = (msg.message || msg.message_text || '').trim();
+  const cleanMessageText = (msg.message || msg.message_text || msg.content || '').trim();
 
   let senderAvatarIcon = (msg.sender_name || '?').charAt(0);
   const matchedSender = cachedMemberList.find(m => (m.name === msg.sender_name || m.nickname === msg.sender_name));
@@ -933,7 +928,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 7. 메시지 입력 및 전송 제어 (방 ID 보장 & 캐시 동기화)
+// 7. 메시지 입력 및 전송 제어 (content 변환 제거 및 안전 전송)
 // --------------------------------------------------------
 function handleInputState(textarea) {
   textarea.style.height = "auto";
@@ -988,7 +983,7 @@ async function handleSendMessage() {
   renderKakaoChatBubble(optimisticMsg, false, isConsecutive);
   lastRenderedSender = myCurrentNick;
 
-  // 로컬 캐시에도 즉시 저장하여 나갔다 들어와도 대화 증발 방지
+  // 로컬 캐시 즉시 보관
   try {
     const cacheKey = "chat_history_cache_" + targetRoomId;
     let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
@@ -998,33 +993,40 @@ async function handleSendMessage() {
   } catch(e) {}
 
   try {
+    const currentGid = localStorage.getItem("current_guild_id");
     const chatPayload = {
       sender_name: myCurrentNick,
       message: text,
-      msg_type: "chat",
-      room_id: targetRoomId,
-      mentions: detectedMentions
+      msg_type: "chat"
     };
+    if (targetRoomId) chatPayload.room_id = targetRoomId;
+    if (currentGid) chatPayload.guild_id = currentGid;
+    if (detectedMentions && detectedMentions.length > 0) {
+      chatPayload.mentions = detectedMentions;
+    }
 
     let insertRes;
     try {
       insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
     } catch (postErr) {
-      if (postErr.message && postErr.message.includes("message")) {
-        delete chatPayload.message;
-        chatPayload.message_text = text;
+      // room_id나 mentions 컬럼이 아직 DB에 없다면 기본 필수 데이터로 자동 안전 재전송
+      const minimalPayload = {
+        sender_name: myCurrentNick,
+        message: text,
+        msg_type: "chat"
+      };
+      if (currentGid) minimalPayload.guild_id = currentGid;
+
+      try {
+        insertRes = await apiRequest("guild_chats", "POST", [minimalPayload]);
+      } catch (finalErr) {
+        // 실제 데이터베이스 오류 원인 메시지를 가공 없이 그대로 노출
+        let cleanErr = (finalErr && finalErr.message) ? finalErr.message : String(finalErr);
         try {
-          insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
-        } catch (postErr2) {
-          delete chatPayload.message_text;
-          chatPayload.content = text;
-          insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
-        }
-      } else if (postErr.message && postErr.message.includes("room_id")) {
-        delete chatPayload.room_id;
-        insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
-      } else {
-        throw postErr;
+          const parsed = JSON.parse(cleanErr);
+          if (parsed && parsed.message) cleanErr = parsed.message;
+        } catch(e) {}
+        throw new Error(cleanErr);
       }
     }
 
@@ -1035,7 +1037,6 @@ async function handleSendMessage() {
         rowElem.id = "msg_" + realId;
         rowElem.setAttribute("data-msg-id", realId);
       }
-      // 캐시 ID도 실제 서버 ID로 업데이트
       try {
         const cacheKey = "chat_history_cache_" + targetRoomId;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
