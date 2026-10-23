@@ -21,17 +21,21 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
+  <!-- 초기 렌더링 깜빡임 방지 & 다크모드 캐시 무력화 스크립트 -->
   <script>
     (function() {
       try {
+        // 이전 버그로 저장된 다크모드 캐시 무력화 및 순정 라이트 테마 복원
+        if (localStorage.getItem("guild_theme_mode") === "dark" && !localStorage.getItem("user_explicit_dark")) {
+          localStorage.setItem("guild_theme_mode", "light");
+        }
         var theme = localStorage.getItem("guild_theme_mode") || "light";
-        if (theme === "light") {
-          document.documentElement.classList.add("theme-light");
-          document.documentElement.classList.remove("theme-dark");
-        } else {
+        if (theme === "dark") {
           document.documentElement.classList.add("theme-dark");
           document.documentElement.classList.remove("theme-light");
+        } else {
+          document.documentElement.classList.add("theme-light");
+          document.documentElement.classList.remove("theme-dark");
         }
       } catch (e) {}
     })();
@@ -45,8 +49,8 @@
     .kakao-bottom-tabbar {
       height: 52px;
       min-height: 52px;
-      background: var(--main-bottom-bg, #181d24);
-      border-top: 1px solid var(--main-bottom-border, #282f3a);
+      background: var(--main-bottom-bg, #ffffff);
+      border-top: 1px solid var(--main-bottom-border, #e2e8f0);
       display: flex;
       align-items: center;
       justify-content: space-around;
@@ -59,14 +63,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--main-tab-inactive, #64748b);
+      color: var(--main-tab-inactive, #8c8c8c);
       cursor: pointer;
       padding: 4px 0;
       transition: color 0.15s ease;
       user-select: none;
     }
     .kakao-tab-item.active {
-      color: var(--main-tab-active, #fee500);
+      color: var(--main-tab-active, #191919);
     }
     .kakao-tab-item i {
       font-size: 1.15rem;
@@ -78,7 +82,7 @@
     }
   </style>
 </head>
-<body class="theme-light in-main-tabs">
+<body class="in-main-tabs">
 
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
@@ -178,7 +182,7 @@
       </div>
 
       <div class="header-right-tools">
-        <!-- 메인 헤더 도구 -->
+        <!-- 대화방 입장 전 헤더: 군더더기 버튼 숨김 -->
       </div>
     </header>
 
@@ -498,7 +502,7 @@
     </div>
   </div>
 
-  <!-- 기존 길드 로그인 모달 (G 엠블럼) -->
+  <!-- 기존 길드 로그인 모달 (G 엠블럼 - 화이트 순정 규격) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card">
       <div style="width: 44px; height: 44px; border-radius: 14px; background: var(--kakao-yellow); display: inline-flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 10px;">
@@ -542,7 +546,6 @@
     }
     window.closeProfileEditModal = closeProfileEditModal;
 
-    // 👤 [길드원 미니 프로필 카드 모달 제어]
     function openMemberProfileCard(nick, avatar, className, role) {
       var modal = document.getElementById("modalMemberProfileCard");
       if (!modal) return;
@@ -589,7 +592,6 @@
     }
     window.closeMemberProfileCard = closeMemberProfileCard;
 
-    // ⚡ [메시지 전송 & 엔터키 즉시 처리 & 전송버튼 활성화]
     function handleInputState(textarea) {
       if (!textarea) return;
       textarea.style.height = "auto";
@@ -682,10 +684,10 @@
       if (joined.length > 0 && box && list) {
         box.style.display = "block";
         list.innerHTML = joined.map(function(g) {
-          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #1c222b); border-color:var(--main-card-border, #28303c) !important;">' +
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:var(--main-card-bg, #ffffff); border-color:var(--main-card-border, #e8ecf1) !important;">' +
             '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
               '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || "게임") + '</span>' +
-              '<span class="fw-bold text-light text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
+              '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
             '</div>' +
             '<div class="d-flex align-items-center gap-1 ms-2">' +
               '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem; cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">로그인</span>' +
@@ -737,8 +739,12 @@
         var titleElem = document.getElementById("loginGuildTitle");
         if (titleElem) titleElem.innerText = "[" + (g.game_name || "게임") + "] " + g.guild_name + " 로그인";
       }
-      var loginModal = document.getElementById("guildLoginModal");
-      if (loginModal) loginModal.style.display = "flex";
+      if (typeof window.showGuildLoginModal === "function") {
+        window.showGuildLoginModal();
+      } else {
+        var loginModal = document.getElementById("guildLoginModal");
+        if (loginModal) loginModal.style.display = "flex";
+      }
       if (typeof window.loadGuildMembersData === "function") window.loadGuildMembersData();
     }
 
@@ -823,7 +829,13 @@
               role: "길드장",
               pin: pinInput
             }]);
-          } catch(e2) {}
+          } catch(e2) {
+            await apiRequest("guild_members", "POST", [{
+              nickname: masterNick,
+              role: "길드장",
+              pin: pinInput
+            }]);
+          }
         }
 
         await apiRequest("app_licenses?id=" + lic.id, "PATCH", {
