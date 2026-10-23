@@ -164,7 +164,7 @@ window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
 };
 
 // --------------------------------------------------------
-// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링
+// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (방 나오기 버튼 지원)
 // --------------------------------------------------------
 window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
@@ -195,7 +195,12 @@ window.loadMainTabRoomsList = async function() {
       }];
     }
 
+    // 나간 방 필터링 (localStorage 동기화)
+    let leftRoomIds = [];
+    try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
+
     const myRooms = rooms.filter(r => {
+      if (leftRoomIds.includes(r.id)) return false;
       if (r.room_type === "public") return true;
       if (!r.room_members || r.room_members.length === 0) return true;
       return r.room_members.some(m => (m.member_nickname === myNick || m.nickname === myNick));
@@ -225,6 +230,17 @@ window.loadMainTabRoomsList = async function() {
 
       const safeRoomName = (r.room_name || "대화방").replace(/'/g, "\\'");
 
+      // 1:1 대화방 및 개설방일 경우 [방 나오기] 버튼 표기
+      const isDefaultPublic = (r.id === "default_public");
+      const actionHtml = isDefaultPublic ? 
+        `<span class="room-time-text">입장 <i class="fa-solid fa-chevron-right ms-1"></i></span>` :
+        `<div class="d-flex align-items-center gap-1" onclick="event.stopPropagation();">
+          <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size:0.68rem; border-radius:6px; font-weight:600; line-height:1.2;" onclick="handleLeaveChatRoom('${r.id}', '${safeRoomName}')" title="대화방 나가기">
+            <i class="fa-solid fa-arrow-right-from-bracket me-1"></i>방 나오기
+          </button>
+          <span class="room-time-text ms-1" style="cursor:pointer;" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">입장 <i class="fa-solid fa-chevron-right ms-1"></i></span>
+        </div>`;
+
       return `
         <div class="chat-room-card" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">
           <div class="room-avatar-large ${typeClass}">
@@ -236,7 +252,7 @@ window.loadMainTabRoomsList = async function() {
                 <span class="room-name-text">${r.room_name}</span>
                 ${typeBadge}
               </div>
-              <span class="room-time-text">입장 <i class="fa-solid fa-chevron-right ms-1"></i></span>
+              ${actionHtml}
             </div>
             <p class="room-msg-preview">터치하여 대화방에 참여하세요.</p>
           </div>
@@ -246,6 +262,49 @@ window.loadMainTabRoomsList = async function() {
   } catch (err) {
     console.error("Chat rooms load error:", err);
     container.innerHTML = `<div class="text-danger small text-center py-4">대화방 목록을 불러오지 못했습니다.</div>`;
+  }
+};
+
+// --------------------------------------------------------
+// [대화방 나가기 / 방 나오기] (1:1 톡방 및 개설 대화방 목록에서 제거)
+// --------------------------------------------------------
+window.handleLeaveChatRoom = async function(roomId, roomTitle) {
+  if (!roomId || roomId === "default_public") {
+    alert("기본 전체 대화방은 나갈 수 없습니다.");
+    return;
+  }
+
+  const confirmMsg = `[${roomTitle || '대화방'}] 에서 나가시겠습니까?\n목록에서 제거되며 대화방을 나옵니다.`;
+  if (!confirm(confirmMsg)) return;
+
+  const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+
+  try {
+    if (typeof apiRequest === "function" && myNick) {
+      try {
+        await apiRequest(`room_members?room_id=eq.${encodeURIComponent(roomId)}&member_nickname=eq.${encodeURIComponent(myNick)}`, "DELETE");
+      } catch(e) {}
+    }
+
+    let leftRoomIds = [];
+    try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
+    if (!leftRoomIds.includes(roomId)) {
+      leftRoomIds.push(roomId);
+      localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
+    }
+
+    // 현재 열려있는 대화방에서 나온 경우 메인 화면으로 전환
+    if (window.currentActiveRoomId === roomId) {
+      exitChatRoomToMain();
+    }
+
+    await loadMainTabRoomsList();
+
+    if (typeof showKakaoToast === "function") {
+      showKakaoToast(`[${roomTitle}] 에서 나왔습니다.`, "👋");
+    }
+  } catch(err) {
+    alert("방 나가기 실패: " + err.message);
   }
 };
 
@@ -275,6 +334,12 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
     } else {
       avatarElem.innerHTML = `<i class="fa-solid fa-users text-warning"></i>`;
     }
+  }
+
+  // 1:1 대화방 입장 시 헤더에 [방 나오기] 버튼 활성화
+  const btnLeave = document.getElementById("btnLeaveCurrentRoom");
+  if (btnLeave) {
+    btnLeave.style.display = (roomId !== "default_public") ? "inline-flex" : "none";
   }
 
   // 해당 방의 대화 내역 불러오기
@@ -319,7 +384,14 @@ window.startDirectChatWith = async function(targetNick) {
       return names.includes(myNick) && names.includes(targetNick);
     });
 
+    let leftRoomIds = [];
+    try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
+
     if (existing) {
+      if (leftRoomIds.includes(existing.id)) {
+        leftRoomIds = leftRoomIds.filter(id => id !== existing.id);
+        localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
+      }
       openChatRoom(existing.id, existing.room_name, "direct");
       return;
     }
