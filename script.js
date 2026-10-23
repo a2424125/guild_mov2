@@ -13,6 +13,7 @@ var deferredPrompt = null;
 var kakaoToastTimer = null;
 var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
+window.currentActiveRoomId = "default_public";
 
 // --------------------------------------------------------
 // 1. 공통 토스트 및 시간 유틸리티
@@ -117,6 +118,7 @@ async function initApp() {
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
+  window.currentActiveRoomId = "default_public";
 
   await loadGuildSettings();
   await window.loadGuildMembersData();
@@ -599,13 +601,14 @@ window.updateProfileUI = function(nick) {
 function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 & 실시간 대화 수신
+// 5. 과거 대화 로드 (대규모 최적화 & 완벽한 방 격리)
 // --------------------------------------------------------
 async function loadPastChatMessages() {
   const activeRoom = window.currentActiveRoomId || "default_public";
   const chatContainer = document.getElementById("chatMessagesView");
   if (!chatContainer) return;
 
+  // 1) 로컬 캐시에서 먼저 복원 (깜빡임 및 증발 방지)
   const cacheKey = "chat_history_cache_" + activeRoom;
   let cachedMessages = [];
   try {
@@ -622,10 +625,13 @@ async function loadPastChatMessages() {
     `;
   }
 
+  // 2) 서버 조회: 대규모 사용자(100~1000명)를 고려한 엄격한 방별 인덱스 쿼리
   try {
-    let endpoint = "guild_chats?select=*&order=id.desc&limit=150";
-    if (activeRoom !== "default_public") {
-      endpoint = `guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`;
+    let endpoint = "";
+    if (activeRoom === "default_public") {
+      endpoint = "guild_chats?or=(room_id.eq.default_public,room_id.is.null,room_id.eq.public)&order=id.desc&limit=100";
+    } else {
+      endpoint = `guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&order=id.desc&limit=100`;
     }
 
     let list = [];
@@ -633,18 +639,32 @@ async function loadPastChatMessages() {
       list = await apiRequest(endpoint);
     } catch (reqErr) {
       try {
-        list = await apiRequest("guild_chats?select=*&order=id.desc&limit=150");
+        if (activeRoom === "default_public") {
+          list = await apiRequest("guild_chats?room_id=eq.default_public&order=id.desc&limit=100");
+          if (!list || list.length === 0) {
+            const allFb = await apiRequest("guild_chats?order=id.desc&limit=100");
+            list = (allFb || []).filter(m => !m.room_id || m.room_id === "default_public" || m.room_id === "public");
+          }
+        } else {
+          list = await apiRequest(`guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&order=id.desc&limit=100`);
+          if (!list || list.length === 0) {
+            const allFb = await apiRequest("guild_chats?order=id.desc&limit=100");
+            list = (allFb || []).filter(m => m.room_id === activeRoom);
+          }
+        }
       } catch (err2) {
         console.warn("Server chat fetch fallback failed:", err2);
       }
     }
 
     if (list && list.length > 0) {
+      // 3) [이중 격리 방어]: 클라이언트 메모리 단에서 엄격한 방별 격리 필터링
       let filtered = list.filter(c => {
+        const msgRoom = c.room_id || "default_public";
         if (activeRoom === "default_public") {
-          return !c.room_id || c.room_id === "default_public" || c.room_id === "public";
+          return msgRoom === "default_public" || msgRoom === "public";
         } else {
-          return c.room_id === activeRoom;
+          return msgRoom === activeRoom;
         }
       });
 
@@ -658,12 +678,13 @@ async function loadPastChatMessages() {
         return tA - tB;
       });
 
+      const trimmed = finalSorted.slice(-100);
       try {
-        localStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
-        sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
+        localStorage.setItem(cacheKey, JSON.stringify(trimmed));
+        sessionStorage.setItem(cacheKey, JSON.stringify(trimmed));
       } catch(e) {}
 
-      renderMessageHistoryList(finalSorted);
+      renderMessageHistoryList(trimmed);
     }
   } catch (e) {
     console.warn("loadPastChatMessages error:", e);
@@ -698,6 +719,9 @@ async function cleanupOldChatsBackground() {
   } catch (e) {}
 }
 
+// --------------------------------------------------------
+// 실시간 대화 수신 (수천 명 트래픽 방어 & 다른 방 메시지 100% 차단)
+// --------------------------------------------------------
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
 
@@ -709,6 +733,7 @@ function listenRealtimeChatMessages() {
       const activeRoom = window.currentActiveRoomId || "default_public";
       const msgRoom = newMsg.room_id || "default_public";
 
+      // 1) 해당 방 로컬 캐시에 즉시 보존
       try {
         const cacheKey = "chat_history_cache_" + msgRoom;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
@@ -719,16 +744,18 @@ function listenRealtimeChatMessages() {
         }
       } catch(e) {}
 
+      // 2) [대규모 격리 가드]: 현재 화면에 띄운 방의 메시지가 아니면 100% 렌더링 차단!
       if (activeRoom === "default_public") {
-        if (newMsg.room_id && newMsg.room_id !== "default_public" && newMsg.room_id !== "public") {
+        if (msgRoom !== "default_public" && msgRoom !== "public") {
           return;
         }
       } else {
-        if (newMsg.room_id !== activeRoom) {
+        if (msgRoom !== activeRoom) {
           return;
         }
       }
 
+      // 3) 내가 전송한 낙관적 메시지 중복 방어
       const optimisticIdx = pendingOptimisticMessages.findIndex(m => 
         m.sender_name === newMsg.sender_name && (m.message === newMsg.message || m.message === newMsg.message_text)
       );
@@ -738,17 +765,28 @@ function listenRealtimeChatMessages() {
         return;
       }
 
+      // 4) 화면 렌더링 및 하단 자동 스크롤
       const isConsecutive = (newMsg.sender_name === lastRenderedSender && newMsg.msg_type === "chat");
       renderKakaoChatBubble(newMsg, true, isConsecutive);
       lastRenderedSender = (newMsg.msg_type === "chat") ? newMsg.sender_name : null;
       scrollChatBottom();
       if (typeof window.syncAllChatCutButtons === "function") window.syncAllChatCutButtons();
+
+      // 5) [대규모 메모리 보호]: DOM 노드가 150개 초과 시 상단 오래된 노드 제거
+      const container = document.getElementById("chatMessagesView");
+      if (container && container.children.length > 150) {
+        for (let i = 0; i < 20; i++) {
+          if (container.firstElementChild && !container.firstElementChild.classList.contains("my-1")) {
+            container.removeChild(container.firstElementChild);
+          }
+        }
+      }
     })
     .subscribe();
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링
+// 6. 카카오톡 말풍선 렌더링 (1:1 안 읽은 숫자 1 보장)
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -759,11 +797,16 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
   const timeStr = formatKSTChatTime(msg.created_at);
 
-  const totalMembers = (cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 10;
+  // [대규모 및 1:1 최적화]: 1:1 대화방은 총 인원이 무조건 2명! (나+상대방)
+  const activeRoom = window.currentActiveRoomId || "default_public";
+  const isDirect = activeRoom.startsWith("direct_") || (msg.room_id && msg.room_id.startsWith("direct_"));
+  const totalMembers = isDirect ? 2 : ((cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 10);
   let unreadCount = 0;
 
   if (Array.isArray(msg.read_members)) {
     unreadCount = Math.max(0, totalMembers - msg.read_members.length);
+  } else if (isDirect) {
+    unreadCount = isMe ? 1 : 0;
   } else if (msg.created_at) {
     const elapsedMin = Math.floor((Date.now() - new Date(msg.created_at).getTime()) / (1000 * 60));
     const readEstimate = Math.min(totalMembers, (isMe ? 1 : 0) + Math.max(0, Math.floor(elapsedMin * 0.8)));
@@ -1006,9 +1049,9 @@ async function handleSendMessage() {
     const chatPayload = {
       sender_name: myCurrentNick,
       message: text,
-      msg_type: "chat"
+      msg_type: "chat",
+      room_id: targetRoomId
     };
-    if (targetRoomId) chatPayload.room_id = targetRoomId;
     if (currentGid) chatPayload.guild_id = currentGid;
     if (detectedMentions && detectedMentions.length > 0) {
       chatPayload.mentions = detectedMentions;
@@ -1021,7 +1064,8 @@ async function handleSendMessage() {
       const minimalPayload = {
         sender_name: myCurrentNick,
         message: text,
-        msg_type: "chat"
+        msg_type: "chat",
+        room_id: targetRoomId
       };
       if (currentGid) minimalPayload.guild_id = currentGid;
 
