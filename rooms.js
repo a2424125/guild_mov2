@@ -58,24 +58,23 @@ window.switchMainBottomTab = function(tabName) {
 };
 
 // --------------------------------------------------------
-// 2. [친구 탭] 길드원 리스트 렌더링 & 클릭 제어
+// 2. [친구 탭] 길드원 목록 로딩 & 렌더링
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
   if (!container) return;
 
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
-  const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-  const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
+  const myClass = (localStorage.getItem("guild_my_class") || "직업 설정하기");
+  const myAvatar = (localStorage.getItem("guild_my_avatar") || "👤");
 
   // 내 프로필 카드 동기화
   const myNickElem = document.getElementById("mainTabMyNick");
-  const myAvatarElem = document.getElementById("mainTabMyAvatar");
   const myClassElem = document.getElementById("mainTabMyClass");
-
+  const myAvatarElem = document.getElementById("mainTabMyAvatar");
   if (myNickElem) myNickElem.innerText = myNick || "로그인 필요";
-  if (myAvatarElem) myAvatarElem.innerText = myAvatar;
   if (myClassElem) myClassElem.innerText = myClass;
+  if (myAvatarElem) myAvatarElem.innerText = myAvatar;
 
   try {
     let members = window.cachedMemberList || [];
@@ -92,9 +91,9 @@ window.loadMainTabFriendsList = async function() {
           } catch(e2) {}
         }
         if (!members || members.length === 0) {
-          if (!currentGid) {
-            members = await apiRequest("guild_members?select=*&order=nickname.asc");
-          }
+          try {
+            members = await apiRequest("guild_members?select=*");
+          } catch(e3) {}
         }
         window.cachedMemberList = members || [];
       }
