@@ -893,7 +893,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 7. 메시지 입력 및 전송 제어
+// 7. 메시지 입력 및 전송 제어 (DB mentions 컬럼 부재 400 에러 해결)
 // --------------------------------------------------------
 function handleInputState(textarea) {
   textarea.style.height = "auto";
@@ -948,13 +948,25 @@ async function handleSendMessage() {
   lastRenderedSender = myCurrentNick;
 
   try {
-    const insertRes = await apiRequest("guild_chats", "POST", [{
-      room_id: targetRoomId,
+    // ⚡ DB에 존재하지 않는 mentions 필드를 제외하여 PGRST204 에러 원천 차단
+    const chatPayload = {
       sender_name: myCurrentNick,
       message: text,
-      msg_type: "chat",
-      mentions: detectedMentions
-    }]);
+      msg_type: "chat"
+    };
+    if (targetRoomId) chatPayload.room_id = targetRoomId;
+
+    let insertRes;
+    try {
+      insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
+    } catch (postErr) {
+      if (postErr.message && postErr.message.includes("room_id")) {
+        delete chatPayload.room_id;
+        insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
+      } else {
+        throw postErr;
+      }
+    }
 
     if (insertRes && insertRes[0] && insertRes[0].id) {
       const rowElem = document.getElementById("msg_" + tempId);
