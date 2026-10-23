@@ -113,7 +113,6 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
-  // ⚡ [세션 보호]: 저장된 로그인 닉네임과 직업이 유실되지 않도록 항상 동기화
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
@@ -188,22 +187,17 @@ async function loadGuildSettings() {
   } catch (e) {}
 }
 
-// --------------------------------------------------------
-// [길드원 데이터 로딩]: 컬럼 정렬 오류를 방지한 안전 쿼리 & 자동 폴백
-// --------------------------------------------------------
 window.loadGuildMembersData = async function() {
   try {
     const currentGid = localStorage.getItem("current_guild_id");
     let members = [];
 
-    // 1. 현재 길드 ID로 조회 시도 (DB 컬럼 의존 오류 방지를 위해 order 없이 select=*)
     if (currentGid) {
       try {
         members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
       } catch (err) {}
     }
 
-    // 2. 만약 길드 ID 매칭 멤버가 비어있거나 실패한 경우, 전체 멤버에서 안전 복구
     if (!members || members.length === 0) {
       try {
         members = await apiRequest("guild_members?select=*");
@@ -217,7 +211,6 @@ window.loadGuildMembersData = async function() {
     cachedMemberList = members || [];
     window.cachedMemberList = cachedMemberList;
 
-    // 자바스크립트 메모리 정렬 (DB 쿼리 에러 원천 방지)
     cachedMemberList.sort((a, b) => {
       const pA = getRolePriority(a.role);
       const pB = getRolePriority(b.role);
@@ -245,7 +238,7 @@ function getRolePriority(role) {
 }
 
 // --------------------------------------------------------
-// 3. 서랍(드로어) 및 프로필 편집 모달 제어
+// 3. 드로어 & 모달 제어
 // --------------------------------------------------------
 function toggleMenuDrawer(isOpen) {
   const drawer = document.getElementById("menuSidebarDrawer");
@@ -402,7 +395,7 @@ async function selectClassProfile(icon, className) {
 }
 
 // --------------------------------------------------------
-// 4. 길드 로그인 / 로그아웃 제어 (드롭다운 자동 채움 보장)
+// 4. 길드 로그인 / 로그아웃 제어 (모달 닫힘 & 화면 진입 보장)
 // --------------------------------------------------------
 function renderLoginMemberDropdown(query = "") {
   const selectElem = document.getElementById("loginMemberSelect");
@@ -476,7 +469,13 @@ async function executeGuildLogin() {
     localStorage.setItem("guild_my_avatar", myCurrentAvatar);
 
     updateProfileUI("슈퍼관리자");
-    document.getElementById("guildLoginModal").style.display = "none";
+    
+    // 모달 닫기 및 화면 전환
+    document.querySelectorAll(".kakao-modal-backdrop").forEach(m => { m.style.display = "none"; });
+    const mainTabs = document.getElementById("kakaoMainTabsView");
+    if (mainTabs) mainTabs.style.display = "flex";
+    document.body.classList.add("in-main-tabs");
+
     resetAndReloadChatAfterAuth();
     return showKakaoToast("👑 슈퍼관리자(Master)로 로그인되었습니다.", "🎉");
   }
@@ -535,7 +534,21 @@ async function executeGuildLogin() {
   }
 
   updateProfileUI(memberName);
-  document.getElementById("guildLoginModal").style.display = "none";
+  
+  // 🌟 모든 팝업 모달 닫기
+  const loginModal = document.getElementById("guildLoginModal");
+  if (loginModal) loginModal.style.display = "none";
+  const welcomeModal = document.getElementById("modalWelcomeGateway");
+  if (welcomeModal) welcomeModal.style.display = "none";
+  document.querySelectorAll(".kakao-modal-backdrop").forEach(m => {
+    m.style.display = "none";
+  });
+
+  // 🌟 메인 대화방 화면 표시
+  const mainTabs = document.getElementById("kakaoMainTabsView");
+  if (mainTabs) mainTabs.style.display = "flex";
+  document.body.classList.add("in-main-tabs");
+
   showKakaoToast(`[${memberName}] 님 반갑습니다!`, "🎉");
 
   resetAndReloadChatAfterAuth();
@@ -585,6 +598,10 @@ window.switchActiveGuild = function(guildId) {
 };
 
 function resetAndReloadChatAfterAuth() {
+  document.querySelectorAll(".kakao-modal-backdrop").forEach(m => {
+    m.style.display = "none";
+  });
+
   const chatContainer = document.getElementById("chatMessagesView");
   if (chatContainer) {
     chatContainer.innerHTML = `
@@ -598,6 +615,14 @@ function resetAndReloadChatAfterAuth() {
 
   if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
   if (typeof window.loadMainTabRoomsList === "function") window.loadMainTabRoomsList();
+
+  const mainTabs = document.getElementById("kakaoMainTabsView");
+  if (mainTabs) mainTabs.style.display = "flex";
+  document.body.classList.add("in-main-tabs");
+
+  if (typeof window.switchMainBottomTab === "function") {
+    window.switchMainBottomTab("chats");
+  }
 }
 
 window.updateProfileUI = function(nick) {
@@ -738,7 +763,6 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
     senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
   }
 
-  // 1) 보스 브리핑 카드
   if (msg.msg_type === "boss_briefing") {
     html = `
       <div class="chat-item-row other" id="${msgKey}">
@@ -755,9 +779,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
         </div>
       </div>
     `;
-  }
-  // 2) 토벌 알리미 카드 (raid_report)
-  else if (msg.msg_type === "raid_report") {
+  } else if (msg.msg_type === "raid_report") {
     const raidId = msg.meta_data?.raid_id || Date.now();
     const bossName = msg.meta_data?.boss_name || "보스";
     const raidScore = msg.meta_data?.score || 1;
@@ -793,9 +815,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
         </div>
       </div>
     `;
-  }
-  // 3) 보스 즉시컷 / 젠 알림
-  else if (msg.msg_type === "boss_alert") {
+  } else if (msg.msg_type === "boss_alert") {
     const bossNameInMsg = extractBossNameFromMessage(cleanMessageText);
     const subCutBtn = bossNameInMsg ? `
       <button type="button" class="btn-chat-cut" id="btn_cut_${msgKey}" data-boss="${bossNameInMsg}" onclick="triggerQuickCutAction('${bossNameInMsg}', 'btn_cut_${msgKey}')">
@@ -820,9 +840,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
         </div>
       </div>
     `;
-  }
-  // 4) 내가 작성한 메시지 (노란색 말풍선 우측 정렬)
-  else if (isMe) {
+  } else if (isMe) {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
       <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
@@ -837,9 +855,7 @@ function renderKakaoChatBubble(msg, isRealtime = true, isConsecutive = false) {
         </div>
       </div>
     `;
-  }
-  // 5) 상대방이 작성한 메시지 (흰색 말풍선 좌측 정렬)
-  else {
+  } else {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
     const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
