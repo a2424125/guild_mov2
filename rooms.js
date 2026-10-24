@@ -393,12 +393,12 @@ window.loadMainTabRoomsList = async function() {
     if (typeof apiRequest === "function") {
       try {
         if (currentGid) {
-          recentChats = await apiRequest("guild_chats?guild_id=eq." + encodeURIComponent(currentGid) + "&select=id,room_id,sender_name,message,created_at,msg_type&order=id.desc&limit=300");
+          recentChats = await apiRequest("guild_chats?guild_id=eq." + encodeURIComponent(currentGid) + "&select=id,room_id,sender_name,message,created_at,msg_type,read_members&order=id.desc&limit=300");
         }
       } catch(e) {}
       if (!recentChats || recentChats.length === 0) {
         try {
-          recentChats = await apiRequest("guild_chats?select=id,room_id,sender_name,message,created_at,msg_type&order=id.desc&limit=300");
+          recentChats = await apiRequest("guild_chats?select=*&order=id.desc&limit=300");
         } catch(e2) {
           console.warn("Failed to fetch recent chats for room previews:", e2);
         }
@@ -450,7 +450,6 @@ window.loadMainTabRoomsList = async function() {
       const msgs = roomMsgMap.get(r.id) || [];
       const lastMsg = msgs.length > 0 ? msgs[0] : null;
 
-      // 방 목록에서 조회된 메시지를 로컬 캐시에도 동기화하여 입장 즉시 표시되도록 보장
       if (msgs.length > 0) {
         try {
           const cacheKey = "chat_history_cache_" + r.id;
@@ -478,7 +477,6 @@ window.loadMainTabRoomsList = async function() {
         lastTimeStr = (typeof formatTime24Hour === "function") ? formatTime24Hour(r.created_at || new Date()) : "";
       }
 
-      // 방별 안 읽은 메시지 수 계산 (ID/UUID/시간 3중 검증)
       const unreadCount = window.calculateRoomUnreadCount(msgs, r.id, myNick);
 
       const unreadBadgeHtml = (unreadCount > 0)
@@ -528,7 +526,6 @@ window.updateRoomCardRealtime = function(roomId, newMsg) {
     }
   }
 
-  // 메모리 캐시 갱신
   if (window.roomMsgMapCache) {
     if (!window.roomMsgMapCache.has(targetId)) {
       window.roomMsgMapCache.set(targetId, []);
@@ -630,7 +627,7 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   window.currentActiveRoomType = roomType || ((targetRoomId && targetRoomId.includes('-')) ? 'direct' : 'public');
   window.currentActiveRoomTitle = roomTitle || '길드 대화방';
 
-  // 입장 즉시 해당 방의 모든 메시지를 읽음 상태로 localStorage에 동기 저장!
+  // 입장 즉시 해당 방의 모든 메시지를 읽음 상태로 localStorage에 동기 저장
   window.markRoomAsReadNow(targetRoomId);
 
   const mainView = document.getElementById("kakaoMainTabsView");
@@ -670,7 +667,6 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
 };
 
 window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
-  // 방을 나가기 직전에 현재 열려 있던 방을 한 번 더 확실하게 읽음 기록 저장!
   if (window.currentActiveRoomId && typeof window.markRoomAsReadNow === "function") {
     window.markRoomAsReadNow(window.currentActiveRoomId);
   }
@@ -732,19 +728,34 @@ window.startDirectChatWith = async function(targetNick) {
       localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
     }
 
+    // DB의 chat_rooms 테이블에 반드시 id: newRoomId를 포함하여 등록 (외래키 충돌 원천 방지)
     try {
       if (typeof apiRequest === "function") {
         const roomPayload = {
+          id: newRoomId,
           room_name: roomTitle,
           room_type: "direct",
           created_by: myNick
         };
         if (currentGid) roomPayload.guild_id = currentGid;
-        await apiRequest("chat_rooms", "POST", [roomPayload]);
-        await apiRequest("room_members", "POST", [
-          { room_id: newRoomId, member_nickname: myNick, role: "member" },
-          { room_id: newRoomId, member_nickname: targetNick, role: "member" }
-        ]);
+        try {
+          await apiRequest("chat_rooms", "POST", [roomPayload]);
+        } catch (roomPostErr) {
+          try {
+            await apiRequest("chat_rooms", "POST", [{
+              id: newRoomId,
+              room_name: roomTitle,
+              room_type: "direct",
+              created_by: myNick
+            }]);
+          } catch (e2) {}
+        }
+        try {
+          await apiRequest("room_members", "POST", [
+            { room_id: newRoomId, member_nickname: myNick, role: "member" },
+            { room_id: newRoomId, member_nickname: targetNick, role: "member" }
+          ]);
+        } catch (e3) {}
       }
     } catch(dbErr) {}
 
@@ -947,14 +958,16 @@ window.executeCreateNewRoom = async function() {
   if (!title) return alert("대화방 이름을 입력하세요.");
 
   try {
+    const newRoomUuid = generateDeterministicUUID("custom_room__" + title + "__" + Date.now());
     const roomPayload = {
+      id: newRoomUuid,
       room_name: title,
       room_type: (type === "secret") ? "private" : "public",
       created_by: myNick
     };
     if (currentGid) roomPayload.guild_id = currentGid;
 
-    let newRoom = { id: "room_" + Date.now(), room_name: title, room_type: roomPayload.room_type, created_by: myNick, created_at: new Date().toISOString() };
+    let newRoom = { id: newRoomUuid, room_name: title, room_type: roomPayload.room_type, created_by: myNick, created_at: new Date().toISOString() };
     if (typeof apiRequest === "function") {
       try {
         const res = await apiRequest("chat_rooms", "POST", [roomPayload]);
