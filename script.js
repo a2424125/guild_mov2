@@ -658,7 +658,7 @@ window.updateProfileUI = function(nick) {
 function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 & 실시간 대화 수신 (방별 격리 & 폴백 조회 완벽 지원)
+// 5. 과거 대화 로드 & 실시간 대화 수신 (방별 격리 & 3중 읽음 검증 연동)
 // --------------------------------------------------------
 async function loadPastChatMessages(targetRoomParam) {
   const chatView = document.getElementById("chatRoomView");
@@ -667,18 +667,24 @@ async function loadPastChatMessages(targetRoomParam) {
   const chatContainer = document.getElementById("chatMessagesView");
   if (!chatContainer) return;
 
-  // 실제 대화방 화면에 진입하지 않았거나 activeRoom이 없으면 목록 화면에서 임의 실행 차단
   if (!isInChatView || !activeRoom) return;
 
-  // 1) 로컬 캐시에서 먼저 즉시 복원
+  // 1) 로컬 캐시 또는 방 목록 메모리 캐시에서 즉시 복원하여 빈 화면 방지
   const cacheKey = "chat_history_cache_" + activeRoom;
   let cachedMessages = [];
   try {
     cachedMessages = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
   } catch(e) {}
 
+  if ((!cachedMessages || cachedMessages.length === 0) && window.roomMsgMapCache && window.roomMsgMapCache.has(activeRoom)) {
+    cachedMessages = [...(window.roomMsgMapCache.get(activeRoom) || [])].reverse();
+  }
+
   if (cachedMessages && cachedMessages.length > 0) {
     renderMessageHistoryList(cachedMessages);
+    if (typeof window.markRoomAsReadNow === "function") {
+      window.markRoomAsReadNow(activeRoom, cachedMessages);
+    }
   } else {
     chatContainer.innerHTML = `
       <div class="text-center my-1">
@@ -687,7 +693,7 @@ async function loadPastChatMessages(targetRoomParam) {
     `;
   }
 
-  // 2) 서버에서 최신 대화 목록 조회 (guild_id가 null로 저장된 메시지까지 누락 없이 폴백 조회!)
+  // 2) 서버에서 최신 대화 목록 조회
   try {
     const currentGid = localStorage.getItem("current_guild_id");
     let list = [];
@@ -711,7 +717,6 @@ async function loadPastChatMessages(targetRoomParam) {
       }
     }
 
-    // 만약 위 조건 조회 결과가 비어있다면 전체 최근 메시지에서 안전하게 조회하여 방별로 필터링 (rooms.js와 100% 동일 규격)
     if (!list || list.length === 0) {
       try {
         list = await apiRequest("guild_chats?select=*&order=id.desc&limit=300");
@@ -721,7 +726,6 @@ async function loadPastChatMessages(targetRoomParam) {
     }
 
     if (list && list.length > 0) {
-      // 3) [방 격리 및 레거시 direct_ 키 호환 필터링]
       let filtered = list.filter(c => {
         let rId = (!c.room_id || c.room_id === "default_public" || c.room_id === "public") ? "default_public" : c.room_id;
 
@@ -757,21 +761,14 @@ async function loadPastChatMessages(targetRoomParam) {
         sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
       } catch(e) {}
 
-      // 현재 열려있는 방(activeRoom)의 최신 메시지 ID만 읽음 처리
-      const numericIds = finalSorted.map(m => Number(m.id) || 0).filter(n => n > 0);
-      const maxId = numericIds.length > 0 ? Math.max(...numericIds) : 0;
-      if (maxId > 0 && activeRoom) {
-        localStorage.setItem("last_read_chat_id_" + activeRoom, String(maxId));
-        const badgeElem = document.getElementById("room_badge_" + activeRoom);
-        if (badgeElem) {
-          badgeElem.innerText = "";
-          badgeElem.setAttribute("data-count", "0");
-          badgeElem.classList.add("d-none");
-          badgeElem.style.display = "none";
-        }
+      // 입장한 방(activeRoom)을 3중 검증 함수로 확실하게 읽음 처리!
+      if (typeof window.markRoomAsReadNow === "function") {
+        window.markRoomAsReadNow(activeRoom, finalSorted);
       }
 
-      renderMessageHistoryList(finalSorted);
+      if (window.currentActiveRoomId === activeRoom) {
+        renderMessageHistoryList(finalSorted);
+      }
     }
   } catch (e) {
     console.warn("loadPastChatMessages error:", e);
@@ -1170,7 +1167,9 @@ async function handleSendMessage() {
         rowElem.id = "msg_" + realId;
         rowElem.setAttribute("data-msg-id", realId);
       }
-      localStorage.setItem("last_read_chat_id_" + activeRoom, String(realId));
+      if (typeof window.markRoomAsReadNow === "function") {
+        window.markRoomAsReadNow(activeRoom, [insertRes[0]]);
+      }
       try {
         const cacheKey = "chat_history_cache_" + activeRoom;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
