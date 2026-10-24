@@ -400,10 +400,29 @@
     </div>
   </div>
 
-  <!-- 공통 알림 토스트 박스 -->
-  <div id="kakaoToastBox" class="kakao-toast-box">
+  <!-- 공통 알림 토스트 박스 (모든 모달보다 위에 표기되도록 z-index 강화) -->
+  <div id="kakaoToastBox" class="kakao-toast-box" style="z-index: 10000010 !important;">
     <span id="kakaoToastIcon">💬</span>
     <span id="kakaoToastMsg">알림 메시지</span>
+  </div>
+
+  <!-- 초기 비밀번호(000000) 로그인 시 비밀번호 변경 안내 모달 -->
+  <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
+    <div class="kakao-modal-card" style="max-width: 320px;">
+      <div class="mb-2" style="font-size: 2rem;">🔐</div>
+      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">비밀번호를 변경하세요</h6>
+      <p class="text-secondary small mb-3" style="font-size: 0.74rem; line-height: 1.45;">
+        현재 초기 비밀번호(<strong>000000</strong>)를 사용 중입니다.<br>안전한 계정 보호를 위해 새로운 6자리 비밀번호로 변경해 주세요.
+      </p>
+
+      <input type="password" id="forceNewPinInput" class="text-center" placeholder="새 비밀번호 6자리 숫자" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 8px;" onkeypress="if(event.keyCode===13){ document.getElementById('forceNewPinConfirmInput').focus(); }">
+      <input type="password" id="forceNewPinConfirmInput" class="text-center" placeholder="새 비밀번호 6자리 다시 입력" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;" onkeypress="if(event.keyCode===13){ executeForceChangePin(); }">
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeForceChangePinModal()">나중에 변경</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="executeForceChangePin()">변경 완료</button>
+      </div>
+    </div>
   </div>
 
   <!-- 길드원 미니 프로필 카드 모달 (카카오톡 프로필 뷰) -->
@@ -732,6 +751,9 @@
       var chatView = document.getElementById("chatRoomView") || document.getElementById("singleChatRoomContainer");
 
       if (mainTabs && chatView) {
+        if (window.currentActiveRoomId && typeof window.markRoomAsReadNow === "function") {
+          window.markRoomAsReadNow(window.currentActiveRoomId);
+        }
         chatView.style.display = "none";
         mainTabs.style.display = "flex";
         document.body.classList.add("in-main-tabs");
