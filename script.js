@@ -119,6 +119,17 @@ async function initApp() {
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
+  // ⚡ 미로그인 상태로 index.html 접속 시 전용 홈 화면(home.html)으로 이동
+  if (!myCurrentNick) {
+    try {
+      const checkHome = await fetch("home.html", { method: "HEAD" });
+      if (checkHome.ok) {
+        window.location.href = "home.html";
+        return;
+      }
+    } catch (e) {}
+  }
+
   await loadGuildSettings();
   await window.loadGuildMembersData();
 
@@ -143,10 +154,11 @@ async function initApp() {
     if (typeof window.loadMainTabRoomsList === 'function') {
       window.loadMainTabRoomsList();
     }
+    // ⚡ 초기 비밀번호(000000 또는 0000) 상태라면 '나중에 변경' 버튼이 없는 필수 변경 모달 즉시 표시
     if (myCurrentPin === "000000" || myCurrentPin === "0000") {
       setTimeout(() => {
         openForceChangePinModal();
-      }, 400);
+      }, 300);
     }
   }
 }
@@ -401,33 +413,34 @@ async function selectClassProfile(icon, className) {
 }
 
 // --------------------------------------------------------
-// 4. 길드 로그인 / 로그아웃 / 초기 비밀번호(000000) 변경 모달 제어
+// 4. 길드 로그인 / 로그아웃 / 초기 비밀번호(000000) 필수 변경 모달 ('나중에 변경' 버튼 제거)
 // --------------------------------------------------------
 function ensureForceChangePinModalExists() {
   let modal = document.getElementById("modalForceChangePin");
-  if (modal) return modal;
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "modalForceChangePin";
+    modal.className = "kakao-modal-backdrop";
+    modal.style.display = "none";
+    modal.style.zIndex = "10000005";
+    document.body.appendChild(modal);
+  }
 
-  modal = document.createElement("div");
-  modal.id = "modalForceChangePin";
-  modal.className = "kakao-modal-backdrop";
-  modal.style.display = "none";
-  modal.style.zIndex = "10000005";
+  // ⚡ '나중에 변경' 버튼을 완전히 제거하고 오직 [비밀번호 변경 완료]만 표시
   modal.innerHTML = `
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div class="mb-2" style="font-size: 2rem;">🔐</div>
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">비밀번호를 변경하세요</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.74rem; line-height: 1.45;">
-        현재 초기 비밀번호(<strong>000000</strong>)를 사용 중입니다.<br>안전한 계정 보호를 위해 새로운 6자리 비밀번호로 변경해 주세요.
+        현재 초기 비밀번호(<strong>000000</strong>)를 사용 중입니다.<br>보안을 위해 본인만의 새로운 6자리 비밀번호로 변경해야 메신저를 이용할 수 있습니다.
       </p>
       <input type="password" id="forceNewPinInput" class="text-center" placeholder="새 비밀번호 6자리 숫자" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 8px;" onkeypress="if(event.keyCode===13){ document.getElementById('forceNewPinConfirmInput').focus(); }">
       <input type="password" id="forceNewPinConfirmInput" class="text-center" placeholder="새 비밀번호 6자리 다시 입력" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;" onkeypress="if(event.keyCode===13){ executeForceChangePin(); }">
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeForceChangePinModal()">나중에 변경</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="executeForceChangePin()">변경 완료</button>
-      </div>
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeForceChangePin()">
+        비밀번호 변경 완료
+      </button>
     </div>
   `;
-  document.body.appendChild(modal);
   return modal;
 }
 
@@ -443,12 +456,6 @@ window.openForceChangePinModal = function() {
   }, 100);
 };
 var openForceChangePinModal = window.openForceChangePinModal;
-
-window.closeForceChangePinModal = function() {
-  const modal = document.getElementById("modalForceChangePin");
-  if (modal) modal.style.display = "none";
-};
-var closeForceChangePinModal = window.closeForceChangePinModal;
 
 window.executeForceChangePin = async function() {
   const in1 = document.getElementById("forceNewPinInput");
@@ -485,7 +492,8 @@ window.executeForceChangePin = async function() {
       if (target) target.pin = newPin;
     }
 
-    closeForceChangePinModal();
+    const modal = document.getElementById("modalForceChangePin");
+    if (modal) modal.style.display = "none";
     showKakaoToast("비밀번호가 성공적으로 변경되었습니다!", "🎉");
   } catch (err) {
     showKakaoToast("비밀번호 변경 실패: " + err.message, "❌");
@@ -648,7 +656,7 @@ async function executeGuildLogin() {
 
   resetAndReloadChatAfterAuth();
 
-  // ⚡ 초기 비밀번호(000000 또는 0000)로 로그인 시 비밀번호 변경 안내 모달 표시
+  // ⚡ 초기 비밀번호(000000 또는 0000)로 로그인 시 '나중에 변경'이 없는 필수 비밀번호 변경 모달 표시
   const isDefaultPin = (inputPin === "000000" || inputPin === "0000" || expectedPin === "000000" || expectedPin === "0000");
   if (isDefaultPin) {
     showKakaoToast("비밀번호를 변경하세요. (초기 비밀번호 사용 중)", "🔐");
@@ -660,7 +668,7 @@ async function executeGuildLogin() {
   }
 }
 
-// ⚡ 로그아웃 시 "로그아웃 되었습니다." 안내 표시 후 로그인 창 오픈
+// ⚡ 로그아웃 시 설정창/오버레이를 모두 닫고 "로그아웃 되었습니다." 표기 및 home.html로 이동
 function handleUserLogout() {
   if (typeof openConfirmLogoutModal === "function") {
     openConfirmLogoutModal();
@@ -670,28 +678,39 @@ function handleUserLogout() {
 }
 window.handleUserLogout = handleUserLogout;
 
-window.executeLogoutProcess = function() {
+window.executeLogoutProcess = async function() {
   localStorage.removeItem("guild_my_nickname");
   localStorage.removeItem("guild_my_pin");
   localStorage.removeItem("guild_my_role");
   sessionStorage.removeItem("admin_auth");
   sessionStorage.removeItem("admin_role");
+  sessionStorage.setItem("logout_toast_msg", "로그아웃 되었습니다.");
   myCurrentNick = "";
   myCurrentPin = "";
 
-  const chatContainer = document.getElementById("chatMessagesView");
-  if (chatContainer) {
-    chatContainer.innerHTML = `
-      <div class="text-center my-1">
-        <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">로그인이 필요합니다.</span>
-      </div>
-    `;
-  }
-  lastRenderedSender = null;
-
+  // 열려 있던 설정 화면이나 오버레이, 서랍을 모두 닫고 기본 채팅 탭으로 리셋
   toggleMenuDrawer(false);
-  showGuildLoginModal();
+  if (typeof window.closeModuleOverlay === "function") window.closeModuleOverlay();
+  const tabMore = document.getElementById("tabMoreContent");
+  if (tabMore) tabMore.style.display = "none";
+  if (typeof window.switchMainBottomTab === "function") {
+    window.switchMainBottomTab("chats");
+  }
+
   showKakaoToast("로그아웃 되었습니다.", "👋");
+
+  // home.html이 존재하면 home.html로 이동하여 설정 화면 잔상을 완전히 제거
+  try {
+    const checkHome = await fetch("home.html", { method: "HEAD" });
+    if (checkHome.ok) {
+      setTimeout(() => {
+        window.location.href = "home.html?logout=1";
+      }, 350);
+      return;
+    }
+  } catch (e) {}
+
+  showGuildLoginModal();
 };
 
 window.switchActiveGuild = function(guildId) {
