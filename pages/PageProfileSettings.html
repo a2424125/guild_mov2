@@ -1,8 +1,63 @@
 <!-- ==========================================
      [길드톡 메신저] 개인 환경설정 전용 화면 모듈
      경로: pages/PageProfileSettings.html
-     내 프로필, 직업 변경, 테마(다크/라이트), 비밀번호(PIN) 변경, 길드 변경, 로그아웃
+     내 프로필, 직업 변경, 테마(다크/라이트 토글 스위치), 비밀번호(PIN) 변경, 길드 변경, 로그아웃
      ========================================== -->
+<style>
+  /* 🎚️ 설정 페이지 전용 라이트/다크 모드 토글 스위치 스타일 */
+  .ps-theme-switch-wrap {
+    position: relative;
+    display: inline-block;
+    width: 58px;
+    height: 30px;
+    margin: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .ps-theme-switch-wrap input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    margin: 0;
+    pointer-events: none;
+  }
+  .ps-theme-slider-track {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    border: 1.5px solid #94a3b8;
+    border-radius: 30px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+  .ps-theme-slider-knob {
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 2.5px;
+    background-color: #ffffff !important;
+    border-radius: 50%;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+  }
+  .ps-theme-switch-wrap input:checked + .ps-theme-slider-track {
+    background-color: #0284c7;
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+  }
+  .ps-theme-switch-wrap input:checked + .ps-theme-slider-track .ps-theme-slider-knob {
+    transform: translateX(27px);
+  }
+</style>
+
 <div class="profile-settings-container p-3" style="max-width: 600px; margin: 0 auto;">
   
   <!-- 1. 상단 내 계정 프로필 카드 -->
@@ -26,18 +81,28 @@
     </div>
   </div>
 
-  <!-- 2. 화면 테마 설정 (라이트 / 다크) -->
+  <!-- 2. 화면 테마 설정 (라이트 / 다크 토글 스위치) -->
   <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
-    <h6 class="fw-bold mb-2" style="font-size: 0.88rem; color: var(--main-header-text);">
-      <i class="fa-solid fa-circle-half-stroke text-primary me-2"></i>화면 테마 설정
-    </h6>
-    <div class="d-flex gap-2">
-      <button type="button" class="btn btn-sm flex-fill py-2 fw-bold" id="btnThemeLight" style="font-size: 0.8rem; border-radius: 8px; border: 1px solid var(--main-card-border);" onclick="setAppThemeMode('light')">
-        <i class="fa-solid fa-sun text-warning me-1"></i>라이트 모드 (카카오톡 순정)
-      </button>
-      <button type="button" class="btn btn-sm flex-fill py-2 fw-bold" id="btnThemeDark" style="font-size: 0.8rem; border-radius: 8px; border: 1px solid var(--main-card-border);" onclick="setAppThemeMode('dark')">
-        <i class="fa-solid fa-moon text-info me-1"></i>다크 모드
-      </button>
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-3">
+        <div id="psThemeIconBox" style="width: 42px; height: 42px; border-radius: 12px; background: rgba(254, 229, 0, 0.15); border: 1px solid var(--main-card-border); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+          <span id="psThemeEmoji">☀️</span>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <h6 class="fw-bold mb-0" style="font-size: 0.88rem; color: var(--main-header-text);">화면 테마 설정</h6>
+            <span class="badge bg-warning text-dark px-2 py-0" id="psThemeStatusBadge" style="font-size: 0.65rem;">라이트 모드</span>
+          </div>
+          <p class="text-secondary small mb-0 mt-1" id="psThemeDescText" style="font-size: 0.72rem;">화사하고 친숙한 카카오톡 순정 라이트 테마</p>
+        </div>
+      </div>
+
+      <label class="ps-theme-switch-wrap" for="psThemeToggleSwitch" title="라이트 / 다크 모드 전환">
+        <input type="checkbox" id="psThemeToggleSwitch" onchange="onPsThemeToggleChange(this.checked)">
+        <span class="ps-theme-slider-track">
+          <span class="ps-theme-slider-knob" id="psThemeKnobIcon">☀️</span>
+        </span>
+      </label>
     </div>
   </div>
 
@@ -121,23 +186,62 @@
     }
   }
 
-  // 테마 버튼 활성화 상태 표시
-  const curTheme = localStorage.getItem("guild_theme_mode") || "light";
-  const btnLight = document.getElementById("btnThemeLight");
-  const btnDark = document.getElementById("btnThemeDark");
-  if (btnLight && btnDark) {
-    if (curTheme === "light") {
-      btnLight.classList.add("btn-primary");
-      btnLight.classList.remove("btn-outline-secondary");
-      btnDark.classList.add("btn-outline-secondary");
-      btnDark.classList.remove("btn-primary");
-    } else {
-      btnDark.classList.add("btn-primary");
-      btnDark.classList.remove("btn-outline-secondary");
-      btnLight.classList.add("btn-outline-secondary");
-      btnLight.classList.remove("btn-primary");
+  // 테마 토글 스위치 UI 동기화 함수
+  function syncPsThemeToggleUI(themeMode) {
+    const isDark = (themeMode === "dark");
+    const toggleInput = document.getElementById("psThemeToggleSwitch");
+    const emojiElem = document.getElementById("psThemeEmoji");
+    const knobElem = document.getElementById("psThemeKnobIcon");
+    const iconBoxElem = document.getElementById("psThemeIconBox");
+    const badgeElem = document.getElementById("psThemeStatusBadge");
+    const descElem = document.getElementById("psThemeDescText");
+
+    if (toggleInput) toggleInput.checked = isDark;
+    if (emojiElem) emojiElem.innerText = isDark ? "🌙" : "☀️";
+    if (knobElem) knobElem.innerText = isDark ? "🌙" : "☀️";
+    if (iconBoxElem) {
+      iconBoxElem.style.background = isDark ? "rgba(56, 189, 248, 0.15)" : "rgba(254, 229, 0, 0.18)";
+    }
+    if (badgeElem) {
+      badgeElem.innerText = isDark ? "다크 모드" : "라이트 모드";
+      badgeElem.className = isDark
+        ? "badge bg-info text-dark px-2 py-0"
+        : "badge bg-warning text-dark px-2 py-0";
+    }
+    if (descElem) {
+      descElem.innerText = isDark
+        ? "어두운 환경에서 눈이 편안한 다크 테마"
+        : "화사하고 친숙한 카카오톡 순정 라이트 테마";
     }
   }
+
+  const curTheme = localStorage.getItem("guild_theme_mode") || "light";
+  syncPsThemeToggleUI(curTheme);
+
+  // 토글 스위치 변경 핸들러
+  window.onPsThemeToggleChange = function(isChecked) {
+    const mode = isChecked ? "dark" : "light";
+    window.setAppThemeMode(mode);
+  };
+
+  // 테마 변경 핸들러
+  window.setAppThemeMode = function(mode) {
+    if (mode === "dark") {
+      localStorage.setItem("user_explicit_dark", "true");
+    } else {
+      localStorage.removeItem("user_explicit_dark");
+    }
+    if (typeof window.applyAppTheme === "function") {
+      window.applyAppTheme(mode);
+    } else {
+      localStorage.setItem("guild_theme_mode", mode);
+      document.body.className = (mode === "light") ? "theme-light in-main-tabs" : "theme-dark in-main-tabs";
+    }
+    syncPsThemeToggleUI(mode);
+    if (typeof showKakaoToast === "function") {
+      showKakaoToast(`[${mode === 'light' ? '라이트' : '다크'}] 테마가 적용되었습니다.`, "🎨");
+    }
+  };
 
   // 참여 길드 리스트 렌더링
   const guildListArea = document.getElementById("psJoinedGuildsList");
@@ -165,22 +269,6 @@
     }
   }
 
-  // 테마 변경 핸들러
-  window.setAppThemeMode = function(mode) {
-    if (typeof window.applyAppTheme === "function") {
-      window.applyAppTheme(mode);
-    } else {
-      localStorage.setItem("guild_theme_mode", mode);
-      document.body.className = (mode === "light") ? "theme-light in-main-tabs" : "theme-dark in-main-tabs";
-    }
-    if (typeof showKakaoToast === "function") {
-      showKakaoToast(`[${mode === 'light' ? '라이트' : '다크'}] 테마가 적용되었습니다.`, "🎨");
-    }
-    if (typeof loadMainTabSettingsPage === "function") {
-      loadMainTabSettingsPage();
-    }
-  };
-
   // PIN 변경 핸들러
   window.executeChangeMyPin = async function() {
     const curPinInput = document.getElementById("psCurrentPinInput");
@@ -202,12 +290,25 @@
       if (typeof showKakaoToast === "function") showKakaoToast("새 PIN은 6자리 숫자로 입력해주세요.", "⚠️");
       return;
     }
+    if (newPin === "000000") {
+      if (typeof showKakaoToast === "function") showKakaoToast("기본 비밀번호(000000) 외의 다른 숫자로 설정해주세요.", "⚠️");
+      return;
+    }
 
     try {
       if (typeof apiRequest === "function" && myNick) {
-        await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+        try {
+          await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+        } catch(e) {}
+        try {
+          await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+        } catch(e2) {}
       }
       localStorage.setItem("guild_my_pin", newPin);
+      if (window.cachedMemberList && Array.isArray(window.cachedMemberList)) {
+        const target = window.cachedMemberList.find(m => (m.nickname === myNick || m.name === myNick));
+        if (target) target.pin = newPin;
+      }
       if (curPinInput) curPinInput.value = "";
       if (newPinInput) newPinInput.value = "";
       if (typeof showKakaoToast === "function") showKakaoToast("비밀번호가 성공적으로 변경되었습니다!", "🎉");
