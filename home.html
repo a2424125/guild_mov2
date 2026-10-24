@@ -133,6 +133,7 @@
       margin-top: 6px;
       display: none;
       line-height: 1.45;
+      white-space: pre-wrap;
     }
   </style>
 
@@ -158,20 +159,17 @@
   </div>
 
   <div class="saas-home-wrapper">
-    <!-- 1. 상단 브랜드 헤더 & 빠른 도구 -->
+    <!-- 1. 상단 브랜드 헤더 (라이트/다크 버튼 제거, 고객센터 버튼만 깔끔하게 배치) -->
     <div class="saas-top-bar">
       <div class="saas-brand-box">
         <div class="saas-logo-badge">G</div>
         <div>
           <div class="fw-bold" style="font-size: 1.05rem; letter-spacing: -0.3px;">길드톡 메신저</div>
-          <div style="font-size: 0.7rem; color: var(--home-text-sub);">MMORPG 길드 통합 관리 </div>
+          <div style="font-size: 0.7rem; color: var(--home-text-sub);">MMORPG 길드 통합 관리 SaaS</div>
         </div>
       </div>
-      <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-outline-secondary btn-sm px-2 py-1" style="font-size: 0.75rem; border-radius: 8px;" onclick="toggleHomeTheme()" id="btnHomeThemeToggle">
-          ☀️ 라이트
-        </button>
-        <button type="button" class="btn btn-outline-primary btn-sm px-2 py-1 fw-bold" style="font-size: 0.75rem; border-radius: 8px;" onclick="openSupportCenterModal()">
+      <div class="d-flex align-items-center">
+        <button type="button" class="btn btn-outline-primary btn-sm px-3 py-1 fw-bold" style="font-size: 0.76rem; border-radius: 8px;" onclick="openSupportCenterModal()">
           <i class="fa-solid fa-headset me-1"></i>고객센터
         </button>
       </div>
@@ -222,7 +220,7 @@
       </div>
     </div>
 
-    <!-- 5. 고객센터 & 자주 묻는 질문 요약 카드 -->
+    <!-- 5. 고객센터 & 자주 묻는 질문 요약 카드 (DB 연동 동적 렌더링) -->
     <div class="saas-card">
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">
@@ -233,29 +231,8 @@
         </button>
       </div>
 
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaqItem(this)">
-          <span>Q. 초기 비밀번호는 무엇인가요?</span>
-          <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.7rem;"></i>
-        </div>
-        <div class="faq-a">최초 등록 시 기본 비밀번호는 <strong>000000</strong>이며, 첫 로그인 시 보안을 위해 본인만의 6자리 숫자 비밀번호로 즉시 변경해야 합니다.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaqItem(this)">
-          <span>Q. 길드원 초대는 어떻게 하나요?</span>
-          <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.7rem;"></i>
-        </div>
-        <div class="faq-a">길드장이 전달한 초대 코드로 입장하거나, 길드 관리자가 등록한 닉네임을 선택해 바로 로그인할 수 있습니다.</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaqItem(this)">
-          <span>Q. 라이선스 발급 및 연장 문의는 어디서 하나요?</span>
-          <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.7rem;"></i>
-        </div>
-        <div class="faq-a">우측 상단 [고객센터] 버튼 또는 [신규 길드 라이선스 발급 신청] 메뉴를 통해 접수해 주시면 관리자가 확인 후 안내해 드립니다.</div>
-      </div>
+      <!-- DB(guild_settings -> saas_faq_list)에서 불러와 렌더링되는 영역 -->
+      <div id="homeFaqListContainer"></div>
     </div>
   </div>
 
@@ -414,10 +391,37 @@
   <script>
     var homeToastTimer = null;
     var homeCachedMembers = [];
+
+    // 기본 공지 및 기본 FAQ 데이터 (DB에 없을 경우 자동 시드 저장)
     var currentNoticeData = {
-      title: "길드톡 SaaS 서비스 안내",
-      content: "환영합니다! 길드톡 메신저를 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요."
+      title: "길드톡 서비스 안내 및 업데이트 소식",
+      content: "환영합니다! 길드톡 메신저를 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요.",
+      popup: false
     };
+
+    var defaultFaqList = [
+      {
+        q: "초기 비밀번호는 무엇인가요?",
+        a: "최초 등록 시 기본 비밀번호는 000000이며, 첫 로그인 시 보안을 위해 본인만의 6자리 숫자 비밀번호로 즉시 변경해야 합니다."
+      },
+      {
+        q: "길드원 초대는 어떻게 하나요?",
+        a: "길드장이 전달한 초대 코드로 입장하거나, 길드 관리자가 등록한 닉네임을 선택해 바로 로그인할 수 있습니다."
+      },
+      {
+        q: "라이선스 발급 및 연장 문의는 어디서 하나요?",
+        a: "우측 상단 [고객센터] 버튼 또는 [신규 길드 라이선스 발급 신청] 메뉴를 통해 접수해 주시면 관리자가 확인 후 안내해 드립니다."
+      }
+    ];
+
+    function escapeHomeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
 
     function showKakaoToast(msg, icon) {
       var box = document.getElementById("kakaoToastBox");
@@ -447,32 +451,19 @@
       aElem.style.display = isHidden ? "block" : "none";
     }
 
-    function syncHomeThemeButton() {
+    function applySavedThemeOnHome() {
       var cur = localStorage.getItem("guild_theme_mode") || "light";
-      var btn = document.getElementById("btnHomeThemeToggle");
       if (cur === "dark") {
         document.documentElement.classList.add("theme-dark");
         document.documentElement.classList.remove("theme-light");
         document.body.classList.add("theme-dark");
         document.body.classList.remove("theme-light");
-        if (btn) btn.innerText = "🌙 다크";
       } else {
         document.documentElement.classList.add("theme-light");
         document.documentElement.classList.remove("theme-dark");
         document.body.classList.add("theme-light");
         document.body.classList.remove("theme-dark");
-        if (btn) btn.innerText = "☀️ 라이트";
       }
-    }
-
-    function toggleHomeTheme() {
-      var cur = localStorage.getItem("guild_theme_mode") || "light";
-      var next = (cur === "dark") ? "light" : "dark";
-      localStorage.setItem("guild_theme_mode", next);
-      if (next === "dark") localStorage.setItem("user_explicit_dark", "true");
-      else localStorage.removeItem("user_explicit_dark");
-      syncHomeThemeButton();
-      showKakaoToast("[" + (next === "dark" ? "다크" : "라이트") + "] 테마가 적용되었습니다.", "🎨");
     }
 
     // 1. 최근 참여 길드 렌더링
@@ -490,8 +481,8 @@
       listElem.innerHTML = joined.map(function(g) {
         return '<div class="guild-item-row" onclick="selectGuildAndOpenLogin(\'' + g.guild_id + '\')" style="cursor:pointer;">' +
           '<div class="d-flex align-items-center gap-2 min-width-0">' +
-            '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.62rem;">' + (g.game_name || "게임") + '</span>' +
-            '<strong class="text-truncate" style="font-size: 0.85rem;">' + g.guild_name + '</strong>' +
+            '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.62rem;">' + escapeHomeHtml(g.game_name || "게임") + '</span>' +
+            '<strong class="text-truncate" style="font-size: 0.85rem;">' + escapeHomeHtml(g.guild_name) + '</strong>' +
           '</div>' +
           '<div class="d-flex align-items-center gap-2">' +
             '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.68rem;">로그인</span>' +
@@ -557,7 +548,7 @@
           var name = m.name || m.nickname || "";
           var role = m.role || "일반";
           var cls = m.class_name || m.job_class || "";
-          return '<option value="' + name + '">' + name + ' (' + role + (cls ? ' · ' + cls : '') + ')</option>';
+          return '<option value="' + escapeHomeHtml(name) + '">' + escapeHomeHtml(name) + ' (' + escapeHomeHtml(role) + (cls ? ' · ' + escapeHomeHtml(cls) : '') + ')</option>';
         }).join("");
     }
 
@@ -700,34 +691,91 @@
       }
     }
 
-    // 4. 어드민 연동 전체 공지 로드 및 모달 제어
-    async function loadSaasGlobalNotice() {
+    // 4. 어드민 연동 전체 공지 & FAQ(자주 묻는 질문) DB 로드 및 자동 초기 저장
+    function renderHomeFaqList(faqArray) {
+      var container = document.getElementById("homeFaqListContainer");
+      if (!container) return;
+      var list = (Array.isArray(faqArray) && faqArray.length > 0) ? faqArray : defaultFaqList;
+
+      container.innerHTML = list.map(function(item) {
+        return '<div class="faq-item">' +
+          '<div class="faq-q" onclick="toggleFaqItem(this)">' +
+            '<span>Q. ' + escapeHomeHtml(item.q) + '</span>' +
+            '<i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.7rem;"></i>' +
+          '</div>' +
+          '<div class="faq-a">' + escapeHomeHtml(item.a) + '</div>' +
+        '</div>';
+      }).join("");
+    }
+
+    async function loadSaasGlobalNoticeAndFaq() {
+      // 먼저 기본 FAQ로 즉시 화면 렌더링 (빈 화면 방지)
+      renderHomeFaqList(defaultFaqList);
+
       if (typeof apiRequest !== "function") return;
       try {
         var settings = await apiRequest("guild_settings?select=key,value");
         if (Array.isArray(settings)) {
+          // 1) 전체 공지사항 확인
           var noticeItem = settings.find(function(s) { return s.key === "saas_global_notice" || s.key === "global_notice"; });
           if (noticeItem && noticeItem.value) {
-            currentNoticeData.content = noticeItem.value;
-            var firstLine = noticeItem.value.split("\n")[0].trim();
-            if (firstLine) {
-              var bannerTitle = document.getElementById("homeTopNoticeTitle");
-              if (bannerTitle) bannerTitle.innerText = "[공지] " + firstLine;
+            try {
+              var parsedNotice = JSON.parse(noticeItem.value);
+              if (parsedNotice && typeof parsedNotice === "object") {
+                currentNoticeData.title = parsedNotice.title || currentNoticeData.title;
+                currentNoticeData.content = parsedNotice.content || currentNoticeData.content;
+                currentNoticeData.popup = !!parsedNotice.popup;
+              }
+            } catch (jsonErr) {
+              currentNoticeData.content = noticeItem.value;
+              var firstLine = noticeItem.value.split("\n")[0].trim();
+              if (firstLine) currentNoticeData.title = firstLine;
             }
+          }
+
+          // 배너 및 모달 텍스트 반영
+          var bannerTitle = document.getElementById("homeTopNoticeTitle");
+          if (bannerTitle) bannerTitle.innerText = "[공지] " + currentNoticeData.title;
+          var modalTitle = document.getElementById("saasNoticeModalTitle");
+          if (modalTitle) modalTitle.innerText = currentNoticeData.title;
+          var modalBody = document.getElementById("saasNoticeModalBody");
+          if (modalBody) modalBody.innerText = currentNoticeData.content;
+
+          // 어드민에서 자동 팝업(popup: true)을 켜둔 경우 '오늘 하루 보지 않기' 체크 후 자동 오픈
+          if (currentNoticeData.popup) {
+            var hideDate = localStorage.getItem("hide_saas_notice_date");
+            var todayStr = new Date().toISOString().slice(0, 10);
+            if (hideDate !== todayStr && sessionStorage.getItem("saas_notice_seen") !== "1") {
+              openModalById("modalSaasGlobalNotice");
+            }
+          }
+
+          // 2) 자주 묻는 질문(FAQ) DB 조회 및 미존재 시 초기 데이터 DB 자동 저장
+          var faqItem = settings.find(function(s) { return s.key === "saas_faq_list"; });
+          if (faqItem && faqItem.value) {
+            try {
+              var parsedFaq = JSON.parse(faqItem.value);
+              if (Array.isArray(parsedFaq) && parsedFaq.length > 0) {
+                renderHomeFaqList(parsedFaq);
+              }
+            } catch (faqErr) {}
+          } else {
+            // DB에 saas_faq_list가 아직 없으면 기본 FAQ 3개를 DB에 자동 저장(Seed)
+            try {
+              await apiRequest("guild_settings", "POST", [{
+                key: "saas_faq_list",
+                value: JSON.stringify(defaultFaqList)
+              }]);
+            } catch (seedErr) {}
           }
         }
       } catch(e) {}
-
-      var hideDate = localStorage.getItem("hide_saas_notice_date");
-      var todayStr = new Date().toISOString().slice(0, 10);
-      if (hideDate !== todayStr && sessionStorage.getItem("saas_notice_seen") !== "1") {
-        var bodyEl = document.getElementById("saasNoticeModalBody");
-        if (bodyEl) bodyEl.innerText = currentNoticeData.content;
-      }
     }
 
     function openSaasNoticeModal() {
+      var titleEl = document.getElementById("saasNoticeModalTitle");
       var bodyEl = document.getElementById("saasNoticeModalBody");
+      if (titleEl) titleEl.innerText = currentNoticeData.title;
       if (bodyEl) bodyEl.innerText = currentNoticeData.content;
       openModalById("modalSaasGlobalNotice");
     }
@@ -741,7 +789,7 @@
       closeModalById("modalSaasGlobalNotice");
     }
 
-    // 5. 고객센터 문의 접수
+    // 5. 고객센터 문의 접수 (app_license_requests 및 license_requests 양쪽 호환 저장)
     function openSupportCenterModal() {
       openModalById("modalSupportCenter");
     }
@@ -756,16 +804,38 @@
         return showKakaoToast("모든 항목을 입력해 주세요.", "⚠️");
       }
 
+      var combinedContact = contact + " || 문의내용: " + content;
+
       try {
+        var saved = false;
         if (typeof apiRequest === "function") {
-          await apiRequest("app_license_requests", "POST", [{
-            game_name: "[" + cat + "]",
-            guild_name: writer,
-            applicant_nick: writer,
-            contact_info: contact + " | 내용: " + content,
-            status: "support_inquiry"
-          }]);
+          try {
+            await apiRequest("app_license_requests", "POST", [{
+              game_name: "[고객센터] " + cat,
+              guild_name: writer,
+              applicant_nick: writer,
+              contact_info: combinedContact,
+              status: "support_inquiry"
+            }]);
+            saved = true;
+          } catch (e1) {}
+
+          try {
+            await apiRequest("license_requests", "POST", [{
+              game_name: "[고객센터] " + cat,
+              guild_name: writer,
+              applicant_nickname: writer,
+              contact_info: combinedContact,
+              status: "support_inquiry"
+            }]);
+            saved = true;
+          } catch (e2) {}
         }
+
+        if (!saved) {
+          throw new Error("DB 테이블에 저장할 수 없습니다.");
+        }
+
         closeModalById("modalSupportCenter");
         document.getElementById("supContentInput").value = "";
         showKakaoToast("고객센터 문의가 정상 접수되었습니다!", "🎉");
@@ -794,6 +864,7 @@
           return showKakaoToast("초대 코드에 해당하는 길드를 찾을 수 없습니다.", "⚠️");
         }
         var targetGuild = guilds[0];
+        var gTitle = targetGuild.name || targetGuild.guild_name || "길드";
 
         try {
           await apiRequest("guild_members", "POST", [{
@@ -822,7 +893,7 @@
         joined = joined.filter(function(g) { return g.guild_id !== targetGuild.id; });
         joined.push({
           guild_id: targetGuild.id,
-          guild_name: targetGuild.name,
+          guild_name: gTitle,
           game_name: targetGuild.game_name || "게임",
           nickname: nick,
           role: "일반"
@@ -830,7 +901,7 @@
         localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
 
         closeModalById("modalJoinGuild");
-        showKakaoToast("[" + targetGuild.name + "] 길드에 입장했습니다!", "🎉");
+        showKakaoToast("[" + gTitle + "] 길드에 입장했습니다!", "🎉");
         setTimeout(function() { window.location.href = "index.html"; }, 500);
       } catch(err) {
         showKakaoToast("가입 실패: " + err.message, "⚠️");
@@ -845,6 +916,7 @@
       if (!keyInput) return showKakaoToast("라이선스 키를 입력해 주세요.", "⚠️");
       if (!masterNick) return showKakaoToast("길드장 닉네임을 입력해 주세요.", "⚠️");
       if (!pinInput || pinInput.length < 6) return showKakaoToast("길드장 6자리 비밀번호(PIN)를 입력해 주세요.", "⚠️");
+      if (pinInput === "000000" || pinInput === "0000") return showKakaoToast("보안을 위해 000000 외의 6자리 비밀번호를 설정하세요.", "⚠️");
 
       try {
         var licenses = await apiRequest("app_licenses?license_key=eq." + encodeURIComponent(keyInput));
@@ -876,7 +948,7 @@
           }]);
         } catch(e) {}
 
-        await apiRequest("app_licenses?id=" + lic.id, "PATCH", {
+        await apiRequest("app_licenses?id=eq." + encodeURIComponent(lic.id), "PATCH", {
           status: "active",
           activated_at: new Date().toISOString()
         });
@@ -919,13 +991,31 @@
       }
 
       try {
-        await apiRequest("app_license_requests", "POST", [{
-          game_name: game,
-          guild_name: guild,
-          applicant_nick: nick,
-          contact_info: contact,
-          status: "pending"
-        }]);
+        var saved = false;
+        try {
+          await apiRequest("app_license_requests", "POST", [{
+            game_name: game,
+            guild_name: guild,
+            applicant_nick: nick,
+            contact_info: contact,
+            status: "pending"
+          }]);
+          saved = true;
+        } catch (e1) {}
+
+        try {
+          await apiRequest("license_requests", "POST", [{
+            game_name: game,
+            guild_name: guild,
+            applicant_nickname: nick,
+            contact_info: contact,
+            status: "pending"
+          }]);
+          saved = true;
+        } catch (e2) {}
+
+        if (!saved) throw new Error("신청 저장 실패");
+
         closeModalById("modalLicenseRequest");
         showKakaoToast("라이선스 신청이 접수되었습니다!", "🎉");
       } catch(err) {
@@ -934,10 +1024,10 @@
     }
 
     window.addEventListener("DOMContentLoaded", function() {
-      syncHomeThemeButton();
+      applySavedThemeOnHome();
       renderJoinedGuildsOnHome();
       loadHomeMembersList();
-      loadSaasGlobalNotice();
+      loadSaasGlobalNoticeAndFaq();
 
       // ⚡ 로그아웃 후 이동해 온 경우 즉시 "로그아웃 되었습니다." 표시
       var params = new URLSearchParams(window.location.search);
