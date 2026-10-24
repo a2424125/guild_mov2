@@ -114,7 +114,6 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
-  // ⚡ [세션 보호]: 저장된 로그인 닉네임과 직업이 유실되지 않도록 항상 동기화
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
@@ -154,7 +153,6 @@ async function initApp() {
 
 async function loadGuildSettings() {
   try {
-    // 1. 현재 활성 길드(my_joined_guilds) 정보 우선 반영
     const currentGid = localStorage.getItem("current_guild_id");
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
@@ -179,7 +177,6 @@ async function loadGuildSettings() {
       if (t4) t4.innerText = gGame + " · " + gName;
     }
 
-    // 2. 서버 설정 조회 동기화
     const res = await apiRequest("guild_settings?select=key,value");
     if (res && res.length > 0) {
       res.forEach(item => {
@@ -203,14 +200,12 @@ window.loadGuildMembersData = async function() {
     const currentGid = localStorage.getItem("current_guild_id");
     let members = [];
 
-    // 1. 현재 길드 ID로 조회 시도 (DB 컬럼 의존 오류 방지를 위해 order 없이 select=*)
     if (currentGid) {
       try {
         members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
       } catch (err) {}
     }
 
-    // 2. 만약 길드 ID 매칭 멤버가 비어있거나 실패한 경우, 전체 멤버에서 안전 복구
     if (!members || members.length === 0) {
       try {
         members = await apiRequest("guild_members?select=*");
@@ -224,7 +219,6 @@ window.loadGuildMembersData = async function() {
     cachedMemberList = members || [];
     window.cachedMemberList = cachedMemberList;
 
-    // 자바스크립트 메모리 정렬 (DB 쿼리 에러 원천 방지)
     cachedMemberList.sort((a, b) => {
       const pA = getRolePriority(a.role);
       const pB = getRolePriority(b.role);
@@ -378,10 +372,10 @@ function checkBackdropState() {
 
 window.openProfileEditModal = function openProfileEditModal() {
   document.getElementById("modalProfileEdit").style.display = "flex";
-}
+};
 window.closeProfileEditModal = function closeProfileEditModal() {
   document.getElementById("modalProfileEdit").style.display = "none";
-}
+};
 
 async function selectClassProfile(icon, className) {
   myCurrentAvatar = icon;
@@ -546,7 +540,6 @@ function showGuildLoginModal() {
 }
 window.showGuildLoginModal = showGuildLoginModal;
 
-// [버그 수정 1]: 로그인 완료 시 이전 사용자의 말풍선 캐시를 클리어하고 초기 비밀번호(000000)이면 변경 모달 표시
 async function executeGuildLogin() {
   const searchInput = document.getElementById("loginNickSearchInput");
   const selectElem = document.getElementById("loginMemberSelect");
@@ -641,7 +634,6 @@ async function executeGuildLogin() {
 
   updateProfileUI(memberName);
   
-  // 모든 모달 닫기
   const loginModal = document.getElementById("guildLoginModal");
   if (loginModal) loginModal.style.display = "none";
   const welcomeModal = document.getElementById("modalWelcomeGateway");
@@ -650,7 +642,6 @@ async function executeGuildLogin() {
     m.style.display = "none";
   });
 
-  // 메인 화면 활성화
   const mainTabs = document.getElementById("kakaoMainTabsView");
   if (mainTabs) mainTabs.style.display = "flex";
   document.body.classList.add("in-main-tabs");
@@ -669,7 +660,7 @@ async function executeGuildLogin() {
   }
 }
 
-// ⚡ 로그아웃 시 "로그아웃 되었습니다." 안내 토스트 표시 후 로그인 창 오픈
+// ⚡ 로그아웃 시 "로그아웃 되었습니다." 안내 표시 후 로그인 창 오픈
 function handleUserLogout() {
   if (typeof openConfirmLogoutModal === "function") {
     openConfirmLogoutModal();
@@ -777,10 +768,8 @@ async function loadPastChatMessages() {
   const chatContainer = document.getElementById("chatMessagesView");
   if (!chatContainer) return;
 
-  // ⚡ 실제 대화방 화면에 진입하지 않았거나 activeRoom이 없으면 목록 화면에서 임의 실행 차단
   if (!isInChatView || !activeRoom) return;
 
-  // 1) [대화 내역 사라짐 방지]: 로컬 캐시에서 먼저 즉시 복원하여 화면 깜빡임 및 빈 화면 방지
   const cacheKey = "chat_history_cache_" + activeRoom;
   let cachedMessages = [];
   try {
@@ -801,7 +790,6 @@ async function loadPastChatMessages() {
     `;
   }
 
-  // 2) 서버에서 최신 대화 목록 조회 및 방별 엄격한 격리 필터링
   try {
     const currentGid = localStorage.getItem("current_guild_id");
     let list = [];
@@ -833,7 +821,6 @@ async function loadPastChatMessages() {
       }
     }
 
-    // 3) [방 격리 보장]: 1:1 대화 내용이 단체 대화방에 절대 노출되지 않도록 필터링 (레거시 ID 포함)
     let filtered = (list || []).filter(c => {
       let rId = (!c.room_id || c.room_id === "default_public" || c.room_id === "public") ? "default_public" : c.room_id;
       if (rId && rId.startsWith("direct_") && typeof window.generateDeterministicUUID === "function") {
@@ -847,7 +834,6 @@ async function loadPastChatMessages() {
       return rId === activeRoom;
     });
 
-    // 캐시와 병합하여 중복 제거 (id 기준)
     const mergedMap = new Map();
     (cachedMessages || []).forEach(m => { if (m && m.id) mergedMap.set(String(m.id), m); });
     filtered.forEach(m => { if (m && m.id) mergedMap.set(String(m.id), m); });
@@ -860,13 +846,11 @@ async function loadPastChatMessages() {
     });
 
     if (finalSorted.length > 0) {
-      // 캐시 갱신
       try {
         localStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
         sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
       } catch(e) {}
 
-      // ⚡ 현재 방의 최신 메시지 읽음 상태 완벽 저장
       if (typeof window.markRoomAsReadNow === "function") {
         window.markRoomAsReadNow(activeRoom, finalSorted);
       } else {
@@ -884,7 +868,6 @@ async function loadPastChatMessages() {
   }
 }
 
-// ⚡ 내가 확인한 메시지의 read_members 배열에 내 닉네임을 서버 DB에 반영하여 노란색 숫자가 실시간 차감되도록 동기화
 async function syncMyReadStatusToServer(msgList) {
   if (!myCurrentNick || !Array.isArray(msgList) || msgList.length === 0) return;
 
@@ -921,7 +904,6 @@ function renderMessageHistoryList(msgList) {
     </div>
   `;
 
-  // 이후에 대화를 작성한 사람은 이전 메시지를 모두 읽은 것으로 자동 집계
   const subsequentSenders = new Set();
   for (let i = msgList.length - 1; i >= 0; i--) {
     const msg = msgList[i];
@@ -963,12 +945,10 @@ function listenRealtimeChatMessages() {
       const activeRoom = window.currentActiveRoomId;
       const msgRoom = (!newMsg.room_id || newMsg.room_id === "public" || newMsg.room_id === "default_public") ? "default_public" : newMsg.room_id;
 
-      // ⚡ 대화방 목록 미리보기 텍스트 및 붉은색 안 읽은 메시지 뱃지 실시간 갱신
       if (typeof window.updateRoomCardRealtime === "function") {
         window.updateRoomCardRealtime(msgRoom, newMsg);
       }
 
-      // 1) 해당 방의 로컬 캐시 실시간 업데이트 (뒤로가기 후 재입장 시 대화 보존)
       try {
         const cacheKey = "chat_history_cache_" + msgRoom;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
@@ -979,21 +959,19 @@ function listenRealtimeChatMessages() {
         }
       } catch(e) {}
 
-      // 2) [방별 격리]: 실제 대화방 화면 안에 있고 현재 방과 일치할 때만 말풍선 렌더링
       const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
       if (!isInChatView || !activeRoom) return;
 
       if (activeRoom === "default_public") {
         if (newMsg.room_id && newMsg.room_id !== "default_public" && newMsg.room_id !== "public") {
-          return; // 1:1 대화방 메시지는 전체 대화방에 절대 섞이지 않음
+          return;
         }
       } else {
         if (newMsg.room_id !== activeRoom) {
-          return; // 다른 방 메시지는 메인 대화창에 섞이지 않음
+          return;
         }
       }
 
-      // 상대방이 새 메시지를 보냈다면 이전 내 메시지들은 상대방이 읽은 것이므로 노란 숫자 갱신
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         const isDirect = (window.currentActiveRoomType === "direct") || (activeRoom && activeRoom !== "default_public" && activeRoom.includes("-"));
         if (isDirect) {
@@ -1005,7 +983,6 @@ function listenRealtimeChatMessages() {
         syncMyReadStatusToServer([newMsg]);
       }
 
-      // 3) 내가 전송한 낙관적 메시지 중복 방어
       const optimisticIdx = pendingOptimisticMessages.findIndex(m => 
         m.sender_name === newMsg.sender_name && (m.message === newMsg.message || m.message === newMsg.message_text)
       );
@@ -1051,7 +1028,7 @@ function listenRealtimeChatMessages() {
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링 (노란색 읽음 숫자 & 나/상대방 완벽 분리)
+// 6. 카카오톡 말풍선 렌더링
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1062,8 +1039,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const msgKey = msg.id ? ("msg_" + msg.id) : ("msg_tmp_" + Math.floor(Math.random() * 10000000));
   const timeStr = formatKSTChatTime(msg.created_at);
 
-  // ⚡ [노란색 안 읽은 숫자 정밀 계산]:
-  // 작성자 본인(sender_name)과 현재 대화방을 열어 보고 있는 나(myCurrentNick)는 항상 읽은 사람(readerSet)에 포함!
   const activeRoom = window.currentActiveRoomId || "default_public";
   const isDirect = (window.currentActiveRoomType === "direct") || 
                    (activeRoom && (activeRoom.startsWith("direct_") || (activeRoom.includes("-") && activeRoom !== "default_public"))) ||
@@ -1082,16 +1057,12 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
 
   let unreadCount = 0;
   if (isDirect) {
-    // 1:1 대화방 (총 2명):
-    // - 상대방이 쓴 글(!isMe)은 내가 지금 보고 있으므로 나+상대방 모두 읽음 -> 무조건 0 (숨김)
-    // - 내가 쓴 글(isMe)은 내가 읽었으므로 최대 1, 상대방도 읽었으면(readerSet.size >= 2) 0
     if (!isMe) {
       unreadCount = 0;
     } else {
       unreadCount = (readerSet.size >= 2) ? 0 : 1;
     }
   } else {
-    // 전체/그룹 대화방: 총 인원에서 읽은 인원(작성자 + 현재 열람 중인 나 + read_members) 차감
     unreadCount = Math.max(0, totalMembers - readerSet.size);
   }
 
@@ -1111,7 +1082,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
   }
 
-  // 1) 보스 브리핑 카드
   if (msg.msg_type === "boss_briefing") {
     html = `
       <div class="chat-item-row other" id="${msgKey}">
@@ -1129,7 +1099,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 2) 토벌 알리미 카드 (raid_report)
   else if (msg.msg_type === "raid_report") {
     const raidId = msg.meta_data?.raid_id || Date.now();
     const bossName = msg.meta_data?.boss_name || "보스";
@@ -1167,7 +1136,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 3) 보스 즉시컷 / 젠 알림
   else if (msg.msg_type === "boss_alert") {
     const bossNameInMsg = extractBossNameFromMessage(cleanMessageText);
     const subCutBtn = bossNameInMsg ? `
@@ -1194,7 +1162,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 4) 내가 작성한 메시지 (노란색 말풍선 우측 정렬)
   else if (isMe) {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
@@ -1211,7 +1178,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 5) 상대방이 작성한 메시지 (어두운/흰색 말풍선 좌측 정렬)
   else {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
@@ -1256,7 +1222,6 @@ function handleInputState(textarea) {
   const newH = Math.min(textarea.scrollHeight, 100);
   textarea.style.height = (newH > 36 ? newH : 36) + "px";
 
-  // 전송 버튼 노란색 활성화 토글 (카카오톡 순정)
   const btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
   if (btn) {
     if (textarea.value.trim().length > 0) {
@@ -1290,7 +1255,6 @@ async function handleSendMessage() {
     return;
   }
 
-  // 멘션 감지
   const mentionMatches = text.match(/@([a-zA-Z0-9가-힣_-]+)/g);
   const detectedMentions = mentionMatches ? mentionMatches.map(m => m.slice(1)) : [];
 
@@ -1318,7 +1282,6 @@ async function handleSendMessage() {
   scrollChatBottom();
   lastRenderedSender = myCurrentNick;
 
-  // 로컬 캐시에도 즉시 저장하여 나갔다 들어와도 대화 증발 방지
   try {
     const cacheKey = "chat_history_cache_" + activeRoomKey;
     let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
@@ -1330,7 +1293,6 @@ async function handleSendMessage() {
   try {
     const currentGid = localStorage.getItem("current_guild_id");
 
-    // 1:1 또는 커스텀 대화방인 경우 chat_rooms에 해당 UUID 방이 존재하는지 보장 (외래키 에러 원천 차단)
     if (targetRoomId) {
       try {
         const existRoom = await apiRequest(`chat_rooms?id=eq.${encodeURIComponent(targetRoomId)}&select=id`);
@@ -1361,7 +1323,6 @@ async function handleSendMessage() {
     try {
       insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
     } catch (postErr1) {
-      // read_members 또는 guild_id 호환성 폴백
       const fallbackPayload1 = {
         sender_name: myCurrentNick,
         message: text,
@@ -1396,7 +1357,6 @@ async function handleSendMessage() {
         rowElem.id = "msg_" + realId;
         rowElem.setAttribute("data-msg-id", realId);
       }
-      // 캐시 ID도 실제 서버 ID로 업데이트 및 읽음 상태 갱신
       try {
         const cacheKey = "chat_history_cache_" + activeRoomKey;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
