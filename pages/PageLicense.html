@@ -257,7 +257,7 @@
         <i class="fa-solid fa-key"></i>
         <span>라이선스 마스터 관리창</span>
       </div>
-      <div class="lic-summary-desc">신규 길드 발급 키 생성, 직거래 복사 및 이메일 신청 승인</div>
+      <div class="lic-summary-desc">신규 길드 발급 키 생성, 직거래 복사 및 신청서 승인</div>
     </div>
     <div style="font-size: 1.6rem; opacity: 0.85;">👑</div>
   </div>
@@ -284,7 +284,7 @@
     
     <div class="lic-form-group">
       <label class="lic-form-label">대상 게임명</label>
-      <input type="text" id="licInputGame" class="lic-form-input" placeholder="예: 리니지W, 오딘, 이클립스 등">
+      <input type="text" id="licInputGame" class="lic-form-input" placeholder="예: 리니지M, 오딘, 로스트아크 등">
     </div>
 
     <div class="lic-form-group">
@@ -311,14 +311,14 @@
         <span><i class="fa-solid fa-circle-check me-1"></i>발급 완료 (클립보드 복사됨)</span>
         <button type="button" class="btn-mini-copy" onclick="copyLastGeneratedGuide()">다시 복사</button>
       </div>
-      <div class="lic-code-display" id="licDisplayCode">GUILD-XXXX-XXXX</div>
+      <div class="lic-code-display" id="licDisplayCode">ECL-XXXX-XXXX</div>
       <div class="small text-secondary mt-1" style="font-size: 0.68rem; line-height: 1.35;">
         * 카카오톡이나 디스코드 채팅창에 바로 붙여넣기(Ctrl+V) 하시면 안내문이 전송됩니다.
       </div>
     </div>
   </div>
 
-  <!-- 탭 2: 홈페이지 신청서 접수 목록 -->
+  <!-- 탭 2: 홈페이지 신청서 접수 목록 (app_license_requests 단일 테이블 연동) -->
   <div id="licTabRequests" class="lic-section-card" style="display: none;">
     <div class="lic-card-title">
       <i class="fa-solid fa-inbox text-warning"></i>
@@ -367,15 +367,55 @@
     var type = document.getElementById('licSelectType').value || 'lifetime';
 
     var randomKey = generateSecureKey();
+    var inviteCode = 'INV-' + randomKey.split('-').pop();
+    var newGuildId = 'guild_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+
+    var expiresAt = null;
+    if (type === 'standard') {
+      var d1 = new Date();
+      d1.setDate(d1.getDate() + 365);
+      expiresAt = d1.toISOString();
+    } else if (type === 'trial') {
+      var d2 = new Date();
+      d2.setDate(d2.getDate() + 30);
+      expiresAt = d2.toISOString();
+    }
 
     try {
+      // 길드 마스터 테이블(guilds) 선행 생성
+      try {
+        await apiRequest("guilds", "POST", [{
+          id: newGuildId,
+          guild_name: buyer,
+          name: buyer,
+          game_name: game,
+          license_key: randomKey,
+          invite_code: inviteCode,
+          is_active: true,
+          status: 'active'
+        }]);
+      } catch (gErr) {}
+
+      // 길드별 초기 설정(guild_name) 저장
+      if (typeof upsertGuildSetting === "function") {
+        try {
+          await upsertGuildSetting("guild_name", buyer, newGuildId);
+        } catch (sErr) {}
+      }
+
       await apiRequest("app_licenses", "POST", [{
+        guild_id: newGuildId,
         license_key: randomKey,
+        invite_code: inviteCode,
         license_type: type,
         game_name: game,
+        guild_name: buyer,
+        applicant_nickname: buyer,
         issued_to: buyer,
         issue_method: 'direct',
-        is_used: false
+        is_used: false,
+        status: 'active',
+        expires_at: expiresAt
       }]);
 
       var siteUrl = window.location.origin;
@@ -383,8 +423,9 @@
 `[길드 메신저 정식 라이선스 발급 안내]
 • 메신저 접속 주소: ${siteUrl}
 • 게임명: ${game}
-• 길드 라이선스 키: ${randomKey}
-• 등록 방법: 접속 후 [새 길드 개설] 메뉴에서 위 키를 입력하시면 길드 세팅이 완료됩니다.`;
+• 길드 라이선스 키 (길드장용): ${randomKey}
+• 길드원 초대 코드 (길드원용): ${inviteCode}
+• 등록 방법: 접속 후 [라이선스 키로 길드 신규 개설] 메뉴에서 위 키를 입력하시면 길드 세팅이 완료됩니다.`;
 
       document.getElementById('licDisplayCode').innerText = randomKey;
       document.getElementById('licGeneratedResultBox').style.display = 'block';
@@ -416,45 +457,54 @@
     var part2 = '';
     for (var i = 0; i < 4; i++) part1 += chars.charAt(Math.floor(Math.random() * chars.length));
     for (var j = 0; j < 4; j++) part2 += chars.charAt(Math.floor(Math.random() * chars.length));
-    return 'GUILD-' + part1 + '-' + part2;
+    return 'ECL-' + part1 + '-' + part2;
   }
 
-  // 2. 신청서 접수 목록 로드
+  // 2. 신청서 접수 목록 로드 (app_license_requests 단일 테이블 연동)
   async function loadLicenseRequests() {
     var container = document.getElementById('licRequestsListArea');
     if (!container) return;
 
     try {
-      var list = await apiRequest("license_requests?order=created_at.desc&limit=50");
-      var pendingCount = (list || []).filter(r => r.status === 'pending').length;
+      var rawList = await apiRequest("app_license_requests?order=created_at.desc&limit=50");
+      var list = (rawList || []).filter(function(r) {
+        return r.status !== 'support_inquiry' &&
+               r.status !== 'support_done' &&
+               !(r.game_name && String(r.game_name).startsWith('[고객센터]'));
+      });
+
+      var pendingCount = list.filter(function(r) { return r.status === 'pending'; }).length;
       document.getElementById('licPendingCount').innerText = pendingCount;
 
-      if (!list || list.length === 0) {
+      if (list.length === 0) {
         container.innerHTML = '<div class="text-secondary small text-center py-4">접수된 신청서가 없습니다.</div>';
         return;
       }
 
       container.innerHTML = list.map(function(r) {
         var isPending = (r.status === 'pending');
+        var applicantNick = r.applicant_nickname || r.applicant_nick || r.applicant_name || '길드장';
+        var contactInfo = r.contact_info || r.applicant_email || '-';
+
         var badge = isPending 
           ? '<span class="badge-lic-state unused">⏳ 대기중</span>'
           : '<span class="badge-lic-state approved">✅ 승인완료</span>';
 
         var actionBtn = isPending
-          ? `<button type="button" class="btn-item-action primary" onclick="approveLicenseRequest(${r.id}, '${escapeHtml(r.applicant_email)}', '${escapeHtml(r.game_name)}', '${escapeHtml(r.guild_name)}')"><i class="fa-solid fa-check me-1"></i>승인 & 키 발급</button>`
+          ? `<button type="button" class="btn-item-action primary" onclick="approveLicenseRequest('${r.id}', '${escapeHtml(applicantNick)}', '${escapeHtml(contactInfo)}', '${escapeHtml(r.game_name || '공통')}', '${escapeHtml(r.guild_name || '길드')}')"><i class="fa-solid fa-check me-1"></i>승인 & 키 발급</button>`
           : `<span class="small text-secondary font-monospace">${escapeHtml(r.assigned_license_key || '-')}</span>`;
 
         return `
           <div class="lic-item-row">
             <div class="lic-item-top">
-              <span class="fw-bold" style="font-size:0.84rem;">[${escapeHtml(r.game_name)}] ${escapeHtml(r.guild_name)}</span>
+              <span class="fw-bold" style="font-size:0.84rem;">[${escapeHtml(r.game_name || '공통')}] ${escapeHtml(r.guild_name || '길드')}</span>
               ${badge}
             </div>
             <div class="lic-item-meta">
-              <span>신청자: ${escapeHtml(r.applicant_name || '길드장')} (${escapeHtml(r.applicant_email)})</span>
+              <span>신청자: ${escapeHtml(applicantNick)}</span>
               <span>${(r.created_at || '').slice(0, 10)}</span>
             </div>
-            ${r.contact_info ? `<div class="small text-secondary" style="font-size:0.68rem;">연락처: ${escapeHtml(r.contact_info)}</div>` : ''}
+            <div class="small text-secondary" style="font-size:0.68rem;">연락처: ${escapeHtml(contactInfo)}</div>
             <div class="lic-item-actions justify-content-end">
               ${actionBtn}
             </div>
@@ -466,22 +516,57 @@
     }
   }
 
-  // 3. 신청서 원클릭 승인 & 키 발급
-  async function approveLicenseRequest(id, email, game, guild) {
+  // 3. 신청서 원클릭 승인 & 키 발급 (app_license_requests 연동)
+  async function approveLicenseRequest(id, applicantNick, contactInfo, game, guild) {
     if (!confirm(`[${guild}] 길드의 라이선스를 승인하고 키를 발급하시겠습니까?`)) return;
 
     var newKey = generateSecureKey();
+    var inviteCode = 'INV-' + newKey.split('-').pop();
+    var newGuildId = 'guild_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+
+    var expDate = new Date();
+    expDate.setDate(expDate.getDate() + 30);
+    var expiresAt = expDate.toISOString();
+
     try {
+      // 길드 마스터 테이블(guilds) 선행 생성
+      try {
+        await apiRequest("guilds", "POST", [{
+          id: newGuildId,
+          guild_name: guild,
+          name: guild,
+          game_name: game,
+          license_key: newKey,
+          invite_code: inviteCode,
+          is_active: true,
+          status: 'active'
+        }]);
+      } catch (gErr) {}
+
+      // 길드별 초기 설정(guild_name) 저장
+      if (typeof upsertGuildSetting === "function") {
+        try {
+          await upsertGuildSetting("guild_name", guild, newGuildId);
+        } catch (sErr) {}
+      }
+
       await apiRequest("app_licenses", "POST", [{
+        guild_id: newGuildId,
         license_key: newKey,
+        invite_code: inviteCode,
         license_type: 'standard',
         game_name: game,
-        issued_to: email,
-        issue_method: 'email_request',
-        is_used: false
+        guild_name: guild,
+        applicant_nickname: applicantNick,
+        issued_to: applicantNick,
+        contact_info: contactInfo,
+        issue_method: 'request_approval',
+        is_used: false,
+        status: 'active',
+        expires_at: expiresAt
       }]);
 
-      await apiRequest(`license_requests?id=eq.${id}`, "PATCH", {
+      await apiRequest(`app_license_requests?id=eq.${encodeURIComponent(id)}`, "PATCH", {
         status: 'approved',
         assigned_license_key: newKey
       });
@@ -491,10 +576,11 @@
 `[길드 메신저 라이선스 승인 완료]
 신청하신 [${guild}] 길드의 라이선스가 발급되었습니다.
 • 접속 URL: ${siteUrl}
-• 라이선스 키: ${newKey}
-접속 후 [새 길드 개설] 메뉴에 입력하세요.`;
+• 라이선스 키 (길드장용): ${newKey}
+• 길드원 초대 코드 (길드원용): ${inviteCode}
+접속 후 [라이선스 키로 길드 신규 개설] 메뉴에 입력하세요.`;
 
-      navigator.clipboard.writeText(copyText);
+      navigator.clipboard.writeText(copyText).catch(function() {});
       if (typeof showKakaoToast === 'function') {
         showKakaoToast(`[${newKey}] 발급 완료 및 안내문 복사!`, "🎉");
       }
@@ -520,6 +606,7 @@
         var stateBadge = item.is_used 
           ? '<span class="badge-lic-state used">사용완료</span>'
           : '<span class="badge-lic-state unused">미사용 (대기)</span>';
+        var targetName = item.guild_name || item.issued_to || item.applicant_nickname || '-';
 
         return `
           <div class="lic-item-row">
@@ -528,7 +615,7 @@
               ${stateBadge}
             </div>
             <div class="lic-item-meta">
-              <span>[${escapeHtml(item.game_name || '공통')}] ${escapeHtml(item.issued_to || '-')}</span>
+              <span>[${escapeHtml(item.game_name || '공통')}] ${escapeHtml(targetName)}</span>
               <span>${(item.created_at || '').slice(0, 10)}</span>
             </div>
             <div class="lic-item-actions justify-content-end">
@@ -551,12 +638,13 @@
   }
 
   function escapeHtml(t) {
-    return (t || '').replace(/[&<>"']/g, function(m) {
+    return String(t || '').replace(/[&<>"']/g, function(m) {
       return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[m];
     });
   }
 
   (function initLicenseModule() {
     switchLicTab('direct');
+    loadLicenseRequests();
   })();
 </script>
