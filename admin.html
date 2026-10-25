@@ -58,6 +58,18 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
 
+    /* 모달 백드롭 */
+    .kakao-modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
     /* 메인 컨테이너 */
     .admin-container {
       max-width: 1200px;
@@ -446,7 +458,7 @@
       </div>
     </div>
 
-    <!-- [탭 3] 라이선스 신청 접수함 -->
+    <!-- [탭 3] 라이선스 신청 접수함 (app_license_requests 단일 테이블 연동) -->
     <div id="tabPanelRequests" class="admin-panel" style="display: none;">
       <div class="panel-header">
         <div class="panel-title">
@@ -478,7 +490,7 @@
       </div>
     </div>
 
-    <!-- [탭 4] 고객센터 1:1 문의함 (완료 처리 및 DB 영구 삭제 지원) -->
+    <!-- [탭 4] 고객센터 1:1 문의함 (saas_inquiries 전용 테이블 연동) -->
     <div id="tabPanelSupport" class="admin-panel" style="display: none;">
       <div class="panel-header">
         <div class="panel-title">
@@ -513,7 +525,7 @@
       </div>
     </div>
 
-    <!-- [탭 5] 홈 전체 공지 모달 & 자주 묻는 질문(FAQ) DB 관리 -->
+    <!-- [탭 5] 홈 전체 공지 모달(saas_notices) & 자주 묻는 질문(saas_faqs) DB 관리 -->
     <div id="tabPanelSaasContent" style="display: none;">
       <!-- 5-1. 홈 전체 공지 배너 및 팝업 모달 설정 -->
       <div class="admin-panel">
@@ -565,7 +577,7 @@
         </div>
 
         <p class="text-secondary small mb-3">
-          아래 목록은 DB(<code>guild_settings</code> 테이블의 <code>saas_faq_list</code>)에 저장되며, <code>home.html</code> 하단 자주 묻는 질문 영역에 즉시 반영됩니다.
+          아래 목록은 플랫폼 공통 DB(<code>saas_faqs</code> 테이블)에 저장되며, <code>home.html</code> 하단 자주 묻는 질문 영역에 즉시 반영됩니다.
         </p>
 
         <div id="adminFaqEditorList"></div>
@@ -649,6 +661,7 @@
     ];
 
     var adminFaqList = [];
+    var currentNoticeId = null;
 
     function escapeAdminHtml(str) {
       if (!str) return "";
@@ -667,7 +680,7 @@
 
     function checkAuthOnLoad() {
       ensureSupabaseClient();
-      if (sessionStorage.getItem("master_authenticated") === "true") {
+      if (sessionStorage.getItem("master_authenticated") === "true" || sessionStorage.getItem("master_admin_auth") === "1") {
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("adminMainContent").style.display = "block";
         loadAllDashboardData();
@@ -681,6 +694,7 @@
       const pin = (document.getElementById("masterPinInput").value || "").trim();
       if (pin === MASTER_PIN) {
         sessionStorage.setItem("master_authenticated", "true");
+        sessionStorage.setItem("master_admin_auth", "1");
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("adminMainContent").style.display = "block";
         loadAllDashboardData();
@@ -693,6 +707,7 @@
 
     function logoutMaster() {
       sessionStorage.removeItem("master_authenticated");
+      sessionStorage.removeItem("master_admin_auth");
       location.reload();
     }
 
@@ -737,59 +752,64 @@
           if (!lErr) licenses = data || [];
         } catch (e) {}
 
-        guilds.forEach(g => {
-          g.app_licenses = licenses.filter(l => l.guild_id === g.id);
+        // 3) 길드별 인원수 및 전체 인원 집계
+        let allMembers = [];
+        try {
+          const { data: mData, error: mErr } = await window.supabaseClient
+            .from('guild_members')
+            .select('guild_id');
+          if (!mErr && Array.isArray(mData)) allMembers = mData;
+        } catch (e) {}
+
+        const memberCountMap = {};
+        allMembers.forEach(m => {
+          const gid = m.guild_id || 'default';
+          memberCountMap[gid] = (memberCountMap[gid] || 0) + 1;
         });
 
-        // 3) 신청서 및 고객센터 문의 로드 (app_license_requests & license_requests 양쪽 모두 조회 및 병합)
-        let combinedReqs = [];
+        guilds.forEach(g => {
+          g.app_licenses = licenses.filter(l => l.guild_id === g.id);
+          g.member_count = memberCountMap[g.id] || g.member_count || 1;
+        });
+
+        // 4) 라이선스 신청서 로드 (app_license_requests 단일 테이블에서 조회)
+        let licenseReqs = [];
         try {
-          const { data: d1 } = await window.supabaseClient
+          const { data: reqData, error: rErr } = await window.supabaseClient
             .from('app_license_requests')
             .select('*')
             .order('created_at', { ascending: false });
-          if (Array.isArray(d1)) {
-            d1.forEach(r => { r._sourceTable = 'app_license_requests'; combinedReqs.push(r); });
+          if (!rErr && Array.isArray(reqData)) {
+            // 과거 데이터 중 고객센터 문의로 들어왔던 행 제외하고 순수 라이선스 신청서만 필터링
+            licenseReqs = reqData.filter(r => {
+              return r.status !== 'support_inquiry' &&
+                     r.status !== 'support_done' &&
+                     !(r.game_name && String(r.game_name).startsWith('[고객센터]'));
+            });
           }
         } catch (e1) {}
 
+        // 5) 고객센터 1:1 문의 로드 (saas_inquiries 전용 테이블에서 조회)
+        let inquiries = [];
         try {
-          const { data: d2 } = await window.supabaseClient
-            .from('license_requests')
+          const { data: inqData, error: iErr } = await window.supabaseClient
+            .from('saas_inquiries')
             .select('*')
             .order('created_at', { ascending: false });
-          if (Array.isArray(d2)) {
-            d2.forEach(r => { r._sourceTable = 'license_requests'; combinedReqs.push(r); });
+          if (!iErr && Array.isArray(inqData)) {
+            inquiries = inqData;
           }
         } catch (e2) {}
 
-        // 고객센터 문의(support_inquiry / support_done 또는 [고객센터] 태그)와 일반 라이선스 신청 분리
-        cachedSupportInquiries = combinedReqs.filter(r => {
-          return r.status === 'support_inquiry' ||
-                 r.status === 'support_done' ||
-                 (r.game_name && String(r.game_name).startsWith('[고객센터]')) ||
-                 (r.game_name && String(r.game_name).startsWith('['));
-        });
-
-        cachedLicenseRequests = combinedReqs.filter(r => {
-          return !cachedSupportInquiries.includes(r);
-        });
-
-        // 4) 전체 등록 인원 집계
-        let totalMembersCount = 0;
-        try {
-          const { count } = await window.supabaseClient
-            .from('guild_members')
-            .select('*', { count: 'exact', head: true });
-          totalMembersCount = count || 0;
-        } catch(e) {}
-
         cachedGuilds = guilds;
+        cachedLicenseRequests = licenseReqs;
+        cachedSupportInquiries = inquiries;
 
         // KPI 집계
         const activeGuilds = cachedGuilds.filter(g => g.is_active !== false).length;
+        const totalMembersCount = allMembers.length;
         const pendingReqs = cachedLicenseRequests.filter(r => r.status === 'pending').length;
-        const pendingSup = cachedSupportInquiries.filter(r => r.status !== 'support_done').length;
+        const pendingSup = cachedSupportInquiries.filter(r => r.status !== 'done').length;
 
         document.getElementById("kpiActiveGuilds").innerText = activeGuilds;
         document.getElementById("kpiTotalMembers").innerText = totalMembersCount;
@@ -885,13 +905,16 @@
       const q = (keyword || "").toLowerCase().trim();
       const filtered = cachedGuilds.filter(g => {
         const gTitle = g.guild_name || g.name || "";
+        const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : null;
+        const nick = lic?.applicant_nickname || "";
         return (g.game_name && g.game_name.toLowerCase().includes(q)) ||
-               (gTitle && gTitle.toLowerCase().includes(q));
+               (gTitle && gTitle.toLowerCase().includes(q)) ||
+               (nick && nick.toLowerCase().includes(q));
       });
       renderGuildTable(filtered);
     }
 
-    // 5. 라이선스 신청서 목록 렌더링 & 승인 / 삭제
+    // 5. 라이선스 신청서 목록 렌더링 & 승인 / 삭제 (app_license_requests 연동)
     function renderRequestsTable(list) {
       const tbody = document.getElementById("requestListTableBody");
       if (!list || list.length === 0) {
@@ -903,7 +926,6 @@
         const isPending = (r.status === 'pending');
         const dt = r.created_at ? r.created_at.replace('T', ' ').substring(0, 16) : '-';
         const nick = r.applicant_nickname || r.applicant_nick || '-';
-        const table = r._sourceTable || 'app_license_requests';
         return `
           <tr>
             <td class="text-secondary small">${dt}</td>
@@ -913,7 +935,7 @@
             </td>
             <td>${escapeAdminHtml(nick)}</td>
             <td>
-              <div class="text-secondary small">${escapeAdminHtml(r.contact_info || r.email || '-')}</div>
+              <div class="text-secondary small">${escapeAdminHtml(r.contact_info || '-')}</div>
             </td>
             <td>
               <span class="badge-status ${isPending ? 'badge-pending' : 'badge-active'}">
@@ -923,11 +945,11 @@
             <td>
               <div class="d-flex gap-1">
                 ${isPending ? `
-                  <button type="button" class="btn btn-sm btn-success py-1 px-2" style="font-size:0.75rem;" onclick="approveRequest('${r.id}', '${table}', '${escapeAdminHtml(r.game_name)}', '${escapeAdminHtml(r.guild_name)}', '${escapeAdminHtml(nick)}', '${escapeAdminHtml(r.contact_info || r.email || '')}')">
+                  <button type="button" class="btn btn-sm btn-success py-1 px-2" style="font-size:0.75rem;" onclick="approveRequest('${r.id}', '${escapeAdminHtml(r.game_name)}', '${escapeAdminHtml(r.guild_name)}', '${escapeAdminHtml(nick)}', '${escapeAdminHtml(r.contact_info || '')}')">
                     <i class="fa-solid fa-check me-1"></i>승인 & 발급
                   </button>
-                ` : `<span class="text-secondary small me-2">처리 완료</span>`}
-                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size:0.75rem;" onclick="deleteRequestOrInquiry('${r.id}', '${table}')">
+                ` : `<span class="text-secondary small me-2">${escapeAdminHtml(r.assigned_license_key || '처리 완료')}</span>`}
+                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size:0.75rem;" onclick="deleteLicenseRequest('${r.id}')">
                   삭제
                 </button>
               </div>
@@ -937,7 +959,22 @@
       }).join('');
     }
 
-    // 6. 고객센터 1:1 문의함 렌더링 & 완료/삭제
+    async function deleteLicenseRequest(id) {
+      ensureSupabaseClient();
+      if (!confirm("이 라이선스 신청 내역을 DB에서 완전히 삭제하시겠습니까?")) return;
+      try {
+        const { error } = await window.supabaseClient
+          .from('app_license_requests')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        loadAllDashboardData();
+      } catch (err) {
+        alert("삭제 실패: " + err.message);
+      }
+    }
+
+    // 6. 고객센터 1:1 문의함 렌더링 & 완료/삭제 (saas_inquiries 전용 테이블 연동)
     function renderSupportTable(list) {
       const tbody = document.getElementById("supportListTableBody");
       if (!list || list.length === 0) {
@@ -946,18 +983,23 @@
       }
 
       tbody.innerHTML = list.map(r => {
-        const isDone = (r.status === 'support_done');
+        const isDone = (r.status === 'done');
         const dt = r.created_at ? r.created_at.replace('T', ' ').substring(0, 16) : '-';
-        const writer = r.guild_name || r.applicant_nickname || r.applicant_nick || '-';
-        const table = r._sourceTable || 'app_license_requests';
+        const category = r.category || '일반 문의';
+        const writer = r.writer || '-';
+        const contact = r.contact || '-';
+        const content = r.content || '-';
         return `
           <tr>
             <td class="text-secondary small">${dt}</td>
             <td>
-              <span class="badge bg-warning text-dark fw-bold">${escapeAdminHtml(r.game_name || '일반 문의')}</span>
+              <span class="badge bg-warning text-dark fw-bold">${escapeAdminHtml(category)}</span>
             </td>
             <td class="fw-bold">${escapeAdminHtml(writer)}</td>
-            <td style="max-width: 380px; white-space: pre-wrap; word-break: break-word;">${escapeAdminHtml(r.contact_info || '-')}</td>
+            <td style="max-width: 380px; white-space: pre-wrap; word-break: break-word;">
+              <div class="text-info small mb-1"><i class="fa-solid fa-address-book me-1"></i>${escapeAdminHtml(contact)}</div>
+              <div>${escapeAdminHtml(content)}</div>
+            </td>
             <td>
               <span class="badge-status ${isDone ? 'badge-active' : 'badge-pending'}">
                 ${isDone ? '처리 완료' : '답변 대기'}
@@ -966,11 +1008,11 @@
             <td>
               <div class="d-flex gap-1">
                 ${!isDone ? `
-                  <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size:0.75rem;" onclick="markSupportInquiryDone('${r.id}', '${table}')">
+                  <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size:0.75rem;" onclick="markSupportInquiryDone('${r.id}')">
                     <i class="fa-solid fa-check me-1"></i>완료 처리
                   </button>
                 ` : ''}
-                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size:0.75rem;" onclick="deleteRequestOrInquiry('${r.id}', '${table}')">
+                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size:0.75rem;" onclick="deleteRequestOrInquiry('${r.id}')">
                   <i class="fa-solid fa-trash-can me-1"></i>DB 삭제
                 </button>
               </div>
@@ -980,27 +1022,29 @@
       }).join('');
     }
 
-    async function markSupportInquiryDone(id, tableName) {
+    async function markSupportInquiryDone(id) {
       ensureSupabaseClient();
       try {
-        await window.supabaseClient
-          .from(tableName || 'app_license_requests')
-          .update({ status: 'support_done' })
+        const { error } = await window.supabaseClient
+          .from('saas_inquiries')
+          .update({ status: 'done' })
           .eq('id', id);
+        if (error) throw error;
         loadAllDashboardData();
       } catch (err) {
         alert("상태 변경 실패: " + err.message);
       }
     }
 
-    async function deleteRequestOrInquiry(id, tableName) {
+    async function deleteRequestOrInquiry(id) {
       ensureSupabaseClient();
-      if (!confirm("이 항목을 DB에서 완전히 삭제하시겠습니까?")) return;
+      if (!confirm("이 문의 항목을 DB에서 완전히 삭제하시겠습니까?")) return;
       try {
-        await window.supabaseClient
-          .from(tableName || 'app_license_requests')
+        const { error } = await window.supabaseClient
+          .from('saas_inquiries')
           .delete()
           .eq('id', id);
+        if (error) throw error;
         loadAllDashboardData();
       } catch (err) {
         alert("삭제 실패: " + err.message);
@@ -1009,17 +1053,18 @@
 
     async function deleteCompletedSupportInquiries() {
       ensureSupabaseClient();
-      const doneList = cachedSupportInquiries.filter(r => r.status === 'support_done');
+      const doneList = cachedSupportInquiries.filter(r => r.status === 'done');
       if (doneList.length === 0) {
         return alert("처리 완료 상태인 문의가 없습니다.");
       }
       if (!confirm(`처리 완료된 문의 ${doneList.length}건을 DB에서 모두 영구 삭제하시겠습니까?`)) return;
 
       try {
-        for (const item of doneList) {
-          const t = item._sourceTable || 'app_license_requests';
-          await window.supabaseClient.from(t).delete().eq('id', item.id);
-        }
+        const { error } = await window.supabaseClient
+          .from('saas_inquiries')
+          .delete()
+          .eq('status', 'done');
+        if (error) throw error;
         alert("완료된 문의가 모두 정리되었습니다.");
         loadAllDashboardData();
       } catch (err) {
@@ -1027,76 +1072,77 @@
       }
     }
 
-    // 7. 홈 전체 공지 & FAQ DB 관리 로직
+    // 7. 홈 전체 공지(saas_notices) & FAQ(saas_faqs) 전용 테이블 관리 로직
     async function loadSaasNoticeAndFaqForAdmin() {
+      // 1) 전체 공지 로드 (saas_notices 테이블)
       try {
-        const settings = await apiRequest("guild_settings?select=key,value");
-        if (Array.isArray(settings)) {
-          // 공지 로드
-          const noticeItem = settings.find(s => s.key === "saas_global_notice" || s.key === "global_notice");
-          if (noticeItem && noticeItem.value) {
-            try {
-              const parsed = JSON.parse(noticeItem.value);
-              document.getElementById("adminSaasNoticeTitle").value = parsed.title || "길드톡 서비스 안내";
-              document.getElementById("adminSaasNoticeContent").value = parsed.content || "";
-              document.getElementById("adminSaasNoticePopup").checked = !!parsed.popup;
-            } catch (e) {
-              document.getElementById("adminSaasNoticeTitle").value = "길드톡 서비스 안내";
-              document.getElementById("adminSaasNoticeContent").value = noticeItem.value;
-              document.getElementById("adminSaasNoticePopup").checked = false;
-            }
-          } else {
-            document.getElementById("adminSaasNoticeTitle").value = "길드톡 서비스 안내 및 업데이트 소식";
-            document.getElementById("adminSaasNoticeContent").value = "환영합니다! 길드톡 메신저를 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요.";
-            document.getElementById("adminSaasNoticePopup").checked = false;
-          }
+        const notices = await apiRequest("saas_notices?is_active=eq.true&order=id.desc&limit=1");
+        if (Array.isArray(notices) && notices.length > 0) {
+          const latest = notices[0];
+          currentNoticeId = latest.id;
+          document.getElementById("adminSaasNoticeTitle").value = latest.title || "길드톡 서비스 안내";
+          document.getElementById("adminSaasNoticeContent").value = latest.content || "";
+          document.getElementById("adminSaasNoticePopup").checked = !!latest.is_popup;
+        } else {
+          currentNoticeId = null;
+          document.getElementById("adminSaasNoticeTitle").value = "길드톡 서비스 안내 및 업데이트 소식";
+          document.getElementById("adminSaasNoticeContent").value = "환영합니다! 길드톡 메신저를 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요.";
+          document.getElementById("adminSaasNoticePopup").checked = false;
+        }
+      } catch (e) {
+        currentNoticeId = null;
+      }
 
-          // FAQ 로드 (없으면 기본 3개 자동 시드 저장)
-          const faqItem = settings.find(s => s.key === "saas_faq_list");
-          if (faqItem && faqItem.value) {
-            try {
-              const parsedFaq = JSON.parse(faqItem.value);
-              if (Array.isArray(parsedFaq) && parsedFaq.length > 0) {
-                adminFaqList = parsedFaq;
-              } else {
-                adminFaqList = defaultAdminFaqList.slice();
-              }
-            } catch (e) {
-              adminFaqList = defaultAdminFaqList.slice();
-            }
-          } else {
-            adminFaqList = defaultAdminFaqList.slice();
-            await upsertGuildSettingKeyValue("saas_faq_list", JSON.stringify(adminFaqList));
-          }
+      // 2) FAQ 로드 (saas_faqs 테이블)
+      try {
+        const faqs = await apiRequest("saas_faqs?is_active=eq.true&order=sort_order.asc,id.asc");
+        if (Array.isArray(faqs) && faqs.length > 0) {
+          adminFaqList = faqs.map(f => ({
+            id: f.id,
+            q: f.question || "",
+            a: f.answer || ""
+          }));
+        } else {
+          adminFaqList = defaultAdminFaqList.slice();
         }
       } catch (e) {
         adminFaqList = defaultAdminFaqList.slice();
       }
-      renderAdminFaqEditor();
-    }
 
-    async function upsertGuildSettingKeyValue(keyName, valStr) {
-      const existing = await apiRequest(`guild_settings?key=eq.${encodeURIComponent(keyName)}&select=key`);
-      if (existing && existing.length > 0) {
-        await apiRequest(`guild_settings?key=eq.${encodeURIComponent(keyName)}`, "PATCH", { value: valStr });
-      } else {
-        await apiRequest("guild_settings", "POST", [{ key: keyName, value: valStr }]);
-      }
+      renderAdminFaqEditor();
     }
 
     async function saveSaasGlobalNoticeFromAdmin() {
       const title = (document.getElementById("adminSaasNoticeTitle").value || "").trim();
       const content = (document.getElementById("adminSaasNoticeContent").value || "").trim();
-      const popup = document.getElementById("adminSaasNoticePopup").checked;
+      const isPopup = document.getElementById("adminSaasNoticePopup").checked;
 
       if (!title || !content) {
         return alert("공지 제목과 본문 내용을 모두 입력해 주세요.");
       }
 
-      const payloadStr = JSON.stringify({ title, content, popup, updated_at: new Date().toISOString() });
       try {
-        await upsertGuildSettingKeyValue("saas_global_notice", payloadStr);
-        alert("홈 전체 공지 및 모달 설정이 DB에 저장되었습니다!");
+        if (currentNoticeId) {
+          await apiRequest(`saas_notices?id=eq.${encodeURIComponent(currentNoticeId)}`, "PATCH", {
+            title: title,
+            content: content,
+            is_popup: isPopup,
+            is_active: true,
+            updated_at: new Date().toISOString()
+          });
+        } else {
+          const inserted = await apiRequest("saas_notices", "POST", [{
+            title: title,
+            content: content,
+            is_popup: isPopup,
+            is_active: true,
+            updated_at: new Date().toISOString()
+          }]);
+          if (Array.isArray(inserted) && inserted.length > 0) {
+            currentNoticeId = inserted[0].id;
+          }
+        }
+        alert("홈 전체 공지 및 모달 설정이 DB(saas_notices)에 저장되었습니다!");
       } catch (err) {
         alert("공지 저장 실패: " + err.message);
       }
@@ -1156,6 +1202,7 @@
     }
 
     async function saveFaqListToDb() {
+      ensureSupabaseClient();
       syncFaqInputsToMemory();
       const validList = adminFaqList.filter(item => item.q && item.a);
       if (validList.length === 0) {
@@ -1164,9 +1211,19 @@
       adminFaqList = validList;
 
       try {
-        await upsertGuildSettingKeyValue("saas_faq_list", JSON.stringify(adminFaqList));
-        renderAdminFaqEditor();
-        alert(`총 ${adminFaqList.length}개의 FAQ가 DB에 성공적으로 저장되었습니다!`);
+        // 기존 saas_faqs 행을 정리하고 정렬 순서대로 새로 저장
+        await apiRequest("saas_faqs?id=gt.0", "DELETE");
+
+        const payload = adminFaqList.map((item, idx) => ({
+          question: item.q,
+          answer: item.a,
+          sort_order: idx + 1,
+          is_active: true
+        }));
+        await apiRequest("saas_faqs", "POST", payload);
+
+        await loadSaasNoticeAndFaqForAdmin();
+        alert(`총 ${adminFaqList.length}개의 FAQ가 DB(saas_faqs)에 성공적으로 저장되었습니다!`);
       } catch (err) {
         alert("FAQ 저장 실패: " + err.message);
       }
@@ -1192,6 +1249,7 @@
       const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
       const licenseKey = `ECL-${datePart}-${randomPart}`;
       const inviteCode = `INV-${randomPart}`;
+      const newGuildId = `guild_${Date.now()}_${randomPart.toLowerCase()}`;
 
       let expiresAt = null;
       if (durationDays < 90000) {
@@ -1204,10 +1262,14 @@
         const { data: guildData, error: gErr } = await window.supabaseClient
           .from('guilds')
           .insert([{
+            id: newGuildId,
             guild_name: guildName,
+            name: guildName,
             game_name: gameName,
             license_key: licenseKey,
-            is_active: true
+            invite_code: inviteCode,
+            is_active: true,
+            status: 'active'
           }])
           .select()
           .single();
@@ -1219,9 +1281,11 @@
           .insert([{
             guild_id: guildData.id,
             license_key: licenseKey,
+            invite_code: inviteCode,
             guild_name: guildName,
             game_name: gameName,
             applicant_nickname: applicantNick || '길드장',
+            issued_to: applicantNick || '길드장',
             contact_info: contactInfo,
             max_members: maxMembers,
             expires_at: expiresAt,
@@ -1229,6 +1293,13 @@
           }]);
 
         if (lErr) throw lErr;
+
+        // 해당 길드의 초기 설정(guild_name)을 guild_settings에 독립 저장
+        if (typeof upsertGuildSetting === "function") {
+          try {
+            await upsertGuildSetting("guild_name", guildName, guildData.id);
+          } catch (sErr) {}
+        }
 
         const expStr = expiresAt ? expiresAt.split('T')[0] : '무제한';
         copyGuildInviteMessage(gameName, guildName, licenseKey, inviteCode, expStr);
@@ -1247,8 +1318,8 @@
       }
     }
 
-    // 9. 신청서 승인 및 발급
-    async function approveRequest(reqId, tableName, gameName, guildName, applicantNick, contactInfo) {
+    // 9. 신청서 승인 및 발급 (app_license_requests 단일 테이블 연동)
+    async function approveRequest(reqId, gameName, guildName, applicantNick, contactInfo) {
       ensureSupabaseClient();
       if (!confirm(`[${guildName}] 길드의 라이선스를 즉시 발급하시겠습니까?`)) return;
 
@@ -1257,6 +1328,7 @@
       const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
       const licenseKey = `ECL-${datePart}-${randomPart}`;
       const inviteCode = `INV-${randomPart}`;
+      const newGuildId = `guild_${Date.now()}_${randomPart.toLowerCase()}`;
 
       const expDate = new Date();
       expDate.setDate(expDate.getDate() + 30);
@@ -1266,10 +1338,14 @@
         const { data: guildData, error: gErr } = await window.supabaseClient
           .from('guilds')
           .insert([{
+            id: newGuildId,
             guild_name: guildName,
+            name: guildName,
             game_name: gameName,
             license_key: licenseKey,
-            is_active: true
+            invite_code: inviteCode,
+            is_active: true,
+            status: 'active'
           }])
           .select().single();
         if (gErr) throw gErr;
@@ -1277,18 +1353,30 @@
         await window.supabaseClient.from('app_licenses').insert([{
           guild_id: guildData.id,
           license_key: licenseKey,
+          invite_code: inviteCode,
           guild_name: guildName,
           game_name: gameName,
           applicant_nickname: applicantNick,
+          issued_to: applicantNick,
           contact_info: contactInfo,
           max_members: 100,
           expires_at: expiresAt,
           status: 'active'
         }]);
 
+        // 해당 길드의 초기 설정(guild_name)을 guild_settings에 독립 저장
+        if (typeof upsertGuildSetting === "function") {
+          try {
+            await upsertGuildSetting("guild_name", guildName, guildData.id);
+          } catch (sErr) {}
+        }
+
         await window.supabaseClient
-          .from(tableName || 'app_license_requests')
-          .update({ status: 'approved' })
+          .from('app_license_requests')
+          .update({
+            status: 'approved',
+            assigned_license_key: licenseKey
+          })
           .eq('id', reqId);
 
         const expStr = expiresAt.split('T')[0];
@@ -1364,6 +1452,7 @@
       const guildId = document.getElementById("editGuildId").value;
       const gameName = document.getElementById("editGameName").value.trim();
       const guildName = document.getElementById("editGuildName").value.trim();
+      const inviteCode = document.getElementById("editInviteCode").value.trim().toUpperCase();
       const applicantNick = document.getElementById("editApplicantNick").value.trim();
       const contactInfo = document.getElementById("editContactInfo").value.trim();
       const expDateVal = document.getElementById("editExpiresAt").value.trim();
@@ -1378,7 +1467,12 @@
       try {
         await window.supabaseClient
           .from('guilds')
-          .update({ game_name: gameName, guild_name: guildName })
+          .update({
+            game_name: gameName,
+            guild_name: guildName,
+            name: guildName,
+            invite_code: inviteCode
+          })
           .eq('id', guildId);
 
         await window.supabaseClient
@@ -1386,11 +1480,18 @@
           .update({
             game_name: gameName,
             guild_name: guildName,
+            invite_code: inviteCode,
             applicant_nickname: applicantNick,
             contact_info: contactInfo,
             expires_at: expiresAt
           })
           .eq('guild_id', guildId);
+
+        if (typeof upsertGuildSetting === "function") {
+          try {
+            await upsertGuildSetting("guild_name", guildName, guildId);
+          } catch (sErr) {}
+        }
 
         alert("길드 및 라이선스 정보가 성공적으로 수정되었습니다.");
         closeEditGuildModal();
@@ -1412,7 +1513,7 @@
       try {
         await window.supabaseClient
           .from('guilds')
-          .update({ is_active: newIsActive })
+          .update({ is_active: newIsActive, status: newStatus })
           .eq('id', guildId);
 
         await window.supabaseClient
