@@ -162,7 +162,6 @@
       <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
         <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
       </li>
-
     </ul>
 
     <div class="sidebar-footer">
@@ -406,7 +405,7 @@
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
-  <!-- 초기 비밀번호(000000) 로그인 시 비밀번호 변경 안내 모달 -->
+  <!-- 초기 비밀번호(000000) 로그인 시 필수 비밀번호 변경 모달 ('나중에 변경' 제거) -->
   <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div class="mb-2" style="font-size: 2rem;">🔐</div>
@@ -418,10 +417,9 @@
       <input type="password" id="forceNewPinInput" class="text-center" placeholder="새 비밀번호 6자리 숫자" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 8px;" onkeypress="if(event.keyCode===13){ document.getElementById('forceNewPinConfirmInput').focus(); }">
       <input type="password" id="forceNewPinConfirmInput" class="text-center" placeholder="새 비밀번호 6자리 다시 입력" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;" onkeypress="if(event.keyCode===13){ executeForceChangePin(); }">
 
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeForceChangePinModal()">나중에 변경</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="executeForceChangePin()">변경 완료</button>
-      </div>
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeForceChangePin()">
+        비밀번호 변경 완료
+      </button>
     </div>
   </div>
 
@@ -497,6 +495,9 @@
       </div>
 
       <div class="d-flex flex-column gap-2">
+        <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.84rem; border-radius: 8px;" onclick="closeWelcomeGatewayModal(); showGuildLoginModal();">
+          <i class="fa-solid fa-right-to-bracket me-1"></i>기존 길드원 로그인
+        </button>
         <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="openJoinGuildModal()">
           <i class="fa-solid fa-user-plus me-1"></i>초대 코드로 길드 입장하기
         </button>
@@ -599,33 +600,50 @@
     </div>
   </div>
 
-  <!-- 기존 길드 로그인 모달 (G 엠블럼) -->
+  <!-- ========================================================
+       길드 스마트 로그인 모달 (닉네임 드롭다운 제거 & 직접 입력 + 동명이인 길드 선택 지원)
+       ======================================================== -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
-    <div class="kakao-modal-card">
+    <div class="kakao-modal-card" style="max-width: 320px;">
       <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
         G
       </div>
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 닉네임과 개인 비밀번호를 입력하세요.</p>
+      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
       
+      <!-- 닉네임 직접 입력창 (타 길드원 명단 노출 드롭다운 완전 제거) -->
       <div style="position: relative; margin-bottom: 8px; text-align: left;">
-        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 11px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
-        <input type="text" id="loginNickSearchInput" placeholder="닉네임 검색 또는 직접 입력..." autocomplete="off"
-               style="padding-left: 32px; height: 38px; margin-bottom: 0;"
-               oninput="onLoginSearchInput(this.value)"
+        <i class="fa-solid fa-user" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
+        <input type="text" id="loginNickSearchInput" placeholder="본인 캐릭터 닉네임 입력" autocomplete="off"
+               style="padding-left: 34px; height: 40px; margin-bottom: 0; font-weight: 600;"
                onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
       </div>
 
-      <select id="loginMemberSelect" style="height: 38px;" onchange="onLoginSelectChange(this.value)">
-        <option value="">닉네임을 선택하세요...</option>
-      </select>
+      <!-- 비밀번호(PIN) 입력창 -->
+      <div style="position: relative; margin-bottom: 10px; text-align: left;">
+        <i class="fa-solid fa-lock" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
+        <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 6자리 입력" maxlength="20"
+               style="padding-left: 24px; height: 40px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 0;"
+               onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
+      </div>
 
-      <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 입력" maxlength="20" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
+      <!-- 다중 길드 동명이인 발생 시 길드 선택 박스 (평소에는 숨김) -->
+      <div id="loginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3);">
+        <div class="small fw-bold text-info mb-2" style="font-size: 0.73rem;">
+          <i class="fa-solid fa-circle-check me-1"></i>동일한 닉네임이 여러 길드에 있습니다. 입장할 길드를 선택하세요:
+        </div>
+        <div id="loginMultiGuildButtons" class="d-flex flex-column gap-1"></div>
+      </div>
 
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; font-size: 0.88rem; border-radius: 8px;" onclick="executeGuildLogin()">
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2 mb-2" style="background:#fee500; border:none; color:#191919; font-size: 0.88rem; border-radius: 8px;" onclick="executeGuildLogin()">
         로그인
       </button>
-      <div class="text-secondary" style="font-size: 0.65rem;">* 비밀번호 변경은 설정에서 가능합니다.</div>
+      <div class="d-flex align-items-center justify-content-between mt-1 pt-2 border-top" style="border-color: rgba(148,163,184,0.2) !important;">
+        <span class="text-secondary" style="font-size: 0.68rem;">아직 길드에 가입하지 않으셨나요?</span>
+        <button type="button" class="btn btn-link p-0 text-primary fw-bold text-decoration-none" style="font-size: 0.7rem;" onclick="document.getElementById('guildLoginModal').style.display='none'; openJoinGuildModal();">
+          초대코드로 가입 &gt;
+        </button>
+      </div>
     </div>
   </div>
 
@@ -851,6 +869,10 @@
         localStorage.setItem("current_guild_id", g.guild_id);
         var titleElem = document.getElementById("loginGuildTitle");
         if (titleElem) titleElem.innerText = "[" + (g.game_name || "게임") + "] " + g.guild_name + " 로그인";
+        var nickIn = document.getElementById("loginNickSearchInput");
+        if (nickIn && (g.my_nick || g.nickname)) {
+          nickIn.value = g.my_nick || g.nickname;
+        }
       }
       if (typeof window.showGuildLoginModal === "function") {
         window.showGuildLoginModal();
@@ -897,6 +919,7 @@
       location.reload();
     }
 
+    // 라이선스 키로 길드 개설 (guild_settings 초기 설정 및 invite_code 연동)
     async function executeActivateGuild() {
       var keyInput = (document.getElementById("actLicenseKeyInput")?.value || "").trim().toUpperCase();
       var masterNick = (document.getElementById("actMasterNickInput")?.value || "").trim();
@@ -905,6 +928,7 @@
       if (!keyInput) return (typeof showKakaoToast === "function") ? showKakaoToast("라이선스 키를 입력해 주세요.", "⚠️") : alert("라이선스 키를 입력해 주세요.");
       if (!masterNick) return (typeof showKakaoToast === "function") ? showKakaoToast("길드장 닉네임을 입력해 주세요.", "⚠️") : alert("길드장 닉네임을 입력해 주세요.");
       if (!pinInput || pinInput.length < 6) return (typeof showKakaoToast === "function") ? showKakaoToast("길드장 6자리 비밀번호(PIN)를 입력해 주세요.", "⚠️") : alert("길드장 6자리 비밀번호(PIN)를 입력해 주세요.");
+      if (pinInput === "000000" || pinInput === "0000") return (typeof showKakaoToast === "function") ? showKakaoToast("보안을 위해 000000 외의 6자리 비밀번호를 설정하세요.", "⚠️") : alert("000000 외의 비밀번호를 설정하세요.");
 
       try {
         var licenses = await apiRequest("app_licenses?license_key=eq." + encodeURIComponent(keyInput));
@@ -913,17 +937,28 @@
         }
         var lic = licenses[0];
         var guildId = lic.guild_id || ("guild_" + Date.now());
+        var guildTitle = lic.guild_name || "길드";
+        var inviteCode = lic.invite_code || ("INV-" + (keyInput.split("-")[2] || Math.floor(1000 + Math.random() * 9000)));
 
         var existingGuilds = await apiRequest("guilds?id=eq." + encodeURIComponent(guildId));
         if (!existingGuilds || existingGuilds.length === 0) {
           await apiRequest("guilds", "POST", [{
             id: guildId,
-            name: lic.guild_name || "길드",
+            guild_name: guildTitle,
+            name: guildTitle,
             game_name: lic.game_name || "게임",
             license_key: keyInput,
-            invite_code: lic.invite_code || ("INV-" + Math.floor(100000 + Math.random() * 900000)),
+            invite_code: inviteCode,
+            is_active: true,
             status: "active"
           }]);
+        }
+
+        // 해당 길드의 초기 설정(guild_name)을 guild_settings에 독립 저장
+        if (typeof upsertGuildSetting === "function") {
+          try {
+            await upsertGuildSetting("guild_name", guildTitle, guildId);
+          } catch (sErr) {}
         }
 
         try {
@@ -945,7 +980,10 @@
           } catch(e2) {}
         }
 
-        await apiRequest("app_licenses?id=" + lic.id, "PATCH", {
+        await apiRequest("app_licenses?id=eq." + encodeURIComponent(lic.id), "PATCH", {
+          guild_id: guildId,
+          invite_code: inviteCode,
+          is_used: true,
           status: "active",
           activated_at: new Date().toISOString()
         });
@@ -962,11 +1000,12 @@
         joined = joined.filter(function(g) { return g.guild_id !== guildId; });
         joined.push({
           guild_id: guildId,
-          guild_name: lic.guild_name || "길드",
+          guild_name: guildTitle,
           game_name: lic.game_name || "게임",
           nickname: masterNick,
+          my_nick: masterNick,
           role: "길드장",
-          invite_code: lic.invite_code || keyInput
+          invite_code: inviteCode
         });
         localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
 
@@ -976,7 +1015,7 @@
         if (successModal) {
           var h6 = successModal.querySelector("h6");
           var p = successModal.querySelector("p");
-          if (h6) h6.innerText = `[${lic.guild_name}] 길드 개설 완료!`;
+          if (h6) h6.innerText = `[${guildTitle}] 길드 개설 완료!`;
           if (p) p.innerHTML = `길드가 활성화되었습니다.<br><strong>${masterNick}</strong>님으로 자동 로그인되었습니다.`;
           successModal.style.display = "flex";
         } else {
@@ -988,6 +1027,7 @@
       }
     }
 
+    // 초대 코드로 길드 가입
     async function executeJoinGuildWithCode() {
       var code = (document.getElementById("joinInviteCodeInput")?.value || "").trim().toUpperCase();
       var nick = (document.getElementById("joinMemberNickInput")?.value || "").trim();
@@ -996,6 +1036,7 @@
       if (!code) return (typeof showKakaoToast === "function") ? showKakaoToast("초대 코드를 입력하세요.", "⚠️") : alert("초대 코드 입력");
       if (!nick) return (typeof showKakaoToast === "function") ? showKakaoToast("닉네임을 입력하세요.", "⚠️") : alert("닉네임 입력");
       if (!pin || pin.length < 6) return (typeof showKakaoToast === "function") ? showKakaoToast("6자리 비밀번호(PIN)를 입력하세요.", "⚠️") : alert("6자리 비밀번호 입력");
+      if (pin === "000000" || pin === "0000") return (typeof showKakaoToast === "function") ? showKakaoToast("보안을 위해 000000 외의 6자리 비밀번호를 설정하세요.", "⚠️") : alert("000000 외의 비밀번호 입력");
 
       try {
         var guilds = await apiRequest("guilds?invite_code=eq." + encodeURIComponent(code));
@@ -1006,6 +1047,7 @@
           return (typeof showKakaoToast === "function") ? showKakaoToast("초대 코드에 해당하는 길드를 찾을 수 없습니다.", "⚠️") : alert("길드 미발견");
         }
         var targetGuild = guilds[0];
+        var gTitle = targetGuild.guild_name || targetGuild.name || "길드";
 
         try {
           await apiRequest("guild_members", "POST", [{
@@ -1034,15 +1076,16 @@
         joined = joined.filter(function(g) { return g.guild_id !== targetGuild.id; });
         joined.push({
           guild_id: targetGuild.id,
-          guild_name: targetGuild.name,
+          guild_name: gTitle,
           game_name: targetGuild.game_name || "게임",
           nickname: nick,
+          my_nick: nick,
           role: "일반"
         });
         localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
 
         closeJoinGuildModal();
-        if (typeof showKakaoToast === "function") showKakaoToast(`[${targetGuild.name}] 길드에 입장했습니다!`, "🎉");
+        if (typeof showKakaoToast === "function") showKakaoToast(`[${gTitle}] 길드에 입장했습니다!`, "🎉");
         setTimeout(function() { location.reload(); }, 600);
       } catch(err) {
         if (typeof showKakaoToast === "function") showKakaoToast("가입 실패: " + err.message, "⚠️");
@@ -1050,6 +1093,7 @@
       }
     }
 
+    // 신규 길드 라이선스 신청 (app_license_requests 단일 테이블 연동)
     async function submitLicenseRequestForm() {
       var game = (document.getElementById("reqGameNameInput")?.value || "").trim();
       var guild = (document.getElementById("reqGuildNameInput")?.value || "").trim();
@@ -1064,6 +1108,7 @@
         await apiRequest("app_license_requests", "POST", [{
           game_name: game,
           guild_name: guild,
+          applicant_nickname: nick,
           applicant_nick: nick,
           contact_info: contact,
           status: "pending"
@@ -1083,7 +1128,8 @@
     }
   </script>
 
-  <!-- 외부 분리 스크립트 연결 -->
+  <!-- 외부 분리 스크립트 연결 (boss.js 포함) -->
+  <script src="boss.js"></script>
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 </body>
