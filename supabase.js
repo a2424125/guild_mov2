@@ -9,6 +9,26 @@ const SUPABASE_CONFIG = {
 };
 
 /**
+ * 현재 접속 중인 길드 고유 ID(guild_id) 반환 공통 함수
+ * localStorage에 값이 없거나 'null', 'undefined' 문자열인 경우 안전하게 'default' 반환
+ * @returns {string}
+ */
+function getCurrentGuildId() {
+  try {
+    const raw = localStorage.getItem("current_guild_id");
+    if (!raw) return "default";
+    const trimmed = String(raw).trim();
+    if (!trimmed || trimmed === "null" || trimmed === "undefined") {
+      return "default";
+    }
+    return trimmed;
+  } catch (e) {
+    return "default";
+  }
+}
+window.getCurrentGuildId = getCurrentGuildId;
+
+/**
  * Supabase REST API 직접 호출 공통 함수
  * @param {string} endpoint - 테이블명 및 쿼리 파라미터 (예: 'guild_members?select=*')
  * @param {string} method - GET, POST, PATCH, DELETE
@@ -40,6 +60,80 @@ async function apiRequest(endpoint, method = "GET", body = null, extraHeaders = 
   if (res.status === 204) return null;
   return await res.json();
 }
+window.apiRequest = apiRequest;
+
+/**
+ * 특정 길드(guild_id)의 guild_settings 전체를 { key: value } 객체(Map) 형태로 조회
+ * @param {string} [guildId] - 생략 시 getCurrentGuildId() 사용
+ * @returns {Promise<Object>}
+ */
+async function fetchGuildSettingsMap(guildId) {
+  const targetGid = (guildId && String(guildId).trim()) ? String(guildId).trim() : getCurrentGuildId();
+  const map = {};
+  try {
+    const rows = await apiRequest(
+      `guild_settings?guild_id=eq.${encodeURIComponent(targetGid)}&select=key,value`
+    );
+    if (Array.isArray(rows)) {
+      rows.forEach(item => {
+        if (item && item.key) {
+          map[item.key] = item.value;
+        }
+      });
+    }
+  } catch (e) {
+    console.warn("fetchGuildSettingsMap 오류:", e);
+  }
+  return map;
+}
+window.fetchGuildSettingsMap = fetchGuildSettingsMap;
+
+/**
+ * 길드별 환경설정(guild_settings) 안전한 Upsert 저장 공통 함수
+ * UNIQUE(guild_id, key) 제약조건을 활용해 중복 행 없이 생성 또는 갱신
+ * @param {string} key - 설정 키 이름 (예: 'guild_name', 'score_base')
+ * @param {string|number|boolean} value - 저장할 설정 값
+ * @param {string} [guildId] - 생략 시 getCurrentGuildId() 사용
+ */
+async function upsertGuildSetting(key, value, guildId) {
+  const targetGid = (guildId && String(guildId).trim()) ? String(guildId).trim() : getCurrentGuildId();
+  const valStr = (value === null || value === undefined) ? "" : String(value);
+
+  try {
+    return await apiRequest(
+      "guild_settings?on_conflict=guild_id,key",
+      "POST",
+      [{
+        guild_id: targetGid,
+        key: String(key).trim(),
+        value: valStr,
+        updated_at: new Date().toISOString()
+      }],
+      {
+        "Prefer": "resolution=merge-duplicates,return=representation"
+      }
+    );
+  } catch (err) {
+    // 만약 on_conflict 호출이 실패할 경우 안전하게 조회 후 PATCH/POST 폴백 수행
+    const existing = await apiRequest(
+      `guild_settings?guild_id=eq.${encodeURIComponent(targetGid)}&key=eq.${encodeURIComponent(key)}&select=id`
+    );
+    if (Array.isArray(existing) && existing.length > 0) {
+      return await apiRequest(
+        `guild_settings?guild_id=eq.${encodeURIComponent(targetGid)}&key=eq.${encodeURIComponent(key)}`,
+        "PATCH",
+        { value: valStr, updated_at: new Date().toISOString() }
+      );
+    } else {
+      return await apiRequest(
+        "guild_settings",
+        "POST",
+        [{ guild_id: targetGid, key: String(key).trim(), value: valStr }]
+      );
+    }
+  }
+}
+window.upsertGuildSetting = upsertGuildSetting;
 
 // ==========================================
 // 🕒 [KST 표준 타임존 변환 유틸리티]
