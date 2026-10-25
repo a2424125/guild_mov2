@@ -231,7 +231,7 @@
         </button>
       </div>
 
-      <!-- DB(guild_settings -> saas_faq_list)에서 불러와 렌더링되는 영역 -->
+      <!-- DB(saas_faqs 테이블)에서 불러와 렌더링되는 영역 -->
       <div id="homeFaqListContainer"></div>
     </div>
   </div>
@@ -512,26 +512,18 @@
       await openHomeLoginModal();
     }
 
-    // 2. 길드원 목록 로드 및 로그인 모달 오픈
+    // 2. 길드원 목록 로드 및 로그인 모달 오픈 (타 길드 전체 조회 폴백 완전 제거)
     async function loadHomeMembersList() {
-      var currentGid = localStorage.getItem("current_guild_id");
+      var currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
       var members = [];
       if (typeof apiRequest === "function") {
-        if (currentGid) {
-          try {
-            members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
-          } catch(e) {}
-        }
-        if (!members || members.length === 0) {
-          try {
-            members = await apiRequest("guild_members?select=*");
-            if (members && members.length > 0 && !currentGid && members[0].guild_id) {
-              localStorage.setItem("current_guild_id", members[0].guild_id);
-            }
-          } catch(e2) {}
+        try {
+          members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
+        } catch(e) {
+          members = [];
         }
       }
-      homeCachedMembers = members || [];
+      homeCachedMembers = Array.isArray(members) ? members : [];
       renderHomeLoginDropdown("");
     }
 
@@ -660,6 +652,7 @@
       var newPin = (in1 ? in1.value : "").trim();
       var confirmPin = (in2 ? in2.value : "").trim();
       var myNick = localStorage.getItem("guild_my_nickname") || "";
+      var currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
       if (!newPin || newPin.length !== 6 || isNaN(Number(newPin))) {
         return showKakaoToast("새 비밀번호는 6자리 숫자로 입력해주세요.", "⚠️");
@@ -674,10 +667,18 @@
       try {
         if (typeof apiRequest === "function" && myNick) {
           try {
-            await apiRequest("guild_members?nickname=eq." + encodeURIComponent(myNick), "PATCH", { pin: newPin });
+            await apiRequest(
+              "guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&nickname=eq." + encodeURIComponent(myNick),
+              "PATCH",
+              { pin: newPin }
+            );
           } catch(e) {}
           try {
-            await apiRequest("guild_members?name=eq." + encodeURIComponent(myNick), "PATCH", { pin: newPin });
+            await apiRequest(
+              "guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&name=eq." + encodeURIComponent(myNick),
+              "PATCH",
+              { pin: newPin }
+            );
           } catch(e2) {}
         }
         localStorage.setItem("guild_my_pin", newPin);
@@ -691,19 +692,21 @@
       }
     }
 
-    // 4. 어드민 연동 전체 공지 & FAQ(자주 묻는 질문) DB 로드 및 자동 초기 저장
+    // 4. 어드민 연동 전체 공지(saas_notices) & 자주 묻는 질문(saas_faqs) 전용 테이블 연동
     function renderHomeFaqList(faqArray) {
       var container = document.getElementById("homeFaqListContainer");
       if (!container) return;
       var list = (Array.isArray(faqArray) && faqArray.length > 0) ? faqArray : defaultFaqList;
 
       container.innerHTML = list.map(function(item) {
+        var qText = item.question || item.q || "";
+        var aText = item.answer || item.a || "";
         return '<div class="faq-item">' +
           '<div class="faq-q" onclick="toggleFaqItem(this)">' +
-            '<span>Q. ' + escapeHomeHtml(item.q) + '</span>' +
+            '<span>Q. ' + escapeHomeHtml(qText) + '</span>' +
             '<i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.7rem;"></i>' +
           '</div>' +
-          '<div class="faq-a">' + escapeHomeHtml(item.a) + '</div>' +
+          '<div class="faq-a">' + escapeHomeHtml(aText) + '</div>' +
         '</div>';
       }).join("");
     }
@@ -713,63 +716,59 @@
       renderHomeFaqList(defaultFaqList);
 
       if (typeof apiRequest !== "function") return;
+
+      // 1) 전체 공지사항 조회 (saas_notices 전용 테이블)
       try {
-        var settings = await apiRequest("guild_settings?select=key,value");
-        if (Array.isArray(settings)) {
-          // 1) 전체 공지사항 확인
-          var noticeItem = settings.find(function(s) { return s.key === "saas_global_notice" || s.key === "global_notice"; });
-          if (noticeItem && noticeItem.value) {
-            try {
-              var parsedNotice = JSON.parse(noticeItem.value);
-              if (parsedNotice && typeof parsedNotice === "object") {
-                currentNoticeData.title = parsedNotice.title || currentNoticeData.title;
-                currentNoticeData.content = parsedNotice.content || currentNoticeData.content;
-                currentNoticeData.popup = !!parsedNotice.popup;
-              }
-            } catch (jsonErr) {
-              currentNoticeData.content = noticeItem.value;
-              var firstLine = noticeItem.value.split("\n")[0].trim();
-              if (firstLine) currentNoticeData.title = firstLine;
-            }
-          }
+        var notices = await apiRequest("saas_notices?is_active=eq.true&order=id.desc&limit=1");
+        if (Array.isArray(notices) && notices.length > 0) {
+          var latestNotice = notices[0];
+          currentNoticeData.title = latestNotice.title || currentNoticeData.title;
+          currentNoticeData.content = latestNotice.content || currentNoticeData.content;
+          currentNoticeData.popup = !!latestNotice.is_popup;
+        }
 
-          // 배너 및 모달 텍스트 반영
-          var bannerTitle = document.getElementById("homeTopNoticeTitle");
-          if (bannerTitle) bannerTitle.innerText = "[공지] " + currentNoticeData.title;
-          var modalTitle = document.getElementById("saasNoticeModalTitle");
-          if (modalTitle) modalTitle.innerText = currentNoticeData.title;
-          var modalBody = document.getElementById("saasNoticeModalBody");
-          if (modalBody) modalBody.innerText = currentNoticeData.content;
+        // 배너 및 모달 텍스트 반영
+        var bannerTitle = document.getElementById("homeTopNoticeTitle");
+        if (bannerTitle) bannerTitle.innerText = "[공지] " + currentNoticeData.title;
+        var modalTitle = document.getElementById("saasNoticeModalTitle");
+        if (modalTitle) modalTitle.innerText = currentNoticeData.title;
+        var modalBody = document.getElementById("saasNoticeModalBody");
+        if (modalBody) modalBody.innerText = currentNoticeData.content;
 
-          // 어드민에서 자동 팝업(popup: true)을 켜둔 경우 '오늘 하루 보지 않기' 체크 후 자동 오픈
-          if (currentNoticeData.popup) {
-            var hideDate = localStorage.getItem("hide_saas_notice_date");
-            var todayStr = new Date().toISOString().slice(0, 10);
-            if (hideDate !== todayStr && sessionStorage.getItem("saas_notice_seen") !== "1") {
-              openModalById("modalSaasGlobalNotice");
-            }
-          }
-
-          // 2) 자주 묻는 질문(FAQ) DB 조회 및 미존재 시 초기 데이터 DB 자동 저장
-          var faqItem = settings.find(function(s) { return s.key === "saas_faq_list"; });
-          if (faqItem && faqItem.value) {
-            try {
-              var parsedFaq = JSON.parse(faqItem.value);
-              if (Array.isArray(parsedFaq) && parsedFaq.length > 0) {
-                renderHomeFaqList(parsedFaq);
-              }
-            } catch (faqErr) {}
-          } else {
-            // DB에 saas_faq_list가 아직 없으면 기본 FAQ 3개를 DB에 자동 저장(Seed)
-            try {
-              await apiRequest("guild_settings", "POST", [{
-                key: "saas_faq_list",
-                value: JSON.stringify(defaultFaqList)
-              }]);
-            } catch (seedErr) {}
+        // 어드민에서 자동 팝업(is_popup: true)을 켜둔 경우 '오늘 하루 보지 않기' 체크 후 자동 오픈
+        if (currentNoticeData.popup) {
+          var hideDate = localStorage.getItem("hide_saas_notice_date");
+          var todayStr = new Date().toISOString().slice(0, 10);
+          if (hideDate !== todayStr && sessionStorage.getItem("saas_notice_seen") !== "1") {
+            openModalById("modalSaasGlobalNotice");
           }
         }
-      } catch(e) {}
+      } catch (noticeErr) {
+        console.warn("홈 전체 공지 조회 실패:", noticeErr);
+      }
+
+      // 2) 자주 묻는 질문(FAQ) 조회 (saas_faqs 전용 테이블)
+      try {
+        var faqs = await apiRequest("saas_faqs?is_active=eq.true&order=sort_order.asc,id.asc");
+        if (Array.isArray(faqs) && faqs.length > 0) {
+          renderHomeFaqList(faqs);
+        } else {
+          // DB에 FAQ가 비어 있으면 기본 3개 항목을 saas_faqs 테이블에 초기 시드 저장
+          try {
+            var seedPayload = defaultFaqList.map(function(item, idx) {
+              return {
+                question: item.q,
+                answer: item.a,
+                sort_order: idx + 1,
+                is_active: true
+              };
+            });
+            await apiRequest("saas_faqs", "POST", seedPayload);
+          } catch (seedErr) {}
+        }
+      } catch (faqErr) {
+        console.warn("홈 FAQ 조회 실패:", faqErr);
+      }
     }
 
     function openSaasNoticeModal() {
@@ -789,13 +788,13 @@
       closeModalById("modalSaasGlobalNotice");
     }
 
-    // 5. 고객센터 문의 접수 (app_license_requests 및 license_requests 양쪽 호환 저장)
+    // 5. 고객센터 1:1 문의 접수 (saas_inquiries 전용 테이블에 직접 POST)
     function openSupportCenterModal() {
       openModalById("modalSupportCenter");
     }
 
     async function submitSupportInquiry() {
-      var cat = (document.getElementById("supCategoryInput")?.value || "").trim();
+      var cat = (document.getElementById("supCategoryInput")?.value || "").trim() || "일반 문의";
       var writer = (document.getElementById("supWriterInput")?.value || "").trim();
       var contact = (document.getElementById("supContactInput")?.value || "").trim();
       var content = (document.getElementById("supContentInput")?.value || "").trim();
@@ -804,37 +803,14 @@
         return showKakaoToast("모든 항목을 입력해 주세요.", "⚠️");
       }
 
-      var combinedContact = contact + " || 문의내용: " + content;
-
       try {
-        var saved = false;
-        if (typeof apiRequest === "function") {
-          try {
-            await apiRequest("app_license_requests", "POST", [{
-              game_name: "[고객센터] " + cat,
-              guild_name: writer,
-              applicant_nick: writer,
-              contact_info: combinedContact,
-              status: "support_inquiry"
-            }]);
-            saved = true;
-          } catch (e1) {}
-
-          try {
-            await apiRequest("license_requests", "POST", [{
-              game_name: "[고객센터] " + cat,
-              guild_name: writer,
-              applicant_nickname: writer,
-              contact_info: combinedContact,
-              status: "support_inquiry"
-            }]);
-            saved = true;
-          } catch (e2) {}
-        }
-
-        if (!saved) {
-          throw new Error("DB 테이블에 저장할 수 없습니다.");
-        }
+        await apiRequest("saas_inquiries", "POST", [{
+          category: cat,
+          writer: writer,
+          contact: contact,
+          content: content,
+          status: "pending"
+        }]);
 
         closeModalById("modalSupportCenter");
         document.getElementById("supContentInput").value = "";
@@ -864,7 +840,7 @@
           return showKakaoToast("초대 코드에 해당하는 길드를 찾을 수 없습니다.", "⚠️");
         }
         var targetGuild = guilds[0];
-        var gTitle = targetGuild.name || targetGuild.guild_name || "길드";
+        var gTitle = targetGuild.guild_name || targetGuild.name || "길드";
 
         try {
           await apiRequest("guild_members", "POST", [{
@@ -896,6 +872,7 @@
           guild_name: gTitle,
           game_name: targetGuild.game_name || "게임",
           nickname: nick,
+          my_nick: nick,
           role: "일반"
         });
         localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
@@ -925,17 +902,28 @@
         }
         var lic = licenses[0];
         var guildId = lic.guild_id || ("guild_" + Date.now());
+        var guildTitle = lic.guild_name || "길드";
+        var inviteCode = lic.invite_code || ("INV-" + (keyInput.split("-")[2] || Math.floor(1000 + Math.random() * 9000)));
 
         var existingGuilds = await apiRequest("guilds?id=eq." + encodeURIComponent(guildId));
         if (!existingGuilds || existingGuilds.length === 0) {
           await apiRequest("guilds", "POST", [{
             id: guildId,
-            name: lic.guild_name || "길드",
+            guild_name: guildTitle,
+            name: guildTitle,
             game_name: lic.game_name || "게임",
             license_key: keyInput,
-            invite_code: lic.invite_code || ("INV-" + Math.floor(100000 + Math.random() * 900000)),
+            invite_code: inviteCode,
+            is_active: true,
             status: "active"
           }]);
+        }
+
+        // 해당 길드의 초기 설정(길드명 등)을 guild_settings에 독립 저장
+        if (typeof upsertGuildSetting === "function") {
+          try {
+            await upsertGuildSetting("guild_name", guildTitle, guildId);
+          } catch (settingErr) {}
         }
 
         try {
@@ -949,6 +937,9 @@
         } catch(e) {}
 
         await apiRequest("app_licenses?id=eq." + encodeURIComponent(lic.id), "PATCH", {
+          guild_id: guildId,
+          invite_code: inviteCode,
+          is_used: true,
           status: "active",
           activated_at: new Date().toISOString()
         });
@@ -965,21 +956,23 @@
         joined = joined.filter(function(g) { return g.guild_id !== guildId; });
         joined.push({
           guild_id: guildId,
-          guild_name: lic.guild_name || "길드",
+          guild_name: guildTitle,
           game_name: lic.game_name || "게임",
           nickname: masterNick,
+          my_nick: masterNick,
           role: "길드장"
         });
         localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
 
         closeModalById("modalActivateGuild");
-        showKakaoToast("[" + lic.guild_name + "] 길드 개설 완료!", "🎉");
+        showKakaoToast("[" + guildTitle + "] 길드 개설 완료!", "🎉");
         setTimeout(function() { window.location.href = "index.html"; }, 500);
       } catch(err) {
         showKakaoToast("길드 개설 실패: " + err.message, "⚠️");
       }
     }
 
+    // 신규 길드 라이선스 신청 (app_license_requests 단일 테이블 저장)
     async function submitLicenseRequestForm() {
       var game = (document.getElementById("reqGameNameInput")?.value || "").trim();
       var guild = (document.getElementById("reqGuildNameInput")?.value || "").trim();
@@ -991,32 +984,20 @@
       }
 
       try {
-        var saved = false;
-        try {
-          await apiRequest("app_license_requests", "POST", [{
-            game_name: game,
-            guild_name: guild,
-            applicant_nick: nick,
-            contact_info: contact,
-            status: "pending"
-          }]);
-          saved = true;
-        } catch (e1) {}
-
-        try {
-          await apiRequest("license_requests", "POST", [{
-            game_name: game,
-            guild_name: guild,
-            applicant_nickname: nick,
-            contact_info: contact,
-            status: "pending"
-          }]);
-          saved = true;
-        } catch (e2) {}
-
-        if (!saved) throw new Error("신청 저장 실패");
+        await apiRequest("app_license_requests", "POST", [{
+          game_name: game,
+          guild_name: guild,
+          applicant_nickname: nick,
+          applicant_nick: nick,
+          contact_info: contact,
+          status: "pending"
+        }]);
 
         closeModalById("modalLicenseRequest");
+        document.getElementById("reqGameNameInput").value = "";
+        document.getElementById("reqGuildNameInput").value = "";
+        document.getElementById("reqMasterNickInput").value = "";
+        document.getElementById("reqContactInput").value = "";
         showKakaoToast("라이선스 신청이 접수되었습니다!", "🎉");
       } catch(err) {
         showKakaoToast("신청 실패: " + err.message, "⚠️");
