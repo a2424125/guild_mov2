@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 카카오톡 인터페이스 / 실시간 채팅 스트림 / 계정 세션 / 모듈 로더
+// 카카오톡 인터페이스 / 실시간 채팅 스트림 / 스마트 로그인 / 모듈 로더
 // ========================================================
 
 var supabaseClient = null;
@@ -163,9 +163,10 @@ async function initApp() {
   }
 }
 
+// 현재 접속 중인 길드(guild_id)의 설정만 로드
 async function loadGuildSettings() {
   try {
-    const currentGid = localStorage.getItem("current_guild_id");
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
     const currentGuild = joined.find(g => g.guild_id === currentGid);
@@ -189,46 +190,38 @@ async function loadGuildSettings() {
       if (t4) t4.innerText = gGame + " · " + gName;
     }
 
-    const res = await apiRequest("guild_settings?select=key,value");
-    if (res && res.length > 0) {
+    const res = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
+    if (Array.isArray(res) && res.length > 0) {
       res.forEach(item => {
-        if (item.key === 'guild_name' && item.value && !currentGuild) {
+        if (item.key === 'guild_name' && item.value) {
+          const gTitle = item.value;
           const t1 = document.getElementById("chatRoomTitle");
           const t2 = document.getElementById("menuGuildNameText");
           const t3 = document.getElementById("loginGuildTitle");
           const t4 = document.getElementById("mainTabHeaderSubtitle");
-          if (t1) t1.innerText = "전체 대화방";
-          if (t2) t2.innerText = "길드 메신저";
-          if (t3) t3.innerText = "길드 메신저 로그인";
-          if (t4) t4.innerText = "길드 메신저";
+          if (t1 && !window.currentActiveRoomId) t1.innerText = gTitle + " 대화방";
+          if (t2) t2.innerText = gTitle;
+          if (t3 && !currentGuild) t3.innerText = gTitle + " 로그인";
+          if (t4 && !currentGuild) t4.innerText = gTitle;
         }
       });
     }
   } catch (e) {}
 }
 
+// 현재 길드(guild_id)의 길드원만 조회 (타 길드 전체 명단 폴백 제거)
 window.loadGuildMembersData = async function() {
   try {
-    const currentGid = localStorage.getItem("current_guild_id");
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
     let members = [];
 
-    if (currentGid) {
-      try {
-        members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
-      } catch (err) {}
+    try {
+      members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
+    } catch (err) {
+      members = [];
     }
 
-    if (!members || members.length === 0) {
-      try {
-        members = await apiRequest("guild_members?select=*");
-        if (members && members.length > 0 && currentGid && members[0].guild_id) {
-          const matchedGid = members.find(m => m.guild_id)?.guild_id;
-          if (matchedGid) localStorage.setItem("current_guild_id", matchedGid);
-        }
-      } catch (err2) {}
-    }
-
-    cachedMemberList = members || [];
+    cachedMemberList = Array.isArray(members) ? members : [];
     window.cachedMemberList = cachedMemberList;
 
     cachedMemberList.sort((a, b) => {
@@ -242,8 +235,6 @@ window.loadGuildMembersData = async function() {
 
     const countElem = document.getElementById("roomMemberCountText");
     if (countElem) countElem.innerText = cachedMemberList.length;
-
-    renderLoginMemberDropdown("");
   } catch (e) {
     console.error("loadGuildMembersData error:", e);
   }
@@ -253,6 +244,7 @@ function getRolePriority(role) {
   const r = String(role || '').trim();
   if (r === '길드장' || r === '길마') return 1;
   if (r === '부길드장' || r === '부길마') return 2;
+  if (r === '수호') return 2;
   if (r === '정예') return 3;
   return 4;
 }
@@ -389,9 +381,11 @@ window.closeProfileEditModal = function closeProfileEditModal() {
   document.getElementById("modalProfileEdit").style.display = "none";
 };
 
+// 직업 변경 시 현재 guild_id 조건 필수 적용
 async function selectClassProfile(icon, className) {
   myCurrentAvatar = icon;
   myCurrentClass = `${icon} ${className}`;
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   
   localStorage.setItem("guild_my_avatar", icon);
   localStorage.setItem("guild_my_class", myCurrentClass);
@@ -403,17 +397,25 @@ async function selectClassProfile(icon, className) {
 
   if (myCurrentNick) {
     try {
-      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
-        job_class: myCurrentClass
+      await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+        job_class: myCurrentClass,
+        avatar: icon
       });
-    } catch (e) {}
+    } catch (e) {
+      try {
+        await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+          job_class: myCurrentClass,
+          avatar: icon
+        });
+      } catch (e2) {}
+    }
   }
   closeProfileEditModal();
   showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
 }
 
 // --------------------------------------------------------
-// 4. 길드 로그인 / 로그아웃 / 초기 비밀번호(000000) 필수 변경 모달 ('나중에 변경' 버튼 제거)
+// 4. 스마트 길드 로그인 / 로그아웃 / 초기 비밀번호(000000) 필수 변경 모달
 // --------------------------------------------------------
 function ensureForceChangePinModalExists() {
   let modal = document.getElementById("modalForceChangePin");
@@ -457,12 +459,14 @@ window.openForceChangePinModal = function() {
 };
 var openForceChangePinModal = window.openForceChangePinModal;
 
+// 초기 PIN 변경 시 현재 guild_id 조건 필수 포함
 window.executeForceChangePin = async function() {
   const in1 = document.getElementById("forceNewPinInput");
   const in2 = document.getElementById("forceNewPinConfirmInput");
   const newPin = (in1 ? in1.value : "").trim();
   const confirmPin = (in2 ? in2.value : "").trim();
   const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
   if (!newPin || newPin.length !== 6 || isNaN(Number(newPin))) {
     return showKakaoToast("새 비밀번호는 6자리 숫자로 입력해주세요.", "⚠️");
@@ -477,10 +481,10 @@ window.executeForceChangePin = async function() {
   try {
     if (typeof apiRequest === "function" && myNick) {
       try {
-        await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+        await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
       } catch(e) {}
       try {
-        await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+        await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
       } catch(e2) {}
     }
 
@@ -501,62 +505,37 @@ window.executeForceChangePin = async function() {
 };
 var executeForceChangePin = window.executeForceChangePin;
 
-function renderLoginMemberDropdown(query = "") {
-  const selectElem = document.getElementById("loginMemberSelect");
-  if (!selectElem) return;
-
-  const q = (query || "").toLowerCase().trim();
-  const filtered = cachedMemberList.filter(m => {
-    const name = m.name || m.nickname || "";
-    return name.toLowerCase().includes(q);
-  });
-
-  selectElem.innerHTML = `<option value="">닉네임을 선택하세요 (${filtered.length}명)</option>` +
-    filtered.map(m => {
-      const name = m.name || m.nickname || "";
-      const role = m.role || "일반";
-      const cls = m.class_name || m.job_class || "";
-      return `<option value="${name}">${name} (${role}${cls ? ' · ' + cls : ''})</option>`;
-    }).join("");
-}
-
-function onLoginSearchInput(val) {
-  renderLoginMemberDropdown(val);
-}
-function onLoginSelectChange(val) {
-  const searchInput = document.getElementById("loginNickSearchInput");
-  if (searchInput && val) searchInput.value = val;
-  const pinInput = document.getElementById("loginPinInput");
-  if (pinInput) pinInput.focus();
-}
+// 구형 드롭다운 호출 호환용 빈 함수 (에러 방지)
+function renderLoginMemberDropdown() {}
+function onLoginSearchInput() {}
+function onLoginSelectChange() {}
 
 function showGuildLoginModal() {
   const modal = document.getElementById("guildLoginModal");
   if (modal) modal.style.display = "flex";
 
+  const multiBox = document.getElementById("loginMultiGuildSelectBox");
+  if (multiBox) multiBox.style.display = "none";
+
   const searchInput = document.getElementById("loginNickSearchInput");
   const pinInput = document.getElementById("loginPinInput");
-  if (searchInput) {
+  if (searchInput && !searchInput.value) {
     searchInput.value = myCurrentNick || "";
   }
   if (pinInput) pinInput.value = "";
-
-  renderLoginMemberDropdown(searchInput ? searchInput.value : "");
-  if (!cachedMemberList || cachedMemberList.length === 0) {
-    window.loadGuildMembersData();
-  }
 }
 window.showGuildLoginModal = showGuildLoginModal;
 
-async function executeGuildLogin() {
+// 스마트 2단계 로그인: 닉네임 + PIN 직접 입력 후 내 길드 자동 탐색 및 동명이인 길드 선택 지원
+async function executeGuildLogin(forcedGuildId = null) {
   const searchInput = document.getElementById("loginNickSearchInput");
-  const selectElem = document.getElementById("loginMemberSelect");
-  const selectedName = (searchInput && searchInput.value.trim()) || (selectElem && selectElem.value.trim()) || "";
-  const inputPin = document.getElementById("loginPinInput").value.trim();
+  const selectedName = (searchInput && searchInput.value.trim()) || "";
+  const inputPin = (document.getElementById("loginPinInput")?.value || "").trim();
 
-  if (!selectedName) return showKakaoToast("본인 닉네임을 입력하거나 선택해주세요!", "⚠️");
+  if (!selectedName) return showKakaoToast("본인 캐릭터 닉네임을 입력해주세요!", "⚠️");
   if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
+  // 1) 슈퍼관리자 마스터 로그인 체크
   const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
   if (isSuperId && (inputPin === "123456" || inputPin === "master7777")) {
     myCurrentNick = "슈퍼관리자";
@@ -573,13 +552,7 @@ async function executeGuildLogin() {
     localStorage.setItem("guild_my_avatar", myCurrentAvatar);
 
     updateProfileUI("슈퍼관리자");
-    const loginModal = document.getElementById("guildLoginModal");
-    if (loginModal) loginModal.style.display = "none";
-    const welcomeModal = document.getElementById("modalWelcomeGateway");
-    if (welcomeModal) welcomeModal.style.display = "none";
-    document.querySelectorAll(".kakao-modal-backdrop").forEach(m => {
-      m.style.display = "none";
-    });
+    document.querySelectorAll(".kakao-modal-backdrop").forEach(m => { m.style.display = "none"; });
     const mainTabs = document.getElementById("kakaoMainTabsView");
     if (mainTabs) mainTabs.style.display = "flex";
     document.body.classList.add("in-main-tabs");
@@ -587,49 +560,133 @@ async function executeGuildLogin() {
     return showKakaoToast("👑 슈퍼관리자(Master)로 로그인되었습니다.", "🎉");
   }
 
-  const targetMember = cachedMemberList.find(m => {
-    const n = m.name || m.nickname || "";
-    return n.toLowerCase() === selectedName.toLowerCase();
+  // 2) DB에서 해당 닉네임을 가진 길드원 행 조회 (대소문자 무시 ilike 검색)
+  let candidates = [];
+  const currentGid = forcedGuildId || localStorage.getItem("current_guild_id") || "";
+
+  try {
+    let byNick = [];
+    let byName = [];
+    try {
+      byNick = await apiRequest(`guild_members?nickname=ilike.${encodeURIComponent(selectedName)}&select=*`);
+    } catch (e1) {}
+    try {
+      byName = await apiRequest(`guild_members?name=ilike.${encodeURIComponent(selectedName)}&select=*`);
+    } catch (e2) {}
+
+    const map = new Map();
+    (byNick || []).forEach(m => { if (m && m.id) map.set(m.id, m); });
+    (byName || []).forEach(m => { if (m && m.id) map.set(m.id, m); });
+    candidates = Array.from(map.values()).filter(m => {
+      const n = (m.name || m.nickname || "").trim();
+      return n.toLowerCase() === selectedName.toLowerCase();
+    });
+  } catch (err) {
+    console.warn("Smart login query failed:", err);
+  }
+
+  if (candidates.length === 0) {
+    return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하거나 초대코드로 먼저 가입하세요.", "⚠️");
+  }
+
+  // 3) 입력한 PIN 번호와 일치하는 후보 필터링
+  const pinMatchedList = candidates.filter(m => {
+    const expectedPin = m.pin ? String(m.pin).trim() : "000000";
+    return (inputPin === expectedPin) ||
+           (expectedPin === "0000" && inputPin === "000000") ||
+           (expectedPin === "000000" && inputPin === "0000");
   });
 
-  if (!targetMember) {
-    return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
+  if (pinMatchedList.length === 0) {
+    const pinInput = document.getElementById("loginPinInput");
+    if (pinInput) {
+      pinInput.value = "";
+      pinInput.focus();
+    }
+    return showKakaoToast("비밀번호(PIN)가 올바르지 않습니다!", "❌");
   }
 
-  let expectedPin = "000000";
-  if (targetMember.pin) {
-    expectedPin = String(targetMember.pin).trim();
+  // 4) 일치하는 길드가 여러 개일 때 처리
+  let targetMember = null;
+  if (forcedGuildId) {
+    targetMember = pinMatchedList.find(m => (m.guild_id || "default") === forcedGuildId) || pinMatchedList[0];
+  } else if (pinMatchedList.length === 1) {
+    targetMember = pinMatchedList[0];
   } else {
-    try {
-      const qNick = targetMember.name || targetMember.nickname || "";
-      let res = await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(qNick)}&select=pin,role`);
-      if (!res || res.length === 0) {
-        res = await apiRequest(`guild_members?name=eq.${encodeURIComponent(qNick)}&select=pin,role`);
-      }
-      if (res && res.length > 0 && res[0].pin) expectedPin = String(res[0].pin).trim();
-    } catch (e) {}
+    // 만약 현재 선택된 길드(currentGid)가 있고 그 길드에 정확히 속해 있다면 우선 선택하되,
+    // 여러 길드에 동일 닉네임+동일 PIN이 존재할 경우 길드 선택 버튼을 띄워줌
+    const multiBox = document.getElementById("loginMultiGuildSelectBox");
+    const multiBtns = document.getElementById("loginMultiGuildButtons");
+    if (multiBox && multiBtns) {
+      let guildInfoMap = {};
+      try {
+        const allGuilds = await apiRequest("guilds?select=id,guild_name,name,game_name");
+        if (Array.isArray(allGuilds)) {
+          allGuilds.forEach(g => { guildInfoMap[g.id] = g; });
+        }
+      } catch (e) {}
+
+      multiBtns.innerHTML = pinMatchedList.map(m => {
+        const gid = m.guild_id || "default";
+        const gObj = guildInfoMap[gid];
+        const gLabel = gObj ? `[${gObj.game_name || '게임'}] ${gObj.guild_name || gObj.name || '길드'}` : `길드 (${gid})`;
+        return `<button type="button" class="btn btn-outline-info btn-sm text-start fw-bold py-2 px-3" style="font-size:0.78rem; border-radius:8px;" onclick="executeGuildLogin('${gid}')">
+          <i class="fa-solid fa-shield-halved me-1"></i>${escapeHtmlText(gLabel)} <span class="badge bg-secondary float-end">${escapeHtmlText(m.role || '일반')}</span>
+        </button>`;
+      }).join("");
+      multiBox.style.display = "block";
+      return showKakaoToast("입장하실 길드를 아래에서 선택해주세요!", "🛡️");
+    } else {
+      targetMember = pinMatchedList.find(m => m.guild_id === currentGid) || pinMatchedList[0];
+    }
   }
 
-  const isPinMatched = (inputPin === expectedPin) || 
-                       (expectedPin === "0000" && inputPin === "000000") || 
-                       (expectedPin === "000000" && inputPin === "0000");
-
-  if (!isPinMatched) {
-    document.getElementById("loginPinInput").value = "";
-    document.getElementById("loginPinInput").focus();
-    return showKakaoToast("비밀번호가 올바르지 않습니다! (6자리 숫자 PIN)", "❌");
-  }
-
+  // 5) 로그인 확정 및 길드 세션 동기화
+  const resolvedGid = targetMember.guild_id || "default";
   const memberName = targetMember.name || targetMember.nickname;
-  myCurrentNick = memberName;
-  myCurrentPin = inputPin;
+  const userRole = targetMember.role || "일반";
+  const expectedPin = targetMember.pin ? String(targetMember.pin).trim() : "000000";
+
+  localStorage.setItem("current_guild_id", resolvedGid);
   localStorage.setItem("guild_my_nickname", memberName);
   localStorage.setItem("guild_my_pin", inputPin);
-
-  const userRole = targetMember.role || "일반";
   localStorage.setItem("guild_my_role", userRole);
+  myCurrentNick = memberName;
+  myCurrentPin = inputPin;
 
-  if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마") {
+  if (targetMember.job_class || targetMember.class_name) {
+    myCurrentClass = targetMember.job_class || targetMember.class_name;
+    localStorage.setItem("guild_my_class", myCurrentClass);
+  }
+  if (targetMember.avatar) {
+    myCurrentAvatar = targetMember.avatar;
+    localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+  }
+
+  // 내 참여 길드 기록(my_joined_guilds) 자동 업데이트 (다음 접속 시 원클릭 입장 지원)
+  try {
+    let guildTitle = "길드";
+    let gameTitle = "게임";
+    const gRows = await apiRequest(`guilds?id=eq.${encodeURIComponent(resolvedGid)}&select=id,guild_name,name,game_name`);
+    if (Array.isArray(gRows) && gRows.length > 0) {
+      guildTitle = gRows[0].guild_name || gRows[0].name || "길드";
+      gameTitle = gRows[0].game_name || "게임";
+    }
+    let joined = [];
+    try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+    joined = joined.filter(g => g.guild_id !== resolvedGid);
+    joined.unshift({
+      guild_id: resolvedGid,
+      guild_name: guildTitle,
+      game_name: gameTitle,
+      nickname: memberName,
+      my_nick: memberName,
+      role: userRole
+    });
+    localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
+  } catch (e) {}
+
+  if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마" || userRole === "수호") {
     sessionStorage.setItem("admin_auth", "true");
     sessionStorage.setItem("admin_role", "admin");
   } else if (userRole === "정예") {
@@ -640,12 +697,14 @@ async function executeGuildLogin() {
     sessionStorage.removeItem("admin_role");
   }
 
+  await loadGuildSettings();
+  await window.loadGuildMembersData();
+  if (typeof window.loadBossTimersList === "function") await window.loadBossTimersList();
+
   updateProfileUI(memberName);
-  
-  const loginModal = document.getElementById("guildLoginModal");
-  if (loginModal) loginModal.style.display = "none";
-  const welcomeModal = document.getElementById("modalWelcomeGateway");
-  if (welcomeModal) welcomeModal.style.display = "none";
+
+  const multiBox = document.getElementById("loginMultiGuildSelectBox");
+  if (multiBox) multiBox.style.display = "none";
   document.querySelectorAll(".kakao-modal-backdrop").forEach(m => {
     m.style.display = "none";
   });
@@ -667,6 +726,7 @@ async function executeGuildLogin() {
     showKakaoToast(`[${memberName}] 님 반갑습니다!`, "🎉");
   }
 }
+window.executeGuildLogin = executeGuildLogin;
 
 // ⚡ 로그아웃 시 설정창/오버레이를 모두 닫고 "로그아웃 되었습니다." 표기 및 home.html로 이동
 function handleUserLogout() {
@@ -720,7 +780,7 @@ window.switchActiveGuild = function(guildId) {
   if (!target) return;
 
   localStorage.setItem("current_guild_id", target.guild_id);
-  localStorage.setItem("guild_my_nickname", target.nickname || "");
+  localStorage.setItem("guild_my_nickname", target.my_nick || target.nickname || "");
   localStorage.setItem("guild_my_role", target.role || "일반");
   location.reload();
 };
@@ -779,7 +839,7 @@ window.updateProfileUI = function(nick) {
 function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 & 실시간 대화 수신 (방별 격리 & 노란색 읽음 계산)
+// 5. 과거 대화 로드 & 실시간 대화 수신 (길드별·방별 완벽 격리)
 // --------------------------------------------------------
 async function loadPastChatMessages() {
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
@@ -789,7 +849,8 @@ async function loadPastChatMessages() {
 
   if (!isInChatView || !activeRoom) return;
 
-  const cacheKey = "chat_history_cache_" + activeRoom;
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const cacheKey = `chat_history_cache_${currentGid}_${activeRoom}`;
   let cachedMessages = [];
   try {
     cachedMessages = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
@@ -810,51 +871,43 @@ async function loadPastChatMessages() {
   }
 
   try {
-    const currentGid = localStorage.getItem("current_guild_id");
     let list = [];
 
+    // 반드시 현재 guild_id 조건을 포함하여 타 길드 채팅 유출 원천 차단
     if (activeRoom !== "default_public") {
-      if (currentGid) {
-        try {
-          list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
-        } catch (e) {}
-      }
-      if (!list || list.length === 0) {
-        try {
-          list = await apiRequest(`guild_chats?room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
-        } catch (e2) {}
+      try {
+        list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
+      } catch (e) {
+        list = [];
       }
     } else {
-      if (currentGid) {
-        try {
-          list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&select=*&order=id.desc&limit=150`);
-        } catch (e) {}
-      }
-    }
-
-    if (!list || list.length === 0) {
       try {
-        list = await apiRequest("guild_chats?select=*&order=id.desc&limit=150");
-      } catch (err2) {
-        console.warn("Server chat fetch fallback failed:", err2);
+        list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&select=*&order=id.desc&limit=150`);
+      } catch (e) {
+        list = [];
       }
     }
 
     let filtered = (list || []).filter(c => {
+      if (c.guild_id && c.guild_id !== currentGid) return false;
       let rId = (!c.room_id || c.room_id === "default_public" || c.room_id === "public") ? "default_public" : c.room_id;
       if (rId && rId.startsWith("direct_") && typeof window.generateDeterministicUUID === "function") {
         const clean = rId.replace("direct_", "").replace("direct__", "");
         const parts = clean.split("__");
         if (parts.length === 2) {
           const sorted = [parts[0], parts[1]].sort();
-          rId = window.generateDeterministicUUID("direct__" + sorted[0] + "__" + sorted[1]);
+          rId = window.generateDeterministicUUID(`direct__${currentGid}__${sorted[0]}__${sorted[1]}`);
         }
       }
       return rId === activeRoom;
     });
 
     const mergedMap = new Map();
-    (cachedMessages || []).forEach(m => { if (m && m.id) mergedMap.set(String(m.id), m); });
+    (cachedMessages || []).forEach(m => {
+      if (m && m.id && (!m.guild_id || m.guild_id === currentGid)) {
+        mergedMap.set(String(m.id), m);
+      }
+    });
     filtered.forEach(m => { if (m && m.id) mergedMap.set(String(m.id), m); });
 
     const finalSorted = Array.from(mergedMap.values()).sort((a, b) => {
@@ -881,14 +934,19 @@ async function loadPastChatMessages() {
 
       renderMessageHistoryList(finalSorted);
       syncMyReadStatusToServer(finalSorted);
+    } else {
+      renderMessageHistoryList([]);
     }
   } catch (e) {
     console.warn("loadPastChatMessages error:", e);
   }
 }
+window.loadPastChatMessages = loadPastChatMessages;
+window.loadInitialChatMessages = loadPastChatMessages;
 
 async function syncMyReadStatusToServer(msgList) {
   if (!myCurrentNick || !Array.isArray(msgList) || msgList.length === 0) return;
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
   const toUpdate = msgList.filter(m => {
     if (!m || !m.id || String(m.id).startsWith("tmp_")) return false;
@@ -904,7 +962,7 @@ async function syncMyReadStatusToServer(msgList) {
     m.read_members = updatedArr;
 
     try {
-      await apiRequest(`guild_chats?id=eq.${encodeURIComponent(m.id)}`, "PATCH", {
+      await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${encodeURIComponent(m.id)}`, "PATCH", {
         read_members: updatedArr
       });
     } catch (e) {
@@ -946,13 +1004,17 @@ function renderMessageHistoryList(msgList) {
   if (typeof window.syncAllChatCutButtons === "function") window.syncAllChatCutButtons();
 }
 
+// 오래된 채팅 정리 시 반드시 현재 guild_id 조건 포함
 async function cleanupOldChatsBackground() {
   try {
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    await apiRequest(`guild_chats?created_at=lt.${sevenDaysAgo}`, "DELETE");
+    await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&created_at=lt.${sevenDaysAgo}`, "DELETE");
   } catch (e) {}
 }
+window.cleanOldChatMessages = cleanupOldChatsBackground;
 
+// 실시간 채팅 웹소켓 구독 시 길드 격리 검증 적용
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
 
@@ -960,6 +1022,10 @@ function listenRealtimeChatMessages() {
     .channel("public:guild_chats")
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
       if (!payload.new) return;
+      const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+      // 다른 길드의 메시지는 즉시 무시
+      if (payload.new.guild_id && payload.new.guild_id !== currentGid) return;
+
       const newMsg = payload.new;
       const activeRoom = window.currentActiveRoomId;
       const msgRoom = (!newMsg.room_id || newMsg.room_id === "public" || newMsg.room_id === "default_public") ? "default_public" : newMsg.room_id;
@@ -969,7 +1035,7 @@ function listenRealtimeChatMessages() {
       }
 
       try {
-        const cacheKey = "chat_history_cache_" + msgRoom;
+        const cacheKey = `chat_history_cache_${currentGid}_${msgRoom}`;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
         if (!localMsgs.find(m => String(m.id) === String(newMsg.id))) {
           localMsgs.push(newMsg);
@@ -1018,6 +1084,9 @@ function listenRealtimeChatMessages() {
     })
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guild_chats" }, (payload) => {
       if (!payload.new || !payload.new.id) return;
+      const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+      if (payload.new.guild_id && payload.new.guild_id !== currentGid) return;
+
       const updated = payload.new;
       const rowElem = document.getElementById("msg_" + updated.id);
       if (!rowElem) return;
@@ -1156,7 +1225,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     `;
   }
   else if (msg.msg_type === "boss_alert") {
-    const bossNameInMsg = extractBossNameFromMessage(cleanMessageText);
+    const bossNameInMsg = (typeof extractBossNameFromMessage === "function") ? extractBossNameFromMessage(cleanMessageText) : "";
     const subCutBtn = bossNameInMsg ? `
       <button type="button" class="btn-chat-cut" id="btn_cut_${msgKey}" data-boss="${bossNameInMsg}" onclick="triggerQuickCutAction('${bossNameInMsg}', 'btn_cut_${msgKey}')">
         <i class="fa-solid fa-crosshairs"></i> 즉시컷
@@ -1233,7 +1302,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 7. 메시지 입력 및 전송 제어
+// 7. 메시지 입력 및 전송 제어 (guild_id 필수 포함)
 // --------------------------------------------------------
 function handleInputState(textarea) {
   if (!textarea) return;
@@ -1274,6 +1343,7 @@ async function handleSendMessage() {
     return;
   }
 
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   const mentionMatches = text.match(/@([a-zA-Z0-9가-힣_-]+)/g);
   const detectedMentions = mentionMatches ? mentionMatches.map(m => m.slice(1)) : [];
 
@@ -1282,10 +1352,11 @@ async function handleSendMessage() {
 
   const activeRoomKey = window.currentActiveRoomId || "default_public";
   const isPublicRoom = (activeRoomKey === "default_public" || activeRoomKey === "public");
-  const targetRoomId = isPublicRoom ? null : activeRoomKey;
+  const targetRoomId = isPublicRoom ? "default_public" : activeRoomKey;
   const tempId = "tmp_" + Date.now();
   const optimisticMsg = {
     id: tempId,
+    guild_id: currentGid,
     room_id: targetRoomId,
     sender_name: myCurrentNick,
     message: text,
@@ -1302,7 +1373,7 @@ async function handleSendMessage() {
   lastRenderedSender = myCurrentNick;
 
   try {
-    const cacheKey = "chat_history_cache_" + activeRoomKey;
+    const cacheKey = `chat_history_cache_${currentGid}_${activeRoomKey}`;
     let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
     localMsgs.push(optimisticMsg);
     sessionStorage.setItem(cacheKey, JSON.stringify(localMsgs.slice(-100)));
@@ -1310,64 +1381,33 @@ async function handleSendMessage() {
   } catch(e) {}
 
   try {
-    const currentGid = localStorage.getItem("current_guild_id");
-
-    if (targetRoomId) {
+    if (!isPublicRoom && targetRoomId) {
       try {
         const existRoom = await apiRequest(`chat_rooms?id=eq.${encodeURIComponent(targetRoomId)}&select=id`);
         if (!existRoom || existRoom.length === 0) {
           const roomPayload = {
             id: targetRoomId,
+            guild_id: currentGid,
             room_name: window.currentActiveRoomTitle || "1:1 대화방",
             room_type: window.currentActiveRoomType || "direct",
             created_by: myCurrentNick
           };
-          if (currentGid) roomPayload.guild_id = currentGid;
           await apiRequest("chat_rooms", "POST", [roomPayload]);
         }
       } catch (roomCheckErr) {}
     }
 
     const chatPayload = {
+      guild_id: currentGid,
+      room_id: targetRoomId,
       sender_name: myCurrentNick,
       message: text,
       msg_type: "chat",
       mentions: detectedMentions,
       read_members: [myCurrentNick]
     };
-    if (targetRoomId) chatPayload.room_id = targetRoomId;
-    if (currentGid) chatPayload.guild_id = currentGid;
 
-    let insertRes;
-    try {
-      insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
-    } catch (postErr1) {
-      const fallbackPayload1 = {
-        sender_name: myCurrentNick,
-        message: text,
-        msg_type: "chat"
-      };
-      if (targetRoomId) fallbackPayload1.room_id = targetRoomId;
-      try {
-        insertRes = await apiRequest("guild_chats", "POST", [fallbackPayload1]);
-      } catch (postErr2) {
-        const minimalPayload = {
-          sender_name: myCurrentNick,
-          message: text,
-          msg_type: "chat"
-        };
-        try {
-          insertRes = await apiRequest("guild_chats", "POST", [minimalPayload]);
-        } catch (finalErr) {
-          let cleanErr = (finalErr && finalErr.message) ? finalErr.message : String(finalErr);
-          try {
-            const parsed = JSON.parse(cleanErr);
-            if (parsed && parsed.message) cleanErr = parsed.message;
-          } catch(e) {}
-          throw new Error(cleanErr);
-        }
-      }
-    }
+    const insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
 
     if (insertRes && insertRes[0] && insertRes[0].id) {
       const realId = insertRes[0].id;
@@ -1377,7 +1417,7 @@ async function handleSendMessage() {
         rowElem.setAttribute("data-msg-id", realId);
       }
       try {
-        const cacheKey = "chat_history_cache_" + activeRoomKey;
+        const cacheKey = `chat_history_cache_${currentGid}_${activeRoomKey}`;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
         const target = localMsgs.find(m => m.id === tempId);
         if (target) target.id = realId;
@@ -1462,7 +1502,7 @@ window.openModulePage = async function(pageName) {
   const myRole = localStorage.getItem("guild_my_role") || "일반";
   const adminRole = sessionStorage.getItem("admin_role") || "";
   const isSuper = (adminRole === "super");
-  const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마");
+  const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마" || myRole === "수호");
   const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
   if (pageName === 'PageSettings' && !isAdmin) {
@@ -1512,6 +1552,7 @@ window.openModulePage = async function(pageName) {
     if (body) body.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${err.message}</div>`;
   }
 };
+window.openSubPageModal = window.openModulePage;
 
 window.closeModuleOverlay = function() {
   const overlay = document.getElementById("moduleOverlay");
@@ -1540,7 +1581,7 @@ function scrollChatBottom(smooth = false) {
 
 function escapeHtmlText(t) {
   if (!t) return "";
-  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 window.toggleChatSearchBar = function(forceState) {
