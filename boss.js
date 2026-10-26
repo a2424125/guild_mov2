@@ -16,13 +16,14 @@ function saveNotifiedBossKey(key) {
 }
 
 // --------------------------------------------------------
-// 1. 보스타임 목록 조회 및 동기화
+// 1. 보스타임 목록 조회 및 동기화 (현재 guild_id 격리)
 // --------------------------------------------------------
 window.loadBossTimersList = async function() {
   try {
     if (typeof apiRequest !== "function") return;
-    const bosses = await apiRequest("boss_timers?select=*&order=id.asc");
-    window.cachedBossList = bosses || [];
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+    const bosses = await apiRequest(`boss_timers?guild_id=eq.${encodeURIComponent(currentGid)}&select=*&order=id.asc`);
+    window.cachedBossList = Array.isArray(bosses) ? bosses : [];
     syncAllChatCutButtons();
   } catch (e) {
     console.warn("loadBossTimersList failed:", e);
@@ -67,9 +68,10 @@ function extractBossNameFromMessage(text) {
   const match = text.match(/\[(.*?)\]/);
   return match ? match[1].trim() : "";
 }
+window.extractBossNameFromMessage = extractBossNameFromMessage;
 
 // --------------------------------------------------------
-// 2. 보스타임 채팅 브리핑 (카카오톡 카드)
+// 2. 보스타임 채팅 브리핑 (카카오톡 카드 - guild_id & room_id 필수 포함)
 // --------------------------------------------------------
 window.postBossBriefingToChat = async function() {
   if (!window.cachedBossList || window.cachedBossList.length === 0) {
@@ -129,8 +131,10 @@ window.postBossBriefingToChat = async function() {
   });
 
   try {
-    const targetRoomId = window.currentActiveRoomId || null;
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+    const targetRoomId = window.currentActiveRoomId || "default_public";
     await apiRequest("guild_chats", "POST", [{
+      guild_id: currentGid,
       room_id: targetRoomId,
       sender_name: "보스알리미",
       message: briefingHtml,
@@ -144,10 +148,11 @@ window.postBossBriefingToChat = async function() {
 };
 
 // --------------------------------------------------------
-// 3. 채팅 말풍선 [즉시컷] 원클릭 실행
+// 3. 채팅 말풍선 [즉시컷] 원클릭 실행 (guild_id 격리 적용)
 // --------------------------------------------------------
 window.triggerQuickCutAction = async function(bossName, btnId) {
   const btn = document.getElementById(btnId);
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   const boss = (window.cachedBossList || []).find(b => {
     const xName = b.boss_name || b.name || "";
     return xName.toLowerCase() === bossName.toLowerCase();
@@ -183,15 +188,16 @@ window.triggerQuickCutAction = async function(bossName, btnId) {
   const myNick = localStorage.getItem("guild_my_nickname") || "길드원";
 
   try {
-    await apiRequest(`boss_timers?id=eq.${boss.id}`, "PATCH", {
+    await apiRequest(`boss_timers?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${boss.id}`, "PATCH", {
       last_cut_time: cutDate.toISOString(),
       next_spawn_time: nextSpawn.toISOString()
     });
 
-    const targetRoomId = window.currentActiveRoomId || null;
+    const targetRoomId = window.currentActiveRoomId || "default_public";
     const timeFormatted = (typeof formatTime24Hour === "function") ? formatTime24Hour(nextSpawn) : "";
 
     await apiRequest("guild_chats", "POST", [{
+      guild_id: currentGid,
       room_id: targetRoomId,
       sender_name: "보스알리미",
       message: `⚔️ [${bossName}] ${myNick}님에 의해 즉시 컷 처리되었습니다! (다음 젠: ${timeFormatted})`,
@@ -257,6 +263,7 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
     return;
   }
 
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   const btn = document.getElementById(`btn_raid_join_${raidId}`);
   if (btn) {
     btn.disabled = true;
@@ -264,7 +271,7 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
   }
 
   try {
-    const records = await apiRequest(`boss_participations?id=eq.${raidId}&select=*`);
+    const records = await apiRequest(`boss_participations?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${raidId}&select=*`);
     if (!records || records.length === 0) throw new Error("레이드 기록을 찾을 수 없습니다.");
 
     const raid = records[0];
@@ -285,13 +292,14 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
 
     memberList.push(myNick);
 
-    await apiRequest(`boss_participations?id=eq.${raidId}`, "PATCH", {
+    await apiRequest(`boss_participations?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${raidId}`, "PATCH", {
       members: memberList,
       member_count: memberList.length
     });
 
-    const targetRoomId = window.currentActiveRoomId || null;
+    const targetRoomId = window.currentActiveRoomId || "default_public";
     await apiRequest("guild_chats", "POST", [{
+      guild_id: currentGid,
       room_id: targetRoomId,
       sender_name: "보스알리미",
       message: `🙋‍♂️ [${bossName}] 토벌에 ${myNick}님이 추가 참여하셨습니다! (현재 참여: ${memberList.length}명)`,
@@ -325,7 +333,10 @@ window.startLocalBossWatchTimer = function() {
     const now = Date.now();
     if (!window.cachedBossList || window.cachedBossList.length === 0) return;
 
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+
     for (const b of window.cachedBossList) {
+      if (b.guild_id && b.guild_id !== currentGid) continue;
       if (!b.next_spawn_time) continue;
 
       const spawnTime = new Date(b.next_spawn_time).getTime();
@@ -334,7 +345,7 @@ window.startLocalBossWatchTimer = function() {
 
       // 5분 전 알림
       if (diffSec <= 300 && diffSec > 60) {
-        const key5m = `${b.id}_5m_${b.next_spawn_time}`;
+        const key5m = `${currentGid}_${b.id}_5m_${b.next_spawn_time}`;
         if (!window.notifiedBossSpawnMap.has(key5m)) {
           saveNotifiedBossKey(key5m);
           triggerBeepSound(false);
@@ -346,7 +357,7 @@ window.startLocalBossWatchTimer = function() {
 
       // 젠 알림
       if (diffSec <= 0 && diffSec > -180) {
-        const keySpawn = `${b.id}_spawn_${b.next_spawn_time}`;
+        const keySpawn = `${currentGid}_${b.id}_spawn_${b.next_spawn_time}`;
         if (!window.notifiedBossSpawnMap.has(keySpawn)) {
           saveNotifiedBossKey(keySpawn);
           triggerBeepSound(true);
@@ -380,7 +391,7 @@ window.triggerBeepSound = function(isImportant = false) {
 };
 
 // --------------------------------------------------------
-// 6. 보스타임 실시간 구독 (Supabase Realtime)
+// 6. 보스타임 실시간 구독 (Supabase Realtime - 타 길드 이벤트 무시)
 // --------------------------------------------------------
 window.listenRealtimeBossTimers = function() {
   if (!window.supabaseClient) return;
@@ -388,7 +399,9 @@ window.listenRealtimeBossTimers = function() {
   try {
     window.supabaseClient
       .channel("public:boss_timers")
-      .on("postgres_changes", { event: "*", schema: "public", table: "boss_timers" }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "boss_timers" }, (payload) => {
+        const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+        if (payload.new && payload.new.guild_id && payload.new.guild_id !== currentGid) return;
         window.loadBossTimersList();
       })
       .subscribe();
@@ -397,6 +410,9 @@ window.listenRealtimeBossTimers = function() {
       .channel("public:boss_participations")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "boss_participations" }, (payload) => {
         if (!payload.new) return;
+        const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+        if (payload.new.guild_id && payload.new.guild_id !== currentGid) return;
+
         const raidId = payload.new.id;
         const memberCount = payload.new.member_count || (payload.new.members ? payload.new.members.length : 0);
         const countBadge = document.getElementById(`raid_members_count_${raidId}`);
