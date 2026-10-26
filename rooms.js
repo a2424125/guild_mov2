@@ -41,20 +41,27 @@ window.cachedChatRoomsList = [];
 window.roomMsgMapCache = new Map();
 
 // --------------------------------------------------------
-// 0. 방별 읽음 처리 & 안 읽은 메시지 수 계산 공통 함수 (ID/UUID/시간 3중 검증)
+// 0. 방별 읽음 처리 & 안 읽은 메시지 수 계산 공통 함수 (길드별·방별 격리)
 // --------------------------------------------------------
+function getRoomReadKeyPrefix(roomId) {
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const targetId = (!roomId || roomId === "public" || roomId === "default_public") ? "default_public" : roomId;
+  return `${currentGid}_${targetId}`;
+}
+
 window.markRoomAsReadNow = function(roomId, customMsgs) {
   if (!roomId) return;
   const targetId = (roomId === "public" || roomId === "default_public") ? "default_public" : roomId;
+  const keySuffix = getRoomReadKeyPrefix(targetId);
   const msgs = customMsgs || (window.roomMsgMapCache && window.roomMsgMapCache.get(targetId)) || [];
 
-  let maxNumId = parseInt(localStorage.getItem("last_read_chat_id_" + targetId) || "0", 10);
+  let maxNumId = parseInt(localStorage.getItem("last_read_chat_id_" + keySuffix) || localStorage.getItem("last_read_chat_id_" + targetId) || "0", 10);
   if (isNaN(maxNumId)) maxNumId = 0;
 
-  let maxTime = parseInt(localStorage.getItem("last_read_chat_time_" + targetId) || "0", 10);
+  let maxTime = parseInt(localStorage.getItem("last_read_chat_time_" + keySuffix) || localStorage.getItem("last_read_chat_time_" + targetId) || "0", 10);
   if (isNaN(maxTime)) maxTime = 0;
 
-  let latestIdStr = localStorage.getItem("last_read_chat_id_str_" + targetId) || "";
+  let latestIdStr = localStorage.getItem("last_read_chat_id_str_" + keySuffix) || localStorage.getItem("last_read_chat_id_str_" + targetId) || "";
 
   if (Array.isArray(msgs) && msgs.length > 0) {
     msgs.forEach(m => {
@@ -82,12 +89,16 @@ window.markRoomAsReadNow = function(roomId, customMsgs) {
   if (nowTs > maxTime) maxTime = nowTs;
 
   if (maxNumId > 0) {
+    localStorage.setItem("last_read_chat_id_" + keySuffix, String(maxNumId));
     localStorage.setItem("last_read_chat_id_" + targetId, String(maxNumId));
   }
   if (latestIdStr) {
+    localStorage.setItem("last_read_chat_id_str_" + keySuffix, latestIdStr);
     localStorage.setItem("last_read_chat_id_str_" + targetId, latestIdStr);
   }
+  localStorage.setItem("last_read_chat_time_" + keySuffix, String(maxTime));
   localStorage.setItem("last_read_chat_time_" + targetId, String(maxTime));
+  localStorage.setItem("room_has_been_read_" + keySuffix, "true");
   localStorage.setItem("room_has_been_read_" + targetId, "true");
 
   const badgeElem = document.getElementById("room_badge_" + targetId);
@@ -102,11 +113,13 @@ window.markRoomAsReadNow = function(roomId, customMsgs) {
 window.calculateRoomUnreadCount = function(msgs, roomId, myNick) {
   if (!Array.isArray(msgs) || msgs.length === 0) return 0;
   const targetId = (!roomId || roomId === "public" || roomId === "default_public") ? "default_public" : roomId;
+  const keySuffix = getRoomReadKeyPrefix(targetId);
 
-  const hasBeenRead = localStorage.getItem("room_has_been_read_" + targetId) === "true";
-  const lastReadNumId = parseInt(localStorage.getItem("last_read_chat_id_" + targetId) || "0", 10) || 0;
-  const lastReadIdStr = localStorage.getItem("last_read_chat_id_str_" + targetId) || "";
-  const lastReadTime = parseInt(localStorage.getItem("last_read_chat_time_" + targetId) || "0", 10) || 0;
+  const hasBeenRead = (localStorage.getItem("room_has_been_read_" + keySuffix) === "true") ||
+                      (localStorage.getItem("room_has_been_read_" + targetId) === "true");
+  const lastReadNumId = parseInt(localStorage.getItem("last_read_chat_id_" + keySuffix) || localStorage.getItem("last_read_chat_id_" + targetId) || "0", 10) || 0;
+  const lastReadIdStr = localStorage.getItem("last_read_chat_id_str_" + keySuffix) || localStorage.getItem("last_read_chat_id_str_" + targetId) || "";
+  const lastReadTime = parseInt(localStorage.getItem("last_read_chat_time_" + keySuffix) || localStorage.getItem("last_read_chat_time_" + targetId) || "0", 10) || 0;
 
   if (!hasBeenRead && lastReadNumId === 0 && !lastReadIdStr && lastReadTime === 0) {
     return msgs.filter(m => m.sender_name !== myNick).length;
@@ -182,7 +195,7 @@ window.switchMainBottomTab = function(tabName) {
 };
 
 // --------------------------------------------------------
-// 2. [친구 탭] 길드원 리스트 렌더링 & 클릭 제어
+// 2. [친구 탭] 길드원 리스트 렌더링 & 클릭 제어 (타 길드 전체 조회 폴백 완전 제거)
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
@@ -191,6 +204,7 @@ window.loadMainTabFriendsList = async function() {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
   const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
   const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
   const myNickElem = document.getElementById("mainTabMyNick");
   const myAvatarElem = document.getElementById("mainTabMyAvatar");
@@ -201,33 +215,31 @@ window.loadMainTabFriendsList = async function() {
   if (myClassElem) myClassElem.innerText = myClass;
 
   try {
-    let members = window.cachedMemberList || [];
-    if (!members || members.length === 0) {
-      if (typeof window.loadGuildMembersData === "function") {
-        await window.loadGuildMembersData();
-        members = window.cachedMemberList || [];
+    let members = [];
+    if (typeof apiRequest === "function") {
+      try {
+        members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
+      } catch(e) {
+        members = [];
       }
     }
 
-    if ((!members || members.length === 0) && typeof apiRequest === "function") {
-      const currentGid = localStorage.getItem("current_guild_id");
-      if (currentGid) {
-        try {
-          members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
-        } catch(e) {}
-      }
-      if (!members || members.length === 0) {
-        try {
-          members = await apiRequest("guild_members?select=*");
-        } catch(e2) {}
-      }
-      window.cachedMemberList = members || [];
-    }
+    members = Array.isArray(members) ? members : [];
+    members.sort((a, b) => {
+      const pA = (typeof getRolePriority === "function") ? getRolePriority(a.role) : 4;
+      const pB = (typeof getRolePriority === "function") ? getRolePriority(b.role) : 4;
+      if (pA !== pB) return pA - pB;
+      const nA = a.nickname || a.name || "";
+      const nB = b.nickname || b.name || "";
+      return nA.localeCompare(nB, 'ko');
+    });
+
+    window.cachedMemberList = members;
 
     const countElem = document.getElementById("mainTabMemberCount");
     if (countElem) countElem.innerText = members.length;
 
-    if (!members || members.length === 0) {
+    if (members.length === 0) {
       container.innerHTML = `<div class="text-secondary small text-center py-4">등록된 길드원이 없습니다.</div>`;
       return;
     }
@@ -242,8 +254,8 @@ window.loadMainTabFriendsList = async function() {
       let roleBadge = "";
       if (mRole === "길드장" || mRole === "길마") {
         roleBadge = `<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.62rem;">길마</span>`;
-      } else if (mRole === "부길드장" || mRole === "부길마") {
-        roleBadge = `<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.62rem;">부길마</span>`;
+      } else if (mRole === "부길드장" || mRole === "부길마" || mRole === "수호") {
+        roleBadge = `<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.62rem;">${mRole === "수호" ? "수호" : "부길마"}</span>`;
       } else if (mRole === "정예") {
         roleBadge = `<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.62rem;">정예</span>`;
       }
@@ -287,38 +299,37 @@ window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
 };
 
 // --------------------------------------------------------
-// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링
+// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (타 길드 방/채팅 전체 조회 폴백 제거)
 // --------------------------------------------------------
 window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
   if (!container) return;
 
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
   try {
     let serverRooms = [];
-    const currentGid = localStorage.getItem("current_guild_id");
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
     const curGuild = joined.find(g => g.guild_id === currentGid);
     const guildTitle = (curGuild && curGuild.guild_name) ? `${curGuild.guild_name} 전체 대화방` : "길드 전체 대화방";
 
-    if (typeof apiRequest === "function" && currentGid) {
+    if (typeof apiRequest === "function") {
       try {
         serverRooms = await apiRequest("chat_rooms?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*&order=created_at.asc");
       } catch(e) {
-        try {
-          serverRooms = await apiRequest("chat_rooms?select=*&order=created_at.asc");
-        } catch(e2) {}
+        serverRooms = [];
       }
     }
 
-    let localRooms = [];
-    try { localRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
+    let allLocalRooms = [];
+    try { allLocalRooms = JSON.parse(localStorage.getItem("local_custom_rooms") || "[]"); } catch(e) {}
 
     let didMigrate = false;
-    localRooms.forEach(r => {
+    allLocalRooms.forEach(r => {
       if (r && r.room_type === "direct") {
+        const rGid = r.guild_id || currentGid;
         let nA = "", nB = "";
         if (Array.isArray(r.members) && r.members.length === 2) {
           nA = r.members[0]; nB = r.members[1];
@@ -329,9 +340,10 @@ window.loadMainTabRoomsList = async function() {
         }
         if (nA && nB) {
           const sorted = [nA, nB].sort();
-          const canonicalUUID = generateDeterministicUUID("direct__" + sorted[0] + "__" + sorted[1]);
-          if (r.id !== canonicalUUID) {
+          const canonicalUUID = generateDeterministicUUID(`direct__${rGid}__${sorted[0]}__${sorted[1]}`);
+          if (r.id !== canonicalUUID || !r.guild_id) {
             r.id = canonicalUUID;
+            r.guild_id = rGid;
             r.members = sorted;
             didMigrate = true;
           }
@@ -339,11 +351,15 @@ window.loadMainTabRoomsList = async function() {
       }
     });
     if (didMigrate) {
-      try { localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms)); } catch(e) {}
+      try { localStorage.setItem("local_custom_rooms", JSON.stringify(allLocalRooms)); } catch(e) {}
     }
+
+    // 현재 길드(currentGid)에 속한 로컬 방만 필터링
+    const localRooms = allLocalRooms.filter(r => !r.guild_id || r.guild_id === currentGid);
 
     const defaultRoom = {
       id: "default_public",
+      guild_id: currentGid,
       room_name: guildTitle,
       room_type: "public",
       created_at: new Date().toISOString()
@@ -353,7 +369,7 @@ window.loadMainTabRoomsList = async function() {
     roomMap.set("default_public", defaultRoom);
 
     (serverRooms || []).forEach(r => {
-      if (r && r.id) {
+      if (r && r.id && (!r.guild_id || r.guild_id === currentGid)) {
         if (r.room_type === "direct") {
           const names = r.room_name || "";
           const isMember = (Array.isArray(r.members) && r.members.includes(myNick)) || names.includes(myNick) || r.created_by === myNick;
@@ -389,24 +405,22 @@ window.loadMainTabRoomsList = async function() {
     const countElem = document.getElementById("mainTabRoomCount");
     if (countElem) countElem.innerText = myRooms.length;
 
+    // 반드시 현재 guild_id의 최근 채팅만 조회 (타 길드 전체 조회 폴백 제거)
     let recentChats = [];
     if (typeof apiRequest === "function") {
       try {
-        if (currentGid) {
-          recentChats = await apiRequest("guild_chats?guild_id=eq." + encodeURIComponent(currentGid) + "&select=id,room_id,sender_name,message,created_at,msg_type,read_members&order=id.desc&limit=300");
-        }
-      } catch(e) {}
-      if (!recentChats || recentChats.length === 0) {
-        try {
-          recentChats = await apiRequest("guild_chats?select=*&order=id.desc&limit=300");
-        } catch(e2) {
-          console.warn("Failed to fetch recent chats for room previews:", e2);
-        }
+        recentChats = await apiRequest(
+          "guild_chats?guild_id=eq." + encodeURIComponent(currentGid) +
+          "&select=id,guild_id,room_id,sender_name,message,created_at,msg_type,read_members&order=id.desc&limit=300"
+        );
+      } catch(e) {
+        recentChats = [];
       }
     }
 
     const roomMsgMap = new Map();
     (recentChats || []).forEach(c => {
+      if (c.guild_id && c.guild_id !== currentGid) return;
       if (c.msg_type && c.msg_type !== "chat") return;
 
       let rId = (!c.room_id || c.room_id === "default_public" || c.room_id === "public") ? "default_public" : c.room_id;
@@ -416,7 +430,7 @@ window.loadMainTabRoomsList = async function() {
         const parts = clean.split("__");
         if (parts.length === 2) {
           const sorted = [parts[0], parts[1]].sort();
-          rId = generateDeterministicUUID("direct__" + sorted[0] + "__" + sorted[1]);
+          rId = generateDeterministicUUID(`direct__${currentGid}__${sorted[0]}__${sorted[1]}`);
         }
       }
 
@@ -452,7 +466,7 @@ window.loadMainTabRoomsList = async function() {
 
       if (msgs.length > 0) {
         try {
-          const cacheKey = "chat_history_cache_" + r.id;
+          const cacheKey = `chat_history_cache_${currentGid}_${r.id}`;
           const ascMsgs = [...msgs].reverse();
           sessionStorage.setItem(cacheKey, JSON.stringify(ascMsgs.slice(-100)));
           localStorage.setItem(cacheKey, JSON.stringify(ascMsgs.slice(-100)));
@@ -515,6 +529,9 @@ window.loadMainTabRoomsList = async function() {
 // --------------------------------------------------------
 window.updateRoomCardRealtime = function(roomId, newMsg) {
   if (!newMsg) return;
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  if (newMsg.guild_id && newMsg.guild_id !== currentGid) return;
+
   let targetId = (!roomId || roomId === "default_public" || roomId === "public") ? "default_public" : roomId;
 
   if (targetId && targetId.startsWith("direct_")) {
@@ -522,7 +539,7 @@ window.updateRoomCardRealtime = function(roomId, newMsg) {
     const parts = clean.split("__");
     if (parts.length === 2) {
       const sorted = [parts[0], parts[1]].sort();
-      targetId = generateDeterministicUUID("direct__" + sorted[0] + "__" + sorted[1]);
+      targetId = generateDeterministicUUID(`direct__${currentGid}__${sorted[0]}__${sorted[1]}`);
     }
   }
 
@@ -587,11 +604,15 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
   if (!confirm(confirmMsg)) return;
 
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
   try {
     if (typeof apiRequest === "function" && myNick) {
       try {
-        await apiRequest(`room_members?room_id=eq.${encodeURIComponent(roomId)}&member_nickname=eq.${encodeURIComponent(myNick)}`, "DELETE");
+        await apiRequest(
+          `room_members?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(roomId)}&member_nickname=eq.${encodeURIComponent(myNick)}`,
+          "DELETE"
+        );
       } catch(e) {}
     }
 
@@ -687,6 +708,7 @@ window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
   }
 };
 
+// 1:1 개인 대화방 시작 (guild_id를 결정론적 UUID 시드에 포함하여 타 길드 동명이인 충돌 방지)
 window.startDirectChatWith = async function(targetNick) {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
   if (!myNick) {
@@ -699,9 +721,9 @@ window.startDirectChatWith = async function(targetNick) {
   }
 
   try {
-    const currentGid = localStorage.getItem("current_guild_id");
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
     const sortedNames = [myNick, targetNick].sort();
-    const rawDirectKey = "direct__" + sortedNames[0] + "__" + sortedNames[1];
+    const rawDirectKey = `direct__${currentGid}__${sortedNames[0]}__${sortedNames[1]}`;
     const newRoomId = generateDeterministicUUID(rawDirectKey);
     const roomTitle = `${sortedNames[0]} & ${sortedNames[1]} 1:1 톡방`;
 
@@ -718,6 +740,7 @@ window.startDirectChatWith = async function(targetNick) {
     if (!existing) {
       existing = {
         id: newRoomId,
+        guild_id: currentGid,
         room_name: roomTitle,
         room_type: "direct",
         created_by: myNick,
@@ -728,32 +751,25 @@ window.startDirectChatWith = async function(targetNick) {
       localStorage.setItem("local_custom_rooms", JSON.stringify(localRooms));
     }
 
-    // DB의 chat_rooms 테이블에 반드시 id: newRoomId를 포함하여 등록 (외래키 충돌 원천 방지)
+    // DB의 chat_rooms 및 room_members 테이블에 guild_id를 필수로 포함하여 저장
     try {
       if (typeof apiRequest === "function") {
         const roomPayload = {
           id: newRoomId,
+          guild_id: currentGid,
           room_name: roomTitle,
           room_type: "direct",
-          created_by: myNick
+          created_by: myNick,
+          members: [myNick, targetNick]
         };
-        if (currentGid) roomPayload.guild_id = currentGid;
         try {
           await apiRequest("chat_rooms", "POST", [roomPayload]);
-        } catch (roomPostErr) {
-          try {
-            await apiRequest("chat_rooms", "POST", [{
-              id: newRoomId,
-              room_name: roomTitle,
-              room_type: "direct",
-              created_by: myNick
-            }]);
-          } catch (e2) {}
-        }
+        } catch (roomPostErr) {}
+
         try {
           await apiRequest("room_members", "POST", [
-            { room_id: newRoomId, member_nickname: myNick, role: "member" },
-            { room_id: newRoomId, member_nickname: targetNick, role: "member" }
+            { guild_id: currentGid, room_id: newRoomId, member_nickname: myNick, role: "member" },
+            { guild_id: currentGid, room_id: newRoomId, member_nickname: targetNick, role: "member" }
           ]);
         } catch (e3) {}
       }
@@ -794,7 +810,7 @@ window.loadMainTabSettingsPage = async function() {
 };
 
 // --------------------------------------------------------
-// 7. 모달 제어 전역 함수 보장
+// 7. 모달 제어 전역 함수 보장 (직업 변경 시 guild_id 적용)
 // --------------------------------------------------------
 window.openProfileEditModal = function() {
   const modal = document.getElementById("modalProfileEdit");
@@ -824,8 +840,8 @@ window.openMemberProfileCard = function(nick, avatar, className, role) {
   if (badgeElem) {
     if (role === "길드장" || role === "길마") {
       badgeElem.innerHTML = '<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.65rem;">길마</span>';
-    } else if (role === "부길드장" || role === "부길마") {
-      badgeElem.innerHTML = '<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.65rem;">부길마</span>';
+    } else if (role === "부길드장" || role === "부길마" || role === "수호") {
+      badgeElem.innerHTML = `<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.65rem;">${role === "수호" ? "수호" : "부길마"}</span>`;
     } else if (role === "정예") {
       badgeElem.innerHTML = '<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.65rem;">정예</span>';
     } else {
@@ -860,6 +876,7 @@ window.closeMemberProfileCard = function() {
 window.selectClassProfile = async function(icon, className) {
   let myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   let myCurrentClass = `${icon} ${className}`;
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   
   localStorage.setItem("guild_my_avatar", icon);
   localStorage.setItem("guild_my_class", myCurrentClass);
@@ -876,13 +893,15 @@ window.selectClassProfile = async function(icon, className) {
 
   if (myCurrentNick && typeof apiRequest === "function") {
     try {
-      await apiRequest(`guild_members?name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
-        job_class: myCurrentClass
+      await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+        job_class: myCurrentClass,
+        avatar: icon
       });
     } catch (e) {
       try {
-        await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
-          job_class: myCurrentClass
+        await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+          job_class: myCurrentClass,
+          avatar: icon
         });
       } catch (e2) {}
     }
@@ -897,7 +916,7 @@ window.selectClassProfile = async function(icon, className) {
 };
 
 // --------------------------------------------------------
-// 8. 새 대화방 개설 모달 제어
+// 8. 새 대화방 개설 모달 제어 (guild_id 필수 포함)
 // --------------------------------------------------------
 window.openCreateRoomModal = function() {
   const modal = document.getElementById("modalCreateRoom");
@@ -942,7 +961,7 @@ window.onRoomTypeChange = function(type) {
 window.executeCreateNewRoom = async function() {
   const type = document.getElementById("newRoomTypeSelect").value;
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "길드원");
-  const currentGid = localStorage.getItem("current_guild_id");
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
   if (type === "one_on_one") {
     const targetSelect = document.getElementById("oneOnOneTargetSelect");
@@ -958,21 +977,37 @@ window.executeCreateNewRoom = async function() {
   if (!title) return alert("대화방 이름을 입력하세요.");
 
   try {
-    const newRoomUuid = generateDeterministicUUID("custom_room__" + title + "__" + Date.now());
+    const newRoomUuid = generateDeterministicUUID(`custom_room__${currentGid}__${title}__${Date.now()}`);
     const roomPayload = {
       id: newRoomUuid,
+      guild_id: currentGid,
       room_name: title,
       room_type: (type === "secret") ? "private" : "public",
       created_by: myNick
     };
-    if (currentGid) roomPayload.guild_id = currentGid;
 
-    let newRoom = { id: newRoomUuid, room_name: title, room_type: roomPayload.room_type, created_by: myNick, created_at: new Date().toISOString() };
+    let newRoom = {
+      id: newRoomUuid,
+      guild_id: currentGid,
+      room_name: title,
+      room_type: roomPayload.room_type,
+      created_by: myNick,
+      created_at: new Date().toISOString()
+    };
+
     if (typeof apiRequest === "function") {
       try {
         const res = await apiRequest("chat_rooms", "POST", [roomPayload]);
         if (res && res[0]) newRoom = res[0];
       } catch(e) {}
+      try {
+        await apiRequest("room_members", "POST", [{
+          guild_id: currentGid,
+          room_id: newRoom.id,
+          member_nickname: myNick,
+          role: "owner"
+        }]);
+      } catch(e2) {}
     }
 
     let localRooms = [];
@@ -989,14 +1024,16 @@ window.executeCreateNewRoom = async function() {
 };
 
 // --------------------------------------------------------
-// 9. 실시간 대화방 생성 동기화 & 초기화
+// 9. 실시간 대화방 생성 동기화 & 초기화 (타 길드 이벤트 무시)
 // --------------------------------------------------------
 window.initRoomsRealtime = function() {
   if (!window.supabaseClient) return;
   try {
     window.supabaseClient
       .channel("public:chat_rooms")
-      .on("postgres_changes", { event: "*", schema: "public", table: "chat_rooms" }, () => {
+      .on("postgres_changes", { event: "*", schema: "public", table: "chat_rooms" }, (payload) => {
+        const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+        if (payload.new && payload.new.guild_id && payload.new.guild_id !== currentGid) return;
         loadMainTabRoomsList();
       })
       .subscribe();
