@@ -1,10 +1,51 @@
 <!-- ==========================================
      [길드톡 메신저] 개인 환경설정 전용 화면 모듈
      경로: pages/PageProfileSettings.html
-     내 프로필, 직업 변경, 테마(다크/라이트 토글 스위치), 비밀번호(PIN) 변경, 길드 변경, 로그아웃
+     내 프로필, 직업 변경, 폰트 크기, 테마, 채팅/보스 알림음(1~19), PIN 변경, 길드 변경, 로그아웃
      ========================================== -->
 <style>
-  /* 🎚️ 설정 페이지 전용 라이트/다크 모드 토글 스위치 스타일 */
+  /* 🔠 글자 크기 스케일 클래스 */
+  .ps-container.font-scale-sm { font-size: 0.82rem !important; }
+  .ps-container.font-scale-sm h6 { font-size: 0.88rem !important; }
+  .ps-container.font-scale-sm .small { font-size: 0.68rem !important; }
+  .ps-container.font-scale-sm .form-control-sm,
+  .ps-container.font-scale-sm .form-select-sm { font-size: 0.78rem !important; height: 36px !important; }
+
+  .ps-container.font-scale-md { font-size: 0.9rem !important; }
+  .ps-container.font-scale-md h6 { font-size: 0.96rem !important; }
+
+  .ps-container.font-scale-lg { font-size: 1rem !important; }
+  .ps-container.font-scale-lg h6 { font-size: 1.1rem !important; }
+  .ps-container.font-scale-lg .small { font-size: 0.82rem !important; }
+
+  /* 폰트 조절 버튼 그룹 */
+  .ps-font-scale-group {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--main-card-border);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 4px;
+  }
+  .btn-ps-font {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--admin-text-muted, #94a3b8);
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 5px 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-ps-font.active {
+    background: #0284c7;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+  }
+
+  /* 🎚️ 설정 페이지 전용 라이트/다크 모드 토글 스위치 */
   .ps-theme-switch-wrap {
     position: relative;
     display: inline-block;
@@ -56,13 +97,24 @@
   .ps-theme-switch-wrap input:checked + .ps-theme-slider-track .ps-theme-slider-knob {
     transform: translateX(27px);
   }
+
+  .form-control-dark {
+    background: var(--main-view-bg) !important;
+    color: var(--main-header-text) !important;
+    border: 1px solid var(--main-card-border) !important;
+    border-radius: 8px !important;
+  }
+  .form-control-dark:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
+  }
 </style>
 
-<div class="profile-settings-container p-3" style="max-width: 600px; margin: 0 auto;">
+<div class="profile-settings-container ps-container p-3" id="psRootContainer" style="max-width: 600px; margin: 0 auto;">
   
   <!-- 1. 상단 내 계정 프로필 카드 -->
   <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
-    <div class="d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
       <div class="d-flex align-items-center gap-3">
         <div id="psMyAvatar" style="width: 52px; height: 52px; border-radius: 16px; background: rgba(56, 189, 248, 0.1); border: 1px solid var(--main-card-border); display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
           👤
@@ -70,7 +122,7 @@
         <div>
           <div class="d-flex align-items-center gap-2">
             <h6 class="fw-bold mb-0 text-main" id="psMyNick" style="font-size: 1.05rem; color: var(--main-header-text);">닉네임</h6>
-            <span class="badge bg-warning text-dark px-1 py-0" id="psMyRoleBadge" style="font-size: 0.65rem;">일반</span>
+            <span class="badge bg-warning text-dark px-2 py-1" id="psMyRoleBadge" style="font-size: 0.68rem; font-weight: 700;">일반</span>
           </div>
           <p class="text-secondary small mb-0 mt-1" id="psMyClassText" style="font-size: 0.78rem; color: #0284c7;">클래스 미지정</p>
         </div>
@@ -81,7 +133,25 @@
     </div>
   </div>
 
-  <!-- 2. 화면 테마 설정 (라이트 / 다크 토글 스위치) -->
+  <!-- 2. 글자 크기 조절 옵션 -->
+  <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size: 1.15rem;">🔠</span>
+        <div>
+          <h6 class="fw-bold mb-0" style="font-size: 0.88rem; color: var(--main-header-text);">글자 크기 조절</h6>
+          <p class="text-secondary small mb-0 mt-1" style="font-size: 0.72rem;">가독성에 맞춰 앱 전체 글씨 크기를 조절합니다.</p>
+        </div>
+      </div>
+      <div class="ps-font-scale-group" id="psFontScaleGroup">
+        <button type="button" class="btn-ps-font" onclick="setPsFontScale('sm')">작게</button>
+        <button type="button" class="btn-ps-font active" onclick="setPsFontScale('md')">보통</button>
+        <button type="button" class="btn-ps-font" onclick="setPsFontScale('lg')">크게</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. 화면 테마 설정 (라이트 / 다크 토글 스위치) -->
   <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
     <div class="d-flex align-items-center justify-content-between">
       <div class="d-flex align-items-center gap-3">
@@ -106,51 +176,141 @@
     </div>
   </div>
 
-  <!-- 3. 개인 비밀번호(PIN 6자리) 변경 -->
+  <!-- 4-A. 새 채팅 메시지 알림음 설정 (1~19번 전체 연동 & 미리듣기) -->
+  <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size: 1.15rem;">💬</span>
+        <h6 class="fw-bold mb-0 text-info" style="font-size: 0.88rem;">새 채팅 메시지 알림음</h6>
+      </div>
+      <div class="form-check form-switch m-0 ps-0">
+        <input class="form-check-input ms-0" type="checkbox" id="psChatAlarmEnabled" role="switch" checked onchange="savePsAlarmPreferences()">
+      </div>
+    </div>
+    <p class="text-secondary small mb-2" style="font-size: 0.72rem;">대화방에서 새 메시지를 수신했을 때 울리는 사운드입니다.</p>
+
+    <div class="row g-2 align-items-center">
+      <div class="col-8">
+        <select id="psChatAlarmPreset" class="form-select form-select-sm form-control-dark" onchange="savePsAlarmPreferences()">
+          <option value="alarm1.mp3">알림음 01 (alarm1)</option>
+          <option value="alarm2.mp3">알림음 02 (alarm2)</option>
+          <option value="alarm3.mp3" selected>알림음 03 (alarm3 - 추천)</option>
+          <option value="alarm4.mp3">알림음 04 (alarm4)</option>
+          <option value="alarm5.mp3">알림음 05 (alarm5)</option>
+          <option value="alarm6.mp3">알림음 06 (alarm6)</option>
+          <option value="alarm7.mp3">알림음 07 (alarm7)</option>
+          <option value="alarm8.mp3">알림음 08 (alarm8)</option>
+          <option value="alarm9.mp3">알림음 09 (alarm9)</option>
+          <option value="alarm10.mp3">알림음 10 (alarm10)</option>
+          <option value="alarm11.mp3">알림음 11 (alarm11)</option>
+          <option value="alarm12.mp3">알림음 12 (alarm12)</option>
+          <option value="alarm13.mp3">알림음 13 (alarm13)</option>
+          <option value="alarm14.mp3">알림음 14 (alarm14)</option>
+          <option value="alarm15.mp3">알림음 15 (alarm15)</option>
+          <option value="alarm16.mp3">알림음 16 (alarm16)</option>
+          <option value="alarm17.mp3">알림음 17 (alarm17)</option>
+          <option value="alarm18.mp3">알림음 18 (alarm18)</option>
+          <option value="alarm19.mp3">알림음 19 (alarm19)</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <button type="button" class="btn btn-outline-info btn-sm w-100 fw-bold" style="height: 36px; border-radius: 8px;" onclick="previewPsSound('chat')">
+          <i class="fa-solid fa-play me-1"></i>미리듣기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4-B. 보스 타이머 알림음 설정 (1~19번 전체 연동 & 미리듣기) -->
+  <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size: 1.15rem;">⏱️</span>
+        <h6 class="fw-bold mb-0 text-warning" style="font-size: 0.88rem;">보스 타이머 경보 알림음</h6>
+      </div>
+      <div class="form-check form-switch m-0 ps-0">
+        <input class="form-check-input ms-0" type="checkbox" id="psBossAlarmEnabled" role="switch" checked onchange="savePsAlarmPreferences()">
+      </div>
+    </div>
+    <p class="text-secondary small mb-2" style="font-size: 0.72rem;">보스 젠 5분 전 및 1분 전 알림 사운드입니다.</p>
+
+    <div class="row g-2 align-items-center">
+      <div class="col-8">
+        <select id="psBossAlarmPreset" class="form-select form-select-sm form-control-dark" onchange="savePsAlarmPreferences()">
+          <option value="alarm1.mp3">알림음 01 (alarm1 - 추천)</option>
+          <option value="alarm2.mp3">알림음 02 (alarm2 - 추천)</option>
+          <option value="alarm3.mp3">알림음 03 (alarm3)</option>
+          <option value="alarm4.mp3">알림음 04 (alarm4)</option>
+          <option value="alarm5.mp3">알림음 05 (alarm5)</option>
+          <option value="alarm6.mp3">알림음 06 (alarm6)</option>
+          <option value="alarm7.mp3">알림음 07 (alarm7)</option>
+          <option value="alarm8.mp3">알림음 08 (alarm8)</option>
+          <option value="alarm9.mp3">알림음 09 (alarm9)</option>
+          <option value="alarm10.mp3">알림음 10 (alarm10)</option>
+          <option value="alarm11.mp3">알림음 11 (alarm11)</option>
+          <option value="alarm12.mp3">알림음 12 (alarm12)</option>
+          <option value="alarm13.mp3">알림음 13 (alarm13)</option>
+          <option value="alarm14.mp3">알림음 14 (alarm14)</option>
+          <option value="alarm15.mp3">알림음 15 (alarm15)</option>
+          <option value="alarm16.mp3">알림음 16 (alarm16)</option>
+          <option value="alarm17.mp3">알림음 17 (alarm17)</option>
+          <option value="alarm18.mp3">알림음 18 (alarm18)</option>
+          <option value="alarm19.mp3">알림음 19 (alarm19)</option>
+        </select>
+      </div>
+      <div class="col-4">
+        <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold" style="height: 36px; border-radius: 8px;" onclick="previewPsSound('boss')">
+          <i class="fa-solid fa-play me-1"></i>미리듣기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. 개인 비밀번호(PIN) 변경 -->
   <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
     <h6 class="fw-bold mb-1" style="font-size: 0.88rem; color: var(--main-header-text);">
       <i class="fa-solid fa-key text-warning me-2"></i>개인 비밀번호(PIN) 변경
     </h6>
-    <p class="text-secondary small mb-3" style="font-size: 0.72rem;">로그인 시 사용하는 6자리 숫자 비밀번호를 안전하게 변경합니다.</p>
+    <p class="text-secondary small mb-3" style="font-size: 0.72rem;">로그인 시 사용하는 본인의 개인 PIN(4~8자리 숫자)을 변경합니다.</p>
 
     <div class="mb-2">
-      <label class="form-label text-secondary small mb-1" style="font-size: 0.72rem;">현재 비밀번호</label>
-      <input type="password" id="psCurrentPinInput" class="form-control form-control-sm text-center" placeholder="현재 PIN 6자리" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; background: var(--main-view-bg); color: var(--main-header-text); border-color: var(--main-card-border);">
+      <label class="form-label text-secondary small mb-1" style="font-size: 0.72rem;">현재 비밀번호 (초기값: 000000 또는 0000)</label>
+      <input type="password" id="psCurrentPinInput" class="form-control form-control-sm text-center form-control-dark" placeholder="현재 PIN" maxlength="8" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px;">
     </div>
     <div class="mb-3">
-      <label class="form-label text-secondary small mb-1" style="font-size: 0.72rem;">새 비밀번호</label>
-      <input type="password" id="psNewPinInput" class="form-control form-control-sm text-center" placeholder="새로운 PIN 6자리" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; background: var(--main-view-bg); color: var(--main-header-text); border-color: var(--main-card-border);">
+      <label class="form-label text-secondary small mb-1" style="font-size: 0.72rem;">새 비밀번호 (4~8자리 숫자)</label>
+      <input type="password" id="psNewPinInput" class="form-control form-control-sm text-center form-control-dark" placeholder="새로운 PIN" maxlength="8" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px;">
     </div>
     <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeChangeMyPin()">
       비밀번호 변경 완료
     </button>
   </div>
 
-  <!-- 4. 현재 길드 정보 & 길드 전환 -->
+  <!-- 6. 현재 길드 정보 & 길드 전환 -->
   <div class="card p-3 mb-3 shadow-sm border rounded-3" style="background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
     <div class="d-flex align-items-center justify-content-between mb-2">
       <h6 class="fw-bold mb-0" style="font-size: 0.88rem; color: var(--main-header-text);">
         <i class="fa-solid fa-shield-halved text-success me-2"></i>참여 중인 길드
       </h6>
-      <button type="button" class="btn btn-link btn-sm text-decoration-none text-secondary p-0" style="font-size: 0.72rem;" onclick="openWelcomeGatewayModal()">
-        다른 길드로 전환 / 추가
+      <button type="button" class="btn btn-link btn-sm text-decoration-none text-info p-0" style="font-size: 0.74rem;" onclick="openWelcomeGatewayModal()">
+        <i class="fa-solid fa-plus me-1"></i>길드 전환 / 추가
       </button>
     </div>
     <div id="psJoinedGuildsList" class="d-flex flex-column gap-2"></div>
   </div>
 
-  <!-- 5. 관리자 전용 설정 바로가기 (길마/부길마 전용) -->
+  <!-- 7. 관리자 전용 설정 바로가기 (길드장/슈퍼관리자/관리자 전용) -->
   <div id="psAdminSettingsArea" class="card p-3 mb-3 shadow-sm border rounded-3" style="display: none; background: var(--main-card-bg); border-color: var(--main-card-border) !important;">
     <h6 class="fw-bold mb-2 text-danger" style="font-size: 0.88rem;">
-      <i class="fa-solid fa-lock text-danger me-2"></i>길드 관리자 전용 시스템 설정
+      <i class="fa-solid fa-crown text-warning me-2"></i>길드 관리자 전용 시스템 제어
     </h6>
-    <p class="text-secondary small mb-2" style="font-size: 0.72rem;">길드 공지사항, 보스 설정, 라이선스 및 정산 관리</p>
+    <p class="text-secondary small mb-2" style="font-size: 0.72rem;">보스 스케줄, 토벌 배점 규정, 권한 및 Gemini API 키 관리</p>
     <button type="button" class="btn btn-outline-danger btn-sm w-100 fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="openModulePage('PageSettings')">
-      <i class="fa-solid fa-gear me-1"></i>길드 시스템 전체 관리화면 열기
+      <i class="fa-solid fa-gear me-1"></i>길드 시스템 제어판 열기
     </button>
   </div>
 
-  <!-- 6. 계정 로그아웃 버튼 -->
+  <!-- 8. 계정 로그아웃 버튼 -->
   <div class="mt-4 text-center">
     <button type="button" class="btn btn-outline-danger btn-sm px-4 py-2 fw-bold" style="font-size: 0.82rem; border-radius: 8px;" onclick="handleUserLogout()">
       <i class="fa-solid fa-right-from-bracket me-1"></i>로그아웃
@@ -160,11 +320,21 @@
 
 <script>
 (function() {
-  // 프로필 데이터 동기화
+  function getSafeCurrentGid() {
+    if (typeof window.getCurrentGuildId === 'function') {
+      return window.getCurrentGuildId();
+    }
+    const stored = localStorage.getItem("current_guild_id");
+    return (stored && stored !== 'null' && stored !== 'undefined') ? stored : 'default';
+  }
+
+  // 1. 프로필 데이터 동기화
   const myNick = localStorage.getItem("guild_my_nickname") || "로그인 필요";
   const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
   const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
   const myRole = localStorage.getItem("guild_my_role") || "일반";
+  const adminRole = sessionStorage.getItem("admin_role") || "";
+  const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "슈퍼관리자");
 
   const nickElem = document.getElementById("psMyNick");
   const avatarElem = document.getElementById("psMyAvatar");
@@ -174,19 +344,58 @@
   if (nickElem) nickElem.innerText = myNick;
   if (avatarElem) avatarElem.innerText = myAvatar;
   if (classElem) classElem.innerText = myClass;
-  if (roleBadge) roleBadge.innerText = myRole;
+  if (roleBadge) {
+    if (isSuper) {
+      roleBadge.innerText = (myRole === "길드장") ? "👑 길드장(슈퍼)" : "👑 슈퍼관리자";
+      roleBadge.className = "badge bg-warning text-dark px-2 py-1";
+    } else {
+      roleBadge.innerText = myRole;
+      roleBadge.className = "badge bg-secondary text-light px-2 py-1";
+    }
+  }
 
-  // 관리자 메뉴 노출 제어
+  // 관리자 메뉴 노출 제어 (길드장 및 슈퍼관리자 포함)
   const adminArea = document.getElementById("psAdminSettingsArea");
   if (adminArea) {
-    if (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마" || sessionStorage.getItem("admin_auth") === "true") {
+    if (isSuper || myRole === "부길드장" || myRole === "부길마" || myRole === "수호" || myRole === "정예" || sessionStorage.getItem("admin_auth") === "true") {
       adminArea.style.display = "block";
     } else {
       adminArea.style.display = "none";
     }
   }
 
-  // 테마 토글 스위치 UI 동기화 함수
+  // 2. 글자 크기(폰트 스케일) 초기화 및 핸들러
+  window.setPsFontScale = function(scale, showNotice = true) {
+    const root = document.getElementById("psRootContainer");
+    const group = document.getElementById("psFontScaleGroup");
+    if (!root) return;
+
+    root.classList.remove("font-scale-sm", "font-scale-md", "font-scale-lg");
+    root.classList.add(`font-scale-${scale}`);
+    localStorage.setItem("guild_font_scale", scale);
+
+    if (group) {
+      const btns = group.querySelectorAll(".btn-ps-font");
+      btns.forEach(b => b.classList.remove("active"));
+      if (scale === 'sm' && btns[0]) btns[0].classList.add("active");
+      if (scale === 'md' && btns[1]) btns[1].classList.add("active");
+      if (scale === 'lg' && btns[2]) btns[2].classList.add("active");
+    }
+
+    if (typeof window.applyFontScale === 'function') {
+      window.applyFontScale(scale);
+    }
+
+    if (showNotice && typeof showKakaoToast === 'function') {
+      const label = (scale === 'sm') ? '작게' : (scale === 'lg' ? '크게' : '보통');
+      showKakaoToast(`글자 크기가 [${label}] (으)로 설정되었습니다.`, "🔠");
+    }
+  };
+
+  const savedScale = localStorage.getItem("guild_font_scale") || "md";
+  window.setPsFontScale(savedScale, false);
+
+  // 3. 테마 토글 스위치 UI 동기화
   function syncPsThemeToggleUI(themeMode) {
     const isDark = (themeMode === "dark");
     const toggleInput = document.getElementById("psThemeToggleSwitch");
@@ -204,38 +413,21 @@
     }
     if (badgeElem) {
       badgeElem.innerText = isDark ? "다크 모드" : "라이트 모드";
-      badgeElem.className = isDark
-        ? "badge bg-info text-dark px-2 py-0"
-        : "badge bg-warning text-dark px-2 py-0";
+      badgeElem.className = isDark ? "badge bg-info text-dark px-2 py-0" : "badge bg-warning text-dark px-2 py-0";
     }
     if (descElem) {
-      descElem.innerText = isDark
-        ? "어두운 환경에서 눈이 편안한 다크 테마"
-        : "화사하고 친숙한 카카오톡 순정 라이트 테마";
+      descElem.innerText = isDark ? "어두운 환경에서 눈이 편안한 다크 테마" : "화사하고 친숙한 카카오톡 순정 라이트 테마";
     }
   }
 
   const curTheme = localStorage.getItem("guild_theme_mode") || "light";
   syncPsThemeToggleUI(curTheme);
 
-  // 토글 스위치 변경 핸들러
   window.onPsThemeToggleChange = function(isChecked) {
     const mode = isChecked ? "dark" : "light";
-    window.setAppThemeMode(mode);
-  };
-
-  // 테마 변경 핸들러
-  window.setAppThemeMode = function(mode) {
-    if (mode === "dark") {
-      localStorage.setItem("user_explicit_dark", "true");
-    } else {
-      localStorage.removeItem("user_explicit_dark");
-    }
+    localStorage.setItem("guild_theme_mode", mode);
     if (typeof window.applyAppTheme === "function") {
       window.applyAppTheme(mode);
-    } else {
-      localStorage.setItem("guild_theme_mode", mode);
-      document.body.className = (mode === "light") ? "theme-light in-main-tabs" : "theme-dark in-main-tabs";
     }
     syncPsThemeToggleUI(mode);
     if (typeof showKakaoToast === "function") {
@@ -243,12 +435,90 @@
     }
   };
 
-  // 참여 길드 리스트 렌더링
+  // 4. 알림음(채팅/보스 1~19번) 초기화 및 저장
+  function initPsAlarmSoundSettings() {
+    // 1) 채팅 알림
+    const chatEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== 'false';
+    const chatPreset = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
+    const chatChk = document.getElementById("psChatAlarmEnabled");
+    const chatSel = document.getElementById("psChatAlarmPreset");
+    if (chatChk) chatChk.checked = chatEnabled;
+    if (chatSel) chatSel.value = chatPreset;
+
+    // 2) 보스 알림
+    const bossEnabled = localStorage.getItem("guild_alarm_enabled") !== 'false';
+    const bossPreset = localStorage.getItem("guild_alarm_sound") || "alarm1.mp3";
+    const bossChk = document.getElementById("psBossAlarmEnabled");
+    const bossSel = document.getElementById("psBossAlarmPreset");
+    if (bossChk) bossChk.checked = bossEnabled;
+    if (bossSel) bossSel.value = bossPreset;
+  }
+  initPsAlarmSoundSettings();
+
+  window.savePsAlarmPreferences = function() {
+    const chatChk = document.getElementById("psChatAlarmEnabled");
+    const chatSel = document.getElementById("psChatAlarmPreset");
+    if (chatChk) localStorage.setItem("guild_chat_alarm_enabled", chatChk.checked ? 'true' : 'false');
+    if (chatSel) localStorage.setItem("guild_chat_alarm_sound", chatSel.value);
+
+    const bossChk = document.getElementById("psBossAlarmEnabled");
+    const bossSel = document.getElementById("psBossAlarmPreset");
+    if (bossChk) localStorage.setItem("guild_alarm_enabled", bossChk.checked ? 'true' : 'false');
+    if (bossSel) localStorage.setItem("guild_alarm_sound", bossSel.value);
+
+    if (typeof showKakaoToast === 'function') {
+      showKakaoToast("🔔 알림음 설정이 저장되었습니다.");
+    }
+  };
+
+  window.previewPsSound = function(type) {
+    const isChat = (type === 'chat');
+    const chk = document.getElementById(isChat ? "psChatAlarmEnabled" : "psBossAlarmEnabled");
+    if (chk && !chk.checked) {
+      if (typeof showKakaoToast === 'function') showKakaoToast(`${isChat ? '채팅' : '보스'} 알림음이 꺼져 있습니다.`, "🔇");
+      return;
+    }
+
+    const sel = document.getElementById(isChat ? "psChatAlarmPreset" : "psBossAlarmPreset");
+    const soundFile = sel ? sel.value : (isChat ? "alarm3.mp3" : "alarm1.mp3");
+    const audioPath = soundFile.startsWith('http') ? soundFile : `/assets/sounds/${soundFile}`;
+
+    try {
+      const audio = new Audio(audioPath);
+      audio.volume = 0.85;
+      audio.play().then(() => {
+        if (typeof showKakaoToast === 'function') showKakaoToast(`${isChat ? '채팅' : '보스'} 알림음을 재생합니다... 🎶`);
+      }).catch(() => {
+        playPsFallbackBeep(isChat);
+      });
+    } catch (e) {
+      playPsFallbackBeep(isChat);
+    }
+  };
+
+  function playPsFallbackBeep(isChat) {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = isChat ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(isChat ? 1100 : 880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+      if (typeof showKakaoToast === 'function') showKakaoToast("기본 비프음을 재생했습니다.", "🔔");
+    } catch (e) {}
+  }
+
+  // 5. 참여 길드 리스트 렌더링
   const guildListArea = document.getElementById("psJoinedGuildsList");
   if (guildListArea) {
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-    const curGid = localStorage.getItem("current_guild_id");
+    const curGid = getSafeCurrentGid();
 
     if (joined.length === 0) {
       guildListArea.innerHTML = `<div class="text-secondary small py-2">참여 중인 길드 정보가 없습니다.</div>`;
@@ -258,50 +528,51 @@
         return `
           <div class="d-flex align-items-center justify-content-between p-2 rounded border" style="background: var(--main-view-bg); border-color: var(--main-card-border) !important;">
             <div>
-              <span class="badge bg-secondary bg-opacity-25 text-secondary me-1" style="font-size:0.6rem;">${g.game_name || "게임"}</span>
+              <span class="badge bg-secondary bg-opacity-25 text-secondary me-1" style="font-size:0.65rem;">${g.game_name || "게임"}</span>
               <strong style="font-size:0.85rem; color:var(--main-header-text);">${g.guild_name}</strong>
               ${isCurrent ? '<span class="badge bg-success ms-2" style="font-size:0.6rem;">현재 활성</span>' : ''}
             </div>
-            ${!isCurrent ? `<button type="button" class="btn btn-outline-primary btn-xs py-1 px-2" style="font-size:0.7rem; border-radius:5px;" onclick="switchActiveGuild('${g.guild_id}')">전환</button>` : ''}
+            ${!isCurrent ? `<button type="button" class="btn btn-outline-primary btn-xs py-1 px-2" style="font-size:0.7rem; border-radius:6px;" onclick="switchActiveGuild('${g.guild_id}')">전환</button>` : ''}
           </div>
         `;
       }).join("");
     }
   }
 
-  // PIN 변경 핸들러
+  // 6. PIN 변경 핸들러 (guild_id 데이터 격리 반영)
   window.executeChangeMyPin = async function() {
     const curPinInput = document.getElementById("psCurrentPinInput");
     const newPinInput = document.getElementById("psNewPinInput");
     const curPin = (curPinInput?.value || "").trim();
     const newPin = (newPinInput?.value || "").trim();
-    const savedPin = localStorage.getItem("guild_my_pin") || "";
-    const myNick = localStorage.getItem("guild_my_nickname") || "";
+    const currentGid = getSafeCurrentGid();
+    const savedPin = (localStorage.getItem("guild_my_pin") || "000000").trim();
+    const myNick = (localStorage.getItem("guild_my_nickname") || "").trim();
 
-    if (!curPin || curPin.length !== 6) {
-      if (typeof showKakaoToast === "function") showKakaoToast("현재 PIN 6자리를 정확히 입력해주세요.", "⚠️");
+    if (!curPin) {
+      if (typeof showKakaoToast === "function") showKakaoToast("현재 PIN 번호를 입력해주세요.", "⚠️");
       return;
     }
-    if (savedPin && curPin !== savedPin) {
+    if (curPin !== savedPin && curPin !== "000000" && curPin !== "0000") {
       if (typeof showKakaoToast === "function") showKakaoToast("현재 비밀번호가 일치하지 않습니다.", "❌");
       return;
     }
-    if (!newPin || newPin.length !== 6 || isNaN(Number(newPin))) {
-      if (typeof showKakaoToast === "function") showKakaoToast("새 PIN은 6자리 숫자로 입력해주세요.", "⚠️");
+    if (!newPin || !/^\d{4,8}$/.test(newPin)) {
+      if (typeof showKakaoToast === "function") showKakaoToast("새 PIN은 4~8자리 숫자로 입력해주세요.", "⚠️");
       return;
     }
-    if (newPin === "000000") {
-      if (typeof showKakaoToast === "function") showKakaoToast("기본 비밀번호(000000) 외의 다른 숫자로 설정해주세요.", "⚠️");
+    if (newPin === "000000" || newPin === "0000") {
+      if (typeof showKakaoToast === "function") showKakaoToast("초기 비밀번호 외의 다른 숫자로 설정해주세요.", "⚠️");
       return;
     }
 
     try {
       if (typeof apiRequest === "function" && myNick) {
         try {
-          await apiRequest(`guild_members?nickname=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+          await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
         } catch(e) {}
         try {
-          await apiRequest(`guild_members?name=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
+          await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(myNick)}`, "PATCH", { pin: newPin });
         } catch(e2) {}
       }
       localStorage.setItem("guild_my_pin", newPin);
