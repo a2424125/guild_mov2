@@ -213,7 +213,9 @@ window.triggerQuickCutAction = async function(bossName, btnId) {
       btn.innerHTML = `<i class="fa-solid fa-crosshairs"></i> 즉시컷`;
       btn.classList.remove("disabled");
     }
-    alert("컷 실패: " + err.message);
+    if (typeof showKakaoToast === "function") {
+      showKakaoToast("컷 실패: " + err.message, "❌");
+    }
   }
 };
 
@@ -317,57 +319,31 @@ window.handleQuickRaidSelfAdd = async function(raidId, bossName) {
       btn.disabled = false;
       btn.innerHTML = `<i class="fa-solid fa-user-plus me-1"></i>나도 참여`;
     }
-    alert("참여 등록 실패: " + err.message);
+    if (typeof showKakaoToast === "function") {
+      showKakaoToast("참여 등록 실패: " + err.message, "❌");
+    }
   }
 };
 
 // --------------------------------------------------------
-// 5. 로컬 보스타임 실시간 감시 & 비프음 알림
+// 5. 보스타임 MP3 알림음 재생 & 로컬 실시간 감시 엔진
 // --------------------------------------------------------
-window.startLocalBossWatchTimer = function() {
-  if (window.bossWatcherInterval) clearInterval(window.bossWatcherInterval);
+window.triggerBossAlarmSound = function(isImportant = false) {
+  const isEnabled = localStorage.getItem("guild_alarm_enabled") !== "false";
+  if (!isEnabled) return;
 
-  window.bossWatcherInterval = setInterval(async () => {
-    window.startRaidReportCountdowns();
+  const soundFile = localStorage.getItem("guild_alarm_sound") || (isImportant ? "alarm2.mp3" : "alarm1.mp3");
+  const audioPath = soundFile.startsWith("http") ? soundFile : `/assets/sounds/${soundFile}`;
 
-    const now = Date.now();
-    if (!window.cachedBossList || window.cachedBossList.length === 0) return;
-
-    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-
-    for (const b of window.cachedBossList) {
-      if (b.guild_id && b.guild_id !== currentGid) continue;
-      if (!b.next_spawn_time) continue;
-
-      const spawnTime = new Date(b.next_spawn_time).getTime();
-      const diffSec = Math.floor((spawnTime - now) / 1000);
-      const bossName = b.boss_name || b.name || "보스";
-
-      // 5분 전 알림
-      if (diffSec <= 300 && diffSec > 60) {
-        const key5m = `${currentGid}_${b.id}_5m_${b.next_spawn_time}`;
-        if (!window.notifiedBossSpawnMap.has(key5m)) {
-          saveNotifiedBossKey(key5m);
-          triggerBeepSound(false);
-          if (typeof showKakaoToast === "function") {
-            showKakaoToast(`⏰ [${bossName}] 젠 5분 전입니다!`, "⚠️");
-          }
-        }
-      }
-
-      // 젠 알림
-      if (diffSec <= 0 && diffSec > -180) {
-        const keySpawn = `${currentGid}_${b.id}_spawn_${b.next_spawn_time}`;
-        if (!window.notifiedBossSpawnMap.has(keySpawn)) {
-          saveNotifiedBossKey(keySpawn);
-          triggerBeepSound(true);
-          if (typeof showKakaoToast === "function") {
-            showKakaoToast(`🚨 [${bossName}] 지금 젠되었습니다!`, "🔥");
-          }
-        }
-      }
-    }
-  }, 1000);
+  try {
+    const audio = new Audio(audioPath);
+    audio.volume = isImportant ? 0.95 : 0.85;
+    audio.play().catch(() => {
+      window.triggerBeepSound(isImportant);
+    });
+  } catch (e) {
+    window.triggerBeepSound(isImportant);
+  }
 };
 
 window.triggerBeepSound = function(isImportant = false) {
@@ -388,6 +364,52 @@ window.triggerBeepSound = function(isImportant = false) {
     osc.start();
     osc.stop(ctx.currentTime + 0.35);
   } catch (e) {}
+};
+
+window.startLocalBossWatchTimer = function() {
+  if (window.bossWatcherInterval) clearInterval(window.bossWatcherInterval);
+
+  window.bossWatcherInterval = setInterval(async () => {
+    window.startRaidReportCountdowns();
+
+    const now = Date.now();
+    if (!window.cachedBossList || window.cachedBossList.length === 0) return;
+
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+
+    for (const b of window.cachedBossList) {
+      if (b.guild_id && b.guild_id !== currentGid) continue;
+      if (!b.next_spawn_time) continue;
+
+      const spawnTime = new Date(b.next_spawn_time).getTime();
+      const diffSec = Math.floor((spawnTime - now) / 1000);
+      const bossName = b.boss_name || b.name || "보스";
+
+      // 5분 전 알림 (MP3 알림음 연동)
+      if (diffSec <= 300 && diffSec > 60) {
+        const key5m = `${currentGid}_${b.id}_5m_${b.next_spawn_time}`;
+        if (!window.notifiedBossSpawnMap.has(key5m)) {
+          saveNotifiedBossKey(key5m);
+          window.triggerBossAlarmSound(false);
+          if (typeof showKakaoToast === "function") {
+            showKakaoToast(`⏰ [${bossName}] 젠 5분 전입니다!`, "⚠️");
+          }
+        }
+      }
+
+      // 젠 완료 알림 (중요 MP3 알림음 연동)
+      if (diffSec <= 0 && diffSec > -180) {
+        const keySpawn = `${currentGid}_${b.id}_spawn_${b.next_spawn_time}`;
+        if (!window.notifiedBossSpawnMap.has(keySpawn)) {
+          saveNotifiedBossKey(keySpawn);
+          window.triggerBossAlarmSound(true);
+          if (typeof showKakaoToast === "function") {
+            showKakaoToast(`🚨 [${bossName}] 지금 젠되었습니다!`, "🔥");
+          }
+        }
+      }
+    }
+  }, 1000);
 };
 
 // --------------------------------------------------------
