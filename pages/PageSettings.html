@@ -1,5 +1,5 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 시스템 설정 제어 모듈
+     [길드관리] 시스템 설정 제어 모듈
      경로: pages/PageSettings.html
      ========================================== -->
 <style>
@@ -51,6 +51,35 @@
     border: 1px solid #223250;
   }
 
+  /* 🏰 상단 길드 정보 배너 (답답한 회색 음영 완전 개선) */
+  .guild-info-banner {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(13, 21, 39, 0.95) 100%) !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 14px !important;
+    padding: 12px 14px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  }
+  .guild-info-banner .guild-label {
+    color: #38bdf8 !important;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+  .guild-info-banner .guild-title {
+    color: #ffffff !important;
+    font-size: 1.05rem !important;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+  .guild-info-banner .game-badge {
+    background: rgba(254, 229, 0, 0.18) !important;
+    color: #fee500 !important;
+    border: 1px solid rgba(254, 229, 0, 0.45) !important;
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: 8px;
+  }
+
   /* ☀️ 라이트 모드 */
   .settings-card.light-mode {
     background: #ffffff !important;
@@ -64,6 +93,22 @@
     background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  }
+  .settings-card.light-mode .guild-info-banner {
+    background: #f8fafc !important;
+    border: 1.5px solid #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+  .settings-card.light-mode .guild-info-banner .guild-label {
+    color: #0284c7 !important;
+  }
+  .settings-card.light-mode .guild-info-banner .guild-title {
+    color: #0f172a !important;
+  }
+  .settings-card.light-mode .guild-info-banner .game-badge {
+    background: #fee500 !important;
+    color: #191919 !important;
+    border: 1px solid #fada0a !important;
   }
   .settings-card.light-mode .input-custom-set {
     background-color: #ffffff !important;
@@ -179,7 +224,7 @@
     box-shadow: 0 2px 10px rgba(168, 85, 247, 0.4);
   }
 
-  /* 💛 카카오톡 감성 버튼 클래스 */
+  /* 💛 버튼 클래스 */
   .btn-kakao-yellow {
     background-color: #fee500 !important;
     color: #191919 !important;
@@ -202,7 +247,7 @@
     box-shadow: 0 4px 12px rgba(254, 229, 0, 0.35) !important;
   }
 
-  /* 💬 카카오톡 스타일 프로필 카드 */
+  /* 프로필 카드 */
   .kt-profile-card {
     background: linear-gradient(135deg, rgba(254, 229, 0, 0.08) 0%, rgba(13, 21, 39, 0.95) 100%);
     border: 1px solid rgba(254, 229, 0, 0.25);
@@ -590,7 +635,7 @@
     </span>
   </div>
 
-  <!-- 탭 메뉴 (3x2 그리드) -->
+  <!-- 탭 메뉴 (3x2 정밀 그리드) -->
   <div class="settings-nav-container mb-3">
     <button type="button" class="settings-nav-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
       🏢 기본
@@ -613,20 +658,17 @@
   </div>
 
   <!-- ========================================================
-       [탭 1] 기본 탭: 소속길드, 프로필, 폰트크기, 테마, 알림음
+       [탭 1] 기본 탭: 소속길드, 프로필, 폰트크기, 테마, 채팅/보스 알림음
        ======================================================== -->
   <div id="tabSettingsGeneral">
-    <!-- 1. 소속 길드명 및 게임명 -->
-    <div class="d-flex align-items-center justify-content-between mb-3 px-3 py-2 rounded" style="background: rgba(0, 0, 0, 0.18); border: 1px solid rgba(255, 255, 255, 0.08);">
+    <!-- 1. 소속 길드명 및 게임명 (답답한 회색 음영 완전 개선, 선명한 투명 그라디언트 + 뱃지 제거) -->
+    <div class="guild-info-banner d-flex align-items-center justify-content-between mb-3">
       <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span style="font-size: 1.15rem;">🏰</span>
-        <span class="text-secondary small fw-bold">소속:</span>
-        <strong class="text-white" id="displayGuildName">불편한사람들</strong>
-        <span class="badge bg-primary bg-opacity-25 text-info border border-primary border-opacity-25" id="displayGameName" style="font-size: 0.65rem;">게임명</span>
+        <span style="font-size: 1.2rem;">🏰</span>
+        <span class="guild-label">소속 길드:</span>
+        <strong class="guild-title" id="displayGuildName">확인 중...</strong>
+        <span class="game-badge" id="displayGameName" style="display: none;"></span>
       </div>
-      <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50" style="font-size: 0.65rem; padding: 3px 8px;">
-        로그인 연동
-      </span>
       <input type="hidden" id="cfgGuildName" value="">
     </div>
 
@@ -655,7 +697,7 @@
       </div>
     </div>
 
-    <!-- 3. 글자 크기(폰트 스케일) 조절 옵션 -->
+    <!-- 3. 글자 크기 조절 옵션 -->
     <div class="settings-section-box d-flex justify-content-between align-items-center py-2 px-3 mb-3">
       <div class="d-flex align-items-center gap-2">
         <span style="font-size: 1.1rem;">🔠</span>
@@ -691,12 +733,59 @@
       </label>
     </div>
 
-    <!-- 5. 보스 타이머 알림음(1~19번 깔끔 통일) 설정 및 미리듣기 -->
+    <!-- 5-A. 새 채팅 메시지 알림음 설정 -->
+    <div class="settings-section-box mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <span style="font-size: 1.15rem;">💬</span>
+          <span class="fw-bold text-info small" style="font-size: 0.82rem;">새 채팅 메시지 알림음</span>
+        </div>
+        <div class="form-check form-switch m-0 ps-0">
+          <input class="form-check-input ms-0" type="checkbox" id="cfgChatAlarmEnabled" role="switch" checked onchange="saveAlarmSoundPreferences()">
+        </div>
+      </div>
+
+      <div class="row g-2 align-items-center">
+        <div class="col-8">
+          <select id="cfgChatAlarmPreset" class="form-select input-custom-set" onchange="saveAlarmSoundPreferences()">
+            <option value="alarm1.mp3">알림음 01 (alarm1)</option>
+            <option value="alarm2.mp3">알림음 02 (alarm2)</option>
+            <option value="alarm3.mp3" selected>알림음 03 (alarm3 - 추천)</option>
+            <option value="alarm4.mp3">알림음 04 (alarm4)</option>
+            <option value="alarm5.mp3">알림음 05 (alarm5)</option>
+            <option value="alarm6.mp3">알림음 06 (alarm6)</option>
+            <option value="alarm7.mp3">알림음 07 (alarm7)</option>
+            <option value="alarm8.mp3">알림음 08 (alarm8)</option>
+            <option value="alarm9.mp3">알림음 09 (alarm9)</option>
+            <option value="alarm10.mp3">알림음 10 (alarm10)</option>
+            <option value="alarm11.mp3">알림음 11 (alarm11)</option>
+            <option value="alarm12.mp3">알림음 12 (alarm12)</option>
+            <option value="alarm13.mp3">알림음 13 (alarm13)</option>
+            <option value="alarm14.mp3">알림음 14 (alarm14)</option>
+            <option value="alarm15.mp3">알림음 15 (alarm15)</option>
+            <option value="alarm16.mp3">알림음 16 (alarm16)</option>
+            <option value="alarm17.mp3">알림음 17 (alarm17)</option>
+            <option value="alarm18.mp3">알림음 18 (alarm18)</option>
+            <option value="alarm19.mp3">알림음 19 (alarm19)</option>
+          </select>
+        </div>
+        <div class="col-4">
+          <button type="button" class="btn btn-outline-info btn-sm w-100 fw-bold h-100" style="height: 42px !important; border-radius: 10px;" onclick="previewChatAlarmSound()">
+            <i class="fa-solid fa-play me-1"></i>미리듣기
+          </button>
+        </div>
+      </div>
+      <div class="text-secondary mt-2" style="font-size: 0.68rem;">
+        * 대화방에서 새 메시지를 수신했을 때 울리는 사운드입니다.
+      </div>
+    </div>
+
+    <!-- 5-B. 보스 젠 타이머 알림음 설정 -->
     <div class="settings-section-box">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="d-flex align-items-center gap-2">
-          <span style="font-size: 1.15rem;">🔔</span>
-          <span class="fw-bold text-warning small" style="font-size: 0.82rem;">보스 타이머 알림 사운드</span>
+          <span style="font-size: 1.15rem;">⏱️</span>
+          <span class="fw-bold text-warning small" style="font-size: 0.82rem;">보스 타이머 경보 알림음</span>
         </div>
         <div class="form-check form-switch m-0 ps-0">
           <input class="form-check-input ms-0" type="checkbox" id="cfgAlarmSoundEnabled" role="switch" checked onchange="saveAlarmSoundPreferences()">
@@ -706,8 +795,8 @@
       <div class="row g-2 align-items-center">
         <div class="col-8">
           <select id="cfgAlarmSoundPreset" class="form-select input-custom-set" onchange="saveAlarmSoundPreferences()">
-            <option value="alarm1.mp3">알림음 01 (alarm1)</option>
-            <option value="alarm2.mp3">알림음 02 (alarm2)</option>
+            <option value="alarm1.mp3">알림음 01 (alarm1 - 추천)</option>
+            <option value="alarm2.mp3">알림음 02 (alarm2 - 추천)</option>
             <option value="alarm3.mp3">알림음 03 (alarm3)</option>
             <option value="alarm4.mp3">알림음 04 (alarm4)</option>
             <option value="alarm5.mp3">알림음 05 (alarm5)</option>
@@ -915,8 +1004,7 @@
   </div>
 
   <!-- ========================================================
-       [탭 5] 관리자 권한 탭
-       ======================================================== -->
+       [탭 5] 관리자 권한 탭 -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
@@ -1191,7 +1279,7 @@
 </div>
 
 <!-- ========================================================
-     [커스텀 모달 3] 카카오톡 스타일 Alert 모달
+     [커스텀 모달 3] Alert 모달
      ======================================================== -->
 <div id="modalCustomAlert" class="custom-modal-backdrop" style="display: none; z-index: 10000000;">
   <div class="custom-modal-card text-center" style="max-width: 340px; padding: 22px 18px;">
@@ -1203,7 +1291,7 @@
 </div>
 
 <!-- ========================================================
-     [커스텀 모달 4] 카카오톡 스타일 Confirm 모달
+     [커스텀 모달 4] Confirm 모달
      ======================================================== -->
 <div id="modalCustomConfirm" class="custom-modal-backdrop" style="display: none; z-index: 10000000;">
   <div class="custom-modal-card text-center" style="max-width: 350px; padding: 22px 18px;">
@@ -1231,7 +1319,6 @@
   window.toastTimer = null;
   window.customConfirmResolver = null;
 
-  // 길드 ID 안전 조회
   function getSafeCurrentGid() {
     if (typeof window.getCurrentGuildId === 'function') {
       return window.getCurrentGuildId();
@@ -1241,7 +1328,7 @@
   }
 
   // ==========================================
-  // [브라우저 alert / confirm 대체 커스텀 다이얼로그]
+  // [커스텀 알림/확인 다이얼로그]
   // ==========================================
   function showAppAlert(message, title = "안내", icon = "⚠️") {
     const modal = document.getElementById("modalCustomAlert");
@@ -1332,65 +1419,84 @@
   }
 
   // ==========================================
-  // [보스 타이머 알림음(MP3) 설정 및 재생]
+  // [채팅 & 보스 알림음(MP3) 설정 및 재생]
   // ==========================================
   function initAlarmSoundSettings() {
-    const enabled = localStorage.getItem("guild_alarm_enabled") !== 'false';
-    const preset = localStorage.getItem("guild_alarm_sound") || "alarm1.mp3";
+    // 1. 채팅 알림
+    const chatEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== 'false';
+    const chatPreset = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
+    const chatChk = document.getElementById("cfgChatAlarmEnabled");
+    const chatSel = document.getElementById("cfgChatAlarmPreset");
+    if (chatChk) chatChk.checked = chatEnabled;
+    if (chatSel) chatSel.value = chatPreset;
 
-    const chk = document.getElementById("cfgAlarmSoundEnabled");
-    const sel = document.getElementById("cfgAlarmSoundPreset");
-
-    if (chk) chk.checked = enabled;
-    if (sel) sel.value = preset;
+    // 2. 보스 타이머 알림
+    const bossEnabled = localStorage.getItem("guild_alarm_enabled") !== 'false';
+    const bossPreset = localStorage.getItem("guild_alarm_sound") || "alarm1.mp3";
+    const bossChk = document.getElementById("cfgAlarmSoundEnabled");
+    const bossSel = document.getElementById("cfgAlarmSoundPreset");
+    if (bossChk) bossChk.checked = bossEnabled;
+    if (bossSel) bossSel.value = bossPreset;
   }
 
   function saveAlarmSoundPreferences() {
-    const chk = document.getElementById("cfgAlarmSoundEnabled");
-    const sel = document.getElementById("cfgAlarmSoundPreset");
+    // 1. 채팅 알림 저장
+    const chatChk = document.getElementById("cfgChatAlarmEnabled");
+    const chatSel = document.getElementById("cfgChatAlarmPreset");
+    if (chatChk) localStorage.setItem("guild_chat_alarm_enabled", chatChk.checked ? 'true' : 'false');
+    if (chatSel) localStorage.setItem("guild_chat_alarm_sound", chatSel.value);
 
-    if (chk) localStorage.setItem("guild_alarm_enabled", chk.checked ? 'true' : 'false');
-    if (sel) localStorage.setItem("guild_alarm_sound", sel.value);
+    // 2. 보스 타이머 알림 저장
+    const bossChk = document.getElementById("cfgAlarmSoundEnabled");
+    const bossSel = document.getElementById("cfgAlarmSoundPreset");
+    if (bossChk) localStorage.setItem("guild_alarm_enabled", bossChk.checked ? 'true' : 'false');
+    if (bossSel) localStorage.setItem("guild_alarm_sound", bossSel.value);
 
     showToast("🔔 알림음 설정이 저장되었습니다.");
   }
 
-  function previewAlarmSound() {
-    const chk = document.getElementById("cfgAlarmSoundEnabled");
-    if (chk && !chk.checked) {
-      showToast("알림음이 비활성화(OFF) 상태입니다.", "🔇");
-      return;
-    }
-    const sel = document.getElementById("cfgAlarmSoundPreset");
-    const soundFile = sel ? sel.value : "alarm1.mp3";
-    const audioPath = soundFile.startsWith('http') ? soundFile : `/assets/sounds/${soundFile}`;
-
+  function playSoundFile(filename, isChat = false) {
+    const audioPath = filename.startsWith('http') ? filename : `/assets/sounds/${filename}`;
     try {
       const audio = new Audio(audioPath);
       audio.volume = 0.85;
       audio.play().then(() => {
-        showToast("알림음을 재생합니다... 🎶");
+        showToast(isChat ? "채팅 알림음을 재생합니다... 💬" : "보스 타이머 알림음을 재생합니다... ⏱️");
       }).catch(err => {
-        playFallbackBeep();
+        playFallbackBeep(isChat);
       });
     } catch (e) {
-      playFallbackBeep();
+      playFallbackBeep(isChat);
     }
   }
 
-  function playFallbackBeep() {
+  function previewChatAlarmSound() {
+    const chk = document.getElementById("cfgChatAlarmEnabled");
+    if (chk && !chk.checked) return showToast("채팅 알림음이 꺼져(OFF) 있습니다.", "🔇");
+    const sel = document.getElementById("cfgChatAlarmPreset");
+    playSoundFile(sel ? sel.value : "alarm3.mp3", true);
+  }
+
+  function previewAlarmSound() {
+    const chk = document.getElementById("cfgAlarmSoundEnabled");
+    if (chk && !chk.checked) return showToast("보스 알림음이 꺼져(OFF) 있습니다.", "🔇");
+    const sel = document.getElementById("cfgAlarmSoundPreset");
+    playSoundFile(sel ? sel.value : "alarm1.mp3", false);
+  }
+
+  function playFallbackBeep(isChat = false) {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.type = isChat ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(isChat ? 1200 : 880, ctx.currentTime);
       gain.gain.setValueAtTime(0.15, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.35);
+      osc.stop(ctx.currentTime + 0.3);
       showToast("기본 비프음을 재생했습니다. (MP3 로드 전)", "🔔");
     } catch (e) {}
   }
@@ -1465,21 +1571,41 @@
     }
   }
 
-  function loadGuildNameDisplay() {
+  // 소속 길드명 & 게임명 동적 바인딩 (하드코딩 제거 및 안전 조회)
+  async function loadGuildNameDisplay() {
     const currentGid = getSafeCurrentGid();
-    let displayGuild = window.currentSettingsMap['guild_name'] || sessionStorage.getItem("guild_name") || '';
+    let displayGuild = '';
     let displayGame = '';
 
+    // 1. my_joined_guilds 로컬스토리지 확인
     try {
       const joinedList = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]");
       const matched = joinedList.find(g => String(g.guild_id) === String(currentGid));
       if (matched) {
-        if (!displayGuild) displayGuild = matched.guild_name;
+        displayGuild = matched.guild_name || '';
         displayGame = matched.game_name || '';
       }
     } catch (e) {}
 
-    if (!displayGuild) displayGuild = (currentGid === 'default') ? '기본 길드' : currentGid;
+    // 2. 없으면 guild_settings 혹은 세션 확인
+    if (!displayGuild) {
+      displayGuild = window.currentSettingsMap['guild_name'] || sessionStorage.getItem("guild_name") || '';
+    }
+
+    // 3. 여전히 없으면 guilds 테이블 단건 조회
+    if (!displayGuild && currentGid !== 'default') {
+      try {
+        const gRow = await apiRequest(`guilds?id=eq.${encodeURIComponent(currentGid)}&select=name,guild_name,game_name&limit=1`);
+        if (gRow && gRow.length > 0) {
+          displayGuild = gRow[0].guild_name || gRow[0].name || '';
+          displayGame = gRow[0].game_name || '';
+        }
+      } catch (err) {}
+    }
+
+    if (!displayGuild) {
+      displayGuild = (currentGid === 'default') ? '기본 길드' : `길드 (${currentGid})`;
+    }
 
     const displayElem = document.getElementById("displayGuildName");
     const gameElem = document.getElementById("displayGameName");
@@ -1757,7 +1883,7 @@
     document.getElementById('cfgScoreInternal').value = window.currentSettingsMap['score_war_internal'] || '1';
     document.getElementById('cfgScoreInter').value = window.currentSettingsMap['score_war_inter'] || '2';
 
-    loadGuildNameDisplay();
+    await loadGuildNameDisplay();
 
     const useSelf = window.currentSettingsMap['use_self_checkin'];
     document.getElementById('cfgUseSelfCheckin').checked = (useSelf !== 'false');
