@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 카카오톡 인터페이스 / 실시간 채팅 스트림 / 스마트 로그인 / 모듈 로더
+// 카카오톡 인터페이스 / 실시간 채팅 스트림 / 스마트 로그인 / 모듈 로더 / 알림음 엔진
 // ========================================================
 
 var supabaseClient = null;
@@ -84,7 +84,58 @@ window.formatTime24HourWithDate = formatTime24HourWithDate;
 window.formatKSTChatTime = formatKSTChatTime;
 
 // --------------------------------------------------------
-// 2. 테마 설정 및 초기화
+// 1-B. 채팅 알림음(MP3) 및 시스템 푸시 엔진
+// --------------------------------------------------------
+window.triggerChatAlarmSound = function() {
+  const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
+  if (!isEnabled) return;
+
+  const soundFile = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
+  const audioPath = soundFile.startsWith("http") ? soundFile : `/assets/sounds/${soundFile}`;
+
+  try {
+    const audio = new Audio(audioPath);
+    audio.volume = 0.85;
+    audio.play().catch(() => {
+      playFallbackChatBeep();
+    });
+  } catch (e) {
+    playFallbackChatBeep();
+  }
+};
+
+function playFallbackChatBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(1050, ctx.currentTime);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.25);
+  } catch (e) {}
+}
+
+function notifyWebDesktopMessage(sender, msgText) {
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "granted") {
+    try {
+      new Notification(`💬 [${sender}]`, {
+        body: msgText || "새 메시지가 도착했습니다.",
+        icon: "/favicon.ico"
+      });
+    } catch (e) {}
+  } else if (Notification.permission !== "denied") {
+    Notification.requestPermission();
+  }
+}
+
+// --------------------------------------------------------
+// 2. 테마 설정 및 폰트 스케일 초기화
 // --------------------------------------------------------
 window.applyAppTheme = function(mode) {
   const theme = mode || localStorage.getItem("guild_theme_mode") || "light";
@@ -103,12 +154,21 @@ window.applyAppTheme = function(mode) {
   localStorage.setItem("guild_theme_mode", theme);
 };
 
+window.applyFontScale = function(scale) {
+  const s = scale || localStorage.getItem("guild_font_scale") || "md";
+  document.body.classList.remove("font-scale-sm", "font-scale-md", "font-scale-lg");
+  document.body.classList.add(`font-scale-${s}`);
+};
+
 window.addEventListener("storage", function(e) {
   if (e.key === "guild_theme_mode") window.applyAppTheme(e.newValue);
+  if (e.key === "guild_font_scale") window.applyFontScale(e.newValue);
 });
 
 async function initApp() {
   if (typeof window.applyAppTheme === 'function') window.applyAppTheme();
+  if (typeof window.applyFontScale === 'function') window.applyFontScale();
+
   if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
     supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
     window.supabaseClient = supabaseClient;
@@ -119,7 +179,7 @@ async function initApp() {
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
-  // ⚡ 미로그인 상태로 index.html 접속 시 전용 홈 화면(home.html)으로 이동
+  // 미로그인 상태로 index.html 접속 시 전용 홈 화면(home.html)으로 이동
   if (!myCurrentNick) {
     try {
       const checkHome = await fetch("home.html", { method: "HEAD" });
@@ -143,6 +203,10 @@ async function initApp() {
   bindMentionInputEvents();
   cleanupOldChatsBackground();
 
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+
   if (!myCurrentNick) {
     if (typeof openWelcomeGatewayModal === 'function') {
       openWelcomeGatewayModal();
@@ -154,7 +218,7 @@ async function initApp() {
     if (typeof window.loadMainTabRoomsList === 'function') {
       window.loadMainTabRoomsList();
     }
-    // ⚡ 초기 비밀번호(000000 또는 0000) 상태라면 '나중에 변경' 버튼이 없는 필수 변경 모달 즉시 표시
+    // 초기 비밀번호(000000 또는 0000) 상태라면 필수 변경 모달 표시
     if (myCurrentPin === "000000" || myCurrentPin === "0000") {
       setTimeout(() => {
         openForceChangePinModal();
@@ -163,7 +227,7 @@ async function initApp() {
   }
 }
 
-// 현재 접속 중인 길드(guild_id)의 설정만 로드
+// 현재 접속 중인 길드(guild_id)의 설정 로드
 async function loadGuildSettings() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -209,7 +273,7 @@ async function loadGuildSettings() {
   } catch (e) {}
 }
 
-// 현재 길드(guild_id)의 길드원만 조회 (타 길드 전체 명단 폴백 제거)
+// 현재 길드(guild_id)의 길드원만 조회
 window.loadGuildMembersData = async function() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -242,7 +306,7 @@ window.loadGuildMembersData = async function() {
 
 function getRolePriority(role) {
   const r = String(role || '').trim();
-  if (r === '길드장' || r === '길마') return 1;
+  if (r === '길드장' || r === '길마' || r === '슈퍼관리자') return 1;
   if (r === '부길드장' || r === '부길마') return 2;
   if (r === '수호') return 2;
   if (r === '정예') return 3;
@@ -381,7 +445,6 @@ window.closeProfileEditModal = function closeProfileEditModal() {
   document.getElementById("modalProfileEdit").style.display = "none";
 };
 
-// 직업 변경 시 현재 guild_id 조건 필수 적용
 async function selectClassProfile(icon, className) {
   myCurrentAvatar = icon;
   myCurrentClass = `${icon} ${className}`;
@@ -415,7 +478,7 @@ async function selectClassProfile(icon, className) {
 }
 
 // --------------------------------------------------------
-// 4. 스마트 길드 로그인 / 로그아웃 / 초기 비밀번호(000000) 필수 변경 모달
+// 4. 스마트 길드 로그인 / 로그아웃 / 초기 비밀번호 필수 변경
 // --------------------------------------------------------
 function ensureForceChangePinModalExists() {
   let modal = document.getElementById("modalForceChangePin");
@@ -428,7 +491,6 @@ function ensureForceChangePinModalExists() {
     document.body.appendChild(modal);
   }
 
-  // ⚡ '나중에 변경' 버튼을 완전히 제거하고 오직 [비밀번호 변경 완료]만 표시
   modal.innerHTML = `
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div class="mb-2" style="font-size: 2rem;">🔐</div>
@@ -459,7 +521,6 @@ window.openForceChangePinModal = function() {
 };
 var openForceChangePinModal = window.openForceChangePinModal;
 
-// 초기 PIN 변경 시 현재 guild_id 조건 필수 포함
 window.executeForceChangePin = async function() {
   const in1 = document.getElementById("forceNewPinInput");
   const in2 = document.getElementById("forceNewPinConfirmInput");
@@ -505,7 +566,6 @@ window.executeForceChangePin = async function() {
 };
 var executeForceChangePin = window.executeForceChangePin;
 
-// 구형 드롭다운 호출 호환용 빈 함수 (에러 방지)
 function renderLoginMemberDropdown() {}
 function onLoginSearchInput() {}
 function onLoginSelectChange() {}
@@ -526,7 +586,6 @@ function showGuildLoginModal() {
 }
 window.showGuildLoginModal = showGuildLoginModal;
 
-// 스마트 2단계 로그인: 닉네임 + PIN 직접 입력 후 내 길드 자동 탐색 및 동명이인 길드 선택 지원
 async function executeGuildLogin(forcedGuildId = null) {
   const searchInput = document.getElementById("loginNickSearchInput");
   const selectedName = (searchInput && searchInput.value.trim()) || "";
@@ -535,7 +594,7 @@ async function executeGuildLogin(forcedGuildId = null) {
   if (!selectedName) return showKakaoToast("본인 캐릭터 닉네임을 입력해주세요!", "⚠️");
   if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-  // 1) 슈퍼관리자 마스터 로그인 체크
+  // 슈퍼관리자 마스터 로그인 체크
   const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
   if (isSuperId && (inputPin === "123456" || inputPin === "master7777")) {
     myCurrentNick = "슈퍼관리자";
@@ -560,7 +619,7 @@ async function executeGuildLogin(forcedGuildId = null) {
     return showKakaoToast("👑 슈퍼관리자(Master)로 로그인되었습니다.", "🎉");
   }
 
-  // 2) DB에서 해당 닉네임을 가진 길드원 행 조회 (대소문자 무시 ilike 검색)
+  // DB 닉네임 검색
   let candidates = [];
   const currentGid = forcedGuildId || localStorage.getItem("current_guild_id") || "";
 
@@ -586,10 +645,10 @@ async function executeGuildLogin(forcedGuildId = null) {
   }
 
   if (candidates.length === 0) {
-    return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하거나 초대코드로 먼저 가입하세요.", "⚠️");
+    return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
   }
 
-  // 3) 입력한 PIN 번호와 일치하는 후보 필터링
+  // PIN 일치 후보 필터
   const pinMatchedList = candidates.filter(m => {
     const expectedPin = m.pin ? String(m.pin).trim() : "000000";
     return (inputPin === expectedPin) ||
@@ -606,15 +665,12 @@ async function executeGuildLogin(forcedGuildId = null) {
     return showKakaoToast("비밀번호(PIN)가 올바르지 않습니다!", "❌");
   }
 
-  // 4) 일치하는 길드가 여러 개일 때 처리
   let targetMember = null;
   if (forcedGuildId) {
     targetMember = pinMatchedList.find(m => (m.guild_id || "default") === forcedGuildId) || pinMatchedList[0];
   } else if (pinMatchedList.length === 1) {
     targetMember = pinMatchedList[0];
   } else {
-    // 만약 현재 선택된 길드(currentGid)가 있고 그 길드에 정확히 속해 있다면 우선 선택하되,
-    // 여러 길드에 동일 닉네임+동일 PIN이 존재할 경우 길드 선택 버튼을 띄워줌
     const multiBox = document.getElementById("loginMultiGuildSelectBox");
     const multiBtns = document.getElementById("loginMultiGuildButtons");
     if (multiBox && multiBtns) {
@@ -641,7 +697,6 @@ async function executeGuildLogin(forcedGuildId = null) {
     }
   }
 
-  // 5) 로그인 확정 및 길드 세션 동기화
   const resolvedGid = targetMember.guild_id || "default";
   const memberName = targetMember.name || targetMember.nickname;
   const userRole = targetMember.role || "일반";
@@ -663,7 +718,6 @@ async function executeGuildLogin(forcedGuildId = null) {
     localStorage.setItem("guild_my_avatar", myCurrentAvatar);
   }
 
-  // 내 참여 길드 기록(my_joined_guilds) 자동 업데이트 (다음 접속 시 원클릭 입장 지원)
   try {
     let guildTitle = "길드";
     let gameTitle = "게임";
@@ -715,7 +769,6 @@ async function executeGuildLogin(forcedGuildId = null) {
 
   resetAndReloadChatAfterAuth();
 
-  // ⚡ 초기 비밀번호(000000 또는 0000)로 로그인 시 '나중에 변경'이 없는 필수 비밀번호 변경 모달 표시
   const isDefaultPin = (inputPin === "000000" || inputPin === "0000" || expectedPin === "000000" || expectedPin === "0000");
   if (isDefaultPin) {
     showKakaoToast("비밀번호를 변경하세요. (초기 비밀번호 사용 중)", "🔐");
@@ -728,7 +781,6 @@ async function executeGuildLogin(forcedGuildId = null) {
 }
 window.executeGuildLogin = executeGuildLogin;
 
-// ⚡ 로그아웃 시 설정창/오버레이를 모두 닫고 "로그아웃 되었습니다." 표기 및 home.html로 이동
 function handleUserLogout() {
   if (typeof openConfirmLogoutModal === "function") {
     openConfirmLogoutModal();
@@ -748,7 +800,6 @@ window.executeLogoutProcess = async function() {
   myCurrentNick = "";
   myCurrentPin = "";
 
-  // 열려 있던 설정 화면이나 오버레이, 서랍을 모두 닫고 기본 채팅 탭으로 리셋
   toggleMenuDrawer(false);
   if (typeof window.closeModuleOverlay === "function") window.closeModuleOverlay();
   const tabMore = document.getElementById("tabMoreContent");
@@ -759,7 +810,6 @@ window.executeLogoutProcess = async function() {
 
   showKakaoToast("로그아웃 되었습니다.", "👋");
 
-  // home.html이 존재하면 home.html로 이동하여 설정 화면 잔상을 완전히 제거
   try {
     const checkHome = await fetch("home.html", { method: "HEAD" });
     if (checkHome.ok) {
@@ -839,7 +889,7 @@ window.updateProfileUI = function(nick) {
 function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 & 실시간 대화 수신 (길드별·방별 완벽 격리)
+// 5. 과거 대화 로드 & 실시간 대화 수신 (길드별·방별 격리 & 알림음 재생)
 // --------------------------------------------------------
 async function loadPastChatMessages() {
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
@@ -872,8 +922,6 @@ async function loadPastChatMessages() {
 
   try {
     let list = [];
-
-    // 반드시 현재 guild_id 조건을 포함하여 타 길드 채팅 유출 원천 차단
     if (activeRoom !== "default_public") {
       try {
         list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
@@ -1004,7 +1052,6 @@ function renderMessageHistoryList(msgList) {
   if (typeof window.syncAllChatCutButtons === "function") window.syncAllChatCutButtons();
 }
 
-// 오래된 채팅 정리 시 반드시 현재 guild_id 조건 포함
 async function cleanupOldChatsBackground() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -1014,7 +1061,7 @@ async function cleanupOldChatsBackground() {
 }
 window.cleanOldChatMessages = cleanupOldChatsBackground;
 
-// 실시간 채팅 웹소켓 구독 시 길드 격리 검증 적용
+// 실시간 대화 수신 & 알림음 재생 연동
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
 
@@ -1029,6 +1076,12 @@ function listenRealtimeChatMessages() {
       const newMsg = payload.new;
       const activeRoom = window.currentActiveRoomId;
       const msgRoom = (!newMsg.room_id || newMsg.room_id === "public" || newMsg.room_id === "default_public") ? "default_public" : newMsg.room_id;
+
+      // 내가 보낸 메시지가 아닐 때 선택된 MP3 알림음 재생 및 시스템 푸시 발송
+      if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
+        window.triggerChatAlarmSound();
+        notifyWebDesktopMessage(newMsg.sender_name, newMsg.message || "새 메시지");
+      }
 
       if (typeof window.updateRoomCardRealtime === "function") {
         window.updateRoomCardRealtime(msgRoom, newMsg);
@@ -1116,7 +1169,7 @@ function listenRealtimeChatMessages() {
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링
+// 6. 카카오톡 말풍선 렌더링 (마스터 긴급 공지 카드 포함)
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1145,11 +1198,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
 
   let unreadCount = 0;
   if (isDirect) {
-    if (!isMe) {
-      unreadCount = 0;
-    } else {
-      unreadCount = (readerSet.size >= 2) ? 0 : 1;
-    }
+    unreadCount = !isMe ? 0 : ((readerSet.size >= 2) ? 0 : 1);
   } else {
     unreadCount = Math.max(0, totalMembers - readerSet.size);
   }
@@ -1170,7 +1219,27 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
   }
 
-  if (msg.msg_type === "boss_briefing") {
+  // 마스터 긴급 시스템 공지 카드
+  if (msg.msg_type === "system_notice" || msg.sender_name === "시스템마스터") {
+    html = `
+      <div class="chat-item-row other" id="${msgKey}">
+        <div class="chat-sender-avatar" style="background:#ef4444; color:#fff;">📢</div>
+        <div class="chat-msg-body">
+          <div class="chat-sender-name"><span class="text-danger fw-bold">시스템마스터 (긴급공지)</span></div>
+          <div class="chat-bubble-flex">
+            <div class="p-3 rounded-3" style="background:rgba(239, 68, 68, 0.12); border:1.5px solid #ef4444; color:#fff; font-size:0.85rem; line-height:1.45; word-break:break-word;">
+              ${cleanMessageText.replace(/\n/g, '<br>')}
+            </div>
+            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+              ${unreadSpanHtml}
+              <span class="chat-timestamp">${timeStr}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  else if (msg.msg_type === "boss_briefing") {
     html = `
       <div class="chat-item-row other" id="${msgKey}">
         <div class="chat-sender-avatar">⏰</div>
