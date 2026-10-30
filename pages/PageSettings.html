@@ -7,7 +7,22 @@
   #settingsRootCard {
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "맑은 고딕", sans-serif;
     letter-spacing: -0.2px;
+    transition: font-size 0.2s ease;
   }
+
+  /* 🔠 글자 크기 스케일 클래스 */
+  #settingsRootCard.font-scale-sm { font-size: 0.82rem !important; }
+  #settingsRootCard.font-scale-sm h6 { font-size: 0.9rem !important; }
+  #settingsRootCard.font-scale-sm .small, 
+  #settingsRootCard.font-scale-sm .text-secondary { font-size: 0.68rem !important; }
+  #settingsRootCard.font-scale-sm .input-custom-set { font-size: 0.78rem !important; height: 38px !important; }
+
+  #settingsRootCard.font-scale-md { font-size: 0.9rem !important; }
+  #settingsRootCard.font-scale-md h6 { font-size: 1rem !important; }
+
+  #settingsRootCard.font-scale-lg { font-size: 1rem !important; }
+  #settingsRootCard.font-scale-lg h6 { font-size: 1.15rem !important; }
+  #settingsRootCard.font-scale-lg .small { font-size: 0.85rem !important; }
 
   .settings-card {
     font-family: "맑은 고딕", "Malgun Gothic", "Apple SD Gothic Neo", -apple-system, sans-serif !important;
@@ -20,31 +35,23 @@
     transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
   }
 
-  /* 🌙 다크 모드 텍스트 가독성 강화 */
-  .settings-card:not(.light-mode) {
-    color: #f8fafc;
-  }
-  .settings-card:not(.light-mode) .text-secondary {
-    color: #cbd5e1 !important;
-  }
+  /* 🌙 다크 모드 */
+  .settings-card:not(.light-mode) { color: #f8fafc; }
+  .settings-card:not(.light-mode) .text-secondary { color: #cbd5e1 !important; }
   .settings-card:not(.light-mode) label,
-  .settings-card:not(.light-mode) .form-label {
-    color: #e2e8f0 !important;
-  }
+  .settings-card:not(.light-mode) .form-label { color: #e2e8f0 !important; }
   .settings-card:not(.light-mode) .input-custom-set {
     background-color: #0c1424 !important;
     border: 1px solid #233554 !important;
     color: #ffffff !important;
   }
-  .settings-card:not(.light-mode) .input-custom-set::placeholder {
-    color: #94a3b8 !important;
-  }
+  .settings-card:not(.light-mode) .input-custom-set::placeholder { color: #94a3b8 !important; }
   .settings-card:not(.light-mode) .settings-section-box {
     background: #0d1527;
     border: 1px solid #223250;
   }
 
-  /* ☀️ 라이트 모드 스타일 오버라이드 */
+  /* ☀️ 라이트 모드 */
   .settings-card.light-mode {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;
@@ -52,9 +59,7 @@
     color: #0f172a !important;
   }
   .settings-card.light-mode h6,
-  .settings-card.light-mode .text-white {
-    color: #0f172a !important;
-  }
+  .settings-card.light-mode .text-white { color: #0f172a !important; }
   .settings-card.light-mode .settings-section-box {
     background: #f8fafc !important;
     border: 1px solid #e2e8f0 !important;
@@ -74,9 +79,7 @@
     background: #f1f5f9;
     border-color: #e2e8f0;
   }
-  .settings-card.light-mode .settings-nav-btn {
-    color: #64748b;
-  }
+  .settings-card.light-mode .settings-nav-btn { color: #64748b; }
   .settings-card.light-mode .settings-nav-btn.active {
     background: #fee500;
     color: #191919;
@@ -100,17 +103,13 @@
     background: #f1f5f9;
     color: #0284c7;
   }
-  .settings-card.light-mode .input-stepper-wide-val {
-    color: #d97706;
-  }
+  .settings-card.light-mode .input-stepper-wide-val { color: #d97706; }
   .settings-card.light-mode .boss-item-card,
   .settings-card.light-mode .ground-item-card {
     background: #ffffff;
     border-color: #e2e8f0;
   }
-  .settings-card.light-mode .text-secondary {
-    color: #64748b !important;
-  }
+  .settings-card.light-mode .text-secondary { color: #64748b !important; }
 
   .settings-section-box {
     background: #0d1527;
@@ -125,7 +124,7 @@
     border: 1px solid #233554 !important;
     color: #ffffff !important;
     border-radius: 10px !important;
-    padding: 9px 12px !important;
+    padding: 8px 12px !important;
     font-size: 0.85rem !important;
     color-scheme: dark;
     height: 42px;
@@ -135,7 +134,7 @@
     box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25) !important;
   }
 
-  /* 탭 내비게이션 바 (3x2 그리드) */
+  /* 탭 내비게이션 바 (3x2 정밀 그리드) */
   .settings-nav-container {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
@@ -194,16 +193,13 @@
     justify-content: center !important;
     gap: 6px !important;
     cursor: pointer !important;
-    height: 42px;
+    height: 40px;
   }
   .btn-kakao-yellow:hover {
     background-color: #fada0a !important;
     color: #000000 !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(254, 229, 0, 0.35) !important;
-  }
-  .btn-kakao-yellow:active {
-    transform: translateY(0);
   }
 
   /* 💬 카카오톡 스타일 프로필 카드 */
@@ -223,27 +219,21 @@
     border: 1px solid #fee500;
     box-shadow: 0 4px 14px rgba(254, 229, 0, 0.15);
   }
-  .kt-avatar-wrapper {
-    position: relative;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
+  .kt-avatar-wrapper { position: relative; cursor: pointer; flex-shrink: 0; }
   .kt-avatar-circle {
-    width: 66px;
-    height: 66px;
+    width: 62px;
+    height: 62px;
     border-radius: 50%;
     background: #1e293b;
     border: 2.5px solid #fee500;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.1rem;
+    font-size: 2rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
-  .kt-avatar-wrapper:hover .kt-avatar-circle {
-    transform: scale(1.05);
-  }
+  .kt-avatar-wrapper:hover .kt-avatar-circle { transform: scale(1.05); }
   .kt-avatar-badge {
     position: absolute;
     bottom: -2px;
@@ -260,19 +250,14 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
     border: 1.5px solid #0d1527;
   }
-  .kt-profile-info {
-    flex: 1;
-    min-width: 0;
-  }
+  .kt-profile-info { flex: 1; min-width: 0; }
   .kt-profile-name {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.3px;
   }
-  .settings-card.light-mode .kt-profile-name {
-    color: #191919 !important;
-  }
+  .settings-card.light-mode .kt-profile-name { color: #191919 !important; }
   .kt-role-badge {
     background: rgba(254, 229, 0, 0.18);
     color: #fee500;
@@ -282,18 +267,43 @@
     border-radius: 20px;
     font-weight: 700;
   }
-  .settings-card.light-mode .kt-role-badge {
+  .settings-card.light-mode .kt-role-badge { background: #fee500; color: #191919; border: none; }
+  .kt-profile-class { font-size: 0.8rem; margin-top: 2px; color: #cbd5e1; }
+  .settings-card.light-mode .kt-profile-class { color: #475569; }
+
+  /* 폰트 조절 버튼 그룹 */
+  .font-scale-group {
+    display: flex;
+    background: #080d1a;
+    border: 1px solid #233554;
+    border-radius: 10px;
+    padding: 3px;
+    gap: 4px;
+  }
+  .settings-card.light-mode .font-scale-group {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+  .btn-font-scale {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 0.75rem;
+    padding: 5px 8px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .btn-font-scale.active {
+    background: #0284c7;
+    color: #ffffff;
+    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+  }
+  .settings-card.light-mode .btn-font-scale.active {
     background: #fee500;
     color: #191919;
-    border: none;
-  }
-  .kt-profile-class {
-    font-size: 0.8rem;
-    margin-top: 2px;
-    color: #cbd5e1;
-  }
-  .settings-card.light-mode .kt-profile-class {
-    color: #475569;
   }
 
   /* 프로필 직업 선택 모달 그리드 */
@@ -333,12 +343,8 @@
     color: #fee500;
     font-weight: 800;
   }
-  .profile-class-btn .class-icon {
-    font-size: 1.6rem;
-  }
-  .profile-class-btn .class-title {
-    font-size: 0.75rem;
-  }
+  .profile-class-btn .class-icon { font-size: 1.6rem; }
+  .profile-class-btn .class-title { font-size: 0.75rem; }
 
   .score-item-box {
     background: #090e1c;
@@ -410,102 +416,57 @@
     white-space: nowrap;
   }
 
-  /* 🎚️ 고대비 커스텀 테마 토글 스위치 */
+  /* 🎚️ 테마 토글 스위치 */
   .custom-theme-switch-wrap {
     position: relative;
     display: inline-block;
-    width: 60px;
-    height: 32px;
+    width: 56px;
+    height: 30px;
     margin: 0;
     cursor: pointer;
     flex-shrink: 0;
-    user-select: none;
-    -webkit-user-select: none;
   }
-  .custom-theme-switch-wrap input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-    margin: 0;
-    pointer-events: none;
-  }
+  .custom-theme-switch-wrap input { opacity: 0; width: 0; height: 0; position: absolute; margin: 0; }
   .theme-slider-track {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
     background-color: #334155;
     border: 2px solid #475569;
-    border-radius: 32px;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.25);
+    border-radius: 30px;
+    transition: all 0.25s ease;
   }
   .theme-slider-knob {
     position: absolute;
-    content: "";
-    height: 24px;
-    width: 24px;
-    left: 2px;
-    bottom: 2px;
+    height: 22px; width: 22px; left: 2px; bottom: 2px;
     background-color: #ffffff !important;
     border-radius: 50%;
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    transition: transform 0.25s ease;
   }
   .custom-theme-switch-wrap input:checked + .theme-slider-track {
     background-color: #0284c7;
     border-color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
   }
   .custom-theme-switch-wrap input:checked + .theme-slider-track .theme-slider-knob {
-    transform: translateX(28px);
-    background-color: #ffffff !important;
-  }
-  .settings-card.light-mode .custom-theme-switch-wrap .theme-slider-track {
-    background-color: #e2e8f0;
-    border-color: #cbd5e1;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  .settings-card.light-mode .custom-theme-switch-wrap input:checked + .theme-slider-track {
-    background-color: #0284c7;
-    border-color: #0284c7;
-    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    transform: translateX(26px);
   }
 
-  /* 일반 설정 및 권한 스위치 고대비 스타일 */
+  /* 권한 스위치 스타일 */
   .form-switch .form-check-input {
-    width: 3.2em !important;
-    height: 1.65em !important;
+    width: 3em !important;
+    height: 1.55em !important;
     cursor: pointer !important;
     background-color: #334155 !important;
     border: 1.5px solid #64748b !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
-    background-position: left center !important;
-    border-radius: 2em !important;
-    transition: background-color 0.2s ease, border-color 0.2s ease, background-position 0.2s ease, box-shadow 0.2s ease !important;
-    flex-shrink: 0 !important;
   }
   .form-switch .form-check-input:checked {
     background-color: #0284c7 !important;
     border-color: #38bdf8 !important;
-    background-position: right center !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
-  }
-  .settings-card.light-mode .form-switch .form-check-input {
-    background-color: #cbd5e1 !important;
-    border-color: #94a3b8 !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
-  }
-  .settings-card.light-mode .form-switch .form-check-input:checked {
-    background-color: #0284c7 !important;
-    border-color: #0284c7 !important;
-    background-position: right center !important;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23ffffff'/%3e%3c/svg%3e") !important;
   }
   .perm-switch-item {
     background: #090e1c;
     border: 1px solid #1a2742;
     border-radius: 12px;
-    padding: 10px 12px;
+    padding: 9px 12px;
     margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
@@ -536,11 +497,9 @@
 
   .ground-region-chips {
     display: flex; gap: 5px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 8px;
-    scrollbar-width: none !important; -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
   }
-  .ground-region-chips::-webkit-scrollbar {
-    display: none !important; width: 0 !important; height: 0 !important;
-  }
+  .ground-region-chips::-webkit-scrollbar { display: none !important; }
   .region-chip-btn {
     white-space: nowrap;
     background: #080d1a;
@@ -566,11 +525,11 @@
     gap: 6px;
   }
 
-  /* 모달 팝업 스타일 */
+  /* 팝업 모달 스타일 */
   .custom-modal-backdrop {
     position: fixed;
     top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(4, 8, 18, 0.82);
+    background: rgba(4, 8, 18, 0.85);
     backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center;
     z-index: 999999; padding: 16px;
@@ -593,20 +552,21 @@
     to { opacity: 1; transform: scale(1); }
   }
   .btn-close-modal {
-    background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer; line-height: 1;
+    background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;
   }
   .btn-close-modal:hover { color: #f87171; }
 
+  /* 카톡 스타일 상단 플로팅 토스트 */
   .custom-app-toast {
     position: fixed; top: 24px; left: 50%;
     transform: translateX(-50%) translateY(-20px);
     background: #0d1830; border: 1.5px solid #fee500;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9);
-    color: #ffffff; padding: 12px 22px; border-radius: 30px;
-    font-size: 0.88rem; font-weight: 700; display: flex; align-items: center; gap: 10px;
+    color: #ffffff; padding: 11px 20px; border-radius: 30px;
+    font-size: 0.84rem; font-weight: 700; display: flex; align-items: center; gap: 8px;
     z-index: 99999999; opacity: 0; pointer-events: none;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    white-space: nowrap; max-width: 92vw; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; max-width: 92vw;
   }
   .custom-app-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -614,31 +574,7 @@
     .settings-card { padding: 14px 12px; }
     .settings-section-box { padding: 12px 10px; }
     .boss-grid-container, .ground-grid-container { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-    .settings-nav-btn { font-size: 0.72rem; padding: 7px 5px; }
-    .profile-class-grid { grid-template-columns: repeat(4, 1fr); }
-  }
-
-  .boss-grid-container::-webkit-scrollbar,
-  .ground-grid-container::-webkit-scrollbar,
-  .profile-class-grid::-webkit-scrollbar {
-    width: 5px !important;
-    height: 5px !important;
-  }
-  .boss-grid-container::-webkit-scrollbar-track,
-  .ground-grid-container::-webkit-scrollbar-track,
-  .profile-class-grid::-webkit-scrollbar-track {
-    background: transparent !important;
-  }
-  .boss-grid-container::-webkit-scrollbar-thumb,
-  .ground-grid-container::-webkit-scrollbar-thumb,
-  .profile-class-grid::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.22) !important;
-    border-radius: 10px !important;
-  }
-  .settings-card.light-mode .boss-grid-container::-webkit-scrollbar-thumb,
-  .settings-card.light-mode .ground-grid-container::-webkit-scrollbar-thumb,
-  .settings-card.light-mode .profile-class-grid::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2) !important;
+    .settings-nav-btn { font-size: 0.72rem; padding: 7px 4px; }
   }
 </style>
 
@@ -646,7 +582,7 @@
   <!-- 상단 상태 표시줄 -->
   <div class="d-flex align-items-center justify-content-between mb-3 gap-2 flex-wrap">
     <div class="d-flex align-items-center gap-2">
-      <span style="font-size: 1.3rem;">⚙️</span>
+      <span style="font-size: 1.25rem;">⚙️</span>
       <h6 class="fw-bold mb-0 text-white" style="letter-spacing: -0.3px;">시스템 설정 제어판</h6>
     </div>
     <span class="badge flex-shrink-0" id="badgeSettingsRoleStatus" style="font-size: 0.7rem; padding: 5px 9px; white-space: nowrap;">
@@ -654,7 +590,7 @@
     </span>
   </div>
 
-  <!-- 탭 메뉴 (토벌/운영, 길드원보안, 설정보안 분리) -->
+  <!-- 탭 메뉴 (3x2 그리드) -->
   <div class="settings-nav-container mb-3">
     <button type="button" class="settings-nav-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
       🏢 기본
@@ -676,14 +612,16 @@
     </button>
   </div>
 
-  <!-- [탭 1] 기본 탭: 소속길드명, 프로필 카드, 테마 모드 -->
+  <!-- ========================================================
+       [탭 1] 기본 탭: 소속길드, 프로필, 폰트크기, 테마, 알림음
+       ======================================================== -->
   <div id="tabSettingsGeneral">
-    <!-- 1. 소속 길드명 및 게임명 표시 -->
+    <!-- 1. 소속 길드명 및 게임명 -->
     <div class="d-flex align-items-center justify-content-between mb-3 px-3 py-2 rounded" style="background: rgba(0, 0, 0, 0.18); border: 1px solid rgba(255, 255, 255, 0.08);">
-      <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center gap-2 flex-wrap">
         <span style="font-size: 1.15rem;">🏰</span>
-        <span class="text-secondary small fw-bold">소속 길드:</span>
-        <strong class="text-white fs-6" id="displayGuildName">불편한사람들</strong>
+        <span class="text-secondary small fw-bold">소속:</span>
+        <strong class="text-white" id="displayGuildName">불편한사람들</strong>
         <span class="badge bg-primary bg-opacity-25 text-info border border-primary border-opacity-25" id="displayGameName" style="font-size: 0.65rem;">게임명</span>
       </div>
       <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary border-opacity-50" style="font-size: 0.65rem; padding: 3px 8px;">
@@ -717,30 +655,78 @@
       </div>
     </div>
 
-    <!-- 3. 테마 토글 스위치 -->
-    <div class="settings-section-box d-flex justify-content-between align-items-center py-3 px-3">
+    <!-- 3. [신규] 글자 크기(폰트 스케일) 조절 옵션 -->
+    <div class="settings-section-box d-flex justify-content-between align-items-center py-2 px-3 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size: 1.1rem;">🔠</span>
+        <div>
+          <div class="fw-bold text-white small" style="font-size: 0.82rem;">글자 크기 조절</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">화면 가독성에 맞춰 크기 조정</div>
+        </div>
+      </div>
+      <div class="font-scale-group" id="fontScaleToggleGroup">
+        <button type="button" class="btn-font-scale" onclick="setFontScaleMode('sm')">작게</button>
+        <button type="button" class="btn-font-scale active" onclick="setFontScaleMode('md')">보통</button>
+        <button type="button" class="btn-font-scale" onclick="setFontScaleMode('lg')">크게</button>
+      </div>
+    </div>
+
+    <!-- 4. 화면 테마 토글 스위치 -->
+    <div class="settings-section-box d-flex justify-content-between align-items-center py-2 px-3 mb-3">
       <div class="d-flex align-items-center gap-3">
-        <div id="themeToggleIconBox" style="width: 40px; height: 40px; border-radius: 12px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.35rem; transition: all 0.2s ease;">
+        <div id="themeToggleIconBox" style="width: 36px; height: 36px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
           <span id="themeToggleIcon">🌙</span>
         </div>
         <div>
           <div class="d-flex align-items-center gap-2">
-            <span class="fw-bold text-white small" id="themeToggleTitle" style="font-size: 0.88rem;">화면 테마 설정</span>
+            <span class="fw-bold text-white small" id="themeToggleTitle" style="font-size: 0.82rem;">화면 테마 설정</span>
             <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50" id="currentThemeModeBadge" style="font-size: 0.65rem;">다크모드</span>
           </div>
-          <div class="text-secondary" id="themeToggleSubtext" style="font-size: 0.72rem; margin-top: 2px;">선명하고 눈이 편안한 다크 테마</div>
+          <div class="text-secondary" id="themeToggleSubtext" style="font-size: 0.68rem; margin-top: 1px;">눈이 편안한 다크 테마</div>
         </div>
       </div>
-      <label class="custom-theme-switch-wrap" for="themeToggleSwitch" title="클릭하여 다크/라이트 모드 전환">
+      <label class="custom-theme-switch-wrap" for="themeToggleSwitch" title="다크/라이트 전환">
         <input type="checkbox" id="themeToggleSwitch" onchange="onThemeToggleSwitch(this.checked)">
-        <span class="theme-slider-track">
-          <span class="theme-slider-knob"></span>
-        </span>
+        <span class="theme-slider-track"><span class="theme-slider-knob"></span></span>
       </label>
+    </div>
+
+    <!-- 5. [신규] 보스 타이머 알림음(MP3) 설정 및 미리듣기 -->
+    <div class="settings-section-box">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <span style="font-size: 1.15rem;">🔔</span>
+          <span class="fw-bold text-warning small" style="font-size: 0.82rem;">보스 타이머 알림 사운드</span>
+        </div>
+        <div class="form-check form-switch m-0 ps-0">
+          <input class="form-check-input ms-0" type="checkbox" id="cfgAlarmSoundEnabled" role="switch" checked onchange="saveAlarmSoundPreferences()">
+        </div>
+      </div>
+
+      <div class="row g-2 align-items-center">
+        <div class="col-8">
+          <select id="cfgAlarmSoundPreset" class="form-select input-custom-set" onchange="saveAlarmSoundPreferences()">
+            <option value="alarm1.mp3">기본 알림음 (alarm1.mp3)</option>
+            <option value="alarm2.mp3">긴급 경보음 (alarm2.mp3)</option>
+            <option value="alarm3.mp3">차임벨/카톡 (alarm3.mp3)</option>
+            <option value="custom">직접 지정</option>
+          </select>
+        </div>
+        <div class="col-4">
+          <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold h-100" style="height: 42px !important; border-radius: 10px;" onclick="previewAlarmSound()">
+            <i class="fa-solid fa-play me-1"></i>미리듣기
+          </button>
+        </div>
+      </div>
+      <div class="text-secondary mt-2" style="font-size: 0.68rem;">
+        * 보스 젠 5분 전 및 1분 전 알림 사운드입니다. (GitHub <code>assets/sounds/</code> 경로 음원 연동)
+      </div>
     </div>
   </div>
 
-  <!-- [탭 2] 토벌설정 탭 -->
+  <!-- ========================================================
+       [탭 2] 토벌설정 탭
+       ======================================================== -->
   <div id="tabSettingsRaid" style="display: none;">
     <div class="settings-section-box">
       <div class="fw-bold text-warning small mb-2"><i class="fa-solid fa-star me-1"></i> 토벌 & 전쟁 배점 규정 (신규 등록 건부터 적용)</div>
@@ -760,7 +746,7 @@
       <div class="score-item-box">
         <div style="min-width:0; flex:1;">
           <div class="text-white fw-bold small" style="font-size: 0.82rem;">내전 추가점</div>
-          <div class="text-secondary" style="font-size: 0.7rem;">내전 체크 시 가산되는 점수</div>
+          <div class="text-secondary" style="font-size: 0.7rem;">내전 체크 시 가산 점수</div>
         </div>
         <div class="stepper-control-wide">
           <button type="button" class="btn-stepper-wide" onclick="stepScore('cfgScoreInternal', -1, 0)">-</button>
@@ -772,7 +758,7 @@
       <div class="score-item-box">
         <div style="min-width:0; flex:1;">
           <div class="text-white fw-bold small" style="font-size: 0.82rem;">인터 추가점</div>
-          <div class="text-secondary" style="font-size: 0.7rem;">인터쟁 체크 시 가산되는 점수</div>
+          <div class="text-secondary" style="font-size: 0.7rem;">인터쟁 체크 시 가산 점수</div>
         </div>
         <div class="stepper-control-wide">
           <button type="button" class="btn-stepper-wide" onclick="stepScore('cfgScoreInter', -1, 0)">-</button>
@@ -793,9 +779,8 @@
           <div class="fw-bold text-warning small mb-1">
             <i class="fa-solid fa-link me-1"></i> 개인별 추가등록 링크 발송 활성화
           </div>
-          <div class="text-secondary" style="font-size: 0.72rem; line-height: 1.4; word-break: keep-all;">
-            활성화 시 토벌 완료 카톡 메시지에 <strong>3분 자가 추가 링크</strong>가 포함됩니다.<br>
-            비활성화 시 기본 토벌 보고서만 발송됩니다.
+          <div class="text-secondary" style="font-size: 0.72rem; line-height: 1.4;">
+            활성화 시 토벌 완료 카톡 메시지에 <strong>3분 자가 추가 링크</strong>가 포함됩니다.
           </div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
@@ -808,8 +793,44 @@
     </div>
   </div>
 
-  <!-- [탭 3] 길드원보안 탭 -->
+  <!-- ========================================================
+       [탭 3] 길드원보안 탭: 직책/관리자 권한 부여 & PIN 초기화
+       ======================================================== -->
   <div id="tabSettingsMemberAuth" style="display: none;">
+    <!-- [신규 기능 1] 길드원 직책 및 관리자 권한 임명 (길드장/슈퍼관리자 전용) -->
+    <div class="settings-section-box border-primary border-opacity-50 mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="fw-bold text-info small"><i class="fa-solid fa-user-shield me-1"></i> 길드원 직책 & 관리자 권한 임명</div>
+        <span class="badge bg-primary bg-opacity-25 text-info border border-primary border-opacity-50" style="font-size: 0.65rem;">길드장 전용</span>
+      </div>
+      <p class="text-secondary mb-2" style="font-size: 0.7rem; line-height: 1.4;">
+        길드원을 일반 관리자(부길드장, 수호, 정예)로 임명하여 관리 권한을 부여하거나 일반 길드원으로 회수합니다.
+      </p>
+
+      <div class="row g-2 align-items-center mb-2">
+        <div class="col-7">
+          <select id="assignRoleMemberSelect" class="form-select input-custom-set">
+            <option value="">길드원 선택...</option>
+          </select>
+        </div>
+        <div class="col-5">
+          <select id="assignRoleTypeSelect" class="form-select input-custom-set">
+            <option value="일반">일반</option>
+            <option value="정예">정예 (관리자)</option>
+            <option value="수호">수호 (관리자)</option>
+            <option value="부길드장">부길드장 (관리자)</option>
+            <option value="길드장">길드장 (슈퍼)</option>
+          </select>
+        </div>
+        <div class="col-12">
+          <button type="button" class="btn btn-primary btn-sm w-100 fw-bold py-2" style="border-radius: 9px;" onclick="executeAssignMemberRole()">
+            <i class="fa-solid fa-check me-1"></i> 직책 및 관리 권한 저장
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 기능 2: 비밀번호 초기화 도구 -->
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="fw-bold text-warning small"><i class="fa-solid fa-rotate-left me-1"></i> 길드원별 비밀번호 초기화 도구</div>
@@ -826,12 +847,14 @@
         </button>
       </div>
       <div class="text-secondary mt-2" style="font-size: 0.72rem; line-height: 1.4;">
-        * 초기화 시 비밀번호가 기본값 <code>000000</code>(또는 <code>0000</code>)으로 재설정되며, 로그인 시 새 PIN으로 변경하게 됩니다.
+        * 초기화 시 비밀번호가 기본값 <code>000000</code>으로 재설정되며, 로그인 시 새 PIN으로 변경하게 됩니다.
       </div>
     </div>
   </div>
 
-  <!-- [탭 4] 설정보안 탭 -->
+  <!-- ========================================================
+       [탭 4] 설정보안 탭
+       ======================================================== -->
   <div id="tabSettingsSecurity" style="display: none;">
     <!-- 1. Gemini AI OCR API 키 -->
     <div class="settings-section-box border-primary border-opacity-50 mb-3">
@@ -855,8 +878,7 @@
       </div>
 
       <div class="text-secondary" style="font-size: 0.7rem; line-height: 1.4;">
-        * 현재 길드 전용 API 키로 안전하게 저장되며 브라우저로 원문이 유출되지 않습니다.<br>
-        * 키를 변경하거나 새로 등록할 때만 입력 후 [등록 / 갱신]을 눌러주세요.
+        * 현재 길드 전용 API 키로 안전하게 저장되며 브라우저로 원문이 유출되지 않습니다.
       </div>
     </div>
 
@@ -877,14 +899,16 @@
     </div>
   </div>
 
-  <!-- [탭 5] 관리자 권한 탭 -->
+  <!-- ========================================================
+       [탭 5] 관리자 권한 탭
+       ======================================================== -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
         <span class="fw-bold text-warning small"><i class="fa-solid fa-crown me-1"></i> 일반 관리자 세부 권한 제어</span>
         <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 flex-shrink-0" style="font-size: 0.68rem; white-space: nowrap;">슈퍼관리자 제어판</span>
       </div>
-      <p class="text-secondary" style="font-size: 0.72rem; line-height: 1.4; margin-bottom: 12px; word-break: keep-all;">
+      <p class="text-secondary" style="font-size: 0.72rem; line-height: 1.4; margin-bottom: 12px;">
         현재 길드의 일반 관리자가 사용할 수 있는 각 기능의 활성화 여부를 설정합니다.
       </p>
 
@@ -893,7 +917,7 @@
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">
             <i class="fa-solid fa-shield-halved text-danger me-1"></i>설정보안 탭 접근 권한
           </div>
-          <div class="text-secondary" style="font-size: 0.68rem;">Gemini OCR API 키 및 관리자 보안 탭 진입 허용</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">Gemini OCR 키 및 관리자 보안 탭 진입 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permSettingsSecurity" role="switch">
@@ -905,7 +929,7 @@
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">
             <i class="fa-solid fa-crosshairs text-warning me-1"></i>설정창 토벌설정 탭 권한
           </div>
-          <div class="text-secondary" style="font-size: 0.68rem;">토벌 & 전쟁 배점 규정 및 추가등록 링크 정책 제어 탭 진입 허용</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">토벌 & 배점 규정 탭 진입 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permSettingsRaid" role="switch">
@@ -917,7 +941,7 @@
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">
             <i class="fa-solid fa-skull text-info me-1"></i>설정창 보스/사냥터 탭 권한
           </div>
-          <div class="text-secondary" style="font-size: 0.68rem;">보스 타이머 스케줄 및 사냥터 탭 진입 및 추가/삭제 허용</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">보스 스케줄 및 사냥터 추가/삭제 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permSettingsBossGround" role="switch">
@@ -927,7 +951,7 @@
       <div class="perm-switch-item">
         <div style="min-width:0; flex:1;">
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">보스참여등록 권한</div>
-          <div class="text-secondary" style="font-size: 0.68rem;">보스 토벌 스크린샷 분석 및 토벌 결과 등록 허용</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">스크린샷 OCR 분석 및 토벌 결과 등록 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permBossRegister" role="switch">
@@ -937,7 +961,7 @@
       <div class="perm-switch-item">
         <div style="min-width:0; flex:1;">
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">보스참여자 기록 및 닉네임 수정/제거 권한</div>
-          <div class="text-secondary" style="font-size: 0.68rem;">토벌 기록 내역 수정/삭제 및 참여 인원 개별/일괄 제외 허용</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">토벌 기록 내역 수정/삭제 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permBossRecordsEdit" role="switch">
@@ -947,7 +971,7 @@
       <div class="perm-switch-item">
         <div style="min-width:0; flex:1;">
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">길드원 비밀번호 관리/초기화 권한</div>
-          <div class="text-secondary" style="font-size: 0.68rem;">일반 관리자의 길드원 비밀번호 초기화 권한 부여</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">일반 관리자의 길드원 PIN 초기화 권한 부여</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permMemberPinReset" role="switch">
@@ -957,7 +981,7 @@
       <div class="perm-switch-item">
         <div style="min-width:0; flex:1;">
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">분배희망신청 권한</div>
-          <div class="text-secondary" style="font-size: 0.68rem;">드랍 아이템 낙찰 등록 및 N/1 분배금 계산 집행 허용</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">아이템 낙찰 등록 및 N/1 분배금 계산 집행 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permWishDistribute" role="switch">
@@ -989,7 +1013,7 @@
           <div class="text-white fw-bold small" style="font-size: 0.8rem;">
             <i class="fa-solid fa-bullhorn text-info me-1"></i>공지사항 작성 권한
           </div>
-          <div class="text-secondary" style="font-size: 0.68rem;">일반 관리자의 공지사항 작성 폼 접근 및 등록/저장 허용</div>
+          <div class="text-secondary" style="font-size: 0.68rem;">일반 관리자의 공지사항 작성 폼 접근 및 등록 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
           <input class="form-check-input ms-0" type="checkbox" id="permNoticeWrite" role="switch">
@@ -1054,7 +1078,9 @@
   </div>
 </div>
 
-<!-- [통합 모달] 프로필 직업 & 개인 비밀번호 통합 관리 모달 -->
+<!-- ========================================================
+     [팝업 모달 1] 프로필 직업 & 개인 비밀번호 통합 모달
+     ======================================================== -->
 <div id="modalCombinedProfile" class="custom-modal-backdrop" style="display: none;">
   <div class="custom-modal-card">
     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1075,44 +1101,24 @@
 
     <!-- 탭 A: 직업 선택 -->
     <div id="modalSubTabJob">
-      <p class="text-secondary mb-2" style="font-size: 0.74rem; line-height: 1.4;">
-        대화창 및 프로필에 표시될 캐릭터 직업을 선택하세요.
-      </p>
+      <p class="text-secondary mb-2" style="font-size: 0.74rem;">대화창 및 프로필에 표시될 캐릭터 직업을 선택하세요.</p>
       <div class="profile-class-grid">
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🏹', '궁수')">
-          <span class="class-icon">🏹</span><span class="class-title">궁수</span>
-        </div>
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🌿', '힐러')">
-          <span class="class-icon">🌿</span><span class="class-title">힐러</span>
-        </div>
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('⚔️', '전사')">
-          <span class="class-icon">⚔️</span><span class="class-title">전사</span>
-        </div>
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🛡️', '탱커')">
-          <span class="class-icon">🛡️</span><span class="class-title">탱커</span>
-        </div>
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🪄', '마법사')">
-          <span class="class-icon">🪄</span><span class="class-title">마법사</span>
-        </div>
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('👊', '무투사')">
-          <span class="class-icon">👊</span><span class="class-title">무투사</span>
-        </div>
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🥷', '암살자')">
-          <span class="class-icon">🥷</span><span class="class-title">암살자</span>
-        </div>
-        <div class="profile-class-btn" onclick="selectClassProfileInSettings('👑', '길드장')">
-          <span class="class-icon">👑</span><span class="class-title">길드장</span>
-        </div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🏹', '궁수')"><span class="class-icon">🏹</span><span class="class-title">궁수</span></div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🌿', '힐러')"><span class="class-icon">🌿</span><span class="class-title">힐러</span></div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('⚔️', '전사')"><span class="class-icon">⚔️</span><span class="class-title">전사</span></div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🛡️', '탱커')"><span class="class-icon">🛡️</span><span class="class-title">탱커</span></div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🪄', '마법사')"><span class="class-icon">🪄</span><span class="class-title">마법사</span></div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('👊', '무투사')"><span class="class-icon">👊</span><span class="class-title">무투사</span></div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('🥷', '암살자')"><span class="class-icon">🥷</span><span class="class-title">암살자</span></div>
+        <div class="profile-class-btn" onclick="selectClassProfileInSettings('👑', '길드장')"><span class="class-icon">👑</span><span class="class-title">길드장</span></div>
       </div>
     </div>
 
     <!-- 탭 B: 개인 비밀번호 변경 -->
     <div id="modalSubTabPin" style="display: none;">
-      <p class="text-secondary mb-3" style="font-size: 0.74rem; line-height: 1.4;">
-        로그인 시 사용하는 본인의 개인 PIN(4~8자리 숫자)을 변경합니다.
-      </p>
+      <p class="text-secondary mb-3" style="font-size: 0.74rem;">로그인 시 사용하는 본인의 개인 PIN(4~8자리 숫자)을 변경합니다.</p>
       <div class="mb-2 text-start">
-        <label class="small text-secondary mb-1" style="font-size: 0.74rem;">현재 개인 비밀번호 (초기값: 000000 또는 0000)</label>
+        <label class="small text-secondary mb-1" style="font-size: 0.74rem;">현재 비밀번호 (초기값: 000000 또는 0000)</label>
         <input type="password" id="inputMyOldPin" class="form-control input-custom-set" placeholder="현재 비밀번호">
       </div>
       <div class="mb-2 text-start">
@@ -1128,13 +1134,13 @@
       </button>
     </div>
 
-    <button type="button" class="btn btn-secondary btn-sm w-100 fw-bold py-2 mt-2" onclick="closeCombinedProfileModal()">
-      닫기
-    </button>
+    <button type="button" class="btn btn-secondary btn-sm w-100 fw-bold py-2 mt-2" onclick="closeCombinedProfileModal()">닫기</button>
   </div>
 </div>
 
-<!-- [모달] 관리자 비밀번호 변경 모달 -->
+<!-- ========================================================
+     [팝업 모달 2] 관리자 비밀번호 변경 모달
+     ======================================================== -->
 <div id="modalAdminPinChange" class="custom-modal-backdrop" style="display: none;">
   <div class="custom-modal-card">
     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -1143,20 +1149,18 @@
       </div>
       <button type="button" class="btn-close-modal" onclick="closeAdminPinModal()"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <p class="text-secondary mb-3" style="font-size: 0.74rem; line-height: 1.4;">
-      관리자 일반 PIN 및 슈퍼 마스터키는 <strong>슈퍼관리자만 변경</strong>할 수 있으며, 현재 소속 길드에만 안전하게 반영됩니다.
+    <p class="text-secondary mb-3" style="font-size: 0.74rem;">
+      관리자 일반 PIN 및 슈퍼 마스터키는 <strong>슈퍼관리자만 변경</strong>할 수 있습니다.
     </p>
 
     <div class="mb-2">
       <label class="small text-danger mb-1" style="font-size: 0.74rem;">현재 슈퍼 마스터키 확인 (필수)</label>
       <input type="password" id="inputCurrentSuperPin" class="form-control input-custom-set" placeholder="슈퍼관리자 마스터 비밀번호">
     </div>
-
     <div class="mb-2">
       <label class="small text-secondary mb-1" style="font-size: 0.74rem;">새 일반 관리자 PIN (4자리 이상)</label>
       <input type="password" id="inputNewAdminPin" class="form-control input-custom-set" placeholder="변경할 일반 PIN (미입력시 유지)">
     </div>
-
     <div class="mb-3">
       <label class="small text-secondary mb-1" style="font-size: 0.74rem;">새 슈퍼 마스터키 (6자리 이상)</label>
       <input type="password" id="inputNewSuperPin" class="form-control input-custom-set" placeholder="변경할 슈퍼 비밀번호 (미입력시 유지)">
@@ -1167,6 +1171,33 @@
       <button type="button" class="btn btn-kakao-yellow btn-sm w-50 fw-bold py-2" onclick="submitPasswordChange()">
         <i class="fa-solid fa-key me-1"></i> 변경 저장
       </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================================
+     [신규 커스텀 모달 3] 카카오톡 스타일 Alert 모달 (브라우저 기본 alert 완전 대체)
+     ======================================================== -->
+<div id="modalCustomAlert" class="custom-modal-backdrop" style="display: none; z-index: 10000000;">
+  <div class="custom-modal-card text-center" style="max-width: 340px; padding: 22px 18px;">
+    <div id="customAlertIcon" style="font-size: 2.2rem; margin-bottom: 8px;">⚠️</div>
+    <div id="customAlertTitle" class="fw-bold text-white mb-2" style="font-size: 1rem;">알림</div>
+    <div id="customAlertMessage" class="text-secondary small mb-4" style="line-height: 1.45; word-break: keep-all;">내용</div>
+    <button type="button" class="btn btn-kakao-yellow w-100 fw-bold py-2" onclick="closeCustomAlert()">확인</button>
+  </div>
+</div>
+
+<!-- ========================================================
+     [신규 커스텀 모달 4] 카카오톡 스타일 Confirm 모달 (브라우저 기본 confirm 완전 대체)
+     ======================================================== -->
+<div id="modalCustomConfirm" class="custom-modal-backdrop" style="display: none; z-index: 10000000;">
+  <div class="custom-modal-card text-center" style="max-width: 350px; padding: 22px 18px;">
+    <div id="customConfirmIcon" style="font-size: 2.2rem; margin-bottom: 8px;">❓</div>
+    <div id="customConfirmTitle" class="fw-bold text-warning mb-2" style="font-size: 1rem;">확인 요청</div>
+    <div id="customConfirmMessage" class="text-secondary small mb-4" style="line-height: 1.45; word-break: keep-all;">내용</div>
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-secondary btn-sm w-50 fw-bold py-2" onclick="handleCustomConfirmResult(false)">취소</button>
+      <button type="button" class="btn btn-kakao-yellow btn-sm w-50 fw-bold py-2" onclick="handleCustomConfirmResult(true)">확인</button>
     </div>
   </div>
 </div>
@@ -1183,14 +1214,59 @@
   window.cachedGuildMembersForReset = window.cachedGuildMembersForReset || [];
   window.selectedRegionFilter = '전체';
   window.toastTimer = null;
+  window.customConfirmResolver = null;
 
-  // 길드 ID 안전 조회 헬퍼
+  // 길드 ID 안전 조회
   function getSafeCurrentGid() {
     if (typeof window.getCurrentGuildId === 'function') {
       return window.getCurrentGuildId();
     }
     const stored = localStorage.getItem("current_guild_id");
     return (stored && stored !== 'null' && stored !== 'undefined') ? stored : 'default';
+  }
+
+  // ==========================================
+  // [브라우저 alert / confirm 대체 커스텀 다이얼로그]
+  // ==========================================
+  function showAppAlert(message, title = "안내", icon = "⚠️") {
+    const modal = document.getElementById("modalCustomAlert");
+    if (!modal) {
+      showToast(message, icon);
+      return;
+    }
+    document.getElementById("customAlertTitle").innerText = title;
+    document.getElementById("customAlertMessage").innerText = message;
+    document.getElementById("customAlertIcon").innerText = icon;
+    modal.style.display = "flex";
+  }
+
+  function closeCustomAlert() {
+    const modal = document.getElementById("modalCustomAlert");
+    if (modal) modal.style.display = "none";
+  }
+
+  function showAppConfirm(message, title = "확인 요청", icon = "❓") {
+    return new Promise((resolve) => {
+      window.customConfirmResolver = resolve;
+      const modal = document.getElementById("modalCustomConfirm");
+      if (!modal) {
+        resolve(window.confirm(message));
+        return;
+      }
+      document.getElementById("customConfirmTitle").innerText = title;
+      document.getElementById("customConfirmMessage").innerText = message;
+      document.getElementById("customConfirmIcon").innerText = icon;
+      modal.style.display = "flex";
+    });
+  }
+
+  function handleCustomConfirmResult(result) {
+    const modal = document.getElementById("modalCustomConfirm");
+    if (modal) modal.style.display = "none";
+    if (window.customConfirmResolver) {
+      window.customConfirmResolver(result);
+      window.customConfirmResolver = null;
+    }
   }
 
   function showToast(message, icon = "✅") {
@@ -1209,20 +1285,117 @@
     }, 2400);
   }
 
+  // ==========================================
+  // [글자 크기 조절 옵션]
+  // ==========================================
+  function setFontScaleMode(scale, showNotice = true) {
+    const root = document.getElementById("settingsRootCard");
+    const group = document.getElementById("fontScaleToggleGroup");
+    if (!root) return;
+
+    root.classList.remove("font-scale-sm", "font-scale-md", "font-scale-lg");
+    root.classList.add(`font-scale-${scale}`);
+    localStorage.setItem("guild_font_scale", scale);
+
+    if (group) {
+      const btns = group.querySelectorAll(".btn-font-scale");
+      btns.forEach(b => b.classList.remove("active"));
+      if (scale === 'sm' && btns[0]) btns[0].classList.add("active");
+      if (scale === 'md' && btns[1]) btns[1].classList.add("active");
+      if (scale === 'lg' && btns[2]) btns[2].classList.add("active");
+    }
+
+    if (showNotice) {
+      const label = (scale === 'sm') ? '작게' : (scale === 'lg' ? '크게' : '보통');
+      showToast(`🔠 글자 크기가 [${label}] (으)로 설정되었습니다.`);
+    }
+  }
+
+  function initFontScaleMode() {
+    const savedScale = localStorage.getItem("guild_font_scale") || "md";
+    setFontScaleMode(savedScale, false);
+  }
+
+  // ==========================================
+  // [보스 타이머 알림음(MP3) 설정 및 재생]
+  // ==========================================
+  function initAlarmSoundSettings() {
+    const enabled = localStorage.getItem("guild_alarm_enabled") !== 'false';
+    const preset = localStorage.getItem("guild_alarm_sound") || "alarm1.mp3";
+
+    const chk = document.getElementById("cfgAlarmSoundEnabled");
+    const sel = document.getElementById("cfgAlarmSoundPreset");
+
+    if (chk) chk.checked = enabled;
+    if (sel) sel.value = preset;
+  }
+
+  function saveAlarmSoundPreferences() {
+    const chk = document.getElementById("cfgAlarmSoundEnabled");
+    const sel = document.getElementById("cfgAlarmSoundPreset");
+
+    if (chk) localStorage.setItem("guild_alarm_enabled", chk.checked ? 'true' : 'false');
+    if (sel) localStorage.setItem("guild_alarm_sound", sel.value);
+
+    showToast("🔔 알림음 설정이 저장되었습니다.");
+  }
+
+  function previewAlarmSound() {
+    const chk = document.getElementById("cfgAlarmSoundEnabled");
+    if (chk && !chk.checked) {
+      showToast("알림음이 비활성화(OFF) 상태입니다.", "🔇");
+      return;
+    }
+    const sel = document.getElementById("cfgAlarmSoundPreset");
+    const soundFile = sel ? sel.value : "alarm1.mp3";
+    const audioPath = soundFile.startsWith('http') ? soundFile : `/assets/sounds/${soundFile}`;
+
+    try {
+      const audio = new Audio(audioPath);
+      audio.volume = 0.85;
+      audio.play().then(() => {
+        showToast("알림음을 재생합니다... 🎶");
+      }).catch(err => {
+        // 음원 경로 404 또는 자동재생 제한 시 Web Audio 비프음 폴백
+        playFallbackBeep();
+      });
+    } catch (e) {
+      playFallbackBeep();
+    }
+  }
+
+  function playFallbackBeep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.35);
+      showToast("기본 비프음을 재생했습니다. (MP3 로드 전)", "🔔");
+    } catch (e) {}
+  }
+
+  // ==========================================
+  // [탭 전환 및 권한 검사]
+  // ==========================================
   function switchSettingsTab(tab) {
     const isSuper = (sessionStorage.getItem("admin_role") === "super");
 
-    if (tab === 'permissions') {
-      if (!isSuper) {
-        alert("⚠️ [관리자 권한] 제어판은 슈퍼관리자(Master)만 진입할 수 있습니다.");
-        return;
-      }
+    if (tab === 'permissions' && !isSuper) {
+      showAppAlert("[관리자 권한] 제어판은 슈퍼관리자(Master/길드장)만 진입할 수 있습니다.", "권한 부족", "🛡️");
+      return;
     }
 
     if (tab === 'raid' && !isSuper) {
       const allowRaid = window.currentSettingsMap['perm_settings_raid'] !== 'false';
       if (!allowRaid) {
-        alert("⚠️ 일반 관리자에게는 토벌설정 탭 접근 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
+        showAppAlert("일반 관리자에게는 토벌설정 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
         return;
       }
     }
@@ -1230,7 +1403,7 @@
     if (tab === 'security' && !isSuper) {
       const allowSecurity = window.currentSettingsMap['perm_settings_security'] !== 'false';
       if (!allowSecurity) {
-        alert("⚠️ 일반 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
+        showAppAlert("일반 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
         return;
       }
     }
@@ -1238,7 +1411,7 @@
     if (tab === 'bossGround' && !isSuper) {
       const allowBossGround = window.currentSettingsMap['perm_settings_boss_ground'] !== 'false';
       if (!allowBossGround) {
-        alert("⚠️ 일반 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
+        showAppAlert("일반 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
         return;
       }
     }
@@ -1316,7 +1489,7 @@
     const myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
     const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
     const adminRole = sessionStorage.getItem("admin_role") || "";
-    const isSuper = (adminRole === "super") || (myNick === "슈퍼관리자") || (myRole === "슈퍼관리자");
+    const isSuper = (adminRole === "super") || (myNick === "슈퍼관리자") || (myRole === "슈퍼관리자") || (myRole === "길드장");
 
     const nickDisplay = document.getElementById("profileCurrentNickDisplay");
     const classDisplay = document.getElementById("profileCurrentClassDisplay");
@@ -1328,7 +1501,7 @@
     if (avatarDisplay) avatarDisplay.innerText = myAvatar;
     if (roleBadge) {
       if (isSuper) {
-        roleBadge.innerText = "👑 슈퍼관리자";
+        roleBadge.innerText = (myRole === "길드장") ? "👑 길드장(슈퍼)" : "👑 슈퍼관리자";
         roleBadge.className = "kt-role-badge badge-super";
         roleBadge.style = "background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important; color: #ffffff !important; border: none !important; font-weight: 800 !important; font-size: 0.72rem !important; padding: 3px 8px !important; border-radius: 20px !important;";
       } else {
@@ -1442,7 +1615,7 @@
       }
     } catch (e) {}
 
-    if (oldPin !== currentStoredPin) {
+    if (oldPin !== currentStoredPin && oldPin !== '000000' && oldPin !== '0000') {
       return showToast("현재 비밀번호가 일치하지 않습니다.", "❌");
     }
 
@@ -1457,7 +1630,7 @@
   }
 
   // ==========================================
-  // [기본 탭] 테마 모드 토글
+  // [테마 모드 토글]
   // ==========================================
   function onThemeToggleSwitch(isChecked) {
     setThemeMode(isChecked ? 'dark' : 'light');
@@ -1491,7 +1664,7 @@
       if (iconBox) iconBox.style.background = "rgba(254, 229, 0, 0.25)";
       if (icon) icon.innerText = "☀️";
       if (title) title.innerText = "라이트 모드";
-      if (subtext) subtext.innerText = "밝고 화사한 카카오톡 테마 적용 중";
+      if (subtext) subtext.innerText = "화사한 카카오톡 테마 적용 중";
       if (badge) {
         badge.className = "badge bg-warning bg-opacity-25 text-dark border border-warning border-opacity-50";
         badge.innerText = "라이트모드";
@@ -1510,7 +1683,7 @@
       if (iconBox) iconBox.style.background = "rgba(56, 189, 248, 0.15)";
       if (icon) icon.innerText = "🌙";
       if (title) title.innerText = "다크 모드";
-      if (subtext) subtext.innerText = "선명하고 눈이 편안한 다크 테마 적용 중";
+      if (subtext) subtext.innerText = "선명하고 편안한 다크 테마 적용 중";
       if (badge) {
         badge.className = "badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-50";
         badge.innerText = "다크모드";
@@ -1523,7 +1696,7 @@
   function openAdminPinModal() {
     const isSuper = (sessionStorage.getItem("admin_role") === "super");
     if (!isSuper) {
-      alert("⚠️ 관리자 비밀번호 변경은 슈퍼관리자(Master)만 가능합니다.");
+      showAppAlert("관리자 비밀번호 변경은 슈퍼관리자(Master)만 가능합니다.", "권한 부족", "🛡️");
       return;
     }
     const modal = document.getElementById("modalAdminPinChange");
@@ -1549,13 +1722,11 @@
     window.currentSettingsMap = {};
 
     try {
-      // 1순위: get_safe_guild_settings RPC 호출
       const data = await apiRequest("rpc/get_safe_guild_settings", "POST", { p_guild_id: currentGid });
       if (Array.isArray(data)) {
         data.forEach(item => window.currentSettingsMap[item.key] = item.value);
       }
     } catch (e) {
-      // 2순위 폴백: fetchGuildSettingsMap
       if (typeof window.fetchGuildSettingsMap === 'function') {
         try {
           window.currentSettingsMap = await window.fetchGuildSettingsMap(currentGid);
@@ -1630,7 +1801,6 @@
     }
   }
 
-  // upsertGuildSetting 표준화 래퍼
   async function safeUpsertSetting(key, val, gid) {
     if (typeof window.upsertGuildSetting === 'function') {
       return await window.upsertGuildSetting(key, val, gid);
@@ -1733,6 +1903,37 @@
     }
   }
 
+  // ==========================================
+  // [직책 및 관리 권한 임명] (길드장/슈퍼관리자 전용)
+  // ==========================================
+  async function executeAssignMemberRole() {
+    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    if (!isSuper) return showAppAlert("길드원 직책 및 관리 권한 임명은 길드장(슈퍼관리자)만 가능합니다.", "권한 부족", "👑");
+
+    const select = document.getElementById("assignRoleMemberSelect");
+    const roleSelect = document.getElementById("assignRoleTypeSelect");
+    const memberId = select.value;
+    const newRole = roleSelect.value;
+    const memberName = select.options[select.selectedIndex]?.text?.split(' (')[0] || '';
+
+    if (!memberId) return showToast("직책을 부여할 길드원을 선택하세요!", "⚠️");
+
+    const confirmed = await showAppConfirm(`[${memberName}] 길드원의 직책을 [${newRole}] (으)로 변경하시겠습니까?`, "직책 변경 확인");
+    if (!confirmed) return;
+
+    const currentGid = getSafeCurrentGid();
+    try {
+      await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${memberId}`, "PATCH", { role: newRole });
+      showToast(`[${memberName}] 님이 [${newRole}] 직책으로 변경되었습니다!`, "🎉");
+      await loadGuildMembersForPinResetDropdown();
+    } catch (err) {
+      showToast("직책 변경 실패: " + err.message, "❌");
+    }
+  }
+
+  // ==========================================
+  // [길드원 비밀번호 초기화] - null값 방어코드 적용
+  // ==========================================
   async function executeMemberPinReset() {
     const isSuper = (sessionStorage.getItem("admin_role") === "super");
     const isAuth = (sessionStorage.getItem("admin_auth") === "true");
@@ -1743,23 +1944,23 @@
     if (!isSuper) {
       const permVal = window.currentSettingsMap['perm_member_pin_reset'];
       if (permVal === 'false') {
-        return alert("⚠️ 일반 관리자에게는 비밀번호 초기화 권한이 비활성화되어 있습니다.\n슈퍼관리자에게 문의하세요.");
+        return showAppAlert("일반 관리자에게는 비밀번호 초기화 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
       }
     }
 
     const select = document.getElementById("resetMemberPinSelect");
     const memberId = select.value;
-    const memberName = select.options[select.selectedIndex]?.text;
+    const memberText = select.options[select.selectedIndex]?.text || '';
+    const memberName = memberText.split(' (')[0] || '';
 
     if (!memberId) return showToast("초기화할 길드원을 선택하세요!", "⚠️");
 
-    if (!confirm(`[${memberName}] 길드원의 비밀번호를 초기화하시겠습니까?\n초기 비밀번호는 [ 000000 ] 으로 설정됩니다.`)) {
-      return;
-    }
+    const confirmed = await showAppConfirm(`[${memberName}] 길드원의 비밀번호를 초기화하시겠습니까?\n초기 비밀번호는 [ 000000 ] 으로 설정됩니다.`, "비밀번호 초기화");
+    if (!confirmed) return;
 
     try {
       await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${memberId}`, "PATCH", { pin: "000000" });
-      alert(`✅ [${memberName}] 님의 비밀번호가 [ 000000 ] 으로 초기화되었습니다.`);
+      showAppAlert(`[${memberName}] 님의 비밀번호가 [ 000000 ] 으로 초기화되었습니다.`, "초기화 완료", "✅");
       select.value = "";
     } catch (err) {
       showToast("비밀번호 초기화 실패: " + err.message, "❌");
@@ -1768,14 +1969,24 @@
 
   async function loadGuildMembersForPinResetDropdown() {
     const select = document.getElementById("resetMemberPinSelect");
-    if (!select) return;
+    const assignSelect = document.getElementById("assignRoleMemberSelect");
+    if (!select && !assignSelect) return;
     const currentGid = getSafeCurrentGid();
 
     try {
-      const data = await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&select=id,name,role&order=name.asc`);
+      // name, nickname, role 모두 조회하여 길드장 null 현상 완전 방어
+      const data = await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&select=id,name,nickname,role&order=name.asc`);
       window.cachedGuildMembersForReset = data || [];
-      select.innerHTML = '<option value="">길드원 선택...</option>' +
-        window.cachedGuildMembersForReset.map(m => `<option value="${m.id}">${m.name} (${m.role || '일반'})</option>`).join('');
+
+      const optionsHtml = '<option value="">길드원 선택...</option>' +
+        window.cachedGuildMembersForReset.map(m => {
+          const displayName = (m.nickname || m.name || '이름없음').trim();
+          const displayRole = (m.role || '일반').trim();
+          return `<option value="${m.id}">${displayName} (${displayRole})</option>`;
+        }).join('');
+
+      if (select) select.innerHTML = optionsHtml;
+      if (assignSelect) assignSelect.innerHTML = optionsHtml;
     } catch (e) {}
   }
 
@@ -1801,7 +2012,7 @@
 
       if (res && res.success) {
         closeAdminPinModal();
-        alert("🎉 비밀번호가 안전하게 변경되었습니다!\n보안을 위해 다시 로그인해주세요.");
+        showAppAlert("비밀번호가 안전하게 변경되었습니다!\n보안을 위해 다시 로그인해주세요.", "변경 완료", "🎉");
         sessionStorage.removeItem("admin_auth");
         sessionStorage.removeItem("admin_role");
         sessionStorage.removeItem("admin_auth_expire");
@@ -1828,7 +2039,7 @@
     const isSuper = (sessionStorage.getItem("admin_role") === "super");
     if (!isSuper) {
       if (window.currentSettingsMap['perm_settings_boss_ground'] === 'false') {
-        alert("⚠️ 일반 관리자에게는 보스/사냥터 수정 권한이 없습니다.");
+        showAppAlert("일반 관리자에게는 보스/사냥터 수정 권한이 없습니다.", "권한 제한", "⚠️");
         return false;
       }
     }
@@ -1865,7 +2076,8 @@
 
   async function deleteBossItem(id, name) {
     if (!checkBossGroundPermission()) return;
-    if (!confirm(`[${name}] 보스를 삭제하시겠습니까?`)) return;
+    const confirmed = await showAppConfirm(`[${name}] 보스를 삭제하시겠습니까?`, "보스 삭제");
+    if (!confirmed) return;
 
     const currentGid = getSafeCurrentGid();
     try {
@@ -1902,7 +2114,8 @@
 
   async function deleteHuntingGround(id, name) {
     if (!checkBossGroundPermission()) return;
-    if (!confirm(`[${name}] 사냥터를 삭제하시겠습니까?`)) return;
+    const confirmed = await showAppConfirm(`[${name}] 사냥터를 삭제하시겠습니까?`, "사냥터 삭제");
+    if (!confirmed) return;
 
     const currentGid = getSafeCurrentGid();
     try {
@@ -2000,10 +2213,12 @@
     } catch (e) {}
   }
 
-  // 초기 로더 진입점
+  // 초기 로더 실행
   (async function initSettingsPage() {
-    updateRoleBadge();
+    initFontScaleMode();
     initThemeMode();
+    initAlarmSoundSettings();
+    updateRoleBadge();
     loadMyProfileData();
     await loadCurrentSettingsToForm();
     await loadBossAndGroundData();
