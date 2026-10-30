@@ -740,7 +740,11 @@ async function executeGuildLogin(forcedGuildId = null) {
     localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
   } catch (e) {}
 
-  if (userRole === "길드장" || userRole === "길마" || userRole === "부길드장" || userRole === "부길마" || userRole === "수호") {
+  // ⚡ 핵심 수정: '길드장' 또는 '슈퍼관리자' 직책일 경우 무조건 admin_role = 'super'로 부여하여 권한 부족 오류 원천 해결!
+  if (userRole === "길드장" || userRole === "길마" || userRole === "슈퍼관리자") {
+    sessionStorage.setItem("admin_auth", "true");
+    sessionStorage.setItem("admin_role", "super");
+  } else if (userRole === "부길드장" || userRole === "부길마" || userRole === "수호") {
     sessionStorage.setItem("admin_auth", "true");
     sessionStorage.setItem("admin_role", "admin");
   } else if (userRole === "정예") {
@@ -1070,7 +1074,6 @@ function listenRealtimeChatMessages() {
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
       if (!payload.new) return;
       const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-      // 다른 길드의 메시지는 즉시 무시
       if (payload.new.guild_id && payload.new.guild_id !== currentGid) return;
 
       const newMsg = payload.new;
@@ -1169,7 +1172,7 @@ function listenRealtimeChatMessages() {
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링 (마스터 긴급 공지 카드 포함)
+// 6. 카카오톡 말풍선 렌더링
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1570,8 +1573,8 @@ window.openModulePage = async function(pageName) {
 
   const myRole = localStorage.getItem("guild_my_role") || "일반";
   const adminRole = sessionStorage.getItem("admin_role") || "";
-  const isSuper = (adminRole === "super");
-  const isAdmin = isSuper || (adminRole === "admin") || (myRole === "길드장" || myRole === "길마" || myRole === "부길드장" || myRole === "부길마" || myRole === "수호");
+  const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "슈퍼관리자");
+  const isAdmin = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마") || (myRole === "수호");
   const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
   if (pageName === 'PageSettings' && !isAdmin) {
