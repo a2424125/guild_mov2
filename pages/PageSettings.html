@@ -661,7 +661,7 @@
        [탭 1] 기본 탭: 소속길드, 프로필, 폰트크기, 테마, 채팅/보스 알림음
        ======================================================== -->
   <div id="tabSettingsGeneral">
-    <!-- 1. 소속 길드명 및 게임명 (답답한 회색 음영 완전 개선, 선명한 투명 그라디언트 + 뱃지 제거) -->
+    <!-- 1. 소속 길드명 및 게임명 (답답한 회색 음영 개선, 선명한 투명 그라디언트) -->
     <div class="guild-info-banner d-flex align-items-center justify-content-between mb-3">
       <div class="d-flex align-items-center gap-2 flex-wrap">
         <span style="font-size: 1.2rem;">🏰</span>
@@ -733,7 +733,7 @@
       </label>
     </div>
 
-    <!-- 5-A. 새 채팅 메시지 알림음 설정 -->
+    <!-- 5-A. 새 채팅 메시지 알림음 설정 (1~19번 깔끔 통일) -->
     <div class="settings-section-box mb-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="d-flex align-items-center gap-2">
@@ -780,7 +780,7 @@
       </div>
     </div>
 
-    <!-- 5-B. 보스 젠 타이머 알림음 설정 -->
+    <!-- 5-B. 보스 젠 타이머 알림음 설정 (1~19번 깔끔 통일) -->
     <div class="settings-section-box">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="d-flex align-items-center gap-2">
@@ -1004,7 +1004,8 @@
   </div>
 
   <!-- ========================================================
-       [탭 5] 관리자 권한 탭 -->
+       [탭 5] 관리자 권한 탭
+       ======================================================== -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box border-warning border-opacity-50">
       <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
@@ -1328,6 +1329,21 @@
   }
 
   // ==========================================
+  // [슈퍼관리자 권한 판별 안전 유틸 - 스크린샷 오류 해결 핵심]
+  // ==========================================
+  function isSuperAdminUser() {
+    const adminRole = sessionStorage.getItem("admin_role") || "";
+    const myRole = localStorage.getItem("guild_my_role") || "";
+    const myNick = localStorage.getItem("guild_my_nickname") || "";
+
+    return (adminRole === "super") || 
+           (myRole === "길드장") || 
+           (myRole === "길마") || 
+           (myRole === "슈퍼관리자") || 
+           (myNick === "슈퍼관리자");
+  }
+
+  // ==========================================
   // [커스텀 알림/확인 다이얼로그]
   // ==========================================
   function showAppAlert(message, title = "안내", icon = "⚠️") {
@@ -1407,6 +1423,10 @@
       if (scale === 'lg' && btns[2]) btns[2].classList.add("active");
     }
 
+    if (typeof window.applyFontScale === "function") {
+      window.applyFontScale(scale);
+    }
+
     if (showNotice) {
       const label = (scale === 'sm') ? '작게' : (scale === 'lg' ? '크게' : '보통');
       showToast(`🔠 글자 크기가 [${label}] (으)로 설정되었습니다.`);
@@ -1422,7 +1442,6 @@
   // [채팅 & 보스 알림음(MP3) 설정 및 재생]
   // ==========================================
   function initAlarmSoundSettings() {
-    // 1. 채팅 알림
     const chatEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== 'false';
     const chatPreset = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
     const chatChk = document.getElementById("cfgChatAlarmEnabled");
@@ -1430,7 +1449,6 @@
     if (chatChk) chatChk.checked = chatEnabled;
     if (chatSel) chatSel.value = chatPreset;
 
-    // 2. 보스 타이머 알림
     const bossEnabled = localStorage.getItem("guild_alarm_enabled") !== 'false';
     const bossPreset = localStorage.getItem("guild_alarm_sound") || "alarm1.mp3";
     const bossChk = document.getElementById("cfgAlarmSoundEnabled");
@@ -1440,13 +1458,11 @@
   }
 
   function saveAlarmSoundPreferences() {
-    // 1. 채팅 알림 저장
     const chatChk = document.getElementById("cfgChatAlarmEnabled");
     const chatSel = document.getElementById("cfgChatAlarmPreset");
     if (chatChk) localStorage.setItem("guild_chat_alarm_enabled", chatChk.checked ? 'true' : 'false');
     if (chatSel) localStorage.setItem("guild_chat_alarm_sound", chatSel.value);
 
-    // 2. 보스 타이머 알림 저장
     const bossChk = document.getElementById("cfgAlarmSoundEnabled");
     const bossSel = document.getElementById("cfgAlarmSoundPreset");
     if (bossChk) localStorage.setItem("guild_alarm_enabled", bossChk.checked ? 'true' : 'false');
@@ -1502,11 +1518,12 @@
   }
 
   // ==========================================
-  // [탭 전환 및 권한 검사]
+  // [탭 전환 및 권한 검사 - 길드장 권한 오류 완벽 해결]
   // ==========================================
   function switchSettingsTab(tab) {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isSuper = isSuperAdminUser();
 
+    // ⚡ 슈퍼관리자 또는 길드장 모두 'permissions', 'security' 탭 접근 완전 허용!
     if (tab === 'permissions' && !isSuper) {
       showAppAlert("[관리자 권한] 제어판은 슈퍼관리자(Master/길드장)만 진입할 수 있습니다.", "권한 부족", "🛡️");
       return;
@@ -1556,12 +1573,12 @@
   function updateRoleBadge() {
     const badge = document.getElementById("badgeSettingsRoleStatus");
     if (!badge) return;
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    const isSuper = isSuperAdminUser();
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuper;
 
-    if (isAuth && isSuper) {
-      badge.className = "badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50";
-      badge.innerHTML = `<i class="fa-solid fa-crown me-1"></i>슈퍼관리자 인증됨`;
+    if (isSuper) {
+      badge.className = "badge bg-warning text-dark border border-warning";
+      badge.innerHTML = `<i class="fa-solid fa-crown me-1"></i>슈퍼관리자(길드장) 인증됨`;
     } else if (isAuth) {
       badge.className = "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50";
       badge.innerHTML = `<i class="fa-solid fa-shield-halved me-1"></i>관리자 인증됨`;
@@ -1571,13 +1588,11 @@
     }
   }
 
-  // 소속 길드명 & 게임명 동적 바인딩 (하드코딩 제거 및 안전 조회)
   async function loadGuildNameDisplay() {
     const currentGid = getSafeCurrentGid();
     let displayGuild = '';
     let displayGame = '';
 
-    // 1. my_joined_guilds 로컬스토리지 확인
     try {
       const joinedList = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]");
       const matched = joinedList.find(g => String(g.guild_id) === String(currentGid));
@@ -1587,12 +1602,10 @@
       }
     } catch (e) {}
 
-    // 2. 없으면 guild_settings 혹은 세션 확인
     if (!displayGuild) {
       displayGuild = window.currentSettingsMap['guild_name'] || sessionStorage.getItem("guild_name") || '';
     }
 
-    // 3. 여전히 없으면 guilds 테이블 단건 조회
     if (!displayGuild && currentGid !== 'default') {
       try {
         const gRow = await apiRequest(`guilds?id=eq.${encodeURIComponent(currentGid)}&select=name,guild_name,game_name&limit=1`);
@@ -1628,8 +1641,7 @@
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
     const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-    const adminRole = sessionStorage.getItem("admin_role") || "";
-    const isSuper = (adminRole === "super") || (myNick === "슈퍼관리자") || (myRole === "슈퍼관리자") || (myRole === "길드장");
+    const isSuper = isSuperAdminUser();
 
     const nickDisplay = document.getElementById("profileCurrentNickDisplay");
     const classDisplay = document.getElementById("profileCurrentClassDisplay");
@@ -1834,9 +1846,9 @@
   }
 
   function openAdminPinModal() {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isSuper = isSuperAdminUser();
     if (!isSuper) {
-      showAppAlert("관리자 비밀번호 변경은 슈퍼관리자(Master)만 가능합니다.", "권한 부족", "🛡️");
+      showAppAlert("관리자 비밀번호 변경은 슈퍼관리자(Master/길드장)만 가능합니다.", "권한 부족", "🛡️");
       return;
     }
     const modal = document.getElementById("modalAdminPinChange");
@@ -1855,7 +1867,7 @@
   }
 
   // ==========================================
-  // [설정 데이터 로드 및 저장] - guild_id 격리 표준화
+  // [설정 데이터 로드 및 저장]
   // ==========================================
   async function loadCurrentSettingsToForm() {
     const currentGid = getSafeCurrentGid();
@@ -1927,8 +1939,8 @@
   }
 
   function applyMemberPinResetUI() {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    const isSuper = isSuperAdminUser();
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuper;
     const allowReset = isSuper || (isAuth && window.currentSettingsMap['perm_member_pin_reset'] !== 'false');
 
     const select = document.getElementById("resetMemberPinSelect");
@@ -1954,7 +1966,7 @@
   }
 
   async function saveScoreSettings() {
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuperAdminUser();
     if (!isAuth) return showToast("관리자 권한이 필요합니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -1980,7 +1992,7 @@
   }
 
   async function saveSecuritySettings() {
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuperAdminUser();
     if (!isAuth) return showToast("관리자 권한이 필요합니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -1996,7 +2008,7 @@
   }
 
   async function registerNewGeminiApiKey() {
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuperAdminUser();
     if (!isAuth) return showToast("관리자 권한이 필요합니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -2014,7 +2026,7 @@
   }
 
   async function saveAdminPermissionsSettings() {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isSuper = isSuperAdminUser();
     if (!isSuper) return showToast("슈퍼관리자만 권한 정책을 저장할 수 있습니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -2044,10 +2056,10 @@
   }
 
   // ==========================================
-  // [직책 및 관리 권한 임명] (길드장/슈퍼관리자 전용)
+  // [직책 및 관리 권한 임명]
   // ==========================================
   async function executeAssignMemberRole() {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isSuper = isSuperAdminUser();
     if (!isSuper) return showAppAlert("길드원 직책 및 관리 권한 임명은 길드장(슈퍼관리자)만 가능합니다.", "권한 부족", "👑");
 
     const select = document.getElementById("assignRoleMemberSelect");
@@ -2072,11 +2084,11 @@
   }
 
   // ==========================================
-  // [길드원 비밀번호 초기화] - null값 방어코드 적용
+  // [길드원 비밀번호 초기화]
   // ==========================================
   async function executeMemberPinReset() {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true");
+    const isSuper = isSuperAdminUser();
+    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuper;
     const currentGid = getSafeCurrentGid();
 
     if (!isAuth) return showToast("관리자 로그인이 필요합니다.", "⚠️");
@@ -2130,7 +2142,7 @@
   }
 
   async function submitPasswordChange() {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isSuper = isSuperAdminUser();
     if (!isSuper) return showToast("슈퍼관리자만 변경할 수 있습니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -2166,7 +2178,7 @@
   }
 
   // ==========================================
-  // [보스 및 사냥터 관리] - guild_id 격리
+  // [보스 및 사냥터 관리]
   // ==========================================
   function toggleBossInputType() {
     const type = document.getElementById('newBossType').value;
@@ -2175,7 +2187,7 @@
   }
 
   function checkBossGroundPermission() {
-    const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const isSuper = isSuperAdminUser();
     if (!isSuper) {
       if (window.currentSettingsMap['perm_settings_boss_ground'] === 'false') {
         showAppAlert("일반 관리자에게는 보스/사냥터 수정 권한이 없습니다.", "권한 제한", "⚠️");
@@ -2352,7 +2364,6 @@
     } catch (e) {}
   }
 
-  // 초기 로더 실행
   (async function initSettingsPage() {
     initFontScaleMode();
     initThemeMode();
