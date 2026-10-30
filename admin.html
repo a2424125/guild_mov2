@@ -125,7 +125,7 @@
       box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
     }
 
-    /* 시스템 헬스체크 KPI 그리드 (확장) */
+    /* 헬스체크 KPI 그리드 */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -349,7 +349,7 @@
         </div>
         <div>
           <h5 class="fw-bold mb-0 text-white" style="font-size: 1.15rem;">길드톡 SaaS 마스터 최고 통제 센터</h5>
-          <span class="text-secondary small" style="font-size: 0.75rem;">모든 게임 길드 격리 모니터링 · 슈퍼관리자 강제 변경 · 긴급 공지 송출 · DB 통합 관리</span>
+          <span class="text-secondary small" style="font-size: 0.75rem;">모든 게임 길드 격리 모니터링 · 슈퍼관리자 지정/생성 · 긴급 공지 송출 · DB 통합 관리</span>
         </div>
       </div>
       <div class="d-flex gap-2 flex-wrap">
@@ -368,7 +368,7 @@
       </div>
     </header>
 
-    <!-- KPI 요약 카드 그리드 (헬스체크 지표 확장) -->
+    <!-- KPI 요약 카드 그리드 -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-icon-wrap" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
@@ -450,7 +450,7 @@
       <div class="panel-header">
         <div class="panel-title">
           <i class="fa-solid fa-building-user text-primary"></i>
-          <span>분양된 모든 길드 목록 및 세부 통제</span>
+          <span>분양된 모든 길드 목록 및 최고 권한 제어</span>
         </div>
         <div class="d-flex gap-2" style="max-width: 320px; width: 100%;">
           <input type="text" class="form-control-custom" placeholder="게임명, 길드명, 길드장 검색..." oninput="filterGuildTable(this.value)">
@@ -657,7 +657,7 @@
   </div>
 
   <!-- ========================================================
-       [신규 팝업 모달 1] 특정 길드 내부 상세 관리 모달 (길드원/보스/설정)
+       [모달 1] 특정 길드 내부 상세 관리 모달 (길드원/보스/설정)
        ======================================================== -->
   <div id="modalGuildDetail" class="custom-modal-backdrop" style="display: none;">
     <div class="custom-modal-card" style="max-width: 720px;">
@@ -670,7 +670,6 @@
         <button type="button" class="btn btn-sm text-secondary" onclick="closeGuildDetailModal()"><i class="fa-solid fa-xmark fs-5"></i></button>
       </div>
 
-      <!-- 모달 내부 탭 -->
       <div class="modal-nav-tabs">
         <button type="button" class="modal-nav-btn active" id="btnModalSubMembers" onclick="switchDetailSubTab('members')">
           👥 길드원 명단 (<span id="detailCountMembers">0</span>)
@@ -735,40 +734,67 @@
   </div>
 
   <!-- ========================================================
-       [신규 팝업 모달 2] 길드장(슈퍼관리자) 강제 위임 모달
+       [모달 2] 길드장(슈퍼관리자) 직접 지정 / 신규 생성 전용 모달 (완전 보강)
        ======================================================== -->
   <div id="modalAssignMaster" class="custom-modal-backdrop" style="display: none;">
-    <div class="custom-modal-card" style="max-width: 420px;">
+    <div class="custom-modal-card" style="max-width: 440px;">
       <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-        <h6 class="fw-bold mb-0 text-warning"><i class="fa-solid fa-crown me-2"></i>길드장(슈퍼관리자) 강제 위임</h6>
+        <h6 class="fw-bold mb-0 text-warning"><i class="fa-solid fa-crown me-2"></i>슈퍼관리자(길드장) 지정 & 생성</h6>
         <button type="button" class="btn btn-sm text-secondary" onclick="closeAssignMasterModal()"><i class="fa-solid fa-xmark fs-5"></i></button>
       </div>
       <input type="hidden" id="assignTargetGuildId">
-      <p class="text-secondary small mb-3" style="line-height: 1.45;">
-        선택한 길드의 새로운 <strong>길드장(슈퍼관리자 권한)</strong>을 임명합니다. 기존 길드장은 '일반' 직책으로 강등됩니다.
-      </p>
 
-      <div class="mb-3">
-        <label class="small text-secondary mb-1">새로 길드장을 맡을 멤버 선택</label>
-        <select id="assignMasterMemberSelect" class="form-control-custom">
-          <option value="">멤버 선택...</option>
-        </select>
+      <div class="d-flex gap-2 p-1 mb-3 rounded" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08);">
+        <button type="button" class="btn btn-sm flex-fill fw-bold py-1 active" id="btnAssignTabExisting" onclick="switchAssignMode('existing')" style="font-size:0.78rem; background:#0284c7; color:#fff; border:none; border-radius:7px;">
+          기존 멤버 승격
+        </button>
+        <button type="button" class="btn btn-sm flex-fill fw-bold py-1" id="btnAssignTabNew" onclick="switchAssignMode('new')" style="font-size:0.78rem; background:transparent; color:#94a3b8; border:none; border-radius:7px;">
+          새 닉네임 직접 생성
+        </button>
       </div>
 
-      <div class="d-flex gap-2">
+      <!-- 방식 A: 기존 멤버 중 선택하여 슈퍼관리자로 승격 -->
+      <div id="assignModeExisting">
+        <p class="text-secondary small mb-2" style="font-size:0.74rem;">
+          가입된 길드원 중 한 명을 선택해 <strong>길드장(슈퍼관리자 권한)</strong>으로 승격시킵니다.
+        </p>
+        <div class="mb-3">
+          <label class="small text-secondary mb-1">멤버 선택</label>
+          <select id="assignMasterMemberSelect" class="form-control-custom">
+            <option value="">멤버 목록 불러오는 중...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 방식 B: 새 닉네임을 입력하여 슈퍼관리자로 즉시 생성 -->
+      <div id="assignModeNew" style="display: none;">
+        <p class="text-secondary small mb-2" style="font-size:0.74rem;">
+          아직 가입하지 않은 길드장 닉네임과 초기 PIN을 직접 입력하여 <strong>슈퍼관리자 계정을 즉시 생성</strong>합니다.
+        </p>
+        <div class="mb-2">
+          <label class="small text-secondary mb-1">길드장 닉네임</label>
+          <input type="text" id="newMasterNickInput" class="form-control-custom" placeholder="예: 대장님, Master">
+        </div>
+        <div class="mb-3">
+          <label class="small text-secondary mb-1">길드장 초기 PIN (기본값: 000000)</label>
+          <input type="text" id="newMasterPinInput" class="form-control-custom" value="000000" maxlength="8">
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-2">
         <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeAssignMasterModal()">취소</button>
-        <button type="button" class="btn btn-warning flex-fill fw-bold py-2 text-dark" onclick="executeAssignMasterRole()">위임 집행</button>
+        <button type="button" class="btn btn-warning flex-fill fw-bold py-2 text-dark" onclick="executeAssignMasterRole()">슈퍼관리자 저장</button>
       </div>
     </div>
   </div>
 
   <!-- ========================================================
-       [신규 팝업 모달 3] 전체 길드 대상 긴급 시스템 공지 투하
+       [모달 3] 전체 길드 대상 긴급 시스템 공지 투하
        ======================================================== -->
   <div id="modalGlobalBroadcast" class="custom-modal-backdrop" style="display: none;">
     <div class="custom-modal-card" style="max-width: 500px;">
       <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
-        <h6 class="fw-bold mb-0 text-danger"><i class="fa-solid fa-bullhorn me-2"></i>전체 길드 전체대화방 긴급공지</h6>
+        <h6 class="fw-bold mb-0 text-danger"><i class="fa-solid fa-bullhorn me-2"></i>전체 길드 대화방 긴급공지</h6>
         <button type="button" class="btn btn-sm text-secondary" onclick="closeGlobalBroadcastModal()"><i class="fa-solid fa-xmark fs-5"></i></button>
       </div>
       <p class="text-secondary small mb-3">
@@ -787,7 +813,9 @@
     </div>
   </div>
 
-  <!-- 4. 길드 정보 수정 모달 -->
+  <!-- ========================================================
+       [모달 4] 길드 기본 정보 수정 모달
+       ======================================================== -->
   <div id="modalEditGuild" class="custom-modal-backdrop" style="display: none;">
     <div class="custom-modal-card" style="max-width: 440px;">
       <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
@@ -846,6 +874,7 @@
     let cachedLicenseRequests = [];
     let cachedSupportInquiries = [];
     let currentDetailGuildId = null;
+    let currentAssignMode = 'existing';
 
     function escapeAdminHtml(str) {
       if (!str) return "";
@@ -907,7 +936,6 @@
       if (!window.supabaseClient) return;
 
       try {
-        // 1. 길드 & 라이선스 데이터 로드
         const [{ data: guilds }, { data: licenses }, { data: allMembers }] = await Promise.all([
           window.supabaseClient.from('guilds').select('*').order('created_at', { ascending: false }),
           window.supabaseClient.from('app_licenses').select('*'),
@@ -925,13 +953,11 @@
           g.member_count = memberCountMap[g.id] || 0;
         });
 
-        // 2. 전체 채팅수 & 보스수 집계
         const [{ count: totalChats }, { count: totalBosses }] = await Promise.all([
           window.supabaseClient.from('guild_chats').select('*', { count: 'exact', head: true }),
           window.supabaseClient.from('boss_timers').select('*', { count: 'exact', head: true })
         ]);
 
-        // 3. 라이선스 신청서 & 1:1 문의 로드
         const [{ data: reqData }, { data: inqData }] = await Promise.all([
           window.supabaseClient.from('app_license_requests').select('*').order('created_at', { ascending: false }),
           window.supabaseClient.from('saas_inquiries').select('*').order('created_at', { ascending: false })
@@ -941,7 +967,6 @@
         cachedLicenseRequests = reqData || [];
         cachedSupportInquiries = inqData || [];
 
-        // KPI 표시
         const activeGuilds = cachedGuilds.filter(g => g.is_active !== false).length;
         const pendingReqs = cachedLicenseRequests.filter(r => r.status === 'pending').length;
         const pendingSup = cachedSupportInquiries.filter(r => r.status !== 'done').length;
@@ -1018,7 +1043,7 @@
                   <i class="fa-solid fa-magnifying-glass me-1"></i>상세통제
                 </button>
                 <button type="button" class="btn btn-sm btn-warning btn-action-sm text-dark" onclick="openAssignMasterModal('${g.id}', '${escapeAdminHtml(gTitle)}')">
-                  <i class="fa-solid fa-crown me-1"></i>길드장위임
+                  <i class="fa-solid fa-crown me-1"></i>슈퍼지정
                 </button>
                 <button type="button" class="btn btn-sm btn-outline-primary btn-action-sm" onclick="copyGuildInviteMessage('${escapeAdminHtml(g.game_name || '')}', '${escapeAdminHtml(gTitle)}', '${key}', '${inviteCode}', '${expiresAt}')">
                   안내문복사
@@ -1056,7 +1081,7 @@
     }
 
     // ==========================================
-    // [신규 기능 1: 특정 길드 상세 데이터 모달]
+    // [모달 1: 특정 길드 상세 데이터 모달]
     // ==========================================
     async function openGuildDetailModal(guildId, guildTitle) {
       currentDetailGuildId = guildId;
@@ -1083,7 +1108,6 @@
     async function loadGuildDetailData(guildId) {
       ensureSupabaseClient();
       try {
-        // 길드원 명단, 보스 목록, 길드 환경설정 병렬 조회
         const [{ data: members }, { data: bosses }, { data: settings }] = await Promise.all([
           window.supabaseClient.from('guild_members').select('*').eq('guild_id', guildId).order('name', { ascending: true }),
           window.supabaseClient.from('boss_timers').select('*').eq('guild_id', guildId).order('id', { ascending: true }),
@@ -1093,7 +1117,6 @@
         document.getElementById("detailCountMembers").innerText = (members || []).length;
         document.getElementById("detailCountBosses").innerText = (bosses || []).length;
 
-        // 1. 길드원 렌더링
         const mBody = document.getElementById("detailMembersTableBody");
         if (!members || members.length === 0) {
           mBody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-secondary">가입된 길드원이 없습니다.</td></tr>`;
@@ -1120,7 +1143,6 @@
           }).join('');
         }
 
-        // 2. 보스 목록 렌더링
         const bBody = document.getElementById("detailBossTableBody");
         if (!bosses || bosses.length === 0) {
           bBody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-secondary">등록된 보스가 없습니다.</td></tr>`;
@@ -1139,7 +1161,6 @@
           `).join('');
         }
 
-        // 3. 길드 설정 렌더링
         const sContainer = document.getElementById("detailSettingsContainer");
         if (!settings || settings.length === 0) {
           sContainer.innerHTML = `<div class="text-secondary text-center py-3">저장된 환경설정이 없습니다.</div>`;
@@ -1157,13 +1178,11 @@
             </div>
           `;
         }
-
       } catch (err) {
         alert("길드 상세 조회 오류: " + err.message);
       }
     }
 
-    // 길드원 PIN 강제 초기화
     async function resetMemberPinFromAdmin(memberId, memberNick) {
       if (!confirm(`[${memberNick}] 님의 PIN 비밀번호를 [ 000000 ] 으로 강제 초기화하시겠습니까?`)) return;
       try {
@@ -1175,7 +1194,6 @@
       }
     }
 
-    // 길드원 강제 추방
     async function expelMemberFromAdmin(memberId, memberNick) {
       if (!confirm(`⚠️ [${memberNick}] 길드원을 강제 추방(삭제)하시겠습니까?`)) return;
       try {
@@ -1188,7 +1206,6 @@
       }
     }
 
-    // 보스 삭제
     async function deleteBossFromAdmin(bossId, bossName) {
       if (!confirm(`[${bossName}] 보스를 삭제하시겠습니까?`)) return;
       try {
@@ -1200,10 +1217,15 @@
     }
 
     // ==========================================
-    // [신규 기능 2: 길드장(슈퍼관리자) 강제 위임 모달]
+    // [모달 2: 슈퍼관리자(길드장) 지정 및 신규 생성 모달 제어]
     // ==========================================
     async function openAssignMasterModal(guildId, guildTitle) {
+      currentDetailGuildId = guildId;
       document.getElementById("assignTargetGuildId").value = guildId;
+      document.getElementById("newMasterNickInput").value = "";
+      document.getElementById("newMasterPinInput").value = "000000";
+      switchAssignMode('existing');
+
       const select = document.getElementById("assignMasterMemberSelect");
       select.innerHTML = '<option value="">멤버 목록 불러오는 중...</option>';
       document.getElementById("modalAssignMaster").style.display = "flex";
@@ -1215,7 +1237,8 @@
           .eq('guild_id', guildId);
 
         if (!members || members.length === 0) {
-          select.innerHTML = '<option value="">가입된 멤버가 없습니다.</option>';
+          select.innerHTML = '<option value="">가입된 멤버가 없습니다. (새 닉네임 생성 탭 이용)</option>';
+          switchAssignMode('new');
           return;
         }
 
@@ -1233,45 +1256,113 @@
       document.getElementById("modalAssignMaster").style.display = "none";
     }
 
+    function switchAssignMode(mode) {
+      currentAssignMode = mode;
+      const btnExist = document.getElementById("btnAssignTabExisting");
+      const btnNew = document.getElementById("btnAssignTabNew");
+      const boxExist = document.getElementById("assignModeExisting");
+      const boxNew = document.getElementById("assignModeNew");
+
+      if (mode === 'new') {
+        btnNew.style.background = "#0284c7";
+        btnNew.style.color = "#fff";
+        btnExist.style.background = "transparent";
+        btnExist.style.color = "#94a3b8";
+        boxNew.style.display = "block";
+        boxExist.style.display = "none";
+      } else {
+        btnExist.style.background = "#0284c7";
+        btnExist.style.color = "#fff";
+        btnNew.style.background = "transparent";
+        btnNew.style.color = "#94a3b8";
+        boxExist.style.display = "block";
+        boxNew.style.display = "none";
+      }
+    }
+
     async function executeAssignMasterRole() {
       const guildId = document.getElementById("assignTargetGuildId").value;
-      const select = document.getElementById("assignMasterMemberSelect");
-      const newMasterId = select.value;
-      const newMasterNick = select.options[select.selectedIndex]?.getAttribute("data-nick");
 
-      if (!newMasterId) return alert("새 길드장으로 임명할 멤버를 선택하세요.");
-      if (!confirm(`정말로 [${newMasterNick}] 님을 이 길드의 새 길드장(슈퍼관리자)으로 강제 위임하시겠습니까?`)) return;
+      // 1. 기존 멤버 승격 방식
+      if (currentAssignMode === 'existing') {
+        const select = document.getElementById("assignMasterMemberSelect");
+        const newMasterId = select.value;
+        const newMasterNick = select.options[select.selectedIndex]?.getAttribute("data-nick");
 
-      try {
-        // 1. 기존 길드장(슈퍼관리자)을 일반으로 강등
-        await window.supabaseClient
-          .from('guild_members')
-          .update({ role: '일반' })
-          .eq('guild_id', guildId)
-          .in('role', ['길드장', '슈퍼관리자']);
+        if (!newMasterId) return alert("새 길드장으로 임명할 멤버를 선택하세요.");
+        if (!confirm(`정말로 [${newMasterNick}] 님을 이 길드의 새 길드장(슈퍼관리자)으로 강제 위임하시겠습니까?`)) return;
 
-        // 2. 새 멤버를 길드장으로 승급
-        await window.supabaseClient
-          .from('guild_members')
-          .update({ role: '길드장' })
-          .eq('id', newMasterId);
+        try {
+          await window.supabaseClient
+            .from('guild_members')
+            .update({ role: '일반' })
+            .eq('guild_id', guildId)
+            .in('role', ['길드장', '슈퍼관리자']);
 
-        // 3. 라이선스 정보의 applicant_nickname / issued_to 갱신
-        await window.supabaseClient
-          .from('app_licenses')
-          .update({ applicant_nickname: newMasterNick, issued_to: newMasterNick })
-          .eq('guild_id', guildId);
+          await window.supabaseClient
+            .from('guild_members')
+            .update({ role: '길드장' })
+            .eq('id', newMasterId);
 
-        alert(`[${newMasterNick}] 님이 새 길드장으로 성공적으로 임명되었습니다!`);
-        closeAssignMasterModal();
-        loadAllDashboardData();
-      } catch (err) {
-        alert("위임 집행 오류: " + err.message);
+          await window.supabaseClient
+            .from('app_licenses')
+            .update({ applicant_nickname: newMasterNick, issued_to: newMasterNick })
+            .eq('guild_id', guildId);
+
+          alert(`[${newMasterNick}] 님이 새 길드장으로 성공적으로 지정되었습니다!`);
+          closeAssignMasterModal();
+          loadAllDashboardData();
+        } catch (err) {
+          alert("위임 집행 오류: " + err.message);
+        }
+      } 
+      // 2. 새 닉네임 직접 생성 방식
+      else {
+        const newNick = (document.getElementById("newMasterNickInput").value || "").trim();
+        const newPin = (document.getElementById("newMasterPinInput").value || "000000").trim();
+
+        if (!newNick) return alert("슈퍼관리자로 생성할 닉네임을 입력하세요.");
+        if (!newPin) return alert("초기 PIN 번호를 입력하세요.");
+
+        if (!confirm(`[${newNick}] 닉네임으로 슈퍼관리자 계정을 신규 생성하시겠습니까?`)) return;
+
+        try {
+          await window.supabaseClient
+            .from('guild_members')
+            .update({ role: '일반' })
+            .eq('guild_id', guildId)
+            .in('role', ['길드장', '슈퍼관리자']);
+
+          const { error: insErr } = await window.supabaseClient
+            .from('guild_members')
+            .insert([{
+              guild_id: guildId,
+              name: newNick,
+              nickname: newNick,
+              pin: newPin,
+              role: '길드장',
+              job_class: '👑 길드장',
+              avatar: '👑'
+            }]);
+
+          if (insErr) throw insErr;
+
+          await window.supabaseClient
+            .from('app_licenses')
+            .update({ applicant_nickname: newNick, issued_to: newNick })
+            .eq('guild_id', guildId);
+
+          alert(`[${newNick}] 님이 슈퍼관리자(길드장)로 새로 생성되었습니다!\n초기 PIN은 [ ${newPin} ] 입니다.`);
+          closeAssignMasterModal();
+          loadAllDashboardData();
+        } catch (err) {
+          alert("슈퍼관리자 생성 오류: " + err.message);
+        }
       }
     }
 
     // ==========================================
-    // [신규 기능 3: 전체 길드 긴급 시스템 공지 발송]
+    // [모달 3: 전체 길드 긴급 시스템 공지]
     // ==========================================
     function openGlobalBroadcastModal() {
       document.getElementById("broadcastContentInput").value = "";
@@ -1308,7 +1399,7 @@
     }
 
     // ==========================================
-    // [기존 라이선스 발급, 신청서 승인 및 기본 CRUD]
+    // [신청서 및 문의 CRUD]
     // ==========================================
     function renderRequestsTable(list) {
       const tbody = document.getElementById("requestListTableBody");
