@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>길드톡 마스터 관리 센터</title>
+  <title>길드톡 마스터 통합 관리 센터</title>
 
   <!-- 부트스트랩 5 & 폰트어썸 6 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -15,15 +15,16 @@
 
   <style>
     :root {
-      --admin-bg: #0f172a;
-      --admin-card-bg: #1e293b;
-      --admin-card-border: #334155;
+      --admin-bg: #0b1120;
+      --admin-card-bg: #131d35;
+      --admin-card-border: #233554;
       --admin-text-main: #f8fafc;
       --admin-text-muted: #94a3b8;
       --admin-primary: #38bdf8;
       --admin-success: #22c55e;
       --admin-warning: #f59e0b;
       --admin-danger: #ef4444;
+      --admin-purple: #a855f7;
     }
 
     body {
@@ -39,9 +40,9 @@
     #lockScreen {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.95);
-      backdrop-filter: blur(10px);
-      z-index: 9999;
+      background: rgba(11, 17, 32, 0.96);
+      backdrop-filter: blur(12px);
+      z-index: 99999;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -50,97 +51,119 @@
     .lock-card {
       background: var(--admin-card-bg);
       border: 1px solid var(--admin-card-border);
-      border-radius: 16px;
-      padding: 32px 24px;
-      max-width: 360px;
+      border-radius: 20px;
+      padding: 36px 28px;
+      max-width: 380px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
-    /* 모달 백드롭 */
-    .kakao-modal-backdrop {
+    /* 모달 공통 스타일 */
+    .custom-modal-backdrop {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      backdrop-filter: blur(4px);
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(4, 8, 18, 0.88);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      z-index: 10000;
+      padding: 16px;
+    }
+    .custom-modal-card {
+      background: #111c33;
+      border: 1px solid var(--admin-card-border);
+      border-radius: 18px;
+      padding: 24px;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+      animation: modalPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-body-scroll {
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    @keyframes modalPopIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
     }
 
-    /* 메인 컨테이너 */
+    /* 메인 레이아웃 */
     .admin-container {
-      max-width: 1200px;
+      max-width: 1280px;
       margin: 0 auto;
-      padding: 20px 16px 60px 16px;
+      padding: 20px 16px 80px 16px;
     }
 
-    /* 상단 네비게이션 헤더 */
     .admin-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
+      padding: 16px 22px;
       background: var(--admin-card-bg);
       border: 1px solid var(--admin-card-border);
-      border-radius: 14px;
+      border-radius: 16px;
       margin-bottom: 20px;
-    }
-    .admin-title-box {
-      display: flex;
-      align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
     .admin-logo-icon {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
-      border-radius: 10px;
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #7c3aed 0%, #38bdf8 100%);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.3rem;
+      font-size: 1.35rem;
       color: #fff;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
     }
 
-    /* KPI 요약 카드 */
+    /* 시스템 헬스체크 KPI 그리드 (확장) */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
       margin-bottom: 20px;
     }
     .kpi-card {
       background: var(--admin-card-bg);
       border: 1px solid var(--admin-card-border);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 14px;
+      padding: 16px 14px;
       display: flex;
       align-items: center;
       gap: 14px;
+      transition: transform 0.15s ease;
     }
+    .kpi-card:hover { transform: translateY(-2px); }
     .kpi-icon-wrap {
-      width: 44px;
-      height: 44px;
+      width: 42px;
+      height: 42px;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.25rem;
+      flex-shrink: 0;
     }
     .kpi-value {
-      font-size: 1.5rem;
+      font-size: 1.45rem;
       font-weight: 800;
       line-height: 1.2;
     }
     .kpi-label {
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       color: var(--admin-text-muted);
     }
 
-    /* 탭 메뉴 */
+    /* 탭 내비게이션 */
     .admin-tabs {
       display: flex;
       gap: 8px;
@@ -153,52 +176,55 @@
       background: transparent;
       border: 1px solid transparent;
       color: var(--admin-text-muted);
-      padding: 8px 16px;
-      border-radius: 8px;
+      padding: 9px 16px;
+      border-radius: 10px;
       font-size: 0.85rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
       white-space: nowrap;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
     .admin-tab-btn:hover {
-      color: var(--admin-text-main);
+      color: #fff;
       background: rgba(255, 255, 255, 0.05);
     }
     .admin-tab-btn.active {
       background: #0284c7;
       color: #fff;
-      border-color: #0284c7;
+      border-color: #38bdf8;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
     }
 
     /* 카드 패널 */
     .admin-panel {
       background: var(--admin-card-bg);
       border: 1px solid var(--admin-card-border);
-      border-radius: 14px;
-      padding: 20px;
+      border-radius: 16px;
+      padding: 22px;
       margin-bottom: 24px;
     }
     .panel-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
       padding-bottom: 12px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: 12px;
+      flex-wrap: wrap;
     }
     .panel-title {
-      font-size: 1rem;
-      font-weight: 700;
+      font-size: 1.05rem;
+      font-weight: 800;
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    /* 테이블 스타일 */
+    /* 커스텀 테이블 */
     .custom-table {
       width: 100%;
       border-collapse: separate;
@@ -207,28 +233,27 @@
       font-size: 0.82rem;
     }
     .custom-table th {
-      background: rgba(15, 23, 42, 0.6);
+      background: #0c1424;
       color: var(--admin-text-muted);
-      font-weight: 600;
-      padding: 10px 12px;
+      font-weight: 700;
+      padding: 12px 14px;
       border-bottom: 1px solid var(--admin-card-border);
       white-space: nowrap;
     }
     .custom-table td {
-      padding: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       vertical-align: middle;
     }
     .custom-table tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(56, 189, 248, 0.04);
     }
 
-    /* 폼 요소 */
     .form-control-custom {
-      background: #0f172a;
+      background: #0c1424;
       border: 1px solid var(--admin-card-border);
       color: #fff;
-      border-radius: 8px;
+      border-radius: 9px;
       padding: 9px 12px;
       font-size: 0.85rem;
       width: 100%;
@@ -237,71 +262,105 @@
     .form-control-custom:focus {
       outline: none;
       border-color: var(--admin-primary);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
     }
 
-    /* 뱃지 */
     .badge-status {
       padding: 4px 8px;
       border-radius: 6px;
       font-size: 0.72rem;
-      font-weight: 600;
+      font-weight: 700;
+      display: inline-block;
     }
-    .badge-active { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-    .badge-expired { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .badge-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-active { background: rgba(34, 197, 94, 0.18); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); }
+    .badge-expired { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .badge-pending { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); }
 
     .faq-admin-row {
-      background: rgba(15, 23, 42, 0.55);
+      background: #0c1424;
       border: 1px solid var(--admin-card-border);
-      border-radius: 10px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 14px;
       margin-bottom: 10px;
+    }
+
+    .btn-action-sm {
+      font-size: 0.74rem !important;
+      padding: 3px 8px !important;
+      font-weight: 700 !important;
+      border-radius: 6px !important;
+      white-space: nowrap;
+    }
+
+    /* 모달 탭 */
+    .modal-nav-tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--admin-card-border);
+      margin-bottom: 14px;
+      padding-bottom: 6px;
+    }
+    .modal-nav-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .modal-nav-btn.active {
+      background: #0284c7;
+      color: #fff;
     }
   </style>
 </head>
 <body>
 
-  <!-- 1. 마스터 비밀번호 인증 락 화면 (기본 PIN: master7777) -->
+  <!-- 1. 마스터 인증 락 화면 -->
   <div id="lockScreen">
     <div class="lock-card">
-      <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); color: var(--admin-primary); display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 16px;">
-        <i class="fa-solid fa-shield-halved"></i>
+      <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(56, 189, 248, 0.15); color: var(--admin-primary); display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin-bottom: 16px;">
+        <i class="fa-solid fa-crown"></i>
       </div>
-      <h5 class="fw-bold mb-1">마스터 관리자 인증</h5>
-      <p class="text-secondary small mb-4" style="font-size: 0.78rem;">플랫폼 소유자 전용 라이선스 관리 센터입니다.<br>마스터 비밀번호(PIN)를 입력하세요.</p>
+      <h5 class="fw-bold mb-1 text-white">마스터 최고 통제 센터</h5>
+      <p class="text-secondary small mb-4" style="font-size: 0.78rem;">플랫폼 최고 관리자 전용 제어판입니다.<br>마스터 보안 키(PIN)를 입력하세요.</p>
       
-      <input type="password" id="masterPinInput" class="form-control-custom text-center mb-3" placeholder="마스터 비밀번호 입력" style="font-size: 1.1rem; letter-spacing: 3px;" onkeypress="if(event.keyCode===13){ verifyMasterPin(); }">
+      <input type="password" id="masterPinInput" class="form-control-custom text-center mb-3" placeholder="••••••••" style="font-size: 1.2rem; letter-spacing: 4px;" onkeypress="if(event.keyCode===13){ verifyMasterPin(); }">
       
       <button type="button" class="btn btn-primary w-100 fw-bold py-2 mb-2" onclick="verifyMasterPin()">
-        인증 및 접속
+        통제 센터 잠금 해제
       </button>
       <div class="text-secondary small mt-3" style="font-size: 0.7rem;">
-        * 초기 비밀번호는 <code>master7777</code> 입니다.
+        * 초기 마스터 비밀번호: <code>master7777</code>
       </div>
     </div>
   </div>
 
-  <!-- 2. 메인 관리자 대시보드 컨테이너 -->
+  <!-- 2. 메인 관리자 대시보드 -->
   <div class="admin-container" id="adminMainContent" style="display: none;">
     
     <!-- 상단 헤더 -->
     <header class="admin-header">
-      <div class="admin-title-box">
+      <div class="d-flex align-items-center gap-3">
         <div class="admin-logo-icon">
-          <i class="fa-solid fa-crown"></i>
+          <i class="fa-solid fa-shield-halved"></i>
         </div>
         <div>
-          <h5 class="fw-bold mb-0" style="font-size: 1.1rem;">길드톡 SaaS 마스터 관리 센터</h5>
-          <span class="text-secondary small" style="font-size: 0.75rem;">라이선스 발급 · 고객센터 문의함 · 홈 전체 공지 및 FAQ 통합 관리</span>
+          <h5 class="fw-bold mb-0 text-white" style="font-size: 1.15rem;">길드톡 SaaS 마스터 최고 통제 센터</h5>
+          <span class="text-secondary small" style="font-size: 0.75rem;">모든 게임 길드 격리 모니터링 · 슈퍼관리자 강제 변경 · 긴급 공지 송출 · DB 통합 관리</span>
         </div>
       </div>
-      <div class="d-flex gap-2">
-        <button type="button" class="btn btn-outline-warning btn-sm" onclick="window.open('home.html', '_blank')">
-          <i class="fa-solid fa-house me-1"></i>홈 화면 보기
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-warning btn-sm fw-bold" onclick="openGlobalBroadcastModal()">
+          <i class="fa-solid fa-bullhorn me-1"></i>전체 길드 긴급공지 투하
         </button>
         <button type="button" class="btn btn-outline-info btn-sm" onclick="loadAllDashboardData()">
           <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.open('home.html', '_blank')">
+          <i class="fa-solid fa-house me-1"></i>홈 화면
         </button>
         <button type="button" class="btn btn-outline-danger btn-sm" onclick="logoutMaster()">
           <i class="fa-solid fa-lock me-1"></i>잠금
@@ -309,15 +368,15 @@
       </div>
     </header>
 
-    <!-- KPI 요약 카드 그리드 -->
+    <!-- KPI 요약 카드 그리드 (헬스체크 지표 확장) -->
     <div class="kpi-grid">
       <div class="kpi-card">
         <div class="kpi-icon-wrap" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
-          <i class="fa-solid fa-shield-halved"></i>
+          <i class="fa-solid fa-chess-rook"></i>
         </div>
         <div>
           <div class="kpi-value" id="kpiActiveGuilds">0</div>
-          <div class="kpi-label">활성 길드 수</div>
+          <div class="kpi-label">활성 길드 / 전체 길드</div>
         </div>
       </div>
       <div class="kpi-card">
@@ -326,7 +385,25 @@
         </div>
         <div>
           <div class="kpi-value" id="kpiTotalMembers">0</div>
-          <div class="kpi-label">총 이용 길드원 수</div>
+          <div class="kpi-label">전체 활성 길드원 수</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">
+          <i class="fa-solid fa-comments"></i>
+        </div>
+        <div>
+          <div class="kpi-value" id="kpiTotalChats">0</div>
+          <div class="kpi-label">누적 실시간 메시지 수</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+          <i class="fa-solid fa-skull"></i>
+        </div>
+        <div>
+          <div class="kpi-value" id="kpiTotalBosses">0</div>
+          <div class="kpi-label">등록된 보스 타이머 수</div>
         </div>
       </div>
       <div class="kpi-card">
@@ -344,7 +421,7 @@
         </div>
         <div>
           <div class="kpi-value" id="kpiPendingSupport">0</div>
-          <div class="kpi-label">미처리 고객센터 문의</div>
+          <div class="kpi-label">미처리 1:1 고객 문의</div>
         </div>
       </div>
     </div>
@@ -352,7 +429,7 @@
     <!-- 탭 네비게이션 -->
     <div class="admin-tabs">
       <button type="button" class="admin-tab-btn active" onclick="switchAdminTab('guilds', this)">
-        <i class="fa-solid fa-users-gear"></i>구매 길드 및 인원 관리 (<span id="tabCountGuilds">0</span>)
+        <i class="fa-solid fa-users-gear"></i>구매 길드 통제 (<span id="tabCountGuilds">0</span>)
       </button>
       <button type="button" class="admin-tab-btn" onclick="switchAdminTab('issue', this)">
         <i class="fa-solid fa-plus-circle"></i>다이렉트 즉시 발급
@@ -364,18 +441,18 @@
         <i class="fa-solid fa-headset"></i>고객센터 1:1 문의함 (<span id="tabCountSupport">0</span>)
       </button>
       <button type="button" class="admin-tab-btn" onclick="switchAdminTab('saasContent', this)">
-        <i class="fa-solid fa-bullhorn"></i>홈 전체 공지 & FAQ 관리
+        <i class="fa-solid fa-bullhorn"></i>홈 공지 & FAQ 관리
       </button>
     </div>
 
-    <!-- [탭 1] 구매 길드 및 이용 인원 관리 -->
+    <!-- [탭 1] 구매 길드 및 상세 관리 -->
     <div id="tabPanelGuilds" class="admin-panel">
       <div class="panel-header">
         <div class="panel-title">
           <i class="fa-solid fa-building-user text-primary"></i>
-          <span>현재 서비스 이용 중인 길드 및 인원 현황</span>
+          <span>분양된 모든 길드 목록 및 세부 통제</span>
         </div>
-        <div style="max-width: 280px; width: 100%;">
+        <div class="d-flex gap-2" style="max-width: 320px; width: 100%;">
           <input type="text" class="form-control-custom" placeholder="게임명, 길드명, 길드장 검색..." oninput="filterGuildTable(this.value)">
         </div>
       </div>
@@ -384,13 +461,13 @@
         <table class="custom-table">
           <thead>
             <tr>
-              <th>게임 / 길드명</th>
-              <th>길드장 / 연락처</th>
-              <th>소속 인원수</th>
-              <th>라이선스 키</th>
-              <th>만료일 (남은 기간)</th>
+              <th>게임 / 길드명 (ID)</th>
+              <th>길드장 (슈퍼) / 연락처</th>
+              <th>가입원수</th>
+              <th>라이선스 & 초대코드</th>
+              <th>만료일</th>
               <th>상태</th>
-              <th>관리</th>
+              <th>마스터 제어</th>
             </tr>
           </thead>
           <tbody id="guildListTableBody">
@@ -404,12 +481,12 @@
       </div>
     </div>
 
-    <!-- [탭 2] 다이렉트 즉시 발급 폼 -->
+    <!-- [탭 2] 다이렉트 즉시 발급 -->
     <div id="tabPanelIssue" class="admin-panel" style="display: none;">
       <div class="panel-header">
         <div class="panel-title">
           <i class="fa-solid fa-paper-plane text-warning"></i>
-          <span>새 길드 라이선스 즉시 생성 & 카톡 전달 메시지 복사</span>
+          <span>신규 길드 라이선스 즉시 생성 및 안내문 자동 생성</span>
         </div>
       </div>
 
@@ -458,12 +535,12 @@
       </div>
     </div>
 
-    <!-- [탭 3] 라이선스 신청 접수함 (app_license_requests 단일 테이블 연동) -->
+    <!-- [탭 3] 라이선스 신청 접수함 -->
     <div id="tabPanelRequests" class="admin-panel" style="display: none;">
       <div class="panel-header">
         <div class="panel-title">
           <i class="fa-solid fa-inbox text-info"></i>
-          <span>홈 화면에서 접수된 신규 길드 라이선스 신청서 목록</span>
+          <span>홈 화면 신규 길드 신청서 목록 (app_license_requests)</span>
         </div>
       </div>
 
@@ -474,7 +551,7 @@
               <th>신청 일시</th>
               <th>게임 / 길드명</th>
               <th>신청자 닉네임</th>
-              <th>이메일 / 연락처</th>
+              <th>연락처</th>
               <th>상태</th>
               <th>승인 및 관리</th>
             </tr>
@@ -490,15 +567,15 @@
       </div>
     </div>
 
-    <!-- [탭 4] 고객센터 1:1 문의함 (saas_inquiries 전용 테이블 연동) -->
+    <!-- [탭 4] 고객센터 1:1 문의함 -->
     <div id="tabPanelSupport" class="admin-panel" style="display: none;">
       <div class="panel-header">
         <div class="panel-title">
           <i class="fa-solid fa-headset text-warning"></i>
-          <span>홈 화면 고객센터 1:1 문의 접수 내역</span>
+          <span>고객센터 1:1 문의 내역 (saas_inquiries)</span>
         </div>
         <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteCompletedSupportInquiries()">
-          <i class="fa-solid fa-trash-can me-1"></i>처리 완료된 문의 일괄 삭제 (DB 정리)
+          <i class="fa-solid fa-trash-can me-1"></i>처리 완료된 문의 일괄 삭제
         </button>
       </div>
 
@@ -507,17 +584,17 @@
           <thead>
             <tr>
               <th>접수 일시</th>
-              <th>문의 분류</th>
-              <th>작성자 (길드/닉네임)</th>
-              <th>연락처 및 문의 내용</th>
+              <th>분류</th>
+              <th>작성자</th>
+              <th>연락처 및 상세 문의 내용</th>
               <th>상태</th>
-              <th>처리 / DB 삭제</th>
+              <th>처리 / 삭제</th>
             </tr>
           </thead>
           <tbody id="supportListTableBody">
             <tr>
               <td colspan="6" class="text-center py-4 text-secondary">
-                <i class="fa-solid fa-spinner fa-spin me-2"></i>고객센터 문의 내역을 불러오는 중...
+                <i class="fa-solid fa-spinner fa-spin me-2"></i>문의 내역을 불러오는 중...
               </td>
             </tr>
           </tbody>
@@ -525,14 +602,13 @@
       </div>
     </div>
 
-    <!-- [탭 5] 홈 전체 공지 모달(saas_notices) & 자주 묻는 질문(saas_faqs) DB 관리 -->
+    <!-- [탭 5] 홈 공지 및 FAQ 관리 -->
     <div id="tabPanelSaasContent" style="display: none;">
-      <!-- 5-1. 홈 전체 공지 배너 및 팝업 모달 설정 -->
       <div class="admin-panel">
         <div class="panel-header">
           <div class="panel-title">
             <i class="fa-solid fa-bullhorn text-warning"></i>
-            <span>홈 화면(`home.html`) 전체 공지 배너 및 자동 팝업 모달 관리</span>
+            <span>홈 화면 전체 공지 배너 & 팝업 모달 관리 (saas_notices)</span>
           </div>
           <button type="button" class="btn btn-warning btn-sm fw-bold px-3" onclick="saveSaasGlobalNoticeFromAdmin()">
             <i class="fa-solid fa-floppy-disk me-1"></i>공지 설정 DB 저장
@@ -541,135 +617,239 @@
 
         <div class="row g-3">
           <div class="col-md-8">
-            <label class="small text-secondary mb-1">공지 제목 (홈 상단 배너 및 모달 제목에 표시)</label>
-            <input type="text" id="adminSaasNoticeTitle" class="form-control-custom" placeholder="예: 길드톡 서비스 안내 및 업데이트 소식">
+            <label class="small text-secondary mb-1">공지 제목</label>
+            <input type="text" id="adminSaasNoticeTitle" class="form-control-custom" placeholder="공지 제목">
           </div>
           <div class="col-md-4 d-flex align-items-end">
             <div class="form-check form-switch mb-2">
               <input class="form-check-input" type="checkbox" id="adminSaasNoticePopup" style="cursor:pointer; width: 2.6em; height: 1.35em;">
-              <label class="form-check-label ms-2 small fw-bold text-info" for="adminSaasNoticePopup" style="cursor:pointer;">
-                홈 접속 시 공지 모달 자동 띄우기
+              <label class="form-check-label ms-2 small fw-bold text-info" for="adminSaasNoticePopup">
+                홈 접속 시 자동 팝업 띄우기
               </label>
             </div>
           </div>
           <div class="col-12">
             <label class="small text-secondary mb-1">공지 본문 내용</label>
-            <textarea id="adminSaasNoticeContent" class="form-control-custom" rows="5" placeholder="공지 모달에 표시할 상세 내용을 입력하세요."></textarea>
+            <textarea id="adminSaasNoticeContent" class="form-control-custom" rows="4"></textarea>
           </div>
         </div>
       </div>
 
-      <!-- 5-2. 자주 묻는 질문(FAQ) DB 관리 -->
       <div class="admin-panel">
         <div class="panel-header">
           <div class="panel-title">
             <i class="fa-solid fa-circle-question text-info"></i>
-            <span>홈 화면 자주 묻는 질문 (FAQ) DB 관리</span>
+            <span>홈 화면 자주 묻는 질문(FAQ) 관리 (saas_faqs)</span>
           </div>
           <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-info btn-sm" onclick="addNewFaqItemRow()">
               <i class="fa-solid fa-plus me-1"></i>새 질문 추가
             </button>
             <button type="button" class="btn btn-primary btn-sm fw-bold px-3" onclick="saveFaqListToDb()">
-              <i class="fa-solid fa-floppy-disk me-1"></i>FAQ 목록 DB 저장
+              <i class="fa-solid fa-floppy-disk me-1"></i>FAQ 저장
             </button>
           </div>
         </div>
-
-        <p class="text-secondary small mb-3">
-          아래 목록은 플랫폼 공통 DB(<code>saas_faqs</code> 테이블)에 저장되며, <code>home.html</code> 하단 자주 묻는 질문 영역에 즉시 반영됩니다.
-        </p>
-
         <div id="adminFaqEditorList"></div>
       </div>
     </div>
 
   </div>
 
-  <!-- 3. 길드 정보 수정 모달 -->
-  <div id="modalEditGuild" class="kakao-modal-backdrop" style="display: none; z-index: 10000;">
-    <div class="lock-card" style="max-width: 420px; text-align: left;">
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <h6 class="fw-bold mb-0 text-info" style="font-size: 1rem;">
-          <i class="fa-solid fa-pen-to-square me-2"></i>길드 정보 및 라이선스 수정
-        </h6>
-        <button type="button" class="btn btn-sm btn-link text-secondary p-0" onclick="closeEditGuildModal()">
-          <i class="fa-solid fa-xmark fs-5"></i>
+  <!-- ========================================================
+       [신규 팝업 모달 1] 특정 길드 내부 상세 관리 모달 (길드원/보스/설정)
+       ======================================================== -->
+  <div id="modalGuildDetail" class="custom-modal-backdrop" style="display: none;">
+    <div class="custom-modal-card" style="max-width: 720px;">
+      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+        <div class="d-flex align-items-center gap-2">
+          <span style="font-size: 1.3rem;">🏰</span>
+          <h6 class="fw-bold mb-0 text-white" id="detailModalGuildTitle">길드 상세 정보</h6>
+          <span class="badge bg-secondary small" id="detailModalGuildIdBadge"></span>
+        </div>
+        <button type="button" class="btn btn-sm text-secondary" onclick="closeGuildDetailModal()"><i class="fa-solid fa-xmark fs-5"></i></button>
+      </div>
+
+      <!-- 모달 내부 탭 -->
+      <div class="modal-nav-tabs">
+        <button type="button" class="modal-nav-btn active" id="btnModalSubMembers" onclick="switchDetailSubTab('members')">
+          👥 길드원 명단 (<span id="detailCountMembers">0</span>)
         </button>
+        <button type="button" class="modal-nav-btn" id="btnModalSubBosses" onclick="switchDetailSubTab('bosses')">
+          ⚔️ 등록 보스 (<span id="detailCountBosses">0</span>)
+        </button>
+        <button type="button" class="modal-nav-btn" id="btnModalSubSettings" onclick="switchDetailSubTab('settings')">
+          ⚙️ 길드 환경설정
+        </button>
+      </div>
+
+      <div class="modal-body-scroll flex-fill">
+        <!-- 서브 1: 길드원 관리 -->
+        <div id="subTabMembers">
+          <div class="table-responsive">
+            <table class="custom-table" style="font-size: 0.78rem;">
+              <thead>
+                <tr>
+                  <th>닉네임</th>
+                  <th>직책</th>
+                  <th>직업</th>
+                  <th>관리 (PIN 초기화 / 추방)</th>
+                </tr>
+              </thead>
+              <tbody id="detailMembersTableBody">
+                <tr><td colspan="4" class="text-center py-3 text-secondary">길드원 목록을 조회하는 중...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 서브 2: 보스 타이머 관리 -->
+        <div id="subTabBosses" style="display: none;">
+          <div class="table-responsive">
+            <table class="custom-table" style="font-size: 0.78rem;">
+              <thead>
+                <tr>
+                  <th>보스명</th>
+                  <th>주기 / 고정</th>
+                  <th>다음 젠 시각</th>
+                  <th>삭제</th>
+                </tr>
+              </thead>
+              <tbody id="detailBossTableBody">
+                <tr><td colspan="4" class="text-center py-3 text-secondary">등록된 보스를 조회하는 중...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 서브 3: 길드 환경설정 확인 -->
+        <div id="subTabSettings" style="display: none;">
+          <div id="detailSettingsContainer" class="p-2" style="font-size: 0.8rem;"></div>
+        </div>
+      </div>
+
+      <div class="pt-3 border-top mt-2 text-end">
+        <button type="button" class="btn btn-secondary btn-sm px-3 fw-bold" onclick="closeGuildDetailModal()">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       [신규 팝업 모달 2] 길드장(슈퍼관리자) 강제 위임 모달
+       ======================================================== -->
+  <div id="modalAssignMaster" class="custom-modal-backdrop" style="display: none;">
+    <div class="custom-modal-card" style="max-width: 420px;">
+      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+        <h6 class="fw-bold mb-0 text-warning"><i class="fa-solid fa-crown me-2"></i>길드장(슈퍼관리자) 강제 위임</h6>
+        <button type="button" class="btn btn-sm text-secondary" onclick="closeAssignMasterModal()"><i class="fa-solid fa-xmark fs-5"></i></button>
+      </div>
+      <input type="hidden" id="assignTargetGuildId">
+      <p class="text-secondary small mb-3" style="line-height: 1.45;">
+        선택한 길드의 새로운 <strong>길드장(슈퍼관리자 권한)</strong>을 임명합니다. 기존 길드장은 '일반' 직책으로 강등됩니다.
+      </p>
+
+      <div class="mb-3">
+        <label class="small text-secondary mb-1">새로 길드장을 맡을 멤버 선택</label>
+        <select id="assignMasterMemberSelect" class="form-control-custom">
+          <option value="">멤버 선택...</option>
+        </select>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeAssignMasterModal()">취소</button>
+        <button type="button" class="btn btn-warning flex-fill fw-bold py-2 text-dark" onclick="executeAssignMasterRole()">위임 집행</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================
+       [신규 팝업 모달 3] 전체 길드 대상 긴급 시스템 공지 투하
+       ======================================================== -->
+  <div id="modalGlobalBroadcast" class="custom-modal-backdrop" style="display: none;">
+    <div class="custom-modal-card" style="max-width: 500px;">
+      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+        <h6 class="fw-bold mb-0 text-danger"><i class="fa-solid fa-bullhorn me-2"></i>전체 길드 전체대화방 긴급공지</h6>
+        <button type="button" class="btn btn-sm text-secondary" onclick="closeGlobalBroadcastModal()"><i class="fa-solid fa-xmark fs-5"></i></button>
+      </div>
+      <p class="text-secondary small mb-3">
+        현재 개설된 <strong>모든 활성 길드의 기본 대화방(default_public)</strong>에 마스터 시스템 공지 메시지를 일괄 투하합니다.
+      </p>
+
+      <div class="mb-3">
+        <label class="small text-secondary mb-1">공지 본문 내용</label>
+        <textarea id="broadcastContentInput" class="form-control-custom" rows="4" placeholder="예: [시스템 긴급점검 안내] 03:00 ~ 03:30 서버 안정화 작업이 진행됩니다."></textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeGlobalBroadcastModal()">취소</button>
+        <button type="button" class="btn btn-danger flex-fill fw-bold py-2" onclick="executeGlobalBroadcast()">전체 길드 발송</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 길드 정보 수정 모달 -->
+  <div id="modalEditGuild" class="custom-modal-backdrop" style="display: none;">
+    <div class="custom-modal-card" style="max-width: 440px;">
+      <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+        <h6 class="fw-bold mb-0 text-info">
+          <i class="fa-solid fa-pen-to-square me-2"></i>길드 기본 정보 수정
+        </h6>
+        <button type="button" class="btn btn-sm text-secondary" onclick="closeEditGuildModal()"><i class="fa-solid fa-xmark fs-5"></i></button>
       </div>
 
       <input type="hidden" id="editGuildId">
       
       <div class="mb-2">
         <label class="small text-secondary mb-1">게임명</label>
-        <input type="text" id="editGameName" class="form-control-custom" placeholder="게임명">
+        <input type="text" id="editGameName" class="form-control-custom">
       </div>
-
       <div class="mb-2">
         <label class="small text-secondary mb-1">길드명</label>
-        <input type="text" id="editGuildName" class="form-control-custom" placeholder="길드명">
+        <input type="text" id="editGuildName" class="form-control-custom">
       </div>
-
       <div class="mb-2">
-        <label class="small text-secondary mb-1">길드 초대 코드 (길드원 배포용)</label>
-        <input type="text" id="editInviteCode" class="form-control-custom text-warning fw-bold" placeholder="예: INV-7788">
+        <label class="small text-secondary mb-1">초대 코드</label>
+        <input type="text" id="editInviteCode" class="form-control-custom text-warning fw-bold">
       </div>
-
       <div class="mb-2">
         <label class="small text-secondary mb-1">길드장 닉네임</label>
-        <input type="text" id="editApplicantNick" class="form-control-custom" placeholder="길드장 닉네임">
+        <input type="text" id="editApplicantNick" class="form-control-custom">
       </div>
-
       <div class="mb-2">
-        <label class="small text-secondary mb-1">연락처 / 이메일 / 카카오톡 ID</label>
-        <input type="text" id="editContactInfo" class="form-control-custom" placeholder="연락처">
+        <label class="small text-secondary mb-1">연락처</label>
+        <input type="text" id="editContactInfo" class="form-control-custom">
       </div>
-
       <div class="mb-3">
         <label class="small text-secondary mb-1">만료일 (비워둘 시 무제한)</label>
         <input type="date" id="editExpiresAt" class="form-control-custom">
       </div>
 
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeEditGuildModal()">
-          취소
-        </button>
-        <button type="button" class="btn btn-primary flex-fill fw-bold py-2" onclick="saveGuildEdit()">
-          수정 완료
-        </button>
+        <button type="button" class="btn btn-secondary flex-fill py-2" onclick="closeEditGuildModal()">취소</button>
+        <button type="button" class="btn btn-primary flex-fill fw-bold py-2" onclick="saveGuildEdit()">저장</button>
       </div>
     </div>
   </div>
 
   <script>
-    // 1. 보안 인증 로직
     const MASTER_PIN = "master7777";
 
     var defaultAdminFaqList = [
-      {
-        q: "초기 비밀번호는 무엇인가요?",
-        a: "최초 등록 시 기본 비밀번호는 000000이며, 첫 로그인 시 보안을 위해 본인만의 6자리 숫자 비밀번호로 즉시 변경해야 합니다."
-      },
-      {
-        q: "길드원 초대는 어떻게 하나요?",
-        a: "길드장이 전달한 초대 코드로 입장하거나, 길드 관리자가 등록한 닉네임을 선택해 바로 로그인할 수 있습니다."
-      },
-      {
-        q: "라이선스 발급 및 연장 문의는 어디서 하나요?",
-        a: "우측 상단 [고객센터] 버튼 또는 [신규 길드 라이선스 발급 신청] 메뉴를 통해 접수해 주시면 관리자가 확인 후 안내해 드립니다."
-      }
+      { q: "초기 비밀번호는 무엇인가요?", a: "기본 비밀번호는 000000(또는 0000)이며 첫 로그인 시 본인만의 비밀번호로 변경해야 합니다." },
+      { q: "길드원 초대는 어떻게 하나요?", a: "길드 초대 코드를 공유하거나 관리자가 닉네임을 사전 등록할 수 있습니다." },
+      { q: "라이선스 연장 문의는 어디서 하나요?", a: "고객센터 1:1 문의 또는 라이선스 신청 메뉴를 이용하시면 됩니다." }
     ];
 
     var adminFaqList = [];
     var currentNoticeId = null;
+    let cachedGuilds = [];
+    let cachedLicenseRequests = [];
+    let cachedSupportInquiries = [];
+    let currentDetailGuildId = null;
 
     function escapeAdminHtml(str) {
       if (!str) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
     function ensureSupabaseClient() {
@@ -680,7 +860,7 @@
 
     function checkAuthOnLoad() {
       ensureSupabaseClient();
-      if (sessionStorage.getItem("master_authenticated") === "true" || sessionStorage.getItem("master_admin_auth") === "1") {
+      if (sessionStorage.getItem("master_authenticated") === "true") {
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("adminMainContent").style.display = "block";
         loadAllDashboardData();
@@ -694,24 +874,20 @@
       const pin = (document.getElementById("masterPinInput").value || "").trim();
       if (pin === MASTER_PIN) {
         sessionStorage.setItem("master_authenticated", "true");
-        sessionStorage.setItem("master_admin_auth", "1");
         document.getElementById("lockScreen").style.display = "none";
         document.getElementById("adminMainContent").style.display = "block";
         loadAllDashboardData();
       } else {
-        alert("비밀번호가 올바르지 않습니다.");
+        alert("마스터 비밀번호가 올바르지 않습니다.");
         document.getElementById("masterPinInput").value = "";
-        document.getElementById("masterPinInput").focus();
       }
     }
 
     function logoutMaster() {
       sessionStorage.removeItem("master_authenticated");
-      sessionStorage.removeItem("master_admin_auth");
       location.reload();
     }
 
-    // 2. 탭 전환
     function switchAdminTab(tabName, btnElem) {
       document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.remove("active"));
       if (btnElem) btnElem.classList.add("active");
@@ -723,96 +899,57 @@
       document.getElementById("tabPanelSaasContent").style.display = (tabName === 'saasContent') ? 'block' : 'none';
     }
 
-    // 3. 데이터 로딩 & 대시보드 집계
-    let cachedGuilds = [];
-    let cachedLicenseRequests = [];
-    let cachedSupportInquiries = [];
-
+    // ==========================================
+    // [데이터 전체 로드 & 헬스체크 KPI 집계]
+    // ==========================================
     async function loadAllDashboardData() {
       ensureSupabaseClient();
       if (!window.supabaseClient) return;
 
       try {
-        // 1) 길드 데이터 로드
-        let guilds = [];
-        try {
-          const { data, error: gErr } = await window.supabaseClient
-            .from('guilds')
-            .select('*')
-            .order('created_at', { ascending: false });
-          if (!gErr) guilds = data || [];
-        } catch (e) {}
-
-        // 2) 라이선스 데이터 로드
-        let licenses = [];
-        try {
-          const { data, error: lErr } = await window.supabaseClient
-            .from('app_licenses')
-            .select('*');
-          if (!lErr) licenses = data || [];
-        } catch (e) {}
-
-        // 3) 길드별 인원수 및 전체 인원 집계
-        let allMembers = [];
-        try {
-          const { data: mData, error: mErr } = await window.supabaseClient
-            .from('guild_members')
-            .select('guild_id');
-          if (!mErr && Array.isArray(mData)) allMembers = mData;
-        } catch (e) {}
+        // 1. 길드 & 라이선스 데이터 로드
+        const [{ data: guilds }, { data: licenses }, { data: allMembers }] = await Promise.all([
+          window.supabaseClient.from('guilds').select('*').order('created_at', { ascending: false }),
+          window.supabaseClient.from('app_licenses').select('*'),
+          window.supabaseClient.from('guild_members').select('id, guild_id')
+        ]);
 
         const memberCountMap = {};
-        allMembers.forEach(m => {
+        (allMembers || []).forEach(m => {
           const gid = m.guild_id || 'default';
           memberCountMap[gid] = (memberCountMap[gid] || 0) + 1;
         });
 
-        guilds.forEach(g => {
-          g.app_licenses = licenses.filter(l => l.guild_id === g.id);
-          g.member_count = memberCountMap[g.id] || g.member_count || 1;
+        (guilds || []).forEach(g => {
+          g.app_licenses = (licenses || []).filter(l => l.guild_id === g.id);
+          g.member_count = memberCountMap[g.id] || 0;
         });
 
-        // 4) 라이선스 신청서 로드 (app_license_requests 단일 테이블에서 조회)
-        let licenseReqs = [];
-        try {
-          const { data: reqData, error: rErr } = await window.supabaseClient
-            .from('app_license_requests')
-            .select('*')
-            .order('created_at', { ascending: false });
-          if (!rErr && Array.isArray(reqData)) {
-            // 과거 데이터 중 고객센터 문의로 들어왔던 행 제외하고 순수 라이선스 신청서만 필터링
-            licenseReqs = reqData.filter(r => {
-              return r.status !== 'support_inquiry' &&
-                     r.status !== 'support_done' &&
-                     !(r.game_name && String(r.game_name).startsWith('[고객센터]'));
-            });
-          }
-        } catch (e1) {}
+        // 2. 전체 채팅수 & 보스수 집계
+        const [{ count: totalChats }, { count: totalBosses }] = await Promise.all([
+          window.supabaseClient.from('guild_chats').select('*', { count: 'exact', head: true }),
+          window.supabaseClient.from('boss_timers').select('*', { count: 'exact', head: true })
+        ]);
 
-        // 5) 고객센터 1:1 문의 로드 (saas_inquiries 전용 테이블에서 조회)
-        let inquiries = [];
-        try {
-          const { data: inqData, error: iErr } = await window.supabaseClient
-            .from('saas_inquiries')
-            .select('*')
-            .order('created_at', { ascending: false });
-          if (!iErr && Array.isArray(inqData)) {
-            inquiries = inqData;
-          }
-        } catch (e2) {}
+        // 3. 라이선스 신청서 & 1:1 문의 로드
+        const [{ data: reqData }, { data: inqData }] = await Promise.all([
+          window.supabaseClient.from('app_license_requests').select('*').order('created_at', { ascending: false }),
+          window.supabaseClient.from('saas_inquiries').select('*').order('created_at', { ascending: false })
+        ]);
 
-        cachedGuilds = guilds;
-        cachedLicenseRequests = licenseReqs;
-        cachedSupportInquiries = inquiries;
+        cachedGuilds = guilds || [];
+        cachedLicenseRequests = reqData || [];
+        cachedSupportInquiries = inqData || [];
 
-        // KPI 집계
+        // KPI 표시
         const activeGuilds = cachedGuilds.filter(g => g.is_active !== false).length;
-        const totalMembersCount = allMembers.length;
         const pendingReqs = cachedLicenseRequests.filter(r => r.status === 'pending').length;
         const pendingSup = cachedSupportInquiries.filter(r => r.status !== 'done').length;
 
-        document.getElementById("kpiActiveGuilds").innerText = activeGuilds;
-        document.getElementById("kpiTotalMembers").innerText = totalMembersCount;
+        document.getElementById("kpiActiveGuilds").innerText = `${activeGuilds} / ${cachedGuilds.length}`;
+        document.getElementById("kpiTotalMembers").innerText = (allMembers || []).length;
+        document.getElementById("kpiTotalChats").innerText = totalChats || 0;
+        document.getElementById("kpiTotalBosses").innerText = totalBosses || 0;
         document.getElementById("kpiPendingRequests").innerText = pendingReqs;
         document.getElementById("kpiPendingSupport").innerText = pendingSup;
 
@@ -829,11 +966,13 @@
       }
     }
 
-    // 4. 구매 길드 테이블 렌더링
+    // ==========================================
+    // [길드 목록 테이블 렌더링 & 제어]
+    // ==========================================
     function renderGuildTable(list) {
       const tbody = document.getElementById("guildListTableBody");
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-secondary">등록된 길드가 아직 없습니다. [다이렉트 즉시 발급]에서 길드를 개설해 보세요.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-secondary">등록된 길드가 없습니다.</td></tr>`;
         return;
       }
 
@@ -841,57 +980,59 @@
         const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : null;
         const gTitle = g.guild_name || g.name || "길드";
         const key = lic ? lic.license_key : (g.license_key || "-");
-        const inviteCode = lic?.invite_code || g.invite_code || ('INV-' + (key.split('-')[2] || key.slice(-4)));
+        const inviteCode = lic?.invite_code || g.invite_code || ('INV-' + (key.slice(-4)));
         const expiresAt = lic ? (lic.expires_at ? lic.expires_at.split('T')[0] : '무제한') : '미설정';
-        const contact = lic ? (lic.contact_info || lic.applicant_nickname || "-") : "-";
+        const masterNick = lic?.applicant_nickname || '길드장';
+        const contact = lic ? (lic.contact_info || "-") : "-";
         const isActive = (g.is_active !== false && (!lic || lic.status !== 'suspended'));
         
         return `
           <tr>
             <td>
-              <div class="fw-bold text-info">${escapeAdminHtml(g.game_name || '일반')}</div>
-              <div style="font-size:0.95rem; font-weight:700;">${escapeAdminHtml(gTitle)}</div>
+              <span class="badge bg-primary bg-opacity-25 text-info mb-1">${escapeAdminHtml(g.game_name || '일반')}</span>
+              <div class="fw-bold text-white fs-6">${escapeAdminHtml(gTitle)}</div>
+              <code class="text-secondary" style="font-size:0.7rem;">${g.id}</code>
             </td>
             <td>
-              <div>${escapeAdminHtml(lic?.applicant_nickname || '길드장')}</div>
-              <div class="text-secondary small">${escapeAdminHtml(contact)}</div>
+              <div class="fw-bold text-warning"><i class="fa-solid fa-crown me-1"></i>${escapeAdminHtml(masterNick)}</div>
+              <div class="text-secondary small" style="font-size:0.74rem;">${escapeAdminHtml(contact)}</div>
             </td>
             <td>
-              <span class="badge bg-secondary bg-opacity-50 px-2 py-1"><i class="fa-solid fa-users me-1"></i>${g.member_count || 1}명</span>
+              <span class="badge bg-secondary bg-opacity-50 px-2 py-1"><i class="fa-solid fa-users me-1"></i>${g.member_count}명</span>
             </td>
             <td>
-              <div style="font-size:0.68rem; color:#9ca3af;">라이선스(길드장):</div>
-              <code style="color:#38bdf8; cursor:pointer; font-size:0.75rem;" title="클릭하여 라이선스 복사" onclick="copyTextToClipboard('${key}')">
-                ${key} <i class="fa-regular fa-copy ms-1"></i>
-              </code>
-              <div style="font-size:0.68rem; color:#9ca3af; margin-top:3px;">초대코드(길드원):</div>
-              <code style="color:#facc15; cursor:pointer; font-size:0.82rem; font-weight:700;" title="클릭하여 초대코드 복사" onclick="copyTextToClipboard('${inviteCode}')">
-                ${inviteCode} <i class="fa-regular fa-copy ms-1"></i>
-              </code>
+              <div style="font-size:0.68rem; color:#9ca3af;">라이선스:</div>
+              <code style="color:#38bdf8; cursor:pointer;" onclick="copyTextToClipboard('${key}')">${key}</code>
+              <div style="font-size:0.68rem; color:#9ca3af; margin-top:3px;">초대코드:</div>
+              <code style="color:#facc15; font-weight:700; cursor:pointer;" onclick="copyTextToClipboard('${inviteCode}')">${inviteCode}</code>
             </td>
-            <td>
-              <div>${expiresAt}</div>
-            </td>
+            <td><div>${expiresAt}</div></td>
             <td>
               <span class="badge-status ${isActive ? 'badge-active' : 'badge-expired'}">
-                ${isActive ? '정상 사용' : '조기종료(정지)'}
+                ${isActive ? '정상 사용' : '정지됨'}
               </span>
             </td>
             <td>
               <div class="d-flex gap-1 flex-wrap">
-                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;" onclick="copyGuildInviteMessage('${escapeAdminHtml(g.game_name || '')}', '${escapeAdminHtml(gTitle)}', '${key}', '${inviteCode}', '${expiresAt}')">
-                  안내문 복사
+                <button type="button" class="btn btn-sm btn-info btn-action-sm text-dark" onclick="openGuildDetailModal('${g.id}', '${escapeAdminHtml(gTitle)}')">
+                  <i class="fa-solid fa-magnifying-glass me-1"></i>상세통제
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2" style="font-size:0.75rem;" onclick="extendGuildLicense('${g.id}', 30)">
+                <button type="button" class="btn btn-sm btn-warning btn-action-sm text-dark" onclick="openAssignMasterModal('${g.id}', '${escapeAdminHtml(gTitle)}')">
+                  <i class="fa-solid fa-crown me-1"></i>길드장위임
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary btn-action-sm" onclick="copyGuildInviteMessage('${escapeAdminHtml(g.game_name || '')}', '${escapeAdminHtml(gTitle)}', '${key}', '${inviteCode}', '${expiresAt}')">
+                  안내문복사
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-warning btn-action-sm" onclick="extendGuildLicense('${g.id}', 30)">
                   +30일
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-info py-0 px-2" style="font-size:0.75rem;" onclick="openEditGuildModal('${g.id}')">
+                <button type="button" class="btn btn-sm btn-outline-info btn-action-sm" onclick="openEditGuildModal('${g.id}')">
                   수정
                 </button>
-                <button type="button" class="btn btn-sm ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'} py-0 px-2" style="font-size:0.75rem;" onclick="toggleGuildActive('${g.id}', '${escapeAdminHtml(gTitle)}', ${isActive})">
-                  ${isActive ? '조기종료' : '재개'}
+                <button type="button" class="btn btn-sm ${isActive ? 'btn-outline-secondary' : 'btn-outline-success'} btn-action-sm" onclick="toggleGuildActive('${g.id}', '${escapeAdminHtml(gTitle)}', ${isActive})">
+                  ${isActive ? '정지' : '재개'}
                 </button>
-                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.75rem;" onclick="deleteGuildAction('${g.id}', '${escapeAdminHtml(gTitle)}')">
+                <button type="button" class="btn btn-sm btn-outline-danger btn-action-sm" onclick="deleteGuildAction('${g.id}', '${escapeAdminHtml(gTitle)}')">
                   삭제
                 </button>
               </div>
@@ -914,11 +1055,265 @@
       renderGuildTable(filtered);
     }
 
-    // 5. 라이선스 신청서 목록 렌더링 & 승인 / 삭제 (app_license_requests 연동)
+    // ==========================================
+    // [신규 기능 1: 특정 길드 상세 데이터 모달]
+    // ==========================================
+    async function openGuildDetailModal(guildId, guildTitle) {
+      currentDetailGuildId = guildId;
+      document.getElementById("detailModalGuildTitle").innerText = guildTitle;
+      document.getElementById("detailModalGuildIdBadge").innerText = guildId;
+      document.getElementById("modalGuildDetail").style.display = "flex";
+      switchDetailSubTab('members');
+      await loadGuildDetailData(guildId);
+    }
+
+    function closeGuildDetailModal() {
+      document.getElementById("modalGuildDetail").style.display = "none";
+    }
+
+    function switchDetailSubTab(tab) {
+      ['members', 'bosses', 'settings'].forEach(t => {
+        const btn = document.getElementById(`btnModalSub${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const panel = document.getElementById(`subTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (panel) panel.style.display = (t === tab) ? 'block' : 'none';
+      });
+    }
+
+    async function loadGuildDetailData(guildId) {
+      ensureSupabaseClient();
+      try {
+        // 길드원 명단, 보스 목록, 길드 환경설정 병렬 조회
+        const [{ data: members }, { data: bosses }, { data: settings }] = await Promise.all([
+          window.supabaseClient.from('guild_members').select('*').eq('guild_id', guildId).order('name', { ascending: true }),
+          window.supabaseClient.from('boss_timers').select('*').eq('guild_id', guildId).order('id', { ascending: true }),
+          window.supabaseClient.from('guild_settings').select('*').eq('guild_id', guildId)
+        ]);
+
+        document.getElementById("detailCountMembers").innerText = (members || []).length;
+        document.getElementById("detailCountBosses").innerText = (bosses || []).length;
+
+        // 1. 길드원 렌더링
+        const mBody = document.getElementById("detailMembersTableBody");
+        if (!members || members.length === 0) {
+          mBody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-secondary">가입된 길드원이 없습니다.</td></tr>`;
+        } else {
+          mBody.innerHTML = members.map(m => {
+            const nick = m.nickname || m.name || '무명';
+            const role = m.role || '일반';
+            const isMaster = (role === '길드장' || role === '슈퍼관리자');
+            return `
+              <tr>
+                <td><strong>${escapeAdminHtml(nick)}</strong></td>
+                <td><span class="badge ${isMaster ? 'bg-warning text-dark' : 'bg-secondary'}">${role}</span></td>
+                <td><span class="text-secondary">${m.job_class || '-'}</span></td>
+                <td>
+                  <button type="button" class="btn btn-sm btn-outline-warning btn-action-sm me-1" onclick="resetMemberPinFromAdmin('${m.id}', '${escapeAdminHtml(nick)}')">
+                    PIN초기화(000000)
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-danger btn-action-sm" onclick="expelMemberFromAdmin('${m.id}', '${escapeAdminHtml(nick)}')">
+                    강제추방
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        // 2. 보스 목록 렌더링
+        const bBody = document.getElementById("detailBossTableBody");
+        if (!bosses || bosses.length === 0) {
+          bBody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-secondary">등록된 보스가 없습니다.</td></tr>`;
+        } else {
+          bBody.innerHTML = bosses.map(b => `
+            <tr>
+              <td><strong>${escapeAdminHtml(b.boss_name)}</strong></td>
+              <td>${b.is_fixed ? (b.fixed_schedule || '고정') : (b.cycle_min + '분')}</td>
+              <td>${b.next_spawn_time ? b.next_spawn_time.replace('T',' ').substring(0,16) : '-'}</td>
+              <td>
+                <button type="button" class="btn btn-sm btn-outline-danger btn-action-sm" onclick="deleteBossFromAdmin('${b.id}', '${escapeAdminHtml(b.boss_name)}')">
+                  삭제
+                </button>
+              </td>
+            </tr>
+          `).join('');
+        }
+
+        // 3. 길드 설정 렌더링
+        const sContainer = document.getElementById("detailSettingsContainer");
+        if (!settings || settings.length === 0) {
+          sContainer.innerHTML = `<div class="text-secondary text-center py-3">저장된 환경설정이 없습니다.</div>`;
+        } else {
+          sContainer.innerHTML = `
+            <div class="row g-2">
+              ${settings.map(s => `
+                <div class="col-md-6">
+                  <div class="p-2 rounded" style="background:#0c1424; border:1px solid #233554;">
+                    <div class="text-info fw-bold">${s.key}</div>
+                    <div class="text-white text-truncate" title="${escapeAdminHtml(s.value)}">${escapeAdminHtml(s.value)}</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+      } catch (err) {
+        alert("길드 상세 조회 오류: " + err.message);
+      }
+    }
+
+    // 길드원 PIN 강제 초기화
+    async function resetMemberPinFromAdmin(memberId, memberNick) {
+      if (!confirm(`[${memberNick}] 님의 PIN 비밀번호를 [ 000000 ] 으로 강제 초기화하시겠습니까?`)) return;
+      try {
+        await window.supabaseClient.from('guild_members').update({ pin: '000000' }).eq('id', memberId);
+        alert(`[${memberNick}] 님의 PIN이 [ 000000 ] 으로 초기화되었습니다.`);
+        await loadGuildDetailData(currentDetailGuildId);
+      } catch (err) {
+        alert("초기화 실패: " + err.message);
+      }
+    }
+
+    // 길드원 강제 추방
+    async function expelMemberFromAdmin(memberId, memberNick) {
+      if (!confirm(`⚠️ [${memberNick}] 길드원을 강제 추방(삭제)하시겠습니까?`)) return;
+      try {
+        await window.supabaseClient.from('guild_members').delete().eq('id', memberId);
+        alert(`[${memberNick}] 님이 추방되었습니다.`);
+        await loadGuildDetailData(currentDetailGuildId);
+        loadAllDashboardData();
+      } catch (err) {
+        alert("추방 실패: " + err.message);
+      }
+    }
+
+    // 보스 삭제
+    async function deleteBossFromAdmin(bossId, bossName) {
+      if (!confirm(`[${bossName}] 보스를 삭제하시겠습니까?`)) return;
+      try {
+        await window.supabaseClient.from('boss_timers').delete().eq('id', bossId);
+        await loadGuildDetailData(currentDetailGuildId);
+      } catch (err) {
+        alert("보스 삭제 실패: " + err.message);
+      }
+    }
+
+    // ==========================================
+    // [신규 기능 2: 길드장(슈퍼관리자) 강제 위임 모달]
+    // ==========================================
+    async function openAssignMasterModal(guildId, guildTitle) {
+      document.getElementById("assignTargetGuildId").value = guildId;
+      const select = document.getElementById("assignMasterMemberSelect");
+      select.innerHTML = '<option value="">멤버 목록 불러오는 중...</option>';
+      document.getElementById("modalAssignMaster").style.display = "flex";
+
+      try {
+        const { data: members } = await window.supabaseClient
+          .from('guild_members')
+          .select('id, name, nickname, role')
+          .eq('guild_id', guildId);
+
+        if (!members || members.length === 0) {
+          select.innerHTML = '<option value="">가입된 멤버가 없습니다.</option>';
+          return;
+        }
+
+        select.innerHTML = '<option value="">새 길드장을 선택하세요...</option>' +
+          members.map(m => {
+            const nick = m.nickname || m.name;
+            return `<option value="${m.id}" data-nick="${escapeAdminHtml(nick)}">${escapeAdminHtml(nick)} (${m.role || '일반'})</option>`;
+          }).join('');
+      } catch (e) {
+        select.innerHTML = '<option value="">조회 실패</option>';
+      }
+    }
+
+    function closeAssignMasterModal() {
+      document.getElementById("modalAssignMaster").style.display = "none";
+    }
+
+    async function executeAssignMasterRole() {
+      const guildId = document.getElementById("assignTargetGuildId").value;
+      const select = document.getElementById("assignMasterMemberSelect");
+      const newMasterId = select.value;
+      const newMasterNick = select.options[select.selectedIndex]?.getAttribute("data-nick");
+
+      if (!newMasterId) return alert("새 길드장으로 임명할 멤버를 선택하세요.");
+      if (!confirm(`정말로 [${newMasterNick}] 님을 이 길드의 새 길드장(슈퍼관리자)으로 강제 위임하시겠습니까?`)) return;
+
+      try {
+        // 1. 기존 길드장(슈퍼관리자)을 일반으로 강등
+        await window.supabaseClient
+          .from('guild_members')
+          .update({ role: '일반' })
+          .eq('guild_id', guildId)
+          .in('role', ['길드장', '슈퍼관리자']);
+
+        // 2. 새 멤버를 길드장으로 승급
+        await window.supabaseClient
+          .from('guild_members')
+          .update({ role: '길드장' })
+          .eq('id', newMasterId);
+
+        // 3. 라이선스 정보의 applicant_nickname / issued_to 갱신
+        await window.supabaseClient
+          .from('app_licenses')
+          .update({ applicant_nickname: newMasterNick, issued_to: newMasterNick })
+          .eq('guild_id', guildId);
+
+        alert(`[${newMasterNick}] 님이 새 길드장으로 성공적으로 임명되었습니다!`);
+        closeAssignMasterModal();
+        loadAllDashboardData();
+      } catch (err) {
+        alert("위임 집행 오류: " + err.message);
+      }
+    }
+
+    // ==========================================
+    // [신규 기능 3: 전체 길드 긴급 시스템 공지 발송]
+    // ==========================================
+    function openGlobalBroadcastModal() {
+      document.getElementById("broadcastContentInput").value = "";
+      document.getElementById("modalGlobalBroadcast").style.display = "flex";
+    }
+    function closeGlobalBroadcastModal() {
+      document.getElementById("modalGlobalBroadcast").style.display = "none";
+    }
+
+    async function executeGlobalBroadcast() {
+      const content = document.getElementById("broadcastContentInput").value.trim();
+      if (!content) return alert("공지할 본문 내용을 입력하세요.");
+
+      if (!confirm(`정말로 모든 활성 길드의 기본 대화방에 시스템 공지를 전송하시겠습니까?`)) return;
+
+      try {
+        const activeGuilds = cachedGuilds.filter(g => g.is_active !== false);
+        const payload = activeGuilds.map(g => ({
+          guild_id: g.id,
+          room_id: "default_public",
+          sender_name: "시스템마스터",
+          message: `📢 [전체 긴급 시스템 공지]\n${content}`,
+          msg_type: "system_notice",
+          mentions: []
+        }));
+
+        await window.supabaseClient.from('guild_chats').insert(payload);
+        alert(`총 ${activeGuilds.length}개 길드 대화방에 긴급 공지가 전송되었습니다!`);
+        closeGlobalBroadcastModal();
+        loadAllDashboardData();
+      } catch (err) {
+        alert("공지 전송 실패: " + err.message);
+      }
+    }
+
+    // ==========================================
+    // [기존 라이선스 발급, 신청서 승인 및 기본 CRUD]
+    // ==========================================
     function renderRequestsTable(list) {
       const tbody = document.getElementById("requestListTableBody");
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">접수된 라이선스 신청서가 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">접수된 신청서가 없습니다.</td></tr>`;
         return;
       }
 
@@ -934,9 +1329,7 @@
               <strong>${escapeAdminHtml(r.guild_name)}</strong>
             </td>
             <td>${escapeAdminHtml(nick)}</td>
-            <td>
-              <div class="text-secondary small">${escapeAdminHtml(r.contact_info || '-')}</div>
-            </td>
+            <td><div class="text-secondary small">${escapeAdminHtml(r.contact_info || '-')}</div></td>
             <td>
               <span class="badge-status ${isPending ? 'badge-pending' : 'badge-active'}">
                 ${isPending ? '대기 중' : '승인 완료'}
@@ -946,9 +1339,9 @@
               <div class="d-flex gap-1">
                 ${isPending ? `
                   <button type="button" class="btn btn-sm btn-success py-1 px-2" style="font-size:0.75rem;" onclick="approveRequest('${r.id}', '${escapeAdminHtml(r.game_name)}', '${escapeAdminHtml(r.guild_name)}', '${escapeAdminHtml(nick)}', '${escapeAdminHtml(r.contact_info || '')}')">
-                    <i class="fa-solid fa-check me-1"></i>승인 & 발급
+                    승인 & 발급
                   </button>
-                ` : `<span class="text-secondary small me-2">${escapeAdminHtml(r.assigned_license_key || '처리 완료')}</span>`}
+                ` : `<span class="text-secondary small me-2">${escapeAdminHtml(r.assigned_license_key || '처리됨')}</span>`}
                 <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size:0.75rem;" onclick="deleteLicenseRequest('${r.id}')">
                   삭제
                 </button>
@@ -961,60 +1354,45 @@
 
     async function deleteLicenseRequest(id) {
       ensureSupabaseClient();
-      if (!confirm("이 라이선스 신청 내역을 DB에서 완전히 삭제하시겠습니까?")) return;
+      if (!confirm("이 신청 내역을 삭제하시겠습니까?")) return;
       try {
-        const { error } = await window.supabaseClient
-          .from('app_license_requests')
-          .delete()
-          .eq('id', id);
-        if (error) throw error;
+        await window.supabaseClient.from('app_license_requests').delete().eq('id', id);
         loadAllDashboardData();
       } catch (err) {
         alert("삭제 실패: " + err.message);
       }
     }
 
-    // 6. 고객센터 1:1 문의함 렌더링 & 완료/삭제 (saas_inquiries 전용 테이블 연동)
     function renderSupportTable(list) {
       const tbody = document.getElementById("supportListTableBody");
       if (!list || list.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">접수된 고객센터 1:1 문의가 없습니다.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-secondary">접수된 고객센터 문의가 없습니다.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = list.map(r => {
         const isDone = (r.status === 'done');
         const dt = r.created_at ? r.created_at.replace('T', ' ').substring(0, 16) : '-';
-        const category = r.category || '일반 문의';
-        const writer = r.writer || '-';
-        const contact = r.contact || '-';
-        const content = r.content || '-';
         return `
           <tr>
             <td class="text-secondary small">${dt}</td>
-            <td>
-              <span class="badge bg-warning text-dark fw-bold">${escapeAdminHtml(category)}</span>
-            </td>
-            <td class="fw-bold">${escapeAdminHtml(writer)}</td>
+            <td><span class="badge bg-warning text-dark fw-bold">${escapeAdminHtml(r.category || '문의')}</span></td>
+            <td class="fw-bold">${escapeAdminHtml(r.writer || '-')}</td>
             <td style="max-width: 380px; white-space: pre-wrap; word-break: break-word;">
-              <div class="text-info small mb-1"><i class="fa-solid fa-address-book me-1"></i>${escapeAdminHtml(contact)}</div>
-              <div>${escapeAdminHtml(content)}</div>
+              <div class="text-info small mb-1">${escapeAdminHtml(r.contact || '-')}</div>
+              <div>${escapeAdminHtml(r.content || '-')}</div>
             </td>
             <td>
               <span class="badge-status ${isDone ? 'badge-active' : 'badge-pending'}">
-                ${isDone ? '처리 완료' : '답변 대기'}
+                ${isDone ? '완료' : '대기'}
               </span>
             </td>
             <td>
               <div class="d-flex gap-1">
                 ${!isDone ? `
-                  <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size:0.75rem;" onclick="markSupportInquiryDone('${r.id}')">
-                    <i class="fa-solid fa-check me-1"></i>완료 처리
-                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-success py-1 px-2" style="font-size:0.75rem;" onclick="markSupportInquiryDone('${r.id}')">완료</button>
                 ` : ''}
-                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size:0.75rem;" onclick="deleteRequestOrInquiry('${r.id}')">
-                  <i class="fa-solid fa-trash-can me-1"></i>DB 삭제
-                </button>
+                <button type="button" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size:0.75rem;" onclick="deleteRequestOrInquiry('${r.id}')">삭제</button>
               </div>
             </td>
           </tr>
@@ -1025,11 +1403,7 @@
     async function markSupportInquiryDone(id) {
       ensureSupabaseClient();
       try {
-        const { error } = await window.supabaseClient
-          .from('saas_inquiries')
-          .update({ status: 'done' })
-          .eq('id', id);
-        if (error) throw error;
+        await window.supabaseClient.from('saas_inquiries').update({ status: 'done' }).eq('id', id);
         loadAllDashboardData();
       } catch (err) {
         alert("상태 변경 실패: " + err.message);
@@ -1038,13 +1412,9 @@
 
     async function deleteRequestOrInquiry(id) {
       ensureSupabaseClient();
-      if (!confirm("이 문의 항목을 DB에서 완전히 삭제하시겠습니까?")) return;
+      if (!confirm("문의를 삭제하시겠습니까?")) return;
       try {
-        const { error } = await window.supabaseClient
-          .from('saas_inquiries')
-          .delete()
-          .eq('id', id);
-        if (error) throw error;
+        await window.supabaseClient.from('saas_inquiries').delete().eq('id', id);
         loadAllDashboardData();
       } catch (err) {
         alert("삭제 실패: " + err.message);
@@ -1053,124 +1423,66 @@
 
     async function deleteCompletedSupportInquiries() {
       ensureSupabaseClient();
-      const doneList = cachedSupportInquiries.filter(r => r.status === 'done');
-      if (doneList.length === 0) {
-        return alert("처리 완료 상태인 문의가 없습니다.");
-      }
-      if (!confirm(`처리 완료된 문의 ${doneList.length}건을 DB에서 모두 영구 삭제하시겠습니까?`)) return;
-
+      if (!confirm("완료된 문의를 모두 삭제하시겠습니까?")) return;
       try {
-        const { error } = await window.supabaseClient
-          .from('saas_inquiries')
-          .delete()
-          .eq('status', 'done');
-        if (error) throw error;
-        alert("완료된 문의가 모두 정리되었습니다.");
+        await window.supabaseClient.from('saas_inquiries').delete().eq('status', 'done');
         loadAllDashboardData();
       } catch (err) {
-        alert("일괄 삭제 중 오류: " + err.message);
+        alert("삭제 실패: " + err.message);
       }
     }
 
-    // 7. 홈 전체 공지(saas_notices) & FAQ(saas_faqs) 전용 테이블 관리 로직
     async function loadSaasNoticeAndFaqForAdmin() {
-      // 1) 전체 공지 로드 (saas_notices 테이블)
       try {
         const notices = await apiRequest("saas_notices?is_active=eq.true&order=id.desc&limit=1");
         if (Array.isArray(notices) && notices.length > 0) {
-          const latest = notices[0];
-          currentNoticeId = latest.id;
-          document.getElementById("adminSaasNoticeTitle").value = latest.title || "길드톡 서비스 안내";
-          document.getElementById("adminSaasNoticeContent").value = latest.content || "";
-          document.getElementById("adminSaasNoticePopup").checked = !!latest.is_popup;
-        } else {
-          currentNoticeId = null;
-          document.getElementById("adminSaasNoticeTitle").value = "길드톡 서비스 안내 및 업데이트 소식";
-          document.getElementById("adminSaasNoticeContent").value = "환영합니다! 길드톡 메신저를 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요.";
-          document.getElementById("adminSaasNoticePopup").checked = false;
+          currentNoticeId = notices[0].id;
+          document.getElementById("adminSaasNoticeTitle").value = notices[0].title || "";
+          document.getElementById("adminSaasNoticeContent").value = notices[0].content || "";
+          document.getElementById("adminSaasNoticePopup").checked = !!notices[0].is_popup;
         }
-      } catch (e) {
-        currentNoticeId = null;
-      }
+      } catch (e) {}
 
-      // 2) FAQ 로드 (saas_faqs 테이블)
       try {
         const faqs = await apiRequest("saas_faqs?is_active=eq.true&order=sort_order.asc,id.asc");
-        if (Array.isArray(faqs) && faqs.length > 0) {
-          adminFaqList = faqs.map(f => ({
-            id: f.id,
-            q: f.question || "",
-            a: f.answer || ""
-          }));
-        } else {
-          adminFaqList = defaultAdminFaqList.slice();
-        }
+        adminFaqList = (Array.isArray(faqs) && faqs.length > 0) ? faqs.map(f => ({ id: f.id, q: f.question, a: f.answer })) : defaultAdminFaqList.slice();
       } catch (e) {
         adminFaqList = defaultAdminFaqList.slice();
       }
-
       renderAdminFaqEditor();
     }
 
     async function saveSaasGlobalNoticeFromAdmin() {
-      const title = (document.getElementById("adminSaasNoticeTitle").value || "").trim();
-      const content = (document.getElementById("adminSaasNoticeContent").value || "").trim();
+      const title = document.getElementById("adminSaasNoticeTitle").value.trim();
+      const content = document.getElementById("adminSaasNoticeContent").value.trim();
       const isPopup = document.getElementById("adminSaasNoticePopup").checked;
 
-      if (!title || !content) {
-        return alert("공지 제목과 본문 내용을 모두 입력해 주세요.");
-      }
+      if (!title || !content) return alert("제목과 본문을 입력하세요.");
 
       try {
         if (currentNoticeId) {
-          await apiRequest(`saas_notices?id=eq.${encodeURIComponent(currentNoticeId)}`, "PATCH", {
-            title: title,
-            content: content,
-            is_popup: isPopup,
-            is_active: true,
-            updated_at: new Date().toISOString()
-          });
+          await apiRequest(`saas_notices?id=eq.${encodeURIComponent(currentNoticeId)}`, "PATCH", { title, content, is_popup: isPopup, is_active: true, updated_at: new Date().toISOString() });
         } else {
-          const inserted = await apiRequest("saas_notices", "POST", [{
-            title: title,
-            content: content,
-            is_popup: isPopup,
-            is_active: true,
-            updated_at: new Date().toISOString()
-          }]);
-          if (Array.isArray(inserted) && inserted.length > 0) {
-            currentNoticeId = inserted[0].id;
-          }
+          const inserted = await apiRequest("saas_notices", "POST", [{ title, content, is_popup: isPopup, is_active: true, updated_at: new Date().toISOString() }]);
+          if (inserted && inserted.length > 0) currentNoticeId = inserted[0].id;
         }
-        alert("홈 전체 공지 및 모달 설정이 DB(saas_notices)에 저장되었습니다!");
+        alert("공지 설정이 저장되었습니다!");
       } catch (err) {
-        alert("공지 저장 실패: " + err.message);
+        alert("저장 실패: " + err.message);
       }
     }
 
     function renderAdminFaqEditor() {
       const container = document.getElementById("adminFaqEditorList");
       if (!container) return;
-
-      if (!adminFaqList || adminFaqList.length === 0) {
-        container.innerHTML = `<div class="text-secondary small text-center py-3">등록된 FAQ가 없습니다. [새 질문 추가] 버튼을 눌러 추가하세요.</div>`;
-        return;
-      }
-
       container.innerHTML = adminFaqList.map((item, idx) => `
         <div class="faq-admin-row">
           <div class="d-flex align-items-center justify-content-between mb-2">
             <span class="badge bg-info text-dark fw-bold">FAQ #${idx + 1}</span>
-            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:0.72rem;" onclick="removeFaqItemRow(${idx})">
-              <i class="fa-solid fa-trash-can me-1"></i>질문 삭제
-            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="removeFaqItemRow(${idx})">삭제</button>
           </div>
-          <div class="mb-2">
-            <input type="text" class="form-control-custom faq-q-input" data-idx="${idx}" value="${escapeAdminHtml(item.q)}" placeholder="질문 (Q) 입력">
-          </div>
-          <div>
-            <textarea class="form-control-custom faq-a-input" data-idx="${idx}" rows="2" placeholder="답변 (A) 입력">${escapeAdminHtml(item.a)}</textarea>
-          </div>
+          <input type="text" class="form-control-custom faq-q-input mb-2" data-idx="${idx}" value="${escapeAdminHtml(item.q)}" placeholder="질문">
+          <textarea class="form-control-custom faq-a-input" data-idx="${idx}" rows="2" placeholder="답변">${escapeAdminHtml(item.a)}</textarea>
         </div>
       `).join('');
     }
@@ -1182,9 +1494,7 @@
       for (let i = 0; i < qInputs.length; i++) {
         const q = (qInputs[i].value || "").trim();
         const a = (aInputs[i] ? aInputs[i].value : "").trim();
-        if (q || a) {
-          nextList.push({ q, a });
-        }
+        if (q || a) nextList.push({ q, a });
       }
       adminFaqList = nextList;
     }
@@ -1202,52 +1512,34 @@
     }
 
     async function saveFaqListToDb() {
-      ensureSupabaseClient();
       syncFaqInputsToMemory();
-      const validList = adminFaqList.filter(item => item.q && item.a);
-      if (validList.length === 0) {
-        return alert("최소 1개 이상의 질문과 답변을 입력해 주세요.");
-      }
-      adminFaqList = validList;
+      const valid = adminFaqList.filter(i => i.q && i.a);
+      if (valid.length === 0) return alert("최소 1개 이상의 질문/답변을 작성하세요.");
 
       try {
-        // 기존 saas_faqs 행을 정리하고 정렬 순서대로 새로 저장
         await apiRequest("saas_faqs?id=gt.0", "DELETE");
-
-        const payload = adminFaqList.map((item, idx) => ({
-          question: item.q,
-          answer: item.a,
-          sort_order: idx + 1,
-          is_active: true
-        }));
-        await apiRequest("saas_faqs", "POST", payload);
-
+        await apiRequest("saas_faqs", "POST", valid.map((item, idx) => ({ question: item.q, answer: item.a, sort_order: idx + 1, is_active: true })));
+        alert("FAQ가 저장되었습니다!");
         await loadSaasNoticeAndFaqForAdmin();
-        alert(`총 ${adminFaqList.length}개의 FAQ가 DB(saas_faqs)에 성공적으로 저장되었습니다!`);
       } catch (err) {
         alert("FAQ 저장 실패: " + err.message);
       }
     }
 
-    // 8. 다이렉트 라이선스 생성 및 전달 메시지 복사
     async function executeDirectIssue() {
       ensureSupabaseClient();
-      const gameName = (document.getElementById("directGameName").value || "").trim();
-      const guildName = (document.getElementById("directGuildName").value || "").trim();
-      const applicantNick = (document.getElementById("directApplicantNick").value || "").trim();
-      const contactInfo = (document.getElementById("directContactInfo").value || "").trim();
+      const gameName = document.getElementById("directGameName").value.trim();
+      const guildName = document.getElementById("directGuildName").value.trim();
+      const applicantNick = document.getElementById("directApplicantNick").value.trim();
+      const contactInfo = document.getElementById("directContactInfo").value.trim();
       const durationDays = parseInt(document.getElementById("directDuration").value, 10);
       const maxMembers = parseInt(document.getElementById("directMaxMembers").value, 10);
 
-      if (!gameName || !guildName) {
-        alert("게임명과 길드명을 입력해 주세요.");
-        return;
-      }
+      if (!gameName || !guildName) return alert("게임명과 길드명을 입력하세요.");
 
       const today = new Date();
-      const datePart = today.toISOString().slice(0, 10).replace(/-/g, '');
       const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const licenseKey = `ECL-${datePart}-${randomPart}`;
+      const licenseKey = `ECL-${today.toISOString().slice(0, 10).replace(/-/g, '')}-${randomPart}`;
       const inviteCode = `INV-${randomPart}`;
       const newGuildId = `guild_${Date.now()}_${randomPart.toLowerCase()}`;
 
@@ -1259,74 +1551,56 @@
       }
 
       try {
-        const { data: guildData, error: gErr } = await window.supabaseClient
-          .from('guilds')
-          .insert([{
-            id: newGuildId,
-            guild_name: guildName,
-            name: guildName,
-            game_name: gameName,
-            license_key: licenseKey,
-            invite_code: inviteCode,
-            is_active: true,
-            status: 'active'
-          }])
-          .select()
-          .single();
-
+        const { data: guildData, error: gErr } = await window.supabaseClient.from('guilds').insert([{
+          id: newGuildId,
+          guild_name: guildName,
+          name: guildName,
+          game_name: gameName,
+          license_key: licenseKey,
+          invite_code: inviteCode,
+          is_active: true,
+          status: 'active'
+        }]).select().single();
         if (gErr) throw gErr;
 
-        const { error: lErr } = await window.supabaseClient
-          .from('app_licenses')
-          .insert([{
-            guild_id: guildData.id,
-            license_key: licenseKey,
-            invite_code: inviteCode,
-            guild_name: guildName,
-            game_name: gameName,
-            applicant_nickname: applicantNick || '길드장',
-            issued_to: applicantNick || '길드장',
-            contact_info: contactInfo,
-            max_members: maxMembers,
-            expires_at: expiresAt,
-            status: 'active'
-          }]);
+        await window.supabaseClient.from('app_licenses').insert([{
+          guild_id: guildData.id,
+          license_key: licenseKey,
+          invite_code: inviteCode,
+          guild_name: guildName,
+          game_name: gameName,
+          applicant_nickname: applicantNick || '길드장',
+          issued_to: applicantNick || '길드장',
+          contact_info: contactInfo,
+          max_members: maxMembers,
+          expires_at: expiresAt,
+          status: 'active'
+        }]);
 
-        if (lErr) throw lErr;
-
-        // 해당 길드의 초기 설정(guild_name)을 guild_settings에 독립 저장
         if (typeof upsertGuildSetting === "function") {
-          try {
-            await upsertGuildSetting("guild_name", guildName, guildData.id);
-          } catch (sErr) {}
+          try { await upsertGuildSetting("guild_name", guildName, guildData.id); } catch (e) {}
         }
 
         const expStr = expiresAt ? expiresAt.split('T')[0] : '무제한';
         copyGuildInviteMessage(gameName, guildName, licenseKey, inviteCode, expStr);
-
-        alert(`라이선스가 정상 발급되었습니다!\n카카오톡/디스코드 전달용 메시지가 클립보드에 자동 복사되었습니다.`);
+        alert("라이선스가 발급되었습니다! 안내문이 클립보드에 복사되었습니다.");
 
         document.getElementById("directGameName").value = "";
         document.getElementById("directGuildName").value = "";
-        document.getElementById("directApplicantNick").value = "";
-        document.getElementById("directContactInfo").value = "";
-
         loadAllDashboardData();
         switchAdminTab('guilds', document.querySelectorAll(".admin-tab-btn")[0]);
       } catch (err) {
-        alert("발급 중 오류가 발생했습니다: " + err.message);
+        alert("발급 오류: " + err.message);
       }
     }
 
-    // 9. 신청서 승인 및 발급 (app_license_requests 단일 테이블 연동)
     async function approveRequest(reqId, gameName, guildName, applicantNick, contactInfo) {
       ensureSupabaseClient();
-      if (!confirm(`[${guildName}] 길드의 라이선스를 즉시 발급하시겠습니까?`)) return;
+      if (!confirm(`[${guildName}] 길드의 라이선스를 발급하시겠습니까?`)) return;
 
       const today = new Date();
-      const datePart = today.toISOString().slice(0, 10).replace(/-/g, '');
       const randomPart = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const licenseKey = `ECL-${datePart}-${randomPart}`;
+      const licenseKey = `ECL-${today.toISOString().slice(0, 10).replace(/-/g, '')}-${randomPart}`;
       const inviteCode = `INV-${randomPart}`;
       const newGuildId = `guild_${Date.now()}_${randomPart.toLowerCase()}`;
 
@@ -1335,19 +1609,16 @@
       const expiresAt = expDate.toISOString();
 
       try {
-        const { data: guildData, error: gErr } = await window.supabaseClient
-          .from('guilds')
-          .insert([{
-            id: newGuildId,
-            guild_name: guildName,
-            name: guildName,
-            game_name: gameName,
-            license_key: licenseKey,
-            invite_code: inviteCode,
-            is_active: true,
-            status: 'active'
-          }])
-          .select().single();
+        const { data: guildData, error: gErr } = await window.supabaseClient.from('guilds').insert([{
+          id: newGuildId,
+          guild_name: guildName,
+          name: guildName,
+          game_name: gameName,
+          license_key: licenseKey,
+          invite_code: inviteCode,
+          is_active: true,
+          status: 'active'
+        }]).select().single();
         if (gErr) throw gErr;
 
         await window.supabaseClient.from('app_licenses').insert([{
@@ -1364,42 +1635,26 @@
           status: 'active'
         }]);
 
-        // 해당 길드의 초기 설정(guild_name)을 guild_settings에 독립 저장
         if (typeof upsertGuildSetting === "function") {
-          try {
-            await upsertGuildSetting("guild_name", guildName, guildData.id);
-          } catch (sErr) {}
+          try { await upsertGuildSetting("guild_name", guildName, guildData.id); } catch (e) {}
         }
 
-        await window.supabaseClient
-          .from('app_license_requests')
-          .update({
-            status: 'approved',
-            assigned_license_key: licenseKey
-          })
-          .eq('id', reqId);
+        await window.supabaseClient.from('app_license_requests').update({ status: 'approved', assigned_license_key: licenseKey }).eq('id', reqId);
 
         const expStr = expiresAt.split('T')[0];
         copyGuildInviteMessage(gameName, guildName, licenseKey, inviteCode, expStr);
-
-        alert(`신청이 승인되어 라이선스가 발급되었습니다!\n전달용 안내문이 클립보드에 복사되었습니다.`);
+        alert("승인 완료! 안내문이 클립보드에 복사되었습니다.");
         loadAllDashboardData();
       } catch (err) {
-        alert("승인 처리 오류: " + err.message);
+        alert("승인 오류: " + err.message);
       }
     }
 
-    // 10. 기간 연장 (+30일)
     async function extendGuildLicense(guildId, addDays) {
       ensureSupabaseClient();
-      if (!confirm(`해당 길드의 라이선스를 ${addDays}일 연장하시겠습니까?`)) return;
+      if (!confirm(`라이선스를 ${addDays}일 연장하시겠습니까?`)) return;
       try {
-        const { data: lic } = await window.supabaseClient
-          .from('app_licenses')
-          .select('*')
-          .eq('guild_id', guildId)
-          .single();
-
+        const { data: lic } = await window.supabaseClient.from('app_licenses').select('*').eq('guild_id', guildId).single();
         let baseDate = new Date();
         if (lic && lic.expires_at) {
           const currentExp = new Date(lic.expires_at);
@@ -1407,39 +1662,26 @@
         }
         baseDate.setDate(baseDate.getDate() + addDays);
 
-        await window.supabaseClient
-          .from('app_licenses')
-          .update({ expires_at: baseDate.toISOString(), status: 'active' })
-          .eq('guild_id', guildId);
-
+        await window.supabaseClient.from('app_licenses').update({ expires_at: baseDate.toISOString(), status: 'active' }).eq('guild_id', guildId);
         alert(`만료일이 ${baseDate.toISOString().split('T')[0]}까지로 연장되었습니다.`);
         loadAllDashboardData();
       } catch(err) {
-        alert("연장 처리 오류: " + err.message);
+        alert("연장 오류: " + err.message);
       }
     }
 
-    // 11. 길드 정보 수정
     function openEditGuildModal(guildId) {
       const g = cachedGuilds.find(x => x.id === guildId);
       if (!g) return;
-
       const lic = (g.app_licenses && g.app_licenses.length > 0) ? g.app_licenses[0] : null;
 
       document.getElementById("editGuildId").value = g.id;
       document.getElementById("editGameName").value = g.game_name || "";
       document.getElementById("editGuildName").value = g.guild_name || g.name || "";
-      const currentInvite = lic?.invite_code || g.invite_code || ('INV-' + (g.license_key?.split('-')[2] || '7788'));
-      document.getElementById("editInviteCode").value = currentInvite;
+      document.getElementById("editInviteCode").value = lic?.invite_code || g.invite_code || "";
       document.getElementById("editApplicantNick").value = lic?.applicant_nickname || "";
       document.getElementById("editContactInfo").value = lic?.contact_info || "";
-
-      let expDateVal = "";
-      if (lic && lic.expires_at) {
-        expDateVal = lic.expires_at.split('T')[0];
-      }
-      document.getElementById("editExpiresAt").value = expDateVal;
-
+      document.getElementById("editExpiresAt").value = lic?.expires_at ? lic.expires_at.split('T')[0] : "";
       document.getElementById("modalEditGuild").style.display = "flex";
     }
 
@@ -1457,43 +1699,18 @@
       const contactInfo = document.getElementById("editContactInfo").value.trim();
       const expDateVal = document.getElementById("editExpiresAt").value.trim();
 
-      if (!guildName) return alert("길드명을 입력해 주세요.");
-
-      let expiresAt = null;
-      if (expDateVal) {
-        expiresAt = new Date(expDateVal + "T23:59:59Z").toISOString();
-      }
+      if (!guildName) return alert("길드명을 입력하세요.");
+      let expiresAt = expDateVal ? new Date(expDateVal + "T23:59:59Z").toISOString() : null;
 
       try {
-        await window.supabaseClient
-          .from('guilds')
-          .update({
-            game_name: gameName,
-            guild_name: guildName,
-            name: guildName,
-            invite_code: inviteCode
-          })
-          .eq('id', guildId);
-
-        await window.supabaseClient
-          .from('app_licenses')
-          .update({
-            game_name: gameName,
-            guild_name: guildName,
-            invite_code: inviteCode,
-            applicant_nickname: applicantNick,
-            contact_info: contactInfo,
-            expires_at: expiresAt
-          })
-          .eq('guild_id', guildId);
+        await window.supabaseClient.from('guilds').update({ game_name: gameName, guild_name: guildName, name: guildName, invite_code: inviteCode }).eq('id', guildId);
+        await window.supabaseClient.from('app_licenses').update({ game_name: gameName, guild_name: guildName, invite_code: inviteCode, applicant_nickname: applicantNick, contact_info: contactInfo, expires_at: expiresAt }).eq('guild_id', guildId);
 
         if (typeof upsertGuildSetting === "function") {
-          try {
-            await upsertGuildSetting("guild_name", guildName, guildId);
-          } catch (sErr) {}
+          try { await upsertGuildSetting("guild_name", guildName, guildId); } catch (e) {}
         }
 
-        alert("길드 및 라이선스 정보가 성공적으로 수정되었습니다.");
+        alert("길드 정보가 수정되었습니다.");
         closeEditGuildModal();
         loadAllDashboardData();
       } catch (err) {
@@ -1501,26 +1718,17 @@
       }
     }
 
-    // 12. 조기 종료 / 정지 / 재개 토글
     async function toggleGuildActive(guildId, guildName, currentActive) {
       ensureSupabaseClient();
-      const actionText = currentActive ? "조기 종료(정지)" : "정상 사용으로 재개";
+      const actionText = currentActive ? "정지" : "재개";
       if (!confirm(`[${guildName}] 길드를 정말로 ${actionText} 처리하시겠습니까?`)) return;
 
       const newIsActive = !currentActive;
       const newStatus = newIsActive ? "active" : "suspended";
 
       try {
-        await window.supabaseClient
-          .from('guilds')
-          .update({ is_active: newIsActive, status: newStatus })
-          .eq('id', guildId);
-
-        await window.supabaseClient
-          .from('app_licenses')
-          .update({ status: newStatus })
-          .eq('guild_id', guildId);
-
+        await window.supabaseClient.from('guilds').update({ is_active: newIsActive, status: newStatus }).eq('id', guildId);
+        await window.supabaseClient.from('app_licenses').update({ status: newStatus }).eq('guild_id', guildId);
         alert(`[${guildName}] 길드가 ${actionText}되었습니다.`);
         loadAllDashboardData();
       } catch (err) {
@@ -1528,27 +1736,19 @@
       }
     }
 
-    // 13. 길드 영구 삭제
     async function deleteGuildAction(guildId, guildName) {
       ensureSupabaseClient();
-      if (!confirm(`⚠️ [${guildName}] 길드를 완전히 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없으며 라이선스, 대화방, 길드원 등 해당 길드의 모든 데이터가 영구 삭제됩니다.`)) return;
+      if (!confirm(`⚠️ [${guildName}] 길드를 완전히 삭제하시겠습니까?\n\n소속 길드원 및 모든 데이터가 영구 삭제됩니다.`)) return;
 
       try {
-        const { error } = await window.supabaseClient
-          .from('guilds')
-          .delete()
-          .eq('id', guildId);
-
-        if (error) throw error;
-
-        alert(`[${guildName}] 길드가 완전히 삭제되었습니다.`);
+        await window.supabaseClient.from('guilds').delete().eq('id', guildId);
+        alert(`[${guildName}] 길드가 삭제되었습니다.`);
         loadAllDashboardData();
       } catch (err) {
         alert("삭제 실패: " + err.message);
       }
     }
 
-    // 14. 클립보드 복사 유틸
     function copyTextToClipboard(text) {
       navigator.clipboard.writeText(text).then(() => {
         alert("클립보드에 복사되었습니다: " + text);
@@ -1559,24 +1759,23 @@
 
     function copyGuildInviteMessage(gameName, guildName, licenseKey, inviteCode, expiresAt) {
       const origin = window.location.origin;
-      const effectiveInvite = inviteCode || ('INV-' + (licenseKey.split('-')[2] || licenseKey.slice(-4)));
+      const effectiveInvite = inviteCode || ('INV-' + (licenseKey.slice(-4)));
       const text = `[길드톡 메신저 라이선스 발급 안내]
-안녕하세요! ${guildName}의 길드톡 전용 메신저 라이선스가 발급되었습니다.
+안녕하세요! ${guildName}의 길드톡 메신저 라이선스가 발급되었습니다.
 
 ▶ 접속 주소: ${origin}
-▶ 대상 게임: ${gameName}
+▶ 게임명: ${gameName}
 ▶ 길드명: ${guildName}
-▶ 이용 만료일: ${expiresAt}
+▶ 만료일: ${expiresAt}
 
-[최초 길드 개설 (길드장)]
-1. 위 주소(${origin}) 또는 전용 앱(PC exe / 모바일 apk)을 실행하세요.
-2. [🔑 라이선스 키로 길드 신규 개설]을 누르고 전달받은 라이선스 키와 길드장 PIN을 설정하시면 길드가 개설됩니다.
+[길드장 신규 개설]
+1. 위 주소 접속 후 [🔑 라이선스 키로 길드 신규 개설]을 누르세요.
+2. 아래 라이선스 키와 길드장 PIN 번호를 설정하세요.
 ▶ 라이선스 키: ${licenseKey}
 
-[길드원 초대 안내 (일반 길드원)]
-1. 길드원에게 앱 실행 후 [초대 코드로 길드 입장하기]를 누르도록 안내하세요.
-2. 아래 길드 초대 코드를 입력하면 즉시 본인 길드로 참여됩니다!
-▶ 길드 초대 코드: ${effectiveInvite}`;
+[일반 길드원 초대 코드]
+1. 길드원에게 [초대 코드로 길드 가입] 메뉴를 안내하세요.
+▶ 초대 코드: ${effectiveInvite}`;
 
       navigator.clipboard.writeText(text).catch(() => {});
     }
