@@ -1,7 +1,7 @@
 <!-- ==========================================
      [길드 메신저] 길드원 친구 서랍 모듈
      경로: pages/PageMembers.html
-     다크/라이트 모드 완벽 지원 & 뱃지 잘림 방지 최적화
+     다크/라이트 모드 완벽 지원 & 닉네임/뱃지 잘림 방지 최적화
      ========================================== -->
 <style>
   /* 🎨 라이트 모드 (기본 :root 및 명시적 body/html.theme-light) */
@@ -183,12 +183,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 10px;
-    margin: 2px 6px;
+    padding: 7px 6px;
+    margin: 2px 4px;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.15s ease;
-    gap: 6px;
+    gap: 4px;
     border: 1px solid transparent;
   }
   .member-profile-row:hover {
@@ -200,10 +200,9 @@
   .member-left-info {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     min-width: 0;
     flex: 1;
-    overflow: hidden;
   }
 
   .avatar-wrapper-relative {
@@ -256,17 +255,17 @@
     flex-direction: column;
     min-width: 0;
     flex: 1;
-    overflow: hidden;
   }
 
-  /* 닉네임과 직급 뱃지 행 */
+  /* 닉네임과 직급 뱃지 행 (잘림 방지 및 유연한 정렬) */
   .member-name-line {
     font-size: 0.82rem;
     font-weight: 700;
     color: var(--pm-text-main);
     display: flex;
     align-items: center;
-    gap: 4px;
+    flex-wrap: wrap;
+    gap: 3px;
     min-width: 0;
     line-height: 1.25;
   }
@@ -274,9 +273,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 0;
-    flex-shrink: 1;
+    max-width: 100%;
+    flex-shrink: 0;
     letter-spacing: -0.3px;
+    word-break: keep-all;
   }
 
   .member-class-desc {
@@ -315,16 +315,16 @@
   .member-action-tools {
     display: flex;
     align-items: center;
-    gap: 3px;
+    gap: 2px;
     flex-shrink: 0;
-    margin-left: 4px;
+    margin-left: 2px;
   }
   .btn-action-pill {
     background: var(--pm-btn-bg);
     border: 1px solid var(--pm-btn-border);
     color: var(--pm-btn-text);
     font-size: 0.66rem;
-    padding: 2px 5px;
+    padding: 2px 4px;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 700;
@@ -472,7 +472,7 @@
 </div>
 
 <script>
-  // ⚡ 재호출 시 Identifier already declared 충돌 방지: 모든 변수 var 선언
+  // ⚡ 재호출 시 Identifier already declared 충돌 방지: var 선언 유지
   var pmMemberListData = [];
   var pmTargetPinMember = null;
 
@@ -484,29 +484,23 @@
     return 4;
   }
 
+  function pmGetActiveGuildId() {
+    if (typeof getCurrentGuildId === "function") {
+      return getCurrentGuildId();
+    }
+    var gid = localStorage.getItem("current_guild_id");
+    return (gid && gid !== "null" && gid !== "undefined") ? gid : "default";
+  }
+
   async function pmLoadMemberList() {
     var container = document.getElementById("pmMemberListArea");
     if (!container) return;
 
     try {
-      var curGid = localStorage.getItem("current_guild_id");
-      var endpoint = (curGid && curGid !== "null" && curGid !== "undefined")
-        ? ("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=*")
-        : "guild_members?select=*";
+      var curGid = pmGetActiveGuildId();
+      // ⚡ [철칙]: guild_id 격리 강제 및 전체 조회 Fallback 완전 제거
+      var endpoint = "guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=*";
       var data = await apiRequest(endpoint);
-
-      // ⚡ [스마트 길드원 복구]: 혹시 guild_id가 불일치하거나 비어있어 0명으로 나올 경우 전체 멤버에서 자동 매칭 복구
-      if (!data || data.length === 0) {
-        try {
-          var allMembers = await apiRequest("guild_members?select=*");
-          if (allMembers && allMembers.length > 0) {
-            data = allMembers;
-            if (data[0].guild_id) {
-              localStorage.setItem("current_guild_id", data[0].guild_id);
-            }
-          }
-        } catch(fallbackErr) {}
-      }
 
       pmMemberListData = data || [];
 
@@ -522,7 +516,7 @@
       var countElem = document.getElementById("pmMemberCountText");
       if (countElem) countElem.innerText = pmMemberListData.length;
 
-      // index.html 상단 카운트도 함께 동기화
+      // index.html 상단 카운트 동기화
       var topCount = document.getElementById("roomMemberCountText");
       if (topCount) topCount.innerText = pmMemberListData.length;
 
@@ -543,7 +537,7 @@
 
     var myNick = (localStorage.getItem("guild_my_nickname") || "").trim();
     var myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-    var myClass = localStorage.getItem("guild_my_class") || "직업 미지정";
+    var myClass = localStorage.getItem("guild_my_class") || "미설정";
 
     container.innerHTML = list.map(function(m) {
       var memberNick = m.nickname || m.name || "길드원";
@@ -564,7 +558,7 @@
 
       var isMe = (myNick !== "" && memberNick.toLowerCase() === myNick.toLowerCase());
       var displayAvatar = isMe ? myAvatar : (m.avatar || (memberNick ? memberNick.charAt(0) : '👤'));
-      var displayClass = isMe ? myClass : (m.job_class || m.class_name || '직업 미지정');
+      var displayClass = isMe ? myClass : (m.job_class || m.class_name || '미설정');
 
       var safeName = escapeHtml(memberNick);
       var safeClass = escapeHtml(displayClass);
@@ -636,9 +630,14 @@
     }
 
     try {
-      var curGid = localStorage.getItem("current_guild_id");
-      var newMember = { nickname: name, name: name, role: role, pin: "000000" };
-      if (curGid && curGid !== "null") newMember.guild_id = curGid;
+      var curGid = pmGetActiveGuildId();
+      var newMember = { 
+        guild_id: curGid,
+        nickname: name, 
+        name: name, 
+        role: role, 
+        pin: "000000" 
+      };
       await apiRequest("guild_members", "POST", [newMember]);
       if (typeof showKakaoToast === 'function') showKakaoToast("[" + name + "] 길드원 등록 완료!", "🎉");
       pmCloseAddModal();
@@ -665,14 +664,25 @@
     var oldName = document.getElementById("pmEditOldName").value.trim();
     var newName = document.getElementById("pmEditNewName").value.trim();
     var role = document.getElementById("pmEditRole").value;
+    var curGid = pmGetActiveGuildId();
 
     if (!newName) return alert("닉네임을 입력하세요!");
 
     try {
       if (oldName !== newName) {
-        try { await apiRequest("rpc/update_member_nickname", "POST", { old_name: oldName, new_name: newName }); } catch(e) {}
+        try { 
+          await apiRequest("rpc/update_member_nickname", "POST", { 
+            old_name: oldName, 
+            new_name: newName, 
+            p_guild_id: curGid 
+          }); 
+        } catch(e) {}
       }
-      await apiRequest("guild_members?id=eq." + id, "PATCH", { role: role, nickname: newName, name: newName });
+      await apiRequest("guild_members?id=eq." + id + "&guild_id=eq." + encodeURIComponent(curGid), "PATCH", { 
+        role: role, 
+        nickname: newName, 
+        name: newName 
+      });
 
       if (typeof showKakaoToast === 'function') showKakaoToast("[" + newName + "] 정보 수정 완료!", "✅");
       pmCloseEditModal();
@@ -686,7 +696,8 @@
     if (!confirm("[" + name + "] 길드원을 정말 삭제하시겠습니까?")) return;
 
     try {
-      await apiRequest("guild_members?id=eq." + id, "DELETE");
+      var curGid = pmGetActiveGuildId();
+      await apiRequest("guild_members?id=eq." + id + "&guild_id=eq." + encodeURIComponent(curGid), "DELETE");
       if (typeof showKakaoToast === 'function') showKakaoToast("[" + name + "] 길드원이 삭제되었습니다.", "🗑️");
       await pmLoadMemberList();
     } catch (e) {
@@ -721,6 +732,7 @@
     var oldPin = document.getElementById("pmOldPin").value.trim();
     var newPin = document.getElementById("pmNewPin").value.trim();
     var currentPin = (pmTargetPinMember.pin || "000000").trim();
+    var curGid = pmGetActiveGuildId();
 
     var isPinMatch = (oldPin === currentPin) || 
                      (currentPin === "0000" && oldPin === "000000") || 
@@ -737,7 +749,7 @@
     }
 
     try {
-      await apiRequest("guild_members?id=eq." + pmTargetPinMember.id, "PATCH", { pin: newPin });
+      await apiRequest("guild_members?id=eq." + pmTargetPinMember.id + "&guild_id=eq." + encodeURIComponent(curGid), "PATCH", { pin: newPin });
       var tNick = pmTargetPinMember.nickname || pmTargetPinMember.name;
       if (typeof showKakaoToast === 'function') showKakaoToast("[" + tNick + "] 비밀번호 변경 완료!", "🎉");
       pmClosePinModal();
