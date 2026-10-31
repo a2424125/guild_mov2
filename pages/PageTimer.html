@@ -125,6 +125,14 @@
   var drawerModuleInterval = null;
   var drawerTargetingBoss = null;
 
+  function getDrawerCurrentGuildId() {
+    if (typeof getCurrentGuildId === "function") {
+      return getCurrentGuildId();
+    }
+    var gid = localStorage.getItem("current_guild_id");
+    return (gid && gid !== "null" && gid !== "undefined") ? gid : "default";
+  }
+
   window.__currentModuleCleanup = function() {
     if (drawerModuleInterval) {
       clearInterval(drawerModuleInterval);
@@ -137,7 +145,9 @@
     if (!container) return;
 
     try {
-      const data = await apiRequest("boss_timers?select=*&order=id.asc");
+      const curGid = getDrawerCurrentGuildId();
+      // ⚡ [길드 격리]: 현재 접속한 길드의 보스만 조회
+      const data = await apiRequest("boss_timers?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=id.asc");
       drawerModuleBossList = data || [];
       renderDrawerBossCards();
     } catch (err) {
@@ -184,19 +194,20 @@
         }
       }
 
-      const nextTimeStr = b.next_spawn_time ? formatTime24Hour(new Date(b.next_spawn_time)) : "-";
+      const nextTimeStr = b.next_spawn_time ? (typeof formatTime24Hour === "function" ? formatTime24Hour(new Date(b.next_spawn_time)) : new Date(b.next_spawn_time).toLocaleTimeString()) : "-";
+      const safeBossName = (typeof escapeHtmlText === "function") ? escapeHtmlText(b.boss_name) : (b.boss_name || "").replace(/'/g, "\\'");
 
       return `
         <div class="drawer-boss-card ${itemClass}" id="dCard_${b.id}">
           <div class="drawer-card-top">
-            <span class="drawer-boss-name">${escapeHtmlText(b.boss_name)}</span>
+            <span class="drawer-boss-name">${safeBossName}</span>
             ${badgeHtml}
           </div>
           <div class="drawer-card-bottom">
             <span>젠 예정: <strong id="dTime_${b.id}" style="color:#0284c7;">${nextTimeStr}</strong></span>
             <div class="d-flex gap-1">
-              <button type="button" class="btn-drawer-cut" onclick="recordDrawerCutNow(${b.id}, '${escapeHtmlText(b.boss_name)}', ${b.cycle_min})">컷</button>
-              <button type="button" class="btn-drawer-reserve" onclick="openDrawerReserveModal(${b.id}, '${escapeHtmlText(b.boss_name)}', ${b.cycle_min})">예약</button>
+              <button type="button" class="btn-drawer-cut" onclick="recordDrawerCutNow(${b.id}, '${safeBossName}', ${b.cycle_min})">컷</button>
+              <button type="button" class="btn-drawer-reserve" onclick="openDrawerReserveModal(${b.id}, '${safeBossName}', ${b.cycle_min})">예약</button>
             </div>
           </div>
         </div>
@@ -237,7 +248,9 @@
           badgeElem.innerText = `💤 ${h}시간 ${m}분`;
           cardElem.classList.remove("spawned");
         }
-        if (timeElem) timeElem.innerText = formatTime24Hour(nextDate);
+        if (timeElem) {
+          timeElem.innerText = (typeof formatTime24Hour === "function") ? formatTime24Hour(nextDate) : nextDate.toLocaleTimeString();
+        }
       }
     });
   }
@@ -245,16 +258,23 @@
   async function recordDrawerCutNow(id, bossName, cycleMin) {
     const cutDate = new Date();
     const nextSpawn = new Date(cutDate.getTime() + (cycleMin * 60 * 1000));
+    const curGid = getDrawerCurrentGuildId();
+    const activeRoom = window.currentActiveRoomId || "default_public";
+    const nextTimeStr = (typeof formatTime24Hour === "function") ? formatTime24Hour(nextSpawn) : nextSpawn.toLocaleTimeString();
 
     try {
-      await apiRequest(`boss_timers?id=eq.${id}`, "PATCH", {
+      // ⚡ [길드 격리]: 내 길드의 보스만 컷 처리
+      await apiRequest(`boss_timers?id=eq.${id}&guild_id=eq.${encodeURIComponent(curGid)}`, "PATCH", {
         last_cut_time: cutDate.toISOString(),
         next_spawn_time: nextSpawn.toISOString()
       });
 
+      // ⚡ [길드 격리]: 내 길드의 대화방으로만 알림 메시지 발송
       await apiRequest("guild_chats", "POST", [{
+        guild_id: curGid,
+        room_id: activeRoom,
         sender_name: "보스알리미",
-        message: `⚔️ [${bossName}] 서랍에서 컷 처리되었습니다! (다음 젠: ${formatTime24Hour(nextSpawn)})`,
+        message: `⚔️ [${bossName}] 서랍에서 컷 처리되었습니다! (다음 젠: ${nextTimeStr})`,
         msg_type: "boss_alert",
         mentions: []
       }]);
@@ -296,9 +316,11 @@
     cutDate.setHours(h, m, 0, 0);
 
     const nextSpawn = new Date(cutDate.getTime() + (drawerTargetingBoss.cycleMin * 60 * 1000));
+    const curGid = getDrawerCurrentGuildId();
 
     try {
-      await apiRequest(`boss_timers?id=eq.${drawerTargetingBoss.id}`, "PATCH", {
+      // ⚡ [길드 격리]: 내 길드의 보스만 예약 시간 갱신
+      await apiRequest(`boss_timers?id=eq.${drawerTargetingBoss.id}&guild_id=eq.${encodeURIComponent(curGid)}`, "PATCH", {
         last_cut_time: cutDate.toISOString(),
         next_spawn_time: nextSpawn.toISOString()
       });
