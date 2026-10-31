@@ -1,7 +1,7 @@
 <!-- ==========================================
      [길드관리] 시스템 설정 제어 모듈
      경로: pages/PageSettings.html
-     모던 카카오/모바일 퍼스트 리디자인 & 다중 길드 격리 완비
+     카카오톡 더보기 스타일 3열 2행 그리드 & 다중 길드 격리 완비
      ========================================== -->
 <style>
   /* 폰트 및 모듈 루트 카드 */
@@ -30,7 +30,7 @@
     background: #111827;
     border: 1px solid #1f2937;
     border-radius: 20px;
-    padding: 18px 16px;
+    padding: 16px 14px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
     color: #f3f4f6;
   }
@@ -58,23 +58,6 @@
   .settings-card.light-mode .input-custom-set:focus {
     border-color: #0284c7 !important;
     box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
-  }
-  .settings-card.light-mode .settings-nav-container {
-    background: #f3f4f6 !important;
-    border-color: #e5e7eb !important;
-  }
-  .settings-card.light-mode .settings-nav-btn {
-    color: #6b7280;
-  }
-  .settings-card.light-mode .settings-nav-btn.active {
-    background: #fee500;
-    color: #191919;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  }
-  .settings-card.light-mode .settings-nav-btn.super-btn.active {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.25);
   }
   .settings-card.light-mode .score-item-box,
   .settings-card.light-mode .perm-switch-item {
@@ -116,13 +99,76 @@
     color: #374151 !important;
   }
 
+  /* 📦 카카오톡 더보기 스타일 3열 2행 메뉴 그리드 */
+  .kt-menu-grid-container {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+  .kt-menu-tile-btn {
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 10px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+    color: #9ca3af;
+  }
+  .settings-card.light-mode .kt-menu-tile-btn {
+    background: #f9fafb;
+    border-color: #e5e7eb;
+    color: #4b5563;
+  }
+  .kt-menu-tile-btn:hover {
+    transform: translateY(-2px);
+    border-color: #38bdf8;
+    color: #ffffff;
+  }
+  .settings-card.light-mode .kt-menu-tile-btn:hover {
+    border-color: #0284c7;
+    color: #111827;
+  }
+  .kt-menu-tile-btn .tile-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+  }
+  .kt-menu-tile-btn .tile-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .kt-menu-tile-btn.active {
+    background: #0284c7 !important;
+    border-color: #38bdf8 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35) !important;
+  }
+  .settings-card.light-mode .kt-menu-tile-btn.active {
+    background: #fee500 !important;
+    border-color: #e5ce00 !important;
+    color: #191919 !important;
+    box-shadow: 0 4px 12px rgba(254, 229, 0, 0.3) !important;
+  }
+  .kt-menu-tile-btn.super-btn.active {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important;
+    border-color: #c084fc !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.35) !important;
+  }
+
   /* 📦 섹션 공통 박스 */
   .settings-section-box {
     background: #1f2937;
     border: 1px solid #374151;
     border-radius: 14px;
-    padding: 14px 14px;
-    margin-bottom: 12px;
+    padding: 13px 13px;
+    margin-bottom: 11px;
     transition: all 0.2s ease;
   }
   .sub-desc-text {
@@ -136,7 +182,7 @@
     background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(31, 41, 55, 0.6) 100%) !important;
     border: 1px solid rgba(56, 189, 248, 0.25) !important;
     border-radius: 14px !important;
-    padding: 12px 14px !important;
+    padding: 10px 12px !important;
   }
   .settings-card.light-mode .guild-info-banner {
     background: linear-gradient(135deg, #f0f9ff 0%, #f9fafb 100%) !important;
@@ -149,7 +195,7 @@
   }
   .settings-card.light-mode .guild-label { color: #0284c7; }
   .guild-title {
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 800;
     letter-spacing: -0.3px;
   }
@@ -158,7 +204,7 @@
     color: #facc15;
     border: 1px solid rgba(250, 204, 21, 0.4);
     font-weight: 700;
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     padding: 2px 7px;
     border-radius: 6px;
   }
@@ -166,48 +212,6 @@
     background: #fee500;
     color: #191919;
     border: none;
-  }
-
-  /* 📱 모던 캡슐 가로 스크롤 탭 바 */
-  .settings-nav-container {
-    display: flex !important;
-    gap: 6px !important;
-    overflow-x: auto !important;
-    background: #1f2937 !important;
-    padding: 6px !important;
-    border-radius: 12px !important;
-    border: 1px solid #374151 !important;
-    scrollbar-width: none !important;
-  }
-  .settings-nav-container::-webkit-scrollbar { display: none !important; }
-  .settings-nav-btn {
-    flex-shrink: 0 !important;
-    background: transparent;
-    border: none;
-    color: #9ca3af;
-    padding: 7px 12px !important;
-    font-weight: 700;
-    font-size: 0.78rem !important;
-    border-radius: 8px !important;
-    transition: all 0.15s ease-in-out;
-    cursor: pointer;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .settings-nav-btn:hover {
-    color: #ffffff;
-  }
-  .settings-nav-btn.active {
-    background: #0284c7;
-    color: #ffffff;
-    box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
-  }
-  .settings-nav-btn.super-btn.active {
-    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
-    color: #ffffff;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35);
   }
 
   /* ⌨️ 입력창 규격화 */
@@ -256,7 +260,7 @@
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 14px;
-    padding: 13px 12px;
+    padding: 12px 12px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -276,20 +280,20 @@
     border-color: #cbd5e1;
   }
   .kt-avatar-circle {
-    width: 52px;
-    height: 52px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: #111827;
     border: 2px solid #fee500;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.6rem;
+    font-size: 1.5rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
   }
   .kt-profile-name {
-    font-size: 1rem;
+    font-size: 0.98rem;
     font-weight: 800;
     letter-spacing: -0.3px;
   }
@@ -582,44 +586,50 @@
     </span>
   </div>
 
-  <!-- 모던 캡슐 가로 스크롤 탭 바 -->
-  <div class="settings-nav-container mb-3">
-    <button type="button" class="settings-nav-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
-      🏢 기본
-    </button>
-    <button type="button" class="settings-nav-btn" id="btnNavRaid" onclick="switchSettingsTab('raid')">
-      🎯 토벌설정
-    </button>
-    <button type="button" class="settings-nav-btn" id="btnNavMemberAuth" onclick="switchSettingsTab('memberAuth')">
-      🔐 길드원보안
-    </button>
-    <button type="button" class="settings-nav-btn super-btn" id="btnNavSecurity" onclick="switchSettingsTab('security')">
-      🛡️ 설정보안
-    </button>
-    <button type="button" class="settings-nav-btn super-btn" id="btnNavPermissions" onclick="switchSettingsTab('permissions')">
-      👑 관리자권한
-    </button>
-    <button type="button" class="settings-nav-btn" id="btnNavBossGround" onclick="switchSettingsTab('bossGround')">
-      ⚔️ 보스/사냥터
-    </button>
+  <!-- 소속 길드 배너 -->
+  <div class="guild-info-banner d-flex align-items-center justify-content-between mb-3">
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <span style="font-size: 1.15rem;">🏰</span>
+      <span class="guild-label">소속:</span>
+      <strong class="guild-title" id="displayGuildName">확인 중...</strong>
+      <span class="game-badge" id="displayGameName" style="display: none;"></span>
+    </div>
+    <input type="hidden" id="cfgGuildName" value="">
+  </div>
+
+  <!-- 카카오톡 '더보기' 스타일 3열 2행 메뉴 그리드 (가로스크롤 완전 제거) -->
+  <div class="kt-menu-grid-container">
+    <div class="kt-menu-tile-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
+      <span class="tile-icon">🏢</span>
+      <span class="tile-label">기본설정</span>
+    </div>
+    <div class="kt-menu-tile-btn" id="btnNavRaid" onclick="switchSettingsTab('raid')">
+      <span class="tile-icon">🎯</span>
+      <span class="tile-label">토벌설정</span>
+    </div>
+    <div class="kt-menu-tile-btn" id="btnNavMemberAuth" onclick="switchSettingsTab('memberAuth')">
+      <span class="tile-icon">🔐</span>
+      <span class="tile-label">길드원보안</span>
+    </div>
+    <div class="kt-menu-tile-btn super-btn" id="btnNavSecurity" onclick="switchSettingsTab('security')">
+      <span class="tile-icon">🛡️</span>
+      <span class="tile-label">설정보안</span>
+    </div>
+    <div class="kt-menu-tile-btn super-btn" id="btnNavPermissions" onclick="switchSettingsTab('permissions')">
+      <span class="tile-icon">👑</span>
+      <span class="tile-label">관리자권한</span>
+    </div>
+    <div class="kt-menu-tile-btn" id="btnNavBossGround" onclick="switchSettingsTab('bossGround')">
+      <span class="tile-icon">⚔️</span>
+      <span class="tile-label">보스/사냥터</span>
+    </div>
   </div>
 
   <!-- ========================================================
        [탭 1] 기본 탭
        ======================================================== -->
   <div id="tabSettingsGeneral">
-    <!-- 1. 소속 길드 배너 -->
-    <div class="guild-info-banner d-flex align-items-center justify-content-between mb-3">
-      <div class="d-flex align-items-center gap-2 flex-wrap">
-        <span style="font-size: 1.15rem;">🏰</span>
-        <span class="guild-label">소속:</span>
-        <strong class="guild-title" id="displayGuildName">확인 중...</strong>
-        <span class="game-badge" id="displayGameName" style="display: none;"></span>
-      </div>
-      <input type="hidden" id="cfgGuildName" value="">
-    </div>
-
-    <!-- 2. 내 프로필 카드 -->
+    <!-- 내 프로필 카드 -->
     <div class="settings-section-box mb-3">
       <div class="kt-profile-card" onclick="openCombinedProfileModal()" title="캐릭터 직업 및 비밀번호 변경">
         <div class="kt-avatar-circle" id="profileCurrentAvatarDisplay">👤</div>
@@ -638,7 +648,7 @@
       </div>
     </div>
 
-    <!-- 3. 글자 크기 조절 옵션 -->
+    <!-- 글자 크기 조절 옵션 -->
     <div class="settings-section-box d-flex justify-content-between align-items-center py-2 px-3 mb-3">
       <div class="d-flex align-items-center gap-2">
         <span style="font-size: 1rem;">🔠</span>
@@ -654,7 +664,7 @@
       </div>
     </div>
 
-    <!-- 4. 화면 테마 토글 스위치 -->
+    <!-- 화면 테마 토글 스위치 -->
     <div class="settings-section-box d-flex justify-content-between align-items-center py-2 px-3 mb-3">
       <div class="d-flex align-items-center gap-3">
         <div id="themeToggleIconBox" style="width: 34px; height: 34px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
@@ -674,7 +684,7 @@
       </label>
     </div>
 
-    <!-- 5-A. 새 채팅 알림음 설정 -->
+    <!-- 새 채팅 알림음 설정 -->
     <div class="settings-section-box mb-3">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="d-flex align-items-center gap-2">
@@ -721,7 +731,7 @@
       </div>
     </div>
 
-    <!-- 5-B. 보스 타이머 경보 알림음 설정 -->
+    <!-- 보스 타이머 경보 알림음 설정 -->
     <div class="settings-section-box">
       <div class="d-flex justify-content-between align-items-center mb-2">
         <div class="d-flex align-items-center gap-2">
@@ -1461,7 +1471,7 @@
   }
 
   // ==========================================
-  // [탭 전환 및 권한 검사]
+  // [탭 전환 및 권한 검사 (카카오 그리드 타일 연동)]
   // ==========================================
   function switchSettingsTab(tab) {
     const isSuper = isSuperAdminUser();
