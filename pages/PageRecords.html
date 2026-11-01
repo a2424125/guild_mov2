@@ -1,6 +1,7 @@
 <!-- ==========================================
      [ECLIPSE 길드관리] 보스 & 전쟁 참여 통계 모듈
      경로: pages/PageRecords.html
+     다중 길드 격리(guild_id) 완비 & 4대 탭 통계/랭킹
      ========================================== -->
 <style>
   /* 🎨 라이트 모드 (기본 :root 및 명시적 body/html.theme-light) */
@@ -395,7 +396,7 @@
     color: #ef4444;
   }
 
-  /* 👥 길드원별 통계 리스트 & 행 스타일 (클리핑 방지 및 마우스 오버 강화) */
+  /* 👥 길드원별 통계 리스트 & 행 스타일 */
   .member-stats-container {
     padding: 6px 4px 10px 4px !important;
     max-height: 480px;
@@ -572,7 +573,7 @@
   .badge-score-normal { background: rgba(2, 132, 199, 0.12); border: 1px solid #0284c7; color: #0284c7; }
   body.theme-dark .badge-score-normal { background: rgba(2, 132, 199, 0.2); color: #38bdf8; border-color: #0284c7; }
 
-  /* 🏷️ 토벌 참여자 닉네임 뱃지 (선명하고 뚜렷한 고대비 볼드 스타일) */
+  /* 🏷️ 토벌 참여자 닉네임 뱃지 */
   .members-chip-container {
     display: flex;
     flex-wrap: wrap;
@@ -622,7 +623,7 @@
   }
   .btn-record-del:hover { background: #ef4444; color: #ffffff; }
 
-  /* 🔔 모달 팝업 공통 규격 (라이트/다크모드 완전 연동) */
+  /* 🔔 모달 팝업 공통 규격 */
   .rec-modal-backdrop {
     position: fixed;
     top: 0;
@@ -643,7 +644,6 @@
     to { opacity: 1; }
   }
 
-  /* 🔝 최상위 확인/경고 팝업: 다른 모든 모달보다 항상 위에 노출 (뒤에 가려짐 방지) */
   #customConfirmModal {
     z-index: 12500 !important;
   }
@@ -766,7 +766,7 @@
     font-size: 0.82rem;
   }
 
-  /* 4열 체크박스 모달 그리드 (글자 짤림 방지 및 가변 폰트 최적화) */
+  /* 4열 체크박스 모달 그리드 */
   #modalEditRecord .rec-modal-card {
     max-width: 480px !important;
   }
@@ -880,7 +880,7 @@
 </style>
 
 <div class="records-card mb-4" id="recordsRootCard">
-  <!-- 상단 헤더: 제목 + 고대비 인라인 대화방 공유 버튼 -->
+  <!-- 상단 헤더: 제목 + 대화방 공유 버튼 -->
   <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
     <div class="d-flex align-items-center gap-2">
       <span style="font-size: 1.15rem;">📜</span>
@@ -889,7 +889,6 @@
         <span class="small text-secondary" style="font-size: 0.65rem;">보스 & 전쟁 참여 통계 집계 및 실시간 공유</span>
       </div>
     </div>
-    <!-- 💬 26px 슬림 캡슐 대화방 공유 버튼 -->
     <button type="button" class="btn-share-records" id="btnShareRecordsReport" onclick="window.shareRecordsReportToChat()" title="현재 조회 중인 통계 요약을 대화방에 즉시 공유합니다">
       <i class="fa-solid fa-comment-dots"></i>
       <span>대화방 공유</span>
@@ -941,9 +940,8 @@
     </button>
   </div>
 
-  <!-- 탭 1) 요약통계 뷰 (기본 선택) -->
+  <!-- 탭 1) 요약통계 뷰 -->
   <div id="viewSummary">
-    <!-- TOP 5 랭킹 박스 -->
     <div class="top5-container mb-3">
       <div class="best-tab-nav">
         <button type="button" class="btn-best-tab active" id="bestTabTotal" onclick="switchBestTab('total')">
@@ -1031,7 +1029,7 @@
   <span id="recordsToastMsg">알림 내용</span>
 </div>
 
-<!-- 📊 [개인별 세부 통계 모달] (데이터 정상 렌더링 & 완벽 테마 연동) -->
+<!-- 📊 [개인별 세부 통계 모달] -->
 <div id="modalMemberDetail" class="rec-modal-backdrop" style="display: none;" onclick="if(event.target === this) closeMemberDetailModal()">
   <div class="rec-modal-card" onclick="event.stopPropagation()">
     <div class="rec-modal-header">
@@ -1045,7 +1043,6 @@
     </div>
     
     <div class="rec-modal-body" style="max-height: 80vh; overflow-y: auto;">
-      <!-- 1. 상단 멤버 요약 히어로 카드 -->
       <div class="member-detail-hero-box">
         <div>
           <div class="d-flex align-items-center gap-1 mb-1">
@@ -1060,7 +1057,6 @@
         </div>
       </div>
 
-      <!-- 2. 토벌 / 전쟁 2열 통계 박스 -->
       <div class="member-detail-summary-grid">
         <div class="member-detail-stat-box">
           <div class="member-detail-stat-label">보스 토벌 참여</div>
@@ -1072,7 +1068,6 @@
         </div>
       </div>
 
-      <!-- 3. 보스별 상세 토벌 횟수 -->
       <div class="mb-3">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span style="font-size: 0.8rem; font-weight: 700; color: var(--rec-modal-text);">
@@ -1083,7 +1078,6 @@
         <div id="detailMemberBossList" class="member-detail-boss-list"></div>
       </div>
 
-      <!-- 4. 관리자 전용 액션 버튼 및 닫기 버튼 -->
       <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-10 gap-2 flex-wrap">
         <div class="d-flex gap-1" id="detailAdminActions">
           <button type="button" class="btn btn-outline-primary btn-sm py-1 px-2" style="font-size: 0.72rem; border-radius: 6px;" id="btnDetailEditBosses">
@@ -1154,7 +1148,7 @@
   </div>
 </div>
 
-<!-- 🔝 [최상단 배치] 커스텀 확인 및 경고 모달 (선명하고 굵은 고대비 텍스트 적용) -->
+<!-- 커스텀 확인 및 경고 모달 -->
 <div id="customConfirmModal" class="rec-modal-backdrop" style="display: none;">
   <div class="rec-modal-card" style="max-width: 330px; text-align: center; padding: 20px 16px;">
     <div style="font-size: 2rem; margin-bottom: 8px;" id="confirmModalIconEmoji">⚠️</div>
@@ -1168,10 +1162,9 @@
 </div>
 
 <script>
-  // ⚡ 재호출 시 Identifier already declared 충돌 방지: 모든 최상위 변수 var 통일
   var rawStatsData = { records: [], warRecords: [], memberStats: {}, bossList: [] };
   var currentBestTab = 'total';
-  var currentMainTab = 'summary'; // 🌟 기본 탭을 'summary'(요약통계)로 설정
+  var currentMainTab = 'summary';
   var managingMemberName = "";
   var allGuildMembersList = [];
   var recordsToastTimer = null;
@@ -1184,17 +1177,20 @@
     scoreInter: 2
   };
 
-  /* ==========================================================
-     ⚙️ [길드원 체크박스 UI 간편 설정]
-     사용자 취향에 맞게 아래 숫자 3개만 변경하시면 즉시 반영됩니다!
-     ========================================================== */
+  function getRecordsActiveGuildId() {
+    if (typeof getCurrentGuildId === "function") {
+      return getCurrentGuildId();
+    }
+    var gid = localStorage.getItem("current_guild_id");
+    return (gid && gid !== "null" && gid !== "undefined") ? gid : "default";
+  }
+
   var MEMBER_CHECK_CONFIG = {
-    columns: 4,          // 한 줄에 배치할 열 수 (4: 4열 배치 / 3: 넓은 3열 배치)
-    baseFontSize: 0.69,  // 기본 닉네임 크기 (rem 단위, 기본: 0.69)
-    minFontSize: 0.63    // 긴 닉네임(5~7글자) 최소 크기 (rem 단위, 기본: 0.63)
+    columns: 4,
+    baseFontSize: 0.69,
+    minFontSize: 0.63
   };
 
-  // 🔤 극단적 크기 차이를 없애고 단정하게 균형을 맞춘 유동적 폰트 계산기
   function getMemberNameCheckStyle(name) {
     var str = String(name || '').trim();
     var koreanCount = (str.match(/[가-힣]/g) || []).length;
@@ -1205,11 +1201,9 @@
     var letterSpacing = '-0.3px';
 
     if (weight > 5.5) {
-      // 6~7자 이상 긴 닉네임 (예: 불편한엉덩이, 오빠거기아니야) -> 0.63rem
       size = MEMBER_CHECK_CONFIG.minFontSize;
       letterSpacing = '-0.6px';
     } else if (weight > 4.2) {
-      // 5자 닉네임 (예: 레인아재안, 불편한형진, 오징어튀김) -> 0.66rem
       size = Math.round(((MEMBER_CHECK_CONFIG.baseFontSize + MEMBER_CHECK_CONFIG.minFontSize) / 2) * 100) / 100;
       letterSpacing = '-0.4px';
     }
@@ -1279,7 +1273,6 @@
     });
   }
 
-  // 4대 메인 탭 전환 함수
   function switchRecordsTab(tab) {
     currentMainTab = tab;
     var btnSummary = document.getElementById('tabBtnSummary');
@@ -1303,14 +1296,13 @@
     if (viewHistory) viewHistory.style.display = (tab === 'history') ? 'block' : 'none';
   }
 
-  // 기간 필터 설정
   function setStatPeriod(type) {
     document.querySelectorAll('#btnFilterWeek, #btnFilterLastWeek, #btnFilterMonth, #btnFilterAll').forEach(function(b) {
       b.classList.remove('active');
     });
 
     var today = new Date();
-    var currentDay = (today.getDay() + 6) % 7; // 월=0, 일=6
+    var currentDay = (today.getDay() + 6) % 7;
 
     var start = null;
     var end = null;
@@ -1355,12 +1347,13 @@
     fetchStatsData();
   }
 
-  // 데이터 조회 및 통계 산출
+  // ⚡ [다중 길드 격리]: 3개 테이블 병렬 조회 시 현재 길드(currentGid) 조건 필수로 적용
   async function fetchStatsData() {
     var startElem = document.getElementById('filterStartDate');
     var endElem = document.getElementById('filterEndDate');
     var start = startElem ? startElem.value : '';
     var end = endElem ? endElem.value : '';
+    var curGid = getRecordsActiveGuildId();
 
     var top5Area = document.getElementById('top5RankingList');
     var listArea = document.getElementById('memberStatsList');
@@ -1374,14 +1367,25 @@
 
     try {
       var resArr = await Promise.all([
-        apiRequest("guild_members?select=name,role&order=name.asc"),
-        apiRequest("boss_participations?select=*&order=raid_time.desc"),
-        apiRequest("guild_settings?select=*")
+        apiRequest("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=name,nickname,role&order=name.asc"),
+        apiRequest("boss_participations?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=raid_time.desc"),
+        apiRequest("guild_settings?guild_id=eq." + encodeURIComponent(curGid) + "&select=*")
       ]);
 
-      var members = resArr[0] || [];
+      var rawMembers = resArr[0] || [];
       var allRaids = resArr[1] || [];
       var settings = resArr[2] || [];
+
+      // null 유령 닉네임 배제 및 표준화
+      var members = rawMembers.filter(function(m) {
+        var n = (m.nickname || m.name || '').trim();
+        return n !== '' && n !== 'null' && n !== 'undefined';
+      }).map(function(m) {
+        return {
+          name: (m.nickname || m.name).trim(),
+          role: m.role || '일반'
+        };
+      });
 
       allGuildMembersList = members;
 
@@ -1428,7 +1432,7 @@
         var isInter = warType.includes('인터');
         var isWar = isInternal || isInter;
         var extra = parseInt(r.extra_score, 10) || 0;
-        var membersArr = Array.isArray(r.members) ? r.members : [];
+        var membersArr = Array.isArray(r.members) ? r.members.filter(function(n) { return n && n !== "null"; }) : [];
 
         var calcScore = liveSettings.scoreBase || 1;
         if (isInternal) calcScore += (liveSettings.scoreInternal || 1);
@@ -1456,6 +1460,7 @@
         }
 
         membersArr.forEach(function(name) {
+          if (!name || name === "null") return;
           if (!memberStats[name]) {
             memberStats[name] = {
               role: '',
@@ -1487,7 +1492,6 @@
 
       rawStatsData = { records: records, warRecords: warRecords, memberStats: memberStats };
 
-      // 요약 지표 카드 업데이트
       var sumRaidsElem = document.getElementById('summaryTotalRaids');
       var sumWarsElem = document.getElementById('summaryTotalWars');
       var sumMembersElem = document.getElementById('summaryTotalMembers');
@@ -1597,7 +1601,6 @@
     }).join('');
   }
 
-  // 👥 길드원별 통계 렌더링 (마우스 오버 강화, 클릭 시 활동 세부 통계 모달 오픈)
   function renderMemberStats(statsObj) {
     var container = document.getElementById('memberStatsList');
     if (!container) return;
@@ -1643,7 +1646,6 @@
     }).join('');
   }
 
-  // 직업/권한 뱃지 (미설정인 경우 불필요한 뱃지 숨김 처리)
   function getRoleBadgeHtml(role) {
     var r = String(role || '').trim();
     if (!r || r === '미설정' || r === '없음') return '';
@@ -1654,7 +1656,6 @@
     return '<span class="badge-role-pill role-normal">' + escapeHtml(r) + '</span>';
   }
 
-  // 🔍 길드원 검색 필터
   function filterMemberStats() {
     var inputElem = document.getElementById('statMemberSearch');
     var clearBtn = document.getElementById('statMemberSearchClear');
@@ -1679,7 +1680,6 @@
     }
   }
 
-  // ⚔️ 전쟁기록 뷰 렌더링
   function renderWarLogList(warRecords) {
     var container = document.getElementById('warLogList');
     if (!container) return;
@@ -1715,7 +1715,6 @@
     }).join('');
   }
 
-  // 📜 토벌기록 뷰 렌더링
   function renderHistoryList(records) {
     var container = document.getElementById('historyList');
     if (!container) return;
@@ -1757,7 +1756,6 @@
     }).join('');
   }
 
-  // 📊 [개인별 세부 통계 모달 열기] (데이터 정상 렌더링 & 완벽 테마 연동)
   function openMemberDetailModal(encodedName) {
     var name = decodeURIComponent(encodedName);
     var statsObj = (rawStatsData && rawStatsData.memberStats) ? rawStatsData.memberStats : {};
@@ -1825,13 +1823,14 @@
     if (modal) modal.style.display = 'none';
   }
 
-  // 개별 토벌 참여자 단독 제외 함수
+  // ⚡ [다중 길드 격리]: 단독 참여자 제외 시 guild_id 조건 포함
   async function removeSingleMember(encodedName, raidId, bossName) {
     var isAdmin = await verifyAdminPermission();
     if (!isAdmin) {
       return showRecordsToast("토벌 기록 수정은 관리자만 가능합니다.", "⚠️");
     }
 
+    var curGid = getRecordsActiveGuildId();
     var name = decodeURIComponent(encodedName);
     var confirmed = await openCustomConfirm(
       "토벌 참여자 제외",
@@ -1845,7 +1844,7 @@
       if (!r) return;
 
       var updated = (r.members || []).filter(function(m) { return m !== name; });
-      await apiRequest("boss_participations?id=eq." + raidId, "PATCH", {
+      await apiRequest("boss_participations?id=eq." + raidId + "&guild_id=eq." + encodeURIComponent(curGid), "PATCH", {
         members: updated,
         member_count: updated.length
       });
@@ -1860,7 +1859,6 @@
     }
   }
 
-  // 토벌 참여 인원 수정 모달 관련
   async function triggerEditRecordModal(idx) {
     var isAdmin = await verifyAdminPermission();
     if (!isAdmin) {
@@ -1898,7 +1896,9 @@
     document.getElementById('modalEditRecord').style.display = 'none';
   }
 
+  // ⚡ [다중 길드 격리]: 토벌 참여 인원 수정 저장 시 guild_id 조건 포함
   async function promptSaveRecordMembers() {
+    var curGid = getRecordsActiveGuildId();
     var raidId = document.getElementById('editRecordId').value;
     var bossName = document.getElementById('editRecordBossName').value;
     var checkboxes = document.querySelectorAll('#editMemberCheckList input[type="checkbox"]:checked');
@@ -1931,7 +1931,7 @@
     if (!confirmed) return;
 
     try {
-      await apiRequest("boss_participations?id=eq." + raidId, "PATCH", {
+      await apiRequest("boss_participations?id=eq." + raidId + "&guild_id=eq." + encodeURIComponent(curGid), "PATCH", {
         members: selected,
         member_count: selected.length
       });
@@ -1944,12 +1944,14 @@
     }
   }
 
+  // ⚡ [다중 길드 격리]: 토벌 기록 완전 삭제 시 guild_id 조건 포함
   async function triggerDeleteRecord(raidId, bossName) {
     var isAdmin = await verifyAdminPermission();
     if (!isAdmin) {
       return showRecordsToast("토벌 기록 삭제는 관리자만 가능합니다.", "⚠️");
     }
 
+    var curGid = getRecordsActiveGuildId();
     var confirmed = await openCustomConfirm(
       "토벌 기록 삭제",
       "[" + bossName + "] 토벌 기록을 완전히 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.",
@@ -1958,7 +1960,7 @@
     if (!confirmed) return;
 
     try {
-      await apiRequest("boss_participations?id=eq." + raidId, "DELETE");
+      await apiRequest("boss_participations?id=eq." + raidId + "&guild_id=eq." + encodeURIComponent(curGid), "DELETE");
       showRecordsToast("[" + bossName + "] 기록이 삭제되었습니다.", "🗑️");
       await fetchStatsData();
     } catch (err) {
@@ -1966,7 +1968,6 @@
     }
   }
 
-  // 개인별 보스 목록 선택/수정 모달 관련
   async function openMemberBossManagerModal(encodedName) {
     var isAdmin = await verifyAdminPermission();
     if (!isAdmin) {
@@ -2014,10 +2015,12 @@
     document.getElementById('modalMemberBossManager').style.display = 'none';
   }
 
+  // ⚡ [다중 길드 격리]: 개인별 참여 보스 일괄 수정 시 guild_id 조건 포함
   async function saveMemberBossSelection() {
     var name = managingMemberName;
     if (!name) return;
 
+    var curGid = getRecordsActiveGuildId();
     var checkboxes = document.querySelectorAll('.mgr-boss-chk');
     var updates = [];
 
@@ -2046,7 +2049,7 @@
     try {
       for (var i = 0; i < updates.length; i++) {
         var u = updates[i];
-        await apiRequest("boss_participations?id=eq." + u.id, "PATCH", {
+        await apiRequest("boss_participations?id=eq." + u.id + "&guild_id=eq." + encodeURIComponent(curGid), "PATCH", {
           members: u.members,
           member_count: u.member_count
         });
@@ -2060,12 +2063,14 @@
     }
   }
 
+  // ⚡ [다중 길드 격리]: 특정 길드원 전체 토벌 일괄 제외 시 guild_id 조건 포함
   async function removeMemberAll(encodedName) {
     var isAdmin = await verifyAdminPermission();
     if (!isAdmin) {
       return showRecordsToast("일괄 제외는 관리자만 가능합니다.", "⚠️");
     }
 
+    var curGid = getRecordsActiveGuildId();
     var name = decodeURIComponent(encodedName);
     var confirmed = await openCustomConfirm(
       "전체 토벌 일괄 제외",
@@ -2079,7 +2084,7 @@
       for (var i = 0; i < recordsToUpdate.length; i++) {
         var r = recordsToUpdate[i];
         var updated = r.members.filter(function(m) { return m !== name; });
-        await apiRequest("boss_participations?id=eq." + r.id, "PATCH", {
+        await apiRequest("boss_participations?id=eq." + r.id + "&guild_id=eq." + encodeURIComponent(curGid), "PATCH", {
           members: updated,
           member_count: updated.length
         });
@@ -2092,7 +2097,7 @@
     }
   }
 
-  // 💬 대화방 공유 처리 함수
+  // 💬 대화방 공유 처리 함수 (다중 길드 격리 및 대화방 명시)
   window.shareRecordsReportToChat = async function() {
     var btn = document.getElementById('btnShareRecordsReport');
     var statsObj = rawStatsData.memberStats || {};
@@ -2105,6 +2110,8 @@
       return showRecordsToast('공유할 참여 내역 데이터가 없습니다.', '⚠️');
     }
 
+    var curGid = getRecordsActiveGuildId();
+    var activeRoomId = window.currentActiveRoomId || "default_public";
     var sDate = document.getElementById('filterStartDate').value || '';
     var eDate = document.getElementById('filterEndDate').value || '';
     var gName = liveSettings.guildName || "길드";
@@ -2209,7 +2216,10 @@
     }
 
     try {
+      // ⚡ [다중 길드 격리]: 대화방 공유 시 guild_id 및 room_id 강제 지정
       await apiRequest("guild_chats", "POST", [{
+        guild_id: curGid,
+        room_id: activeRoomId,
         sender_name: "통계알리미",
         message: reportCardHtml,
         msg_type: "records_report",
@@ -2236,7 +2246,6 @@
     });
   }
 
-  // 🚀 초기화 자동 기동 (기본 탭을 요약통계로 확실히 선택)
   (function initRecordsPage() {
     if (typeof window.applyAppTheme === 'function') {
       window.applyAppTheme();
