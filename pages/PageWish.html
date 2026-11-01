@@ -1,6 +1,7 @@
 <!-- ==========================================
      [ECLIPSE 길드관리] 아이템 분배 및 정산 모듈
      경로: pages/PageWish.html
+     다중 길드 격리(guild_id) 완비 & 경매 N빵 배당 영수증 공유
      ========================================== -->
 <style>
   :root {
@@ -424,7 +425,7 @@
   </div>
 </div>
 
-<!-- 🎯 최근 분배 이력 클릭 시 수령자 확인 모달 (라이트/다크모드 완벽 대응 & 총원 명시) -->
+<!-- 🎯 최근 분배 이력 클릭 시 수령자 확인 모달 -->
 <div id="wishDetailModal" class="wish-modal-backdrop" style="display: none;" onclick="if(event.target===this) closeWishDetailModal()">
   <div class="wish-modal-card">
     <div class="wish-modal-header">
@@ -491,6 +492,14 @@
   window.isAuctionTaxApplied = true;
   window.wishToastTimer = null;
   window.wishGuildName = "길드";
+
+  function getWishActiveGuildId() {
+    if (typeof getCurrentGuildId === "function") {
+      return getCurrentGuildId();
+    }
+    const gid = localStorage.getItem("current_guild_id");
+    return (gid && gid !== "null" && gid !== "undefined") ? gid : "default";
+  }
 
   function showWishToast(message, icon = "✅") {
     const toast = document.getElementById("wishToastBox");
@@ -563,8 +572,9 @@
   }
 
   async function loadGuildNameForWish() {
+    const curGid = getWishActiveGuildId();
     try {
-      const res = await apiRequest("guild_settings?key=eq.guild_name");
+      const res = await apiRequest("guild_settings?guild_id=eq." + encodeURIComponent(curGid) + "&key=eq.guild_name");
       if (res && res.length > 0 && res[0].value) {
         window.wishGuildName = res[0].value;
       }
@@ -577,11 +587,14 @@
     if (!container) return;
     container.innerHTML = '<div class="text-secondary small text-center py-3"><i class="fa-solid fa-spinner fa-spin me-1"></i>보유 아이템 불러오는 중...</div>';
 
+    const curGid = getWishActiveGuildId();
+
     try {
-      const settled = await apiRequest("item_distributions?select=item_key");
+      // ⚡ [다중 길드 격리]: 현재 길드의 정산 완료된 아이템 키 및 토벌 기록 조회
+      const settled = await apiRequest("item_distributions?guild_id=eq." + encodeURIComponent(curGid) + "&select=item_key");
       const settledKeys = new Set((settled || []).map(s => s.item_key));
 
-      const raids = await apiRequest("boss_participations?select=*&order=id.desc");
+      const raids = await apiRequest("boss_participations?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=id.desc");
       window.availableItemsData = [];
 
       (raids || []).forEach(r => {
@@ -591,10 +604,10 @@
         
         let memArray = [];
         if (Array.isArray(r.members)) {
-          memArray = r.members;
+          memArray = r.members.filter(n => n && n !== "null");
         } else if (typeof r.members === 'string') {
           const raw = r.members.replace(/[\{\}\[\]"]/g, '').trim();
-          memArray = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+          memArray = raw ? raw.split(',').map(s => s.trim()).filter(n => n && n !== "null") : [];
         }
 
         items.forEach((itemName, idx) => {
@@ -692,13 +705,19 @@
   }
 
   async function loadMemberListForWish() {
+    const curGid = getWishActiveGuildId();
     try {
-      const list = await apiRequest("guild_members?select=name&order=name.asc");
+      const list = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=name,nickname&order=name.asc");
       const select = document.getElementById('wishMemberSelect');
       if (!select) return;
       select.innerHTML = '<option value="">길드원 선택...</option>';
       if (list && list.length > 0) {
-        list.forEach(m => select.innerHTML += `<option value="${escapeHtml(m.name)}">${escapeHtml(m.name)}</option>`);
+        list.forEach(m => {
+          const name = (m.nickname || m.name || '').trim();
+          if (name && name !== "null") {
+            select.innerHTML += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+          }
+        });
       }
     } catch (e) {}
   }
@@ -719,6 +738,7 @@
     const feeRate = parseInt(document.getElementById('guildFeeSelect').value, 10) || 0;
     const rawExtra = String(document.getElementById('wishExtraFund').value).replace(/[^0-9]/g, '');
     const extraFund = parseInt(rawExtra, 10) || 0;
+    const curGid = getWishActiveGuildId();
 
     if (!memberName) return showWishToast("낙찰받은 길드원을 선택해주세요!", "⚠️");
     if (!price || price <= 0) return showWishToast("낙찰 금액을 정확히 입력해주세요!", "⚠️");
@@ -740,7 +760,9 @@
     const nowIso = new Date().toISOString();
 
     try {
+      // ⚡ [다중 길드 격리]: item_distributions에 guild_id 필수 포함
       await apiRequest("item_distributions", "POST", [{
+        guild_id: curGid,
         item_key: window.currentSelectedItem.itemKey,
         boss_name: bossName,
         item_name: itemName,
@@ -751,8 +773,10 @@
         created_at: nowIso
       }]);
 
+      // ⚡ [다중 길드 격리]: guild_finances에 guild_id 필수 포함
       if (guildFeeAmount > 0) {
         await apiRequest("guild_finances", "POST", [{
+          guild_id: curGid,
           tx_type: '입금',
           category: '수익금입금',
           amount: guildFeeAmount,
@@ -762,6 +786,7 @@
       }
 
       await sendWishReceiptToChat({
+        guild_id: curGid,
         guildName: window.wishGuildName || "길드",
         bossName: bossName,
         itemName: itemName,
@@ -794,7 +819,11 @@
     }
   }
 
+  // ⚡ [다중 길드 격리]: 대화방 공유 메시지에 guild_id 및 room_id 필수 포함
   async function sendWishReceiptToChat(data) {
+    const curGid = data.guild_id || getWishActiveGuildId();
+    const activeRoomId = window.currentActiveRoomId || "default_public";
+
     try {
       const today = new Date();
       const dateStr = `${today.getMonth() + 1}/${today.getDate()}`;
@@ -812,6 +841,8 @@
       };
 
       await apiRequest("guild_chats", "POST", [{
+        guild_id: curGid,
+        room_id: activeRoomId,
         sender_name: "정산알리미",
         message: JSON.stringify(receiptPayload),
         msg_type: "wish_report",
@@ -823,8 +854,11 @@
   async function loadDistHistory() {
     const container = document.getElementById('distHistoryList');
     if (!container) return;
+    const curGid = getWishActiveGuildId();
+
     try {
-      const history = await apiRequest("item_distributions?select=*&order=id.desc&limit=100");
+      // ⚡ [다중 길드 격리]: 현재 길드의 분배 내역만 조회
+      const history = await apiRequest("item_distributions?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=id.desc&limit=100");
       
       const filteredList = (history || []).filter(item => {
         const bName = String(item.boss_name || '').trim();
@@ -899,7 +933,6 @@
 
     memList.sort((a, b) => a.localeCompare(b, 'ko'));
 
-    // 🎯 총원이 명확히 표시되도록 수정
     document.getElementById('detailMembersCountBadge').innerText = `총 ${memList.length}명`;
     const grid = document.getElementById('detailMembersGrid');
 
@@ -919,6 +952,7 @@
     window.currentSelectedHistoryIndex = null;
   }
 
+  // ⚡ [다중 길드 격리]: 정산 내역 삭제 및 길드 금고 적립금 삭제 시 guild_id 조건 강제
   async function executeDeleteWishRecord() {
     const isAuth = (typeof isAdminLoggedIn === "function") ? isAdminLoggedIn() : (sessionStorage.getItem("admin_auth") === "true");
     if (!isAuth) {
@@ -935,11 +969,13 @@
       return;
     }
 
+    const curGid = getWishActiveGuildId();
+
     try {
-      await apiRequest(`item_distributions?id=eq.${item.id}`, "DELETE");
+      await apiRequest(`item_distributions?id=eq.${item.id}&guild_id=eq.${encodeURIComponent(curGid)}`, "DELETE");
 
       const reasonKeyword = `[${item.boss_name}] ${item.item_name}`;
-      await apiRequest(`guild_finances?reason=like.*${encodeURIComponent(reasonKeyword)}*`, "DELETE");
+      await apiRequest(`guild_finances?guild_id=eq.${encodeURIComponent(curGid)}&reason=like.*${encodeURIComponent(reasonKeyword)}*`, "DELETE");
 
       showWishToast("정산 내역 및 길드 금고 적립 내역이 삭제되었습니다.", "🗑️");
       closeWishDetailModal();
