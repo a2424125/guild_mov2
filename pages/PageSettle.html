@@ -1,6 +1,7 @@
 <!-- ==========================================
      [ECLIPSE 길드관리] 길드 정산 및 자금 배분
      경로: pages/PageSettle.html
+     다중 길드 격리(guild_id) 완비 & 주간 점수 차등/임의 분배
      ========================================== -->
 <style>
   :root {
@@ -759,6 +760,14 @@
   window.isDistributingNow = false;
   window.settleToastTimer = null;
 
+  function getSettleActiveGuildId() {
+    if (typeof getCurrentGuildId === "function") {
+      return getCurrentGuildId();
+    }
+    const gid = localStorage.getItem("current_guild_id");
+    return (gid && gid !== "null" && gid !== "undefined") ? gid : "default";
+  }
+
   window.showSettleToast = function(msg, icon = "✅") {
     const toast = document.getElementById("settleToastBox");
     const m = document.getElementById("settleToastMsg");
@@ -806,10 +815,12 @@
     box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
   };
 
+  // ⚡ [다중 길드 격리]: 주간 분배 기록 일괄 삭제 시 guild_id 조건 강제
   window.deleteSettlementByPeriod = async function(rangeType) {
     const isSuper = (sessionStorage.getItem("admin_role") === "super");
     if (!isSuper) return window.showSettleToast("슈퍼관리자만 삭제할 수 있습니다.", "⚠️");
 
+    const curGid = getSettleActiveGuildId();
     const today = new Date();
     const currentDay = (today.getDay() + 6) % 7;
     let s = null, e = null, label = "";
@@ -837,7 +848,7 @@
 
     try {
       window.showSettleToast("삭제 처리 중...", "⏳");
-      const dists = await apiRequest("item_distributions?select=id,item_key,created_at");
+      const dists = await apiRequest("item_distributions?guild_id=eq." + encodeURIComponent(curGid) + "&select=id,item_key,created_at");
       const targetIds = [];
 
       (dists || []).forEach(r => {
@@ -850,15 +861,15 @@
       });
 
       for (const id of targetIds) {
-        await apiRequest(`item_distributions?id=eq.${id}`, "DELETE");
+        await apiRequest("item_distributions?id=eq." + id + "&guild_id=eq." + encodeURIComponent(curGid), "DELETE");
       }
 
-      const finLogs = await apiRequest("guild_finances?category=eq.길드자금분배&select=id,created_at");
+      const finLogs = await apiRequest("guild_finances?guild_id=eq." + encodeURIComponent(curGid) + "&category=eq.길드자금분배&select=id,created_at");
       for (const f of (finLogs || [])) {
         const d = (f.created_at || '').slice(0, 10);
         if (sStr && d < sStr) continue;
         if (eStr && d > eStr) continue;
-        await apiRequest(`guild_finances?id=eq.${f.id}`, "DELETE");
+        await apiRequest("guild_finances?id=eq." + f.id + "&guild_id=eq." + encodeURIComponent(curGid), "DELETE");
       }
 
       window.showSettleToast(`✅ [${label}] 주간 분배 기록이 삭제되었습니다.`, "🎉");
@@ -868,10 +879,12 @@
     }
   };
 
+  // ⚡ [다중 길드 격리]: 특정 길드원 단독 정산 삭제 시 guild_id 조건 강제
   window.deleteSettlementForSingleMember = async function() {
     const isSuper = (sessionStorage.getItem("admin_role") === "super");
     if (!isSuper) return window.showSettleToast("슈퍼관리자만 삭제할 수 있습니다.", "⚠️");
 
+    const curGid = getSettleActiveGuildId();
     const targetName = document.getElementById('selectDeleteMemberTarget').value;
     if (!targetName) return window.showSettleToast("삭제할 길드원을 선택해주세요.", "⚠️");
 
@@ -879,7 +892,7 @@
 
     try {
       window.showSettleToast("개인 기록 삭제 중...", "⏳");
-      const dists = await apiRequest("item_distributions?select=id,item_key,winner_name,members");
+      const dists = await apiRequest("item_distributions?guild_id=eq." + encodeURIComponent(curGid) + "&select=id,item_key,winner_name,members");
       let delCount = 0;
 
       for (const r of (dists || [])) {
@@ -888,7 +901,7 @@
         const isWinner = (r.winner_name === targetName);
         const mems = Array.isArray(r.members) ? r.members : [];
         if (isWinner || mems.includes(targetName)) {
-          await apiRequest(`item_distributions?id=eq.${r.id}`, "DELETE");
+          await apiRequest("item_distributions?id=eq." + r.id + "&guild_id=eq." + encodeURIComponent(curGid), "DELETE");
           delCount++;
         }
       }
@@ -935,9 +948,11 @@
 
   window.toggleDirectDistForm = async function() {
     const isSuper = (sessionStorage.getItem("admin_role") === "super");
+    const curGid = getSettleActiveGuildId();
+
     if (!isSuper) {
       try {
-        const permRow = await apiRequest("guild_settings?key=eq.perm_settle_distribute");
+        const permRow = await apiRequest("guild_settings?guild_id=eq." + encodeURIComponent(curGid) + "&key=eq.perm_settle_fund_dist");
         const permVal = (permRow && permRow.length > 0) ? permRow[0].value : 'true';
         if (permVal === 'false') {
           return window.showSettleToast("길드자금 분배 권한이 비활성화되어 있습니다.", "⚠️");
@@ -965,7 +980,7 @@
     if (isOpening) {
       window.clearDistFormState();
       try {
-        const logs = await apiRequest("guild_finances?select=amount,tx_type");
+        const logs = await apiRequest("guild_finances?guild_id=eq." + encodeURIComponent(curGid) + "&select=amount,tx_type");
         let bal = 0;
         (logs || []).forEach(l => {
           const t = (l.tx_type || '');
@@ -1005,10 +1020,12 @@
     window.calcWeeklyDistributionPreview();
   };
 
+  // ⚡ [다중 길드 격리]: 길드원 목록 조회 시 guild_id 조건 강제
   async function loadMemberListData() {
+    const curGid = getSettleActiveGuildId();
     try {
-      const list = await apiRequest("guild_members?select=name");
-      const names = (list || []).map(m => m.name).filter(Boolean);
+      const list = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=name,nickname");
+      const names = (list || []).map(m => (m.nickname || m.name || '').trim()).filter(n => n && n !== 'null');
       names.sort((a, b) => a.localeCompare(b, 'ko', { numeric: true, sensitivity: 'base' }));
       window.allGuildMembers = names;
       
@@ -1184,9 +1201,11 @@
     window.fetchIncomeForDist();
   };
 
+  // ⚡ [다중 길드 격리]: 정산 대상 순수익금 조회 시 guild_id 조건 강제
   window.fetchIncomeForDist = async function() {
     const s = document.getElementById('distScoreStartDate').value;
     const e = document.getElementById('distScoreEndDate').value;
+    const curGid = getSettleActiveGuildId();
 
     if (!s && !e) {
       document.getElementById('weeklyTotalAmount').value = '';
@@ -1196,7 +1215,7 @@
     }
 
     try {
-      const logs = await apiRequest("guild_finances?select=*&order=created_at.desc,id.desc");
+      const logs = await apiRequest("guild_finances?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=created_at.desc,id.desc");
       let pIn = 0, pOut = 0;
       (logs || []).forEach(l => {
         const d = (l.created_at || '').slice(0, 10);
@@ -1254,11 +1273,9 @@
 
     document.getElementById('previewManagerRate').innerText = managerRateCalc + '%';
     document.getElementById('previewManagerTotal').innerText = managerShareTotal.toLocaleString() + ' D';
-
-    const perManager = mgrCount > 0 ? Math.floor(managerShareTotal / mgrCount) : 0;
-    document.getElementById('previewManagerPerShare').innerText = mgrCount > 0 ? `(1인당: ${perManager.toLocaleString()} D • 총 ${mgrCount}명)` : '(지정 없음)';
   };
 
+  // ⚡ [다중 길드 격리]: 정산 실행 시 guild_id 필수 포함
   window.submitWeeklyDistribution = async function() {
     if (window.isDistributingNow) return;
 
@@ -1273,6 +1290,7 @@
     const customMembers = Array.from(window.selectedCustomMembers);
     const minScore = parseInt(document.getElementById('selectMinScoreCut').value, 10) || 0;
     const minInterCount = parseInt(document.getElementById('selectMinInterCut').value, 10) || 0;
+    const curGid = getSettleActiveGuildId();
 
     if (!rawAmount || parseInt(rawAmount, 10) <= 0) return window.showSettleToast("분배할 총 다이아 금액을 입력해주세요!", "⚠️");
 
@@ -1309,7 +1327,7 @@
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>정산 처리 중...';
 
     try {
-      const allRaids = await apiRequest("boss_participations?select=*&order=id.desc");
+      const allRaids = await apiRequest("boss_participations?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=id.desc");
       const periodMemberStats = {};
 
       (window.allGuildMembers || []).forEach(m => {
@@ -1380,6 +1398,7 @@
           const memberPayout = totalScoreSum > 0 ? Math.floor(memberPool * (m.score / totalScoreSum)) : 0;
           if (memberPayout > 0) {
             distRecords.push({
+              guild_id: curGid,
               item_key: `WEEKLY_${nowKey}_SCORE_${idx}`,
               boss_name: '주간점수정산',
               item_name: `활동점수 차등배당 (${m.score}점)`,
@@ -1394,6 +1413,7 @@
       } else {
         const perMemberShare = Math.floor(memberPool / targetMembers.length);
         distRecords.push({
+          guild_id: curGid,
           item_key: `WEEKLY_${nowKey}_MEMBERS`,
           boss_name: '임의자금정산',
           item_name: `길드자금 분배 (${window.currentDistRate}%)`,
@@ -1407,6 +1427,7 @@
 
       if (managerShareTotal > 0 && managerNames.length > 0) {
         distRecords.push({
+          guild_id: curGid,
           item_key: `WEEKLY_${nowKey}_MANAGERS`,
           boss_name: '시트관리비',
           item_name: `관리원 수고비 (${window.currentManagerRate}%)`,
@@ -1421,6 +1442,7 @@
       await apiRequest("item_distributions", "POST", distRecords);
 
       await apiRequest("guild_finances", "POST", [{
+        guild_id: curGid,
         tx_type: '출금',
         category: '길드자금분배',
         amount: distAmt,
@@ -1474,17 +1496,19 @@
     window.fetchSettlementData();
   };
 
+  // ⚡ [다중 길드 격리]: 정산 통계 집계 시 guild_id 조건 강제
   window.fetchSettlementData = async function() {
     const start = document.getElementById('settleStartDate').value;
     const end = document.getElementById('settleEndDate').value;
     const listContainer = document.getElementById('payoutListContainer');
+    const curGid = getSettleActiveGuildId();
 
     if (listContainer) {
       listContainer.innerHTML = '<div class="text-secondary small text-center py-4"><span class="spinner-border spinner-border-sm text-info me-1"></span>정산 집계 중...</div>';
     }
 
     try {
-      const raids = await apiRequest("boss_participations?select=*&order=id.desc");
+      const raids = await apiRequest("boss_participations?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=id.desc");
       window.currentParticipationStats = { memberStats: {} };
 
       (window.allGuildMembers || []).forEach(m => {
@@ -1510,7 +1534,7 @@
         });
       });
 
-      const dists = await apiRequest("item_distributions?select=*&order=created_at.desc,id.desc");
+      const dists = await apiRequest("item_distributions?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=created_at.desc,id.desc");
       let filteredDists = dists || [];
 
       if (start || end) {
@@ -1726,12 +1750,15 @@
     `).join('');
   };
 
+  // 💬 대화방 공유 처리 (다중 길드 격리 및 대화방 명시)
   window.shareSettlementToChat = async function() {
     const start = document.getElementById('settleStartDate').value || '시작';
     const end = document.getElementById('settleEndDate').value || '현재';
     const payouts = window.currentSettlementData.memberPayouts || {};
     const totalPool = window.currentSettlementData.totalPool || 0;
     const members = Object.keys(payouts || {});
+    const curGid = getSettleActiveGuildId();
+    const activeRoomId = window.currentActiveRoomId || "default_public";
 
     if (members.length === 0) {
       return window.showSettleToast("공유할 정산 데이터가 없습니다!", "⚠️");
@@ -1802,6 +1829,8 @@
 
     try {
       await apiRequest("guild_chats", "POST", [{
+        guild_id: curGid,
+        room_id: activeRoomId,
         sender_name: "정산알리미",
         message: cardHtml,
         msg_type: "records_report",
