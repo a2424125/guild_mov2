@@ -1,7 +1,6 @@
 <!-- ==========================================
-     [ECLIPSE 길드관리] 보스참여 등록 모듈
+     [길드관리] 보스참여 등록 모듈
      경로: pages/PageRegister.html
-     드랍템 추가/목록 칩, 길드원 타이핑 직접추가, null 필터링 & 다중 길드 격리 완비
      ========================================== -->
 <style>
   :root {
@@ -113,7 +112,6 @@
     box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
   }
 
-  /* 💛 카카오톡 감성 고대비 액션 버튼 */
   .btn-kakao-yellow {
     background-color: #fee500 !important;
     color: #191919 !important;
@@ -134,9 +132,7 @@
     transform: translateY(-1px);
     box-shadow: 0 3px 10px rgba(254, 229, 0, 0.35) !important;
   }
-  .btn-kakao-yellow:active:not(:disabled) {
-    transform: translateY(0);
-  }
+  .btn-kakao-yellow:active:not(:disabled) { transform: translateY(0); }
   .btn-kakao-yellow:disabled {
     background-color: #94a3b8 !important;
     color: #ffffff !important;
@@ -162,7 +158,6 @@
     color: #0369a1 !important;
   }
 
-  /* OCR 박스 */
   .ocr-compact-dropzone {
     border: 1.5px dashed var(--reg-dropzone-border);
     border-radius: 8px;
@@ -220,10 +215,7 @@
     gap: 4px;
     transition: all 0.15s ease;
   }
-  .btn-ocr-analyze:hover {
-    opacity: 0.92;
-    transform: translateY(-1px);
-  }
+  .btn-ocr-analyze:hover { opacity: 0.92; transform: translateY(-1px); }
   .btn-ocr-reupload {
     background: rgba(239, 68, 68, 0.12);
     color: #f87171;
@@ -244,11 +236,8 @@
     color: #dc2626;
     border-color: #fca5a5;
   }
-  .btn-ocr-reupload:hover {
-    background: rgba(239, 68, 68, 0.22);
-  }
+  .btn-ocr-reupload:hover { background: rgba(239, 68, 68, 0.22); }
 
-  /* 보스 빠른 선택 칩 */
   .quick-boss-chips-row {
     display: flex;
     align-items: center;
@@ -296,7 +285,6 @@
     background: #fef2f2;
   }
 
-  /* 점수 컨트롤 바 */
   .raid-score-control-bar {
     display: flex;
     align-items: center;
@@ -407,7 +395,6 @@
     font-size: 0.77rem;
   }
 
-  /* 🎁 획득 드랍 아이템 캡슐 칩 */
   .drop-items-chip-wrap {
     display: flex;
     flex-wrap: wrap;
@@ -438,12 +425,8 @@
     font-size: 0.72rem;
     opacity: 0.75;
   }
-  .drop-item-chip-del:hover {
-    opacity: 1;
-    font-weight: 900;
-  }
+  .drop-item-chip-del:hover { opacity: 1; font-weight: 900; }
 
-  /* 길드원 도구 및 검색 바 */
   .member-tools-bar {
     display: flex;
     align-items: center;
@@ -512,9 +495,7 @@
     border-color: #0284c7;
     color: #ffffff;
   }
-  .btn-grid-tool.btn-tool-add-direct:hover {
-    background: #0369a1;
-  }
+  .btn-grid-tool.btn-tool-add-direct:hover { background: #0369a1; }
   .btn-grid-tool.btn-tool-last {
     background: rgba(16, 185, 129, 0.12);
     border-color: rgba(16, 185, 129, 0.4);
@@ -531,7 +512,6 @@
     border-color: #10b981;
   }
 
-  /* 5열 모바일 반응형 길드원 그리드 */
   .member-grid-box-wrap {
     border: 1px solid var(--reg-grid-wrap-border);
     border-radius: 8px;
@@ -580,7 +560,6 @@
     box-shadow: 0 0 6px rgba(2, 132, 199, 0.45) !important;
   }
 
-  /* 커스텀 모달 */
   .reg-modal-backdrop {
     position: fixed;
     top: 0; left: 0;
@@ -710,7 +689,7 @@
       </div>
     </div>
 
-    <!-- 빠른 보스 선택 칩 바 -->
+    <!-- 빠른 보스 선택 칩 바 (DB 실시간 보스 전용) -->
     <div class="d-flex align-items-center gap-1 mt-1">
       <span class="text-secondary" style="font-size: 0.65rem; font-weight: 700; white-space: nowrap;"><i class="fa-solid fa-bolt text-warning me-1"></i>빠른선택:</span>
       <div class="quick-boss-chips-row" id="quickBossChipsContainer"></div>
@@ -762,7 +741,6 @@
       <span class="small text-secondary" style="font-size: 0.65rem;" id="regDropItemCountText">등록: 0개</span>
     </div>
     
-    <!-- 입력창 및 [+ 추가] 버튼 한 줄 배치 -->
     <div class="d-flex gap-1 align-items-center">
       <input type="text" id="regDropItemsInput" class="form-control reg-input-custom flex-fill" placeholder="아이템명 입력 후 추가 (예: 영웅 도안)" onkeydown="if(event.key==='Enter'){ event.preventDefault(); addDropItemToList(); }">
       <button type="button" class="btn btn-primary btn-sm px-3 fw-bold flex-shrink-0" style="height: 32px; font-size: 0.74rem; border-radius: 7px;" onclick="addDropItemToList()">
@@ -770,26 +748,23 @@
       </button>
     </div>
 
-    <!-- 추가된 아이템 캡슐 칩 컨테이너 -->
     <div class="drop-items-chip-wrap" id="regDropItemsChipContainer">
       <span class="text-secondary small" style="font-size: 0.68rem; opacity: 0.75;">(추가된 아이템이 여기에 표시됩니다)</span>
     </div>
   </div>
 
-  <!-- 4. 참여 길드원 선택 (타이핑 직접추가 + 실시간검색 + 5열 반응형) -->
+  <!-- 4. 참여 길드원 선택 (유사 닉네임 자동선택 + 5열 반응형) -->
   <div class="reg-section-box">
     <div class="member-tools-bar">
-      <!-- 닉네임 검색 및 직접 타이핑 인풋 -->
       <div class="member-search-box">
         <i class="fa-solid fa-magnifying-glass member-search-icon"></i>
-        <input type="text" id="regMemberSearchInput" class="form-control reg-input-custom member-search-input" placeholder="닉네임 검색 또는 입력..." oninput="onMemberSearchInput(this.value)" onkeydown="if(event.key==='Enter'){ event.preventDefault(); addTypedMemberDirect(); }">
+        <input type="text" id="regMemberSearchInput" class="form-control reg-input-custom member-search-input" placeholder="이름 검색 또는 부분입력..." oninput="onMemberSearchInput(this.value)" onkeydown="if(event.key==='Enter'){ event.preventDefault(); selectMatchingMemberByTyping(); }">
         <i class="fa-solid fa-circle-xmark member-search-clear" id="memberSearchClearBtn" onclick="clearMemberSearch()" title="검색 초기화"></i>
       </div>
 
-      <!-- 액션 도구: [+ 직접추가] [직전참여자] [전체선택] [초기화] -->
       <div class="d-flex gap-1 flex-shrink-0">
-        <button type="button" class="btn-grid-tool btn-tool-add-direct" onclick="addTypedMemberDirect()" title="입력창의 이름을 즉시 참여자로 등록합니다">
-          <i class="fa-solid fa-user-plus"></i> 직접추가
+        <button type="button" class="btn-grid-tool btn-tool-add-direct" onclick="selectMatchingMemberByTyping()" title="입력한 단어가 포함된 길드원을 찾아 선택합니다">
+          <i class="fa-solid fa-user-check"></i> 자동선택
         </button>
         <button type="button" class="btn-grid-tool btn-tool-last" onclick="loadLastRaidMembers()" title="직전 토벌 참여자를 그대로 불러옵니다">
           <i class="fa-solid fa-clock-rotate-left"></i> 직전참여자
@@ -799,7 +774,6 @@
       </div>
     </div>
 
-    <!-- 선택 인원수 카운터 헤더 -->
     <div class="d-flex justify-content-between align-items-center mb-1">
       <div class="small text-secondary" style="font-size: 0.72rem;">
         <i class="fa-solid fa-users me-1 text-primary"></i>
@@ -808,7 +782,7 @@
       <span class="small text-secondary" style="font-size: 0.65rem;" id="regFilterCountText">총 0명</span>
     </div>
 
-    <!-- 5열 직사각형 버튼 그리드 (null 유령 버튼 배제 완비) -->
+    <!-- 5열 직사각형 버튼 그리드 -->
     <div class="member-grid-box-wrap">
       <div class="member-grid-5col" id="regMemberGridContainer">
         <div class="text-secondary small text-center py-3 w-100" style="grid-column: 1 / -1;">길드원 목록을 불러오는 중...</div>
@@ -821,7 +795,6 @@
     <i class="fa-solid fa-paper-plane me-1"></i> 토벌 등록 및 대화방 공유
   </button>
 
-  <!-- 카카오톡 스타일 커스텀 모달 알림창 -->
   <div id="regCustomModal" class="reg-modal-backdrop" style="display: none;">
     <div class="reg-modal-card">
       <div class="reg-modal-icon" id="regModalIcon">💬</div>
@@ -841,7 +814,6 @@
     return (gid && gid !== "null" && gid !== "undefined") ? gid : "default";
   }
 
-  // 모달 제어 함수
   function showRegAlert(msg, icon = "⚠️", title = "알림") {
     return new Promise(resolve => {
       const modal = document.getElementById("regCustomModal");
@@ -903,11 +875,10 @@
     });
   }
 
-  // 전역 상태 변수
   window.regCachedMembers = window.regCachedMembers || [];
   window.regCachedBosses = window.regCachedBosses || [];
   window.regSelectedMemberSet = new Set();
-  window.regDropItemsList = []; // 추가된 드랍 아이템 배열
+  window.regDropItemsList = [];
   window.regCurrentWarType = '일반';
   window.regExtraScore = 0;
   window.regCurrentOcrBase64 = null;
@@ -917,7 +888,6 @@
   window.regScoreWarInter = 2;
   window.regMemberSearchQuery = '';
 
-  // 🧹 폼 완전 리셋
   function resetRegisterForm() {
     window.regSelectedMemberSet.clear();
     window.regDropItemsList = [];
@@ -958,7 +928,6 @@
     renderQuickBossChips();
   }
 
-  // 초기 기동
   (async function initPageRegister() {
     resetRegisterForm();
     await loadSettingsAndPointRules();
@@ -981,7 +950,6 @@
     input.value = `${year}-${month}-${day}T${hours}:${minutes}`;
   }
 
-  // 설정 및 배점 규칙 (guild_id 격리)
   async function loadSettingsAndPointRules() {
     const curGid = getRegActiveGuildId();
     try {
@@ -1021,28 +989,25 @@
     } catch (e) {}
   }
 
-  // 보스 목록 로드 (guild_id 격리)
+  // ⚡ [수정 완료]: 하드코딩 보스 목록 완전 제거. 오직 DB(boss_timers) 실시간 데이터만 바인딩
   async function loadRegisterBosses() {
     const curGid = getRegActiveGuildId();
     try {
       if (typeof apiRequest === "function") {
-        const bosses = await apiRequest("boss_timers?guild_id=eq." + encodeURIComponent(curGid) + "&select=id,boss_name,cycle_min,is_fixed,next_spawn_time&order=boss_name.asc");
-        if (bosses && bosses.length > 0) {
-          window.regCachedBosses = bosses;
+        const bosses = await apiRequest("boss_timers?guild_id=eq." + encodeURIComponent(curGid) + "&select=id,boss_name,cycle_min,is_fixed,next_spawn_time&order=id.asc");
+        if (bosses && Array.isArray(bosses)) {
+          window.regCachedBosses = bosses.filter(b => b && b.boss_name && b.boss_name.trim() !== "");
           renderBossOptions();
           renderQuickBossChips();
           return;
         }
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("보스 목록 로드 예외:", e);
+    }
 
-    window.regCachedBosses = [
-      { boss_name: "거대 드레이크" },
-      { boss_name: "바포메트" },
-      { boss_name: "카스파" },
-      { boss_name: "세마" },
-      { boss_name: "데스나이트" }
-    ];
+    // DB에 보스가 없으면 빈 배열 처리 (하드코딩 제거)
+    window.regCachedBosses = [];
     renderBossOptions();
     renderQuickBossChips();
   }
@@ -1051,6 +1016,12 @@
     const select = document.getElementById("regBossSelect");
     if (!select) return;
     const currentVal = select.value;
+
+    if (!window.regCachedBosses || window.regCachedBosses.length === 0) {
+      select.innerHTML = '<option value="">등록된 보스가 없습니다 (설정에서 추가)</option>';
+      return;
+    }
+
     let html = '<option value="">보스를 선택하세요...</option>';
     window.regCachedBosses.forEach(b => {
       html += `<option value="${escapeHtml(b.boss_name)}" ${b.boss_name === currentVal ? 'selected' : ''}>${escapeHtml(b.boss_name)}</option>`;
@@ -1066,18 +1037,18 @@
     let list = [...(window.regCachedBosses || [])];
     const now = Date.now();
 
+    if (list.length === 0) {
+      container.innerHTML = `<span class="text-secondary small" style="font-size:0.68rem;">등록된 보스 없음</span>`;
+      return;
+    }
+
     list.sort((a, b) => {
       const tA = a.next_spawn_time ? new Date(a.next_spawn_time).getTime() : 9999999999999;
       const tB = b.next_spawn_time ? new Date(b.next_spawn_time).getTime() : 9999999999999;
       return tA - tB;
     });
 
-    const topBosses = list.slice(0, 5);
-
-    if (topBosses.length === 0) {
-      container.innerHTML = `<span class="text-secondary" style="font-size:0.65rem;">보스 목록 없음</span>`;
-      return;
-    }
+    const topBosses = list.slice(0, 6);
 
     container.innerHTML = topBosses.map(b => {
       const isSelected = (b.boss_name === currentSelected);
@@ -1110,14 +1081,13 @@
     renderQuickBossChips();
   }
 
-  // 길드원 목록 로드 (null 데이터 완전 배제 + guild_id 격리)
+  // 길드원 목록 로드 (null 데이터 필터링)
   async function loadRegisterMembers() {
     const curGid = getRegActiveGuildId();
     try {
       if (typeof apiRequest === "function") {
         const members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(curGid) + "&select=id,name,nickname,role,job_class&order=name.asc");
         if (members && Array.isArray(members)) {
-          // ⚡ [핵심]: nickname이나 name이 비어있거나 'null' 문자열인 쓰레기 데이터 영구 배제
           window.regCachedMembers = members.filter(m => {
             const n = (m.nickname || m.name || '').trim();
             return n !== '' && n !== 'null' && n !== 'undefined';
@@ -1159,31 +1129,20 @@
     return 4;
   }
 
-  // 길드원 5열 직사각형 선택 버튼 그리드
+  // 길드원 그리드 렌더링 (임의 생성된 가짜 닉네임 유입 차단)
   function renderMemberSelectionGrid() {
     const container = document.getElementById("regMemberGridContainer");
     const filterCountElem = document.getElementById("regFilterCountText");
     if (!container) return;
 
-    // 혹시라도 'null' 문자열이 Set에 들어가 있으면 즉시 제거
     window.regSelectedMemberSet.delete("null");
     window.regSelectedMemberSet.delete("");
-
-    // 선택된 목록 중 캐시된 길드원에 없는 '임의 직접 추가 길드원'도 버튼으로 함께 렌더링 지원
-    const dynamicNames = Array.from(window.regSelectedMemberSet);
-    const existingNameSet = new Set(window.regCachedMembers.map(m => m.name));
-    dynamicNames.forEach(dName => {
-      if (dName && dName !== "null" && !existingNameSet.has(dName)) {
-        window.regCachedMembers.push({ id: 0, name: dName, role: '게스트', job_class: '' });
-        existingNameSet.add(dName);
-      }
-    });
 
     if (!window.regCachedMembers || window.regCachedMembers.length === 0) {
       container.innerHTML = `
         <div class="text-secondary small text-center py-4 w-100" style="grid-column: 1 / -1; font-size: 0.74rem;">
           <i class="fa-solid fa-circle-exclamation text-warning me-1"></i>
-          등록된 길드원이 없습니다. 검색창에 이름을 입력하고 [직접추가]를 눌러보세요.
+          등록된 길드원이 없습니다. [길드원] 메뉴에서 길드원을 먼저 추가해주세요.
         </div>
       `;
       if (filterCountElem) filterCountElem.innerText = "총 0명";
@@ -1204,7 +1163,7 @@
       container.innerHTML = `
         <div class="text-secondary small text-center py-4 w-100" style="grid-column: 1 / -1; font-size: 0.74rem;">
           <i class="fa-solid fa-magnifying-glass me-1"></i>
-          '${escapeHtml(q)}' 검색 결과가 없습니다. 우측 [직접추가] 버튼으로 추가할 수 있습니다.
+          '${escapeHtml(q)}' 와 일치하는 길드원이 없습니다.
         </div>
       `;
       updateSelectedCountUI();
@@ -1251,7 +1210,6 @@
     renderMemberSelectionGrid();
   }
 
-  // 🔍 닉네임 실시간 검색 & 타이핑 직접추가 기능
   function onMemberSearchInput(val) {
     window.regMemberSearchQuery = val;
     const clearBtn = document.getElementById("memberSearchClearBtn");
@@ -1268,31 +1226,43 @@
     if (input) input.focus();
   }
 
-  // ⚡ 검색창 닉네임 [직접추가] 실행
-  function addTypedMemberDirect() {
+  // ⚡ [수정 완료]: 새 아이디 절대 생성 안 됨. '형진'을 입력하면 '불편한형진' 등 유사 아이디를 찾아 자동 선택(토글)
+  function selectMatchingMemberByTyping() {
     const input = document.getElementById("regMemberSearchInput");
-    const typedName = (input?.value || "").trim();
+    const typedText = (input?.value || "").trim().toLowerCase();
 
-    if (!typedName) {
-      showKakaoToast("추가할 닉네임을 입력하세요!", "⚠️");
+    if (!typedText) {
+      showKakaoToast("길드원 이름이나 단어를 입력하세요!", "⚠️");
       input?.focus();
       return;
     }
-    if (typedName.toLowerCase() === "null") {
-      showKakaoToast("유효한 닉네임을 입력해주세요.", "⚠️");
+
+    // 현재 캐시된 길드원 명단에서 입력 단어가 포함된 사람 검색
+    const matchedList = window.regCachedMembers.filter(m => 
+      m.name.toLowerCase().includes(typedText)
+    );
+
+    if (matchedList.length === 0) {
+      showKakaoToast(`'${typedText}' 이(가) 포함된 길드원을 찾을 수 없습니다.`, "❌");
       return;
     }
 
-    window.regSelectedMemberSet.add(typedName);
-    
+    // 매칭된 길드원들을 선택 상태로 활성화
+    let newlySelectedNames = [];
+    matchedList.forEach(m => {
+      window.regSelectedMemberSet.add(m.name);
+      newlySelectedNames.push(m.name);
+    });
+
+    // 입력창 클리어 및 검색 필터 초기화
     input.value = "";
     onMemberSearchInput("");
 
     renderMemberSelectionGrid();
-    showKakaoToast(`[${typedName}] 참여자 추가 완료!`, "👤");
+    showKakaoToast(`[${newlySelectedNames.join(', ')}] 선택 완료!`, "🎯");
   }
 
-  // 🕒 직전참여자 불러오기 (guild_id 격리)
+  // 직전참여자 불러오기
   async function loadLastRaidMembers() {
     const curGid = getRegActiveGuildId();
     try {
@@ -1384,7 +1354,6 @@
     `).join('');
   }
 
-  // 점수 계산
   function selectWarType(type) {
     window.regCurrentWarType = type;
     document.getElementById("badgeWarNormal").classList.toggle("active", type === '일반');
@@ -1408,7 +1377,6 @@
     if (scoreValElem) scoreValElem.innerText = `${score}점`;
   }
 
-  // 스크린샷 붙여넣기 바인딩
   function bindClipboardPasteEvent() {
     window.__pasteHandler = function(e) {
       if (!e.clipboardData || !e.clipboardData.items) return;
@@ -1498,7 +1466,6 @@
     else el.className = "mt-1 text-center small text-secondary";
   }
 
-  // Gemini OCR 분석 (guild_id 격리)
   async function executeGeminiOcrAnalysis() {
     if (!window.regCurrentOcrBase64) {
       await showRegAlert("먼저 스크린샷 이미지를 붙여넣기(Ctrl+V)하거나 업로드하세요!", "⚠️", "이미지 확인");
