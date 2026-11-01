@@ -2,6 +2,7 @@
      [ECLIPSE 길드관리] 길드비용 및 금고 현황 모듈
      경로: pages/PageFinance.html
      완전한 다크/라이트 모드 고대비 & 커튼형 정독 레이아웃
+     (웹샘플 경매중복공제 계산법 & 지급계산기 & 다중 길드 격리 완비)
      ========================================== -->
 <style>
   /* 🎨 라이트 모드 (기본 :root 및 명시적 body/html.theme-light) */
@@ -189,7 +190,6 @@
     box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25) !important;
   }
 
-  /* 🏷️ 인풋 플레이스홀더 (예시 글 / 사유창 안내문구) 고대비 가독성 강화 */
   .input-fin-custom::placeholder,
   .search-input-fin::placeholder,
   .kakao-modal-card input::placeholder,
@@ -199,31 +199,7 @@
     -webkit-text-fill-color: var(--fin-placeholder) !important;
     opacity: 1 !important;
   }
-  .input-fin-custom::-webkit-input-placeholder,
-  .search-input-fin::-webkit-input-placeholder,
-  .kakao-modal-card input::-webkit-input-placeholder,
-  #financeRootCard input::-webkit-input-placeholder,
-  #financeRootCard textarea::-webkit-input-placeholder {
-    color: var(--fin-placeholder) !important;
-    -webkit-text-fill-color: var(--fin-placeholder) !important;
-    opacity: 1 !important;
-  }
-  .input-fin-custom::-moz-placeholder,
-  .search-input-fin::-moz-placeholder,
-  .kakao-modal-card input::-moz-placeholder,
-  #financeRootCard input::-moz-placeholder {
-    color: var(--fin-placeholder) !important;
-    opacity: 1 !important;
-  }
-  .input-fin-custom:-ms-input-placeholder,
-  .search-input-fin:-ms-input-placeholder,
-  .kakao-modal-card input:-ms-input-placeholder,
-  #financeRootCard input:-ms-input-placeholder {
-    color: var(--fin-placeholder) !important;
-    opacity: 1 !important;
-  }
 
-  /* 📅 날짜 선택기(Date Picker) & 셀렉트 다크모드 캘린더 아이콘/색상 동기화 */
   body.theme-dark input[type="date"],
   html.theme-dark input[type="date"],
   body.theme-dark .input-fin-custom[type="date"],
@@ -258,6 +234,28 @@
   }
   .btn-share-finance:active { transform: translateY(0); }
   .btn-share-finance:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  /* 🧮 지급계산기 상단 버튼 */
+  .btn-calc-finance {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid #f59e0b;
+    color: var(--fin-gold-text);
+    font-size: 0.74rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    height: 26px;
+    border-radius: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .btn-calc-finance:hover {
+    background: #f59e0b;
+    color: #ffffff;
+  }
 
   /* ⚡ 빠른 액션 버튼 바 */
   .fin-action-bar {
@@ -302,7 +300,7 @@
     background: rgba(239, 68, 68, 0.22);
   }
 
-  /* 📜 커튼형 입금 폼 카드 (평소엔 닫혀있어 장부 정독성 극대화) */
+  /* 📜 커튼형 입금 폼 카드 */
   .fin-curtain-form-card {
     display: none;
     background: var(--fin-section-bg);
@@ -339,7 +337,7 @@
     box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
   }
 
-  /* 📋 실시간 장부 내역 항목 (영수증 스타일 & 고대비 폰트) */
+  /* 📋 실시간 장부 내역 항목 */
   .fin-logs-container {
     max-height: 480px;
     overflow-y: auto;
@@ -409,7 +407,7 @@
   .amount-income { color: var(--fin-green-text); }
   .amount-expense { color: var(--fin-red-text); }
 
-  /* 🔔 모달 팝업 공통 스타일 (다크/라이트 완벽 지원) */
+  /* 🔔 모달 팝업 공통 스타일 */
   .kakao-modal-backdrop {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -442,9 +440,26 @@
     color: var(--fin-modal-text) !important;
   }
 
-  /* ========================================================
-     💰 [금고알리미] 카카오톡 대화방 공유 금고 정산 리포트 카드 전용 스타일
-     ======================================================== */
+  /* 🧮 지급계산기 모달 전용 비율 버튼 */
+  .btn-rate-pill {
+    background: var(--fin-section-bg);
+    border: 1px solid var(--fin-section-border);
+    color: var(--fin-text-sub);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 4px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+  }
+  .btn-rate-pill.active {
+    background: #0284c7;
+    border-color: #0284c7;
+    color: #ffffff;
+  }
+
+  /* 대화방 리포트 카드 */
   .finance-report-card {
     background: var(--fin-card-bg) !important;
     color: var(--fin-text-main) !important;
@@ -545,7 +560,7 @@
 </style>
 
 <div class="finance-main-card mb-4" id="financeRootCard">
-  <!-- 상단 헤더: 제목 + 대화방 공유 캡슐 버튼 -->
+  <!-- 상단 헤더: 제목 + 지급계산기 + 대화방 공유 캡슐 버튼 -->
   <div class="d-flex align-items-center justify-content-between mb-2 gap-2 flex-wrap">
     <div class="d-flex align-items-center gap-2">
       <span style="font-size: 1.15rem;">💰</span>
@@ -554,11 +569,16 @@
         <span class="small text-secondary" style="font-size: 0.65rem;">실시간 길드 자금 흐름 추적 및 입출금 장부</span>
       </div>
     </div>
-    <!-- 💬 26px 슬림 캡슐 대화방 공유 버튼 -->
-    <button type="button" class="btn-share-finance" id="btnShareFinanceReport" onclick="window.shareFinanceReportToChat()" title="현재 기간의 금고 정산 리포트를 대화방에 공유합니다">
-      <i class="fa-solid fa-comment-dots"></i>
-      <span>대화방 공유</span>
-    </button>
+    <div class="d-flex align-items-center gap-1">
+      <button type="button" class="btn-calc-finance" onclick="openPayoutCalcModal()" title="주간 순수익 분배율 시뮬레이터를 엽니다">
+        <i class="fa-solid fa-calculator"></i>
+        <span>지급계산기</span>
+      </button>
+      <button type="button" class="btn-share-finance" id="btnShareFinanceReport" onclick="window.shareFinanceReportToChat()" title="현재 기간의 금고 정산 리포트를 대화방에 공유합니다">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span>대화방 공유</span>
+      </button>
+    </div>
   </div>
 
   <!-- 1. 🏛️ 통합 금고 대시보드 (Hero Card) -->
@@ -633,7 +653,7 @@
     </button>
   </div>
 
-  <!-- 4. 📜 [커튼형 아코디언] 수익금 입금 등록 폼 (평소엔 접혀있어 장부 정독성 극대화) -->
+  <!-- 4. 📜 [커튼형 아코디언] 수익금 입금 등록 폼 -->
   <div class="fin-curtain-form-card" id="incomeFormCard">
     <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary border-opacity-10">
       <span class="small fw-bold" style="font-size: 0.78rem; color: var(--fin-green-text);">
@@ -654,12 +674,13 @@
       <input type="date" id="incomeDate" class="form-control input-fin-custom">
     </div>
 
+    <!-- 🎯 웹샘플 계산 공식 적용: 인게임 총액 - 현재 장부 잔액 - 기간 내 경매 적립금 -->
     <div id="incomeBoxTotalMode" class="mb-2">
       <label class="form-label mb-1" style="font-size: 0.72rem; font-weight: 700; color: var(--fin-text-main);">인게임 금고 총 보유액 (다이아)</label>
       <input type="text" id="incomeTotalInput" class="form-control input-fin-custom" placeholder="현재 인게임 금고 총액 입력" onkeyup="window.formatCommaInput(this); calculateIncomeDiff()">
       <div class="d-flex justify-content-between mt-1" style="font-size: 0.68rem; color: var(--fin-text-sub);">
-        <span id="incomePrevVaultText">직전 금고 잔액: 0 D</span>
-        <span id="incomeInputSumText">입력 총액: 0 D</span>
+        <span id="incomePrevVaultText">현재 장부 잔액: 0 D</span>
+        <span id="incomeAuctionText">경매 적립금: 0 D</span>
       </div>
       <div class="mt-1 fw-bold" style="font-size: 0.72rem; color: #0284c7;" id="incomeRealDiffText">👉 실제 반영 입금액: +0 다이아</div>
     </div>
@@ -684,7 +705,7 @@
     </button>
   </div>
 
-  <!-- 5. 📜 실시간 입출금 장부 리스트 (화면 메인 집중) -->
+  <!-- 5. 📜 실시간 입출금 장부 리스트 -->
   <div class="finance-hero-box mb-0 p-3">
     <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
       <span class="small fw-bold" style="font-size: 0.8rem; color: var(--fin-text-main);">
@@ -778,13 +799,102 @@
   </div>
 </div>
 
+<!-- 🧮 모달 4: 유동적 자금 지급계산기 모달 (웹샘플 40%~100% 분배율 지원) -->
+<div id="modalPayoutCalc" class="kakao-modal-backdrop" style="display: none;" onclick="if(event.target === this) closePayoutCalcModal()">
+  <div class="kakao-modal-card" style="max-width: 400px;" onclick="event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary border-opacity-20">
+      <h6 class="fw-bold mb-0 text-warning" style="font-size: 0.95rem;">
+        <i class="fa-solid fa-calculator me-1"></i>길드 자금 분배율 계산기
+      </h6>
+      <button type="button" class="btn-close btn-close-white" style="font-size: 0.75rem;" onclick="closePayoutCalcModal()"></button>
+    </div>
+
+    <!-- 기준 수익 원금 입력 -->
+    <div class="mb-2 text-start">
+      <div class="d-flex justify-content-between text-secondary mb-1" style="font-size: 0.72rem;">
+        <span>선택 기간 순수익 원금:</span>
+        <span class="text-white fw-bold" id="calcPeriodText">이번 주 순수익</span>
+      </div>
+      <input type="text" id="calcBaseAmount" class="form-control input-fin-custom fw-bold" placeholder="순수익금 자동 계산 중..." onkeyup="window.formatCommaInput(this); runPayoutSimulation();">
+    </div>
+
+    <!-- 40% ~ 100% 분배율 선택 버튼 그리드 -->
+    <div class="mb-2 text-start">
+      <label class="form-label text-secondary mb-1" style="font-size: 0.72rem;">총 분배 지급 비율 선택:</label>
+      <div class="d-flex flex-wrap gap-1">
+        <button type="button" class="btn-rate-pill" id="btnRate40" onclick="setCalcRate(40)">40%</button>
+        <button type="button" class="btn-rate-pill" id="btnRate50" onclick="setCalcRate(50)">50%</button>
+        <button type="button" class="btn-rate-pill" id="btnRate60" onclick="setCalcRate(60)">60%</button>
+        <button type="button" class="btn-rate-pill active" id="btnRate70" onclick="setCalcRate(70)">70%</button>
+        <button type="button" class="btn-rate-pill" id="btnRate80" onclick="setCalcRate(80)">80%</button>
+        <button type="button" class="btn-rate-pill" id="btnRate90" onclick="setCalcRate(90)">90%</button>
+        <button type="button" class="btn-rate-pill" id="btnRate100" onclick="setCalcRate(100)">100%</button>
+      </div>
+    </div>
+
+    <!-- 시트 관리비(10%) 추가/제외 토글 -->
+    <div class="mb-2 text-start">
+      <label class="form-label text-secondary mb-1" style="font-size: 0.72rem;">시트 관리비 수고비 (분배금의 10%):</label>
+      <div class="d-flex gap-1">
+        <button type="button" class="btn-rate-pill active" id="btnManagerInclude" onclick="setManagerFeeMode(true)">
+          <i class="fa-solid fa-check me-1"></i>관리비 포함 (10%)
+        </button>
+        <button type="button" class="btn-rate-pill" id="btnManagerExclude" onclick="setManagerFeeMode(false)">
+          <i class="fa-solid fa-xmark me-1"></i>관리비 제외 (0%)
+        </button>
+      </div>
+    </div>
+
+    <!-- 시뮬레이션 결과 표 -->
+    <div class="p-2 rounded mb-3 text-start" style="background: var(--fin-section-bg); border: 1px solid var(--fin-section-border);">
+      <div class="d-flex justify-content-between text-secondary mb-1" style="font-size: 0.72rem;">
+        <span>💰 총 분배 집행액 (<strong id="calcTotalDistRateText" class="text-warning">70%</strong>):</span>
+        <strong id="calcTotalDistAmountText" class="text-warning fs-6">0 D</strong>
+      </div>
+      <div class="d-flex justify-content-between text-secondary mb-1 ps-2" style="font-size: 0.72rem;">
+        <span>└ 👥 참여 길드원 배당 (<strong id="calcMemberRateText" class="text-white">60%</strong>):</span>
+        <strong id="calcMemberPoolText" class="text-success">0 D</strong>
+      </div>
+      <div class="d-flex justify-content-between text-secondary mb-1 ps-2" style="font-size: 0.72rem;">
+        <span>└ 📋 시트 관리원 (<strong id="calcManagerRateText" class="text-white">10%</strong>):</span>
+        <strong id="calcManagerShareText" class="text-info">0 D</strong>
+      </div>
+      <div class="d-flex justify-content-between text-secondary pt-1 border-top border-secondary border-opacity-25" style="font-size: 0.72rem;">
+        <span>🏛️ 금고 잔여 적립금 (<strong id="calcReserveRateText" class="text-white">30%</strong>):</span>
+        <strong id="calcReserveText" class="text-light fs-6">0 D</strong>
+      </div>
+    </div>
+
+    <!-- 계산기 결과 카톡 복사 버튼 -->
+    <div class="d-flex gap-2">
+      <button type="button" class="btn btn-secondary btn-sm flex-fill py-2 fw-bold" style="border-radius: 8px; font-size: 0.78rem;" onclick="closePayoutCalcModal()">닫기</button>
+      <button type="button" class="btn btn-warning btn-sm flex-fill py-2 fw-bold" style="background: #fee500; border: none; color: #191919; border-radius: 8px; font-size: 0.78rem;" onclick="copyCalcResultForKakao()">
+        <i class="fa-solid fa-copy me-1"></i>결과 카톡 복사
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ⚡ 재호출 시 Identifier already declared 충돌 방지: 모든 변수 var 선언
   var rawFinanceLogs = [];
   var currentBalance = 0;
+  var totalAuctionIncomeInPeriod = 0; // 기간 내 경매 낙찰 적립금 합산
   var incomeCalcMode = 'total';
-  var lastFetchedPrevVault = 0;
+  var calculatedNetIncome = 0;
   var activeGuildNameForFinance = "길드";
+
+  // 지급계산기 상태 변수
+  var selectedDistRate = 70;
+  var isManagerFeeIncluded = true;
+
+  function getFinActiveGuildId() {
+    if (typeof getCurrentGuildId === "function") {
+      return getCurrentGuildId();
+    }
+    var gid = localStorage.getItem("current_guild_id");
+    return (gid && gid !== "null" && gid !== "undefined") ? gid : "default";
+  }
 
   window.formatCommaInput = function(input) {
     if (!input) return;
@@ -798,7 +908,6 @@
     return parseInt(clean, 10) || 0;
   };
 
-  // 🎯 커튼형 입금 폼 열기/닫기 토글
   function toggleIncomeCurtainForm(forceState) {
     var card = document.getElementById('incomeFormCard');
     var btn = document.getElementById('btnToggleIncomeCurtain');
@@ -822,7 +931,6 @@
     }
   }
 
-  // 🎯 초기화: 날짜 세팅 및 테마 동기화
   function initFinanceModule() {
     if (typeof window.applyAppTheme === 'function') {
       window.applyAppTheme();
@@ -836,14 +944,13 @@
     setFinanceQuickRange('thisWeek');
   }
 
-  // 📅 빠른 기간 선택
   function setFinanceQuickRange(rangeType) {
     document.querySelectorAll('#btnRangeWeek, #btnRangeLastWeek, #btnRangeMonth, #btnRangeAll').forEach(function(b) {
       b.classList.remove('active');
     });
 
     var today = new Date();
-    var currentDay = (today.getDay() + 6) % 7; // 월=0, 일=6
+    var currentDay = (today.getDay() + 6) % 7;
     var start = null;
     var end = null;
     var labelText = "이번 주";
@@ -887,7 +994,7 @@
     loadFinanceData();
   }
 
-  // 📊 데이터 로드 및 렌더링
+  // ⚡ [다중 길드 격리 및 경매 적립금 자동 공제 계산법 적용]
   async function loadFinanceData() {
     var container = document.getElementById('financeLogsList');
     if (container) {
@@ -896,11 +1003,12 @@
 
     var sDate = document.getElementById('finFilterStart') ? document.getElementById('finFilterStart').value : '';
     var eDate = document.getElementById('finFilterEnd') ? document.getElementById('finFilterEnd').value : '';
+    var curGid = getFinActiveGuildId();
 
     try {
       var res = await Promise.all([
-        apiRequest("guild_finances?select=*&order=created_at.desc"),
-        apiRequest("guild_settings?select=*")
+        apiRequest("guild_finances?guild_id=eq." + encodeURIComponent(curGid) + "&select=*&order=created_at.desc,id.desc"),
+        apiRequest("guild_settings?guild_id=eq." + encodeURIComponent(curGid) + "&select=*")
       ]);
 
       var rawLogs = res[0] || [];
@@ -912,6 +1020,8 @@
         });
       }
 
+      totalAuctionIncomeInPeriod = 0;
+
       rawFinanceLogs = rawLogs.map(function(r) {
         var dateStr = r.created_at ? r.created_at.slice(0, 10) : '';
         var typeStr = r.tx_type || (r.amount >= 0 ? '입금' : '출금');
@@ -921,6 +1031,15 @@
         var inFilter = true;
         if (sDate && dateStr < sDate) inFilter = false;
         if (eDate && dateStr > eDate) inFilter = false;
+
+        // 경매 적립금 추려내기
+        if (inFilter && typeStr === '입금') {
+          var catLower = categoryStr.toLowerCase();
+          var rsnLower = reasonStr.toLowerCase();
+          if (catLower.includes('경매') || catLower.includes('낙찰') || rsnLower.includes('경매') || rsnLower.includes('낙찰')) {
+            totalAuctionIncomeInPeriod += Number(r.amount || 0);
+          }
+        }
 
         return {
           id: r.id,
@@ -958,6 +1077,7 @@
       var timeElem = document.getElementById('finVaultUpdatedTime');
       var periodNetElem = document.getElementById('finPeriodNetProfit');
       var prevVaultElem = document.getElementById('incomePrevVaultText');
+      var auctionElem = document.getElementById('incomeAuctionText');
 
       if (vaultTotalElem) vaultTotalElem.innerText = currentBalance.toLocaleString() + " D";
       if (incSumElem) incSumElem.innerText = "+" + totalInc.toLocaleString() + " D";
@@ -973,10 +1093,11 @@
       var periodNet = filteredInc - filteredExp;
       if (periodNetElem) periodNetElem.innerText = (periodNet >= 0 ? "+" : "") + periodNet.toLocaleString() + " D";
 
-      lastFetchedPrevVault = currentBalance;
-      if (prevVaultElem) prevVaultElem.innerText = "직전 금고 잔액: " + lastFetchedPrevVault.toLocaleString() + " D";
+      if (prevVaultElem) prevVaultElem.innerText = "현재 장부 잔액: " + currentBalance.toLocaleString() + " D";
+      if (auctionElem) auctionElem.innerText = "경매 적립금: " + totalAuctionIncomeInPeriod.toLocaleString() + " D";
 
       renderFinanceLogs();
+      calculateIncomeDiff();
     } catch (err) {
       if (container) {
         container.innerHTML = '<div class="text-danger small text-center py-4">조회 실패: ' + err.message + '</div>';
@@ -984,7 +1105,6 @@
     }
   }
 
-  // 렌더링 함수
   function renderFinanceLogs() {
     var container = document.getElementById('financeLogsList');
     if (!container) return;
@@ -1032,7 +1152,6 @@
     renderFinanceLogs();
   }
 
-  // 💰 금고 잔액 직접 수정 모달
   function openVaultEditModal() {
     var input = document.getElementById('inputVaultNewTotal');
     if (input) input.value = currentBalance.toLocaleString();
@@ -1046,6 +1165,7 @@
   async function saveVaultNewTotal() {
     var input = document.getElementById('inputVaultNewTotal');
     var targetTotal = window.parseCommaNumber(input.value);
+    var curGid = getFinActiveGuildId();
 
     var diff = targetTotal - currentBalance;
     if (diff === 0) {
@@ -1059,6 +1179,7 @@
 
     try {
       await apiRequest("guild_finances", "POST", [{
+        guild_id: curGid,
         tx_type: txType,
         category: "금고직접조정",
         amount: absDiff,
@@ -1074,7 +1195,6 @@
     }
   }
 
-  // 📥 입금 계산 모드 설정 (게임 금고 총액 vs 직접 입력)
   function setIncomeCalcMode(mode) {
     incomeCalcMode = mode;
     var btnTotal = document.getElementById('btnIncModeTotal');
@@ -1093,24 +1213,32 @@
       if (boxTotal) boxTotal.style.display = 'none';
       if (boxDirect) boxDirect.style.display = 'block';
     }
+    calculateIncomeDiff();
   }
 
+  // 🎯 [핵심 공식]: 이번주 입금액 = 인게임총액(entered) - 현재장부잔액(currentBalance) - 기간내 경매적립금(totalAuctionIncomeInPeriod)
   function calculateIncomeDiff() {
     if (incomeCalcMode !== 'total') return;
     var inputElem = document.getElementById('incomeTotalInput');
-    var inputSumElem = document.getElementById('incomeInputSumText');
     var realDiffElem = document.getElementById('incomeRealDiffText');
+    if (!inputElem) return;
 
     var entered = window.parseCommaNumber(inputElem.value);
-    if (inputSumElem) inputSumElem.innerText = "입력 총액: " + entered.toLocaleString() + " D";
+    var netIncome = entered - currentBalance - totalAuctionIncomeInPeriod;
+    calculatedNetIncome = netIncome;
 
-    var diff = entered - lastFetchedPrevVault;
     if (realDiffElem) {
-      if (diff >= 0) {
-        realDiffElem.innerText = "👉 실제 반영 입금액: +" + diff.toLocaleString() + " 다이아";
+      if (!inputElem.value || entered === 0) {
+        realDiffElem.innerText = "👉 실제 반영 입금액: +0 다이아";
+        realDiffElem.style.color = "var(--fin-text-sub)";
+      } else if (netIncome > 0) {
+        realDiffElem.innerText = "👉 실제 반영 입금액: +" + netIncome.toLocaleString() + " 다이아";
         realDiffElem.style.color = "var(--fin-green-text)";
+      } else if (netIncome === 0) {
+        realDiffElem.innerText = "변동 없음 (0 다이아)";
+        realDiffElem.style.color = "var(--fin-gold-text)";
       } else {
-        realDiffElem.innerText = "⚠️ 입력 총액이 직전 잔액보다 적습니다 (" + diff.toLocaleString() + " D)";
+        realDiffElem.innerText = "⚠️ 입력 총액이 기준 금액보다 작습니다 (" + netIncome.toLocaleString() + " D)";
         realDiffElem.style.color = "var(--fin-red-text)";
       }
     }
@@ -1120,13 +1248,15 @@
     var dateVal = document.getElementById('incomeDate').value || new Date().toISOString().slice(0, 10);
     var reasonVal = document.getElementById('incomeReason').value.trim() || "보스 토벌 수익금";
     var memoVal = document.getElementById('incomeMemo').value.trim();
+    var curGid = getFinActiveGuildId();
 
     var amountVal = 0;
     if (incomeCalcMode === 'total') {
       var entered = window.parseCommaNumber(document.getElementById('incomeTotalInput').value);
-      amountVal = entered - lastFetchedPrevVault;
+      // 웹샘플 공식: 인게임총액 - 현재잔액 - 경매적립금
+      amountVal = entered - currentBalance - totalAuctionIncomeInPeriod;
       if (amountVal <= 0) {
-        return alert("입력 총액이 직전 금고 잔액보다 커야 입금 처리가 가능합니다.");
+        return alert("입력 총액이 장부 기준 금액보다 커야 입금 처리가 가능합니다.\n(경매 적립금과 장부 잔액이 이미 공제되었습니다)");
       }
     } else {
       amountVal = window.parseCommaNumber(document.getElementById('incomeDirectInput').value);
@@ -1136,8 +1266,11 @@
     }
 
     try {
-      var fullReason = reasonVal + (memoVal ? " (" + memoVal + ")" : "");
+      var autoNote = (incomeCalcMode === 'total') ? " [인게임 총액 " + window.parseCommaNumber(document.getElementById('incomeTotalInput').value).toLocaleString() + "D 기준 입금]" : "";
+      var fullReason = reasonVal + (memoVal ? " (" + memoVal + ")" : "") + autoNote;
+
       await apiRequest("guild_finances", "POST", [{
+        guild_id: curGid,
         tx_type: "입금",
         category: "수익금입금",
         amount: amountVal,
@@ -1147,7 +1280,6 @@
 
       showToastMsg("수익금 +" + amountVal.toLocaleString() + " D 입금 완료!", "💰");
       
-      // 입력창 리셋 및 커튼 닫기
       document.getElementById('incomeTotalInput').value = "";
       document.getElementById('incomeDirectInput').value = "";
       document.getElementById('incomeReason').value = "";
@@ -1160,7 +1292,6 @@
     }
   }
 
-  // 📤 지출 모달 열기/닫기/실행
   function openExpenseModal() {
     document.getElementById('expenseAmount').value = "";
     document.getElementById('expenseReason').value = "";
@@ -1177,12 +1308,14 @@
     var amt = window.parseCommaNumber(document.getElementById('expenseAmount').value);
     var reasonVal = document.getElementById('expenseReason').value.trim() || "길드 운영 지출";
     var receiverVal = document.getElementById('expenseReceiver').value.trim();
+    var curGid = getFinActiveGuildId();
 
     if (amt <= 0) return alert("지출 금액을 입력하세요.");
 
     try {
       var fullReason = reasonVal + (receiverVal ? " (수령자: " + receiverVal + ")" : "");
       await apiRequest("guild_finances", "POST", [{
+        guild_id: curGid,
         tx_type: "출금",
         category: "운영비지출",
         amount: amt,
@@ -1198,7 +1331,6 @@
     }
   }
 
-  // ✏️ 내역 수정 / 삭제 모달
   function openFinanceEditModal(logId) {
     var log = rawFinanceLogs.find(function(l) { return l.id === logId; });
     if (!log) return;
@@ -1223,11 +1355,12 @@
     var amtVal = window.parseCommaNumber(document.getElementById('editLogAmount').value);
     var reasonVal = document.getElementById('editLogReason').value.trim();
     var categoryVal = document.getElementById('editLogMemo').value.trim();
+    var curGid = getFinActiveGuildId();
 
     if (amtVal <= 0) return alert("금액을 올바르게 입력하세요.");
 
     try {
-      await apiRequest("guild_finances?id=eq." + logId, "PATCH", {
+      await apiRequest("guild_finances?id=eq." + logId + "&guild_id=eq." + encodeURIComponent(curGid), "PATCH", {
         tx_type: typeVal,
         amount: amtVal,
         reason: reasonVal,
@@ -1245,10 +1378,12 @@
 
   async function executeDeleteFinanceLog() {
     var logId = document.getElementById('editLogId').value;
+    var curGid = getFinActiveGuildId();
+
     if (!confirm("이 입출금 내역을 정말 삭제하시겠습니까? (금고 잔액에 즉시 반영됩니다)")) return;
 
     try {
-      await apiRequest("guild_finances?id=eq." + logId, "DELETE");
+      await apiRequest("guild_finances?id=eq." + logId + "&guild_id=eq." + encodeURIComponent(curGid), "DELETE");
       showToastMsg("내역이 삭제되었습니다.", "🗑️");
       closeEditFinanceModal();
       await loadFinanceData();
@@ -1257,12 +1392,120 @@
     }
   }
 
-  // 💬 대화방 공유 (style.css 수정 없이도 인라인 이중 보장으로 100% 고대비 출력)
+  // 🧮 [지급계산기 모달 로직 이식]
+  function openPayoutCalcModal() {
+    var sDate = document.getElementById('finFilterStart').value;
+    var eDate = document.getElementById('finFilterEnd').value;
+    var filteredLogs = rawFinanceLogs.filter(function(l) { return l.inFilter; });
+    var incSum = 0;
+    var expSum = 0;
+    filteredLogs.forEach(function(l) {
+      if (l.tx_type === '입금') incSum += l.amount;
+      else if (l.tx_type === '출금') expSum += l.amount;
+    });
+    var netProfit = incSum - expSum;
+    if (netProfit < 0) netProfit = 0;
+
+    var periodLabel = (sDate && eDate) ? (sDate + " ~ " + eDate) : "선택 기간 순수익";
+    document.getElementById('calcPeriodText').innerText = periodLabel;
+    document.getElementById('calcBaseAmount').value = netProfit.toLocaleString();
+
+    runPayoutSimulation();
+    document.getElementById('modalPayoutCalc').style.display = 'flex';
+  }
+
+  function closePayoutCalcModal() {
+    document.getElementById('modalPayoutCalc').style.display = 'none';
+  }
+
+  function setCalcRate(rate) {
+    selectedDistRate = rate;
+    [40, 50, 60, 70, 80, 90, 100].forEach(function(r) {
+      var btn = document.getElementById('btnRate' + r);
+      if (btn) btn.classList.toggle('active', r === rate);
+    });
+    runPayoutSimulation();
+  }
+
+  function setManagerFeeMode(isIncluded) {
+    isManagerFeeIncluded = isIncluded;
+    var btnInc = document.getElementById('btnManagerInclude');
+    var btnExc = document.getElementById('btnManagerExclude');
+    if (btnInc) btnInc.classList.toggle('active', isIncluded);
+    if (btnExc) btnExc.classList.toggle('active', !isIncluded);
+    runPayoutSimulation();
+  }
+
+  function runPayoutSimulation() {
+    var totalBase = window.parseCommaNumber(document.getElementById('calcBaseAmount').value);
+    var distRate = selectedDistRate;
+    var reserveRate = 100 - distRate;
+
+    var totalDistAmount = Math.floor(totalBase * (distRate / 100));
+    var reserveAmount = totalBase - totalDistAmount;
+
+    var managerShare = 0;
+    var memberPool = totalDistAmount;
+
+    if (isManagerFeeIncluded) {
+      managerShare = Math.floor(totalBase * 0.10);
+      if (managerShare > totalDistAmount) managerShare = totalDistAmount;
+      memberPool = totalDistAmount - managerShare;
+    }
+
+    var memberRateCalc = totalBase > 0 ? Math.round((memberPool / totalBase) * 100) : (isManagerFeeIncluded ? distRate - 10 : distRate);
+    var managerRateCalc = totalBase > 0 ? Math.round((managerShare / totalBase) * 100) : (isManagerFeeIncluded ? 10 : 0);
+
+    document.getElementById('calcTotalDistRateText').innerText = distRate + '%';
+    document.getElementById('calcTotalDistAmountText').innerText = totalDistAmount.toLocaleString() + ' D';
+
+    document.getElementById('calcMemberRateText').innerText = memberRateCalc + '%';
+    document.getElementById('calcMemberPoolText').innerText = memberPool.toLocaleString() + ' D';
+
+    document.getElementById('calcManagerRateText').innerText = managerRateCalc + '%';
+    document.getElementById('calcManagerShareText').innerText = managerShare.toLocaleString() + ' D';
+
+    document.getElementById('calcReserveRateText').innerText = reserveRate + '%';
+    document.getElementById('calcReserveText').innerText = reserveAmount.toLocaleString() + ' D';
+  }
+
+  function copyCalcResultForKakao() {
+    var totalBase = document.getElementById('calcBaseAmount').value || '0';
+    var distRate = document.getElementById('calcTotalDistRateText').innerText;
+    var totalDist = document.getElementById('calcTotalDistAmountText').innerText;
+    var memberPool = document.getElementById('calcMemberPoolText').innerText;
+    var memberRate = document.getElementById('calcMemberRateText').innerText;
+    var managerShare = document.getElementById('calcManagerShareText').innerText;
+    var managerRate = document.getElementById('calcManagerRateText').innerText;
+    var reserve = document.getElementById('calcReserveText').innerText;
+    var reserveRate = document.getElementById('calcReserveRateText').innerText;
+    var gName = activeGuildNameForFinance || "길드";
+
+    var text = "[🧮 " + gName + " 자금 분배율 계산 보고]\n" +
+      "• 기준 총 수익금: " + totalBase + " 다이아\n" +
+      "• 총 분배 집행액 (" + distRate + "): " + totalDist + "\n" +
+      "  └ 길드원 배당 (" + memberRate + "): " + memberPool + "\n" +
+      "  └ 시트 관리원 (" + managerRate + "): " + managerShare + "\n" +
+      "• 금고 잔여 적립금 (" + reserveRate + "): " + reserve + "\n" +
+      "────────────────\n" +
+      "※ 주간 분배 시뮬레이터 산출 내역입니다.";
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      showToastMsg("분배 계산 결과가 클립보드에 복사되었습니다!", "📋");
+    } else {
+      alert("결과가 복사되었습니다:\n\n" + text);
+    }
+  }
+
+  // 💬 대화방 공유 (다중 길드 격리 및 고대비 출력)
   window.shareFinanceReportToChat = async function() {
     var btn = document.getElementById('btnShareFinanceReport');
     var sDate = document.getElementById('finFilterStart').value;
     var eDate = document.getElementById('finFilterEnd').value;
     var periodLabel = (sDate && eDate) ? (sDate + " ~ " + eDate) : "전체 기간";
+    var curGid = getFinActiveGuildId();
+    var activeRoomId = window.currentActiveRoomId || "default_public";
 
     var filteredLogs = rawFinanceLogs.filter(function(l) { return l.inFilter; });
     var incSum = 0;
@@ -1274,17 +1517,9 @@
     var netProfit = incSum - expSum;
     var isNetPositive = netProfit >= 0;
 
-    // 🎨 다크모드 여부 실시간 감지 (style.css에 클래스가 없어도 자체 고대비 색상으로 100% 보장)
     var isDark = document.body.classList.contains('theme-dark') || document.documentElement.classList.contains('theme-dark');
-
-    var incBg = isDark ? 'rgba(16, 185, 129, 0.16)' : 'rgba(16, 185, 129, 0.1)';
-    var incBorder = isDark ? 'rgba(16, 185, 129, 0.4)' : 'rgba(16, 185, 129, 0.3)';
     var incColor = isDark ? '#34d399' : '#059669';
-
-    var expBg = isDark ? 'rgba(239, 68, 68, 0.16)' : 'rgba(239, 68, 68, 0.1)';
-    var expBorder = isDark ? 'rgba(239, 68, 68, 0.4)' : 'rgba(239, 68, 68, 0.3)';
     var expColor = isDark ? '#f87171' : '#dc2626';
-
     var rowBg = isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.02)';
     var textMain = isDark ? '#f3f4f6' : '#1e293b';
     var textMuted = isDark ? '#94a3b8' : '#64748b';
@@ -1304,7 +1539,6 @@
     }).join('');
 
     var reportHtml = '<div class="finance-report-card">' +
-      '<!-- 헤더: 길드명 + 다크 골드 날짜 배지 -->' +
       '<div class="fin-card-header">' +
         '<div class="fin-card-title">' +
           '<i class="fa-solid fa-vault text-warning"></i>' +
@@ -1313,7 +1547,6 @@
         '<span class="fin-date-badge">' + escapeHtmlText(periodLabel) + '</span>' +
       '</div>' +
 
-      '<!-- 현재 금고 잔액 하이라이트 박스 -->' +
       '<div class="fin-vault-hero">' +
         '<div>' +
           '<div class="fin-vault-label"><i class="fa-solid fa-coins me-1 text-warning"></i>현재 길드 금고 총액</div>' +
@@ -1322,7 +1555,6 @@
         '<div style="font-size: 1.4rem; line-height: 1;">💰</div>' +
       '</div>' +
 
-      '<!-- 집계 기간 및 기간 순수익 요약 박스 (style.css fin-period-box) -->' +
       '<div class="fin-period-box">' +
         '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px dashed var(--drawer-card-border);">' +
           '<span style="color:' + textMuted + '; font-size: 11px; font-weight: 600;"><i class="fa-regular fa-calendar-days me-1 text-primary"></i>집계 기간</span>' +
@@ -1336,19 +1568,17 @@
         '</div>' +
       '</div>' +
 
-      '<!-- 누적 입금 / 누적 지출 2분할 칩 (인라인+클래스 이중 보장) -->' +
       '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 8px;">' +
-        '<div class="fin-badge-income" style="background:' + incBg + '; border:1px solid ' + incBorder + '; border-radius:6px; padding:6px 8px; text-align:left;">' +
+        '<div class="fin-badge-income" style="border-radius:6px; padding:6px 8px; text-align:left;">' +
           '<div style="font-size: 10px; font-weight: 700; color:' + incColor + ';">기간 총 입금</div>' +
           '<div style="font-size: 11.5px; font-weight: 900; color:' + incColor + '; margin-top:2px;">+' + incSum.toLocaleString() + ' D</div>' +
         '</div>' +
-        '<div class="fin-badge-expense" style="background:' + expBg + '; border:1px solid ' + expBorder + '; border-radius:6px; padding:6px 8px; text-align:left;">' +
+        '<div class="fin-badge-expense" style="border-radius:6px; padding:6px 8px; text-align:left;">' +
           '<div style="font-size: 10px; font-weight: 700; color:' + expColor + ';">기간 총 지출</div>' +
           '<div style="font-size: 11.5px; font-weight: 900; color:' + expColor + '; margin-top:2px;">-' + expSum.toLocaleString() + ' D</div>' +
         '</div>' +
       '</div>' +
 
-      '<!-- 최근 내역 요약 (인라인+클래스 이중 보장) -->' +
       (recentItemsHtml ? '<div style="margin-top: 6px;">' +
         '<div style="font-size: 11px; font-weight: 700; color:' + textMain + '; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">' +
           '<span><i class="fa-solid fa-receipt me-1 text-primary"></i>최근 내역 (5건)</span>' +
@@ -1365,6 +1595,8 @@
 
     try {
       await apiRequest("guild_chats", "POST", [{
+        guild_id: curGid,
+        room_id: activeRoomId,
         sender_name: "금고알리미",
         message: reportHtml,
         msg_type: "finance_report",
@@ -1399,7 +1631,6 @@
     });
   }
 
-  // 🚀 자동 기동
   (function initFin() {
     initFinanceModule();
   })();
