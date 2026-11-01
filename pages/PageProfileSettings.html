@@ -1,7 +1,7 @@
 <!-- ==========================================
      [길드톡 메신저] 개인 환경설정 전용 화면 모듈
      경로: pages/PageProfileSettings.html
-     내 프로필, 직업 변경, 폰트 크기, 테마, 채팅/보스 알림음(1~19), PIN 변경, 길드 변경, 로그아웃
+     내 프로필, 직업 변경, 폰트 크기, 테마, 채팅/보스 알림음(1~19), 모바일 햅틱 진동, PIN 변경, 길드 변경, 로그아웃
      ========================================== -->
 <style>
   /* 🔠 글자 크기 스케일 클래스 */
@@ -437,7 +437,6 @@
 
   // 4. 알림음(채팅/보스 1~19번) 초기화 및 저장
   function initPsAlarmSoundSettings() {
-    // 1) 채팅 알림
     const chatEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== 'false';
     const chatPreset = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
     const chatChk = document.getElementById("psChatAlarmEnabled");
@@ -445,7 +444,6 @@
     if (chatChk) chatChk.checked = chatEnabled;
     if (chatSel) chatSel.value = chatPreset;
 
-    // 2) 보스 알림
     const bossEnabled = localStorage.getItem("guild_alarm_enabled") !== 'false';
     const bossPreset = localStorage.getItem("guild_alarm_sound") || "alarm1.mp3";
     const bossChk = document.getElementById("psBossAlarmEnabled");
@@ -477,6 +475,17 @@
     if (chk && !chk.checked) {
       if (typeof showKakaoToast === 'function') showKakaoToast(`${isChat ? '채팅' : '보스'} 알림음이 꺼져 있습니다.`, "🔇");
       return;
+    }
+
+    // 모바일 기기 진동 지원 시 햅틱 피드백 동시 트리거
+    if (typeof navigator !== "undefined" && navigator.vibrate) {
+      try {
+        if (isChat) {
+          navigator.vibrate([150]); // 채팅: 짧은 1회 진동
+        } else {
+          navigator.vibrate([200, 100, 200]); // 보스: 2회 연속 진동
+        }
+      } catch(e) {}
     }
 
     const sel = document.getElementById(isChat ? "psChatAlarmPreset" : "psBossAlarmPreset");
@@ -539,7 +548,7 @@
     }
   }
 
-  // 6. PIN 변경 핸들러 (guild_id 데이터 격리 반영)
+  // 6. PIN 변경 핸들러 (guild_id 데이터 격리 완벽 보장)
   window.executeChangeMyPin = async function() {
     const curPinInput = document.getElementById("psCurrentPinInput");
     const newPinInput = document.getElementById("psNewPinInput");
