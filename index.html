@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>길드 대화방</title>
 
-  <!-- PWA 앱 설정 -->
+  <!-- PWA 앱 설정 & 새 G 앱 아이콘 연결 -->
   <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="guild_app_icon.png">
   <meta name="theme-color" content="#bacee0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="길드톡">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
+  <link rel="apple-touch-icon" href="guild_app_icon.png">
 
   <!-- 부트스트랩 & 폰트어썸 아이콘 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -25,7 +26,6 @@
   <script>
     (function() {
       try {
-        // 이전 버그로 저장된 다크모드 캐시 무력화 및 순정 라이트 테마 복원
         if (localStorage.getItem("guild_theme_mode") === "dark" && !localStorage.getItem("user_explicit_dark")) {
           localStorage.setItem("guild_theme_mode", "light");
         }
@@ -212,13 +212,14 @@
        ======================================================== -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header main-tabs-header">
-      <div class="header-left-area">
+      <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
         <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px;">대화방</div>
+        <span class="badge bg-secondary bg-opacity-25 text-secondary" id="mainTabGameBadge" style="display: none; font-size: 0.7rem; padding: 2px 6px;"></span>
         <span id="mainTabHeaderSubtitle" style="display:none;"></span>
       </div>
 
       <div class="header-right-tools">
-        <!-- 대화방 입장 전 헤더: 군더더기 버튼 숨김 -->
+        <!-- 대화방 입장 전 헤더 -->
       </div>
     </header>
 
@@ -320,13 +321,13 @@
        ======================================================== -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header">
-      <!-- 상단 좌측: 뒤로가기 버튼(<) + 길드 아바타 + 대화방 타이틀/인원수 (절대 줄바꿈 금지 단일행) -->
+      <!-- 상단 좌측: 뒤로가기 버튼(<) + G 심볼 아바타 + 대화방 타이틀/인원수 -->
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.15rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <div class="room-avatar-circle" id="chatRoomAvatar" style="width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
-          <i class="fa-solid fa-users"></i>
+        <div class="room-avatar-circle" id="chatRoomAvatar" style="width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #181d24; border: 1.5px solid #fee500;">
+          <span style="font-weight: 900; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
         </div>
         <div class="room-info-box" style="display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: hidden; justify-content: center;">
           <div class="room-title-text" id="chatRoomTitle" style="font-size: 0.92rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;">길드 대화방</div>
@@ -336,7 +337,7 @@
         </div>
       </div>
 
-      <!-- 상단 우측: 검색(돋보기), 보스타임 채팅 브리핑(시계), 길드원 목록(사람들), 햄버거 메뉴(삼선) -->
+      <!-- 상단 우측 툴 버튼 -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head text-danger" id="btnLeaveCurrentRoom" style="display: none;" title="방 나오기" onclick="handleLeaveCurrentRoomFromHeader()">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -375,7 +376,7 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 입력바: 텍스트 입력 시 전송버튼 노란색 활성화 & 엔터키 즉시 전송 -->
+    <!-- 하단 입력바 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
       
@@ -399,13 +400,13 @@
     </div>
   </div>
 
-  <!-- 공통 알림 토스트 박스 (모든 모달보다 위에 표기되도록 z-index 강화) -->
+  <!-- 공통 알림 토스트 박스 -->
   <div id="kakaoToastBox" class="kakao-toast-box" style="z-index: 10000010 !important;">
     <span id="kakaoToastIcon">💬</span>
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
-  <!-- 초기 비밀번호(000000) 로그인 시 필수 비밀번호 변경 모달 ('나중에 변경' 제거) -->
+  <!-- 초기 비밀번호(000000) 필수 변경 모달 -->
   <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div class="mb-2" style="font-size: 2rem;">🔐</div>
@@ -423,7 +424,7 @@
     </div>
   </div>
 
-  <!-- 길드원 미니 프로필 카드 모달 (카카오톡 프로필 뷰) -->
+  <!-- 길드원 미니 프로필 카드 모달 -->
   <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeMemberProfileCard()">
     <div class="kakao-modal-card" style="max-width: 290px; padding: 22px 18px 16px 18px;">
       <div id="profCardAvatar" style="width: 60px; height: 60px; border-radius: 20px; background: rgba(255, 255, 255, 0.08); display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 10px; border: 1px solid var(--main-card-border); box-shadow: 0 4px 12px rgba(0,0,0,0.15);">👤</div>
@@ -432,9 +433,7 @@
         <h6 class="fw-bold mb-0" id="profCardNick" style="font-size: 1rem; color: var(--modal-text);">닉네임</h6>
       </div>
       <div class="text-secondary small mb-3" id="profCardClass" style="font-size: 0.78rem; color: #0284c7;">클래스 미지정</div>
-      <div id="profCardActionArea" class="d-flex flex-column gap-2 mb-2">
-        <!-- 1:1 대화하기 버튼 또는 프로필 변경하기 버튼 동적 렌더링 -->
-      </div>
+      <div id="profCardActionArea" class="d-flex flex-column gap-2 mb-2"></div>
       <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0" style="font-size: 0.75rem;" onclick="closeMemberProfileCard()">닫기</button>
     </div>
   </div>
@@ -476,16 +475,15 @@
     </div>
   </div>
 
-  <!-- 0. 최초 진입 게이트웨이 모달 (신규 시작 허브) -->
+  <!-- 0. 최초 진입 게이트웨이 모달 (정중앙 G 로고 장착) -->
   <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none; z-index: 99999;">
     <div class="kakao-modal-card" style="max-width: 320px;">
-      <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: #181d24; border: 2.5px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35); line-height: 1;">
         G
       </div>
       <h6 class="fw-bold mb-1" style="font-size: 1.02rem;">길드톡 메신저</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">원하시는 시작 방식을 선택하세요.</p>
 
-      <!-- 최근 참여한 길드 (1클릭 삭제 지원) -->
       <div id="gatewayJoinedGuildsBox" style="display: none; margin-bottom: 12px; text-align: left;">
         <div class="d-flex align-items-center justify-content-between mb-1">
           <label class="text-secondary small mb-0 fw-bold" style="font-size: 0.68rem;">최근 참여한 길드</label>
@@ -600,18 +598,16 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       길드 스마트 로그인 모달 (닉네임 드롭다운 제거 & 직접 입력 + 동명이인 길드 선택 지원)
-       ======================================================== -->
+  <!-- 스마트 길드 로그인 모달 (정중앙 G 로고 장착) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
-      <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35);">
+      <div style="width: 48px; height: 48px; border-radius: 14px; background: #181d24; border: 2.5px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35); line-height: 1;">
         G
       </div>
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
       
-      <!-- 닉네임 직접 입력창 (타 길드원 명단 노출 드롭다운 완전 제거) -->
+      <!-- 닉네임 직접 입력창 -->
       <div style="position: relative; margin-bottom: 8px; text-align: left;">
         <i class="fa-solid fa-user" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="text" id="loginNickSearchInput" placeholder="본인 캐릭터 닉네임 입력" autocomplete="off"
@@ -627,7 +623,7 @@
                onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
       </div>
 
-      <!-- 다중 길드 동명이인 발생 시 길드 선택 박스 (평소에는 숨김) -->
+      <!-- 다중 길드 동명이인 시 길드 선택 박스 -->
       <div id="loginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3);">
         <div class="small fw-bold text-info mb-2" style="font-size: 0.73rem;">
           <i class="fa-solid fa-circle-check me-1"></i>동일한 닉네임이 여러 길드에 있습니다. 입장할 길드를 선택하세요:
@@ -649,7 +645,6 @@
 
   <!-- 게이트웨이 및 전송 보조 스크립트 -->
   <script>
-    // 👤 [길드원 미니 프로필 카드 모달 제어]
     function openProfileEditModal() {
       var modal = document.getElementById("modalProfileEdit");
       if (modal) modal.style.display = "flex";
@@ -708,7 +703,6 @@
     }
     window.closeMemberProfileCard = closeMemberProfileCard;
 
-    // ⚡ [메시지 전송 & 엔터키 즉시 처리 & 전송버튼 노란색 활성화]
     function handleInputState(textarea) {
       if (!textarea) return;
       textarea.style.height = "auto";
@@ -919,7 +913,6 @@
       location.reload();
     }
 
-    // 라이선스 키로 길드 개설 (guild_settings 초기 설정 및 invite_code 연동)
     async function executeActivateGuild() {
       var keyInput = (document.getElementById("actLicenseKeyInput")?.value || "").trim().toUpperCase();
       var masterNick = (document.getElementById("actMasterNickInput")?.value || "").trim();
@@ -954,7 +947,6 @@
           }]);
         }
 
-        // 해당 길드의 초기 설정(guild_name)을 guild_settings에 독립 저장
         if (typeof upsertGuildSetting === "function") {
           try {
             await upsertGuildSetting("guild_name", guildTitle, guildId);
@@ -1027,7 +1019,6 @@
       }
     }
 
-    // 초대 코드로 길드 가입
     async function executeJoinGuildWithCode() {
       var code = (document.getElementById("joinInviteCodeInput")?.value || "").trim().toUpperCase();
       var nick = (document.getElementById("joinMemberNickInput")?.value || "").trim();
@@ -1093,7 +1084,6 @@
       }
     }
 
-    // 신규 길드 라이선스 신청 (app_license_requests 단일 테이블 연동)
     async function submitLicenseRequestForm() {
       var game = (document.getElementById("reqGameNameInput")?.value || "").trim();
       var guild = (document.getElementById("reqGuildNameInput")?.value || "").trim();
