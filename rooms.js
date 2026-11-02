@@ -299,7 +299,7 @@ window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
 };
 
 // --------------------------------------------------------
-// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (방 중복 제거 및 깔끔한 이름 표시)
+// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (방 중복 제거 및 [게임명] 길드명 표기)
 // --------------------------------------------------------
 window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
@@ -313,7 +313,11 @@ window.loadMainTabRoomsList = async function() {
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
     const curGuild = joined.find(g => g.guild_id === currentGid);
-    const guildTitle = (curGuild && curGuild.guild_name) ? `${curGuild.guild_name} 전체 대화방` : "길드 전체 대화방";
+    
+    // 유동적 대화방 타이틀: [게임명] 길드명 형태
+    const gName = curGuild?.guild_name || "길드";
+    const gGame = curGuild?.game_name || "";
+    const guildTitle = gGame ? `[${gGame}] ${gName}` : `${gName} 전체 대화방`;
 
     if (typeof apiRequest === "function") {
       try {
@@ -338,7 +342,6 @@ window.loadMainTabRoomsList = async function() {
           }
           const isMember = members.includes(myNick) || (r.room_name && r.room_name.includes(myNick)) || r.created_by === myNick;
           if (isMember) {
-            // 동일한 두 사람의 1:1 방은 단 1개만 유지
             const sortedM = (members.length === 2) ? [...members].sort().join("__") : r.id;
             const uniqueKey = `direct__${sortedM}`;
             if (!roomMap.has(uniqueKey)) {
@@ -347,7 +350,6 @@ window.loadMainTabRoomsList = async function() {
           }
         } else if (r.room_type === "public") {
           hasPublicRoomInDb = true;
-          // DB에 등록된 전체방이 있을 경우 해당 방 1개만 대표 등록
           if (!roomMap.has("public_master")) {
             roomMap.set("public_master", r);
           }
@@ -357,7 +359,7 @@ window.loadMainTabRoomsList = async function() {
       }
     });
 
-    // 2. 만약 DB에 전체 대화방이 아직 1개도 없다면 기본 전체방 가상 객체 생성
+    // 2. 전체 대화방 기본 객체
     if (!hasPublicRoomInDb) {
       roomMap.set("default_public", {
         id: "default_public",
@@ -381,7 +383,7 @@ window.loadMainTabRoomsList = async function() {
     const countElem = document.getElementById("mainTabRoomCount");
     if (countElem) countElem.innerText = myRooms.length;
 
-    // 최근 메시지 조회 (현재 guild_id만)
+    // 최근 메시지 조회 (현재 guild_id만 격리)
     let recentChats = [];
     if (typeof apiRequest === "function") {
       try {
@@ -410,21 +412,20 @@ window.loadMainTabRoomsList = async function() {
     window.roomMsgMapCache = roomMsgMap;
 
     container.innerHTML = myRooms.map(r => {
-      let iconClass = "fa-users";
+      let iconHtml = `<i class="fa-solid fa-users text-warning"></i>`;
       let typeClass = "";
       let typeBadge = "";
       let displayTitle = r.room_name || "대화방";
 
       if (r.room_type === "private") {
-        iconClass = "fa-shield-halved";
+        iconHtml = `<i class="fa-solid fa-shield-halved text-danger"></i>`;
         typeClass = "private";
         typeBadge = `<span class="badge bg-danger bg-opacity-25 text-danger ms-1" style="font-size:0.6rem;">운영진</span>`;
       } else if (r.room_type === "direct") {
-        iconClass = "fa-user";
+        iconHtml = `<i class="fa-solid fa-user text-info"></i>`;
         typeClass = "direct";
         typeBadge = `<span class="badge bg-info bg-opacity-25 text-info ms-1" style="font-size:0.6rem;">1:1</span>`;
 
-        // 🌟 1:1 대화방 명칭 카카오톡 스타일: 내 닉네임을 빼고 상대방 이름만 깔끔하게 노출
         let members = [];
         if (Array.isArray(r.members)) {
           members = r.members;
@@ -441,13 +442,14 @@ window.loadMainTabRoomsList = async function() {
           if (otherNick) displayTitle = otherNick;
         }
       } else {
+        // 전체 대화방: 정중앙 G 골드 옐로우 배지
+        iconHtml = `<span style="font-weight:900; color:#fee500; font-size:1.15rem; line-height:1;">G</span>`;
         typeBadge = `<span class="badge bg-warning bg-opacity-25 text-warning ms-1" style="font-size:0.6rem;">전체</span>`;
         displayTitle = guildTitle;
       }
 
       const safeRoomName = displayTitle.replace(/'/g, "\\'");
 
-      // 메시지 매핑 (전체방의 경우 ID가 default_public 또는 DB ID 둘 다 대응)
       let msgs = roomMsgMap.get(r.id) || [];
       if (msgs.length === 0 && (r.room_type === "public" || r.id === "default_public")) {
         msgs = roomMsgMap.get("default_public") || roomMsgMap.get("public") || [];
@@ -480,8 +482,8 @@ window.loadMainTabRoomsList = async function() {
 
       return `
         <div class="chat-room-card" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">
-          <div class="room-avatar-large ${typeClass}">
-            <i class="fa-solid ${iconClass}"></i>
+          <div class="room-avatar-large ${typeClass}" style="background:#181d24; border:1px solid #28303c; display:flex; align-items:center; justify-content:center;">
+            ${iconHtml}
           </div>
           <div class="room-content-box">
             <div class="d-flex align-items-center gap-1">
@@ -609,11 +611,25 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
   }
 };
 
+// 🌟 대화방 입장 시 상단 헤더 아이콘 & 유동적 [게임명] 길드명 표기 완비
 window.openChatRoom = function(roomId, roomTitle, roomType) {
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  let joined = [];
+  try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
+  const curGuild = joined.find(g => g.guild_id === currentGid);
+  const gName = curGuild?.guild_name || "길드";
+  const gGame = curGuild?.game_name || "";
+  const dynamicGuildHeader = gGame ? `[${gGame}] ${gName}` : gName;
+
   const targetRoomId = roomId || "default_public";
   window.currentActiveRoomId = targetRoomId;
   window.currentActiveRoomType = roomType || ((targetRoomId && targetRoomId.includes('-')) ? 'direct' : 'public');
-  window.currentActiveRoomTitle = roomTitle || '길드 대화방';
+
+  let finalHeaderTitle = roomTitle || dynamicGuildHeader;
+  if (targetRoomId === "default_public" || roomType === "public") {
+    finalHeaderTitle = dynamicGuildHeader;
+  }
+  window.currentActiveRoomTitle = finalHeaderTitle;
 
   window.markRoomAsReadNow(targetRoomId);
 
@@ -627,14 +643,21 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   const titleElem = document.getElementById("chatRoomTitle");
   const avatarElem = document.getElementById("chatRoomAvatar");
 
-  if (titleElem) titleElem.innerText = roomTitle || "길드 대화방";
+  if (titleElem) titleElem.innerText = finalHeaderTitle;
   if (avatarElem) {
     if (roomType === "private") {
       avatarElem.innerHTML = `<i class="fa-solid fa-shield-halved text-danger"></i>`;
+      avatarElem.style.background = "rgba(239, 68, 68, 0.15)";
+      avatarElem.style.border = "1px solid rgba(239, 68, 68, 0.4)";
     } else if (roomType === "direct") {
       avatarElem.innerHTML = `<i class="fa-solid fa-user text-info"></i>`;
+      avatarElem.style.background = "rgba(2, 132, 199, 0.15)";
+      avatarElem.style.border = "1px solid rgba(2, 132, 199, 0.4)";
     } else {
-      avatarElem.innerHTML = `<i class="fa-solid fa-users text-warning"></i>`;
+      // 전체 대화방: 디스코드 아이콘 완전 제거 -> 정중앙 G 골드 옐로우 심볼 탑재
+      avatarElem.innerHTML = `<span style="font-weight:900; color:#fee500; font-size:1.05rem; line-height:1;">G</span>`;
+      avatarElem.style.background = "#181d24";
+      avatarElem.style.border = "1.5px solid #fee500";
     }
   }
 
@@ -693,9 +716,8 @@ window.startDirectChatWith = async function(targetNick) {
     const sortedNames = [myNick, targetNick].sort();
     const rawDirectKey = `direct__${currentGid}__${sortedNames[0]}__${sortedNames[1]}`;
     const targetRoomId = generateDeterministicUUID(rawDirectKey);
-    const roomTitle = targetNick; // 내 화면에서는 상대방 이름만 표기
+    const roomTitle = targetNick;
 
-    // 나가기 목록에 기록되어 있다면 복구
     let leftRoomIds = [];
     try { leftRoomIds = JSON.parse(localStorage.getItem("left_chat_room_ids") || "[]"); } catch(e) {}
     if (leftRoomIds.includes(targetRoomId)) {
@@ -703,7 +725,6 @@ window.startDirectChatWith = async function(targetNick) {
       localStorage.setItem("left_chat_room_ids", JSON.stringify(leftRoomIds));
     }
 
-    // ⚡ 중복 검사: DB에 해당 방이 이미 존재하는지 먼저 확인
     let existingRoom = null;
     if (typeof apiRequest === "function") {
       try {
@@ -714,7 +735,6 @@ window.startDirectChatWith = async function(targetNick) {
       } catch(e) {}
     }
 
-    // DB에 방이 없을 때만 1회 신규 생성
     if (!existingRoom && typeof apiRequest === "function") {
       try {
         const roomPayload = {
