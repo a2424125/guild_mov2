@@ -179,7 +179,6 @@ async function initApp() {
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
-  // 미로그인 상태로 index.html 접속 시 전용 홈 화면(home.html)으로 이동
   if (!myCurrentNick) {
     try {
       const checkHome = await fetch("home.html", { method: "HEAD" });
@@ -218,7 +217,6 @@ async function initApp() {
     if (typeof window.loadMainTabRoomsList === 'function') {
       window.loadMainTabRoomsList();
     }
-    // 초기 비밀번호(000000 또는 0000) 상태라면 필수 변경 모달 표시
     if (myCurrentPin === "000000" || myCurrentPin === "0000") {
       setTimeout(() => {
         openForceChangePinModal();
@@ -227,7 +225,7 @@ async function initApp() {
   }
 }
 
-// 현재 접속 중인 길드(guild_id)의 설정 로드
+// 🌟 현재 접속 중인 길드(guild_id)의 설정 로드 및 [게임명] 길드명 유동적 바인딩
 async function loadGuildSettings() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -235,42 +233,53 @@ async function loadGuildSettings() {
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
     const currentGuild = joined.find(g => g.guild_id === currentGid);
 
-    if (currentGuild) {
-      const gName = currentGuild.guild_name || "길드";
-      const gGame = currentGuild.game_name || "게임";
+    let gName = currentGuild?.guild_name || "길드";
+    let gGame = currentGuild?.game_name || "";
 
-      const badge = document.getElementById("mainTabGameBadge");
-      if (badge) {
+    const gRows = await apiRequest(`guilds?id=eq.${encodeURIComponent(currentGid)}&select=id,guild_name,name,game_name`);
+    if (Array.isArray(gRows) && gRows.length > 0) {
+      gName = gRows[0].guild_name || gRows[0].name || gName;
+      gGame = gRows[0].game_name || gGame;
+    }
+
+    const dynamicTitle = gGame ? `[${gGame}] ${gName}` : gName;
+
+    const badge = document.getElementById("mainTabGameBadge");
+    if (badge) {
+      if (gGame) {
         badge.innerText = gGame;
         badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
       }
-      const t1 = document.getElementById("chatRoomTitle");
-      const t2 = document.getElementById("menuGuildNameText");
-      const t3 = document.getElementById("loginGuildTitle");
-      const t4 = document.getElementById("mainTabHeaderSubtitle");
-      if (t1) t1.innerText = gName + " 대화방";
-      if (t2) t2.innerText = gName;
-      if (t3) t3.innerText = "[" + gGame + "] " + gName + " 로그인";
-      if (t4) t4.innerText = gGame + " · " + gName;
     }
+
+    const t1 = document.getElementById("chatRoomTitle");
+    const t2 = document.getElementById("menuGuildNameText");
+    const t3 = document.getElementById("loginGuildTitle");
+    const t4 = document.getElementById("mainTabHeaderSubtitle");
+
+    if (t1 && !window.currentActiveRoomId) t1.innerText = dynamicTitle;
+    if (t2) t2.innerText = dynamicTitle;
+    if (t3) t3.innerText = `${dynamicTitle} 로그인`;
+    if (t4) t4.innerText = dynamicTitle;
 
     const res = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
     if (Array.isArray(res) && res.length > 0) {
       res.forEach(item => {
         if (item.key === 'guild_name' && item.value) {
-          const gTitle = item.value;
-          const t1 = document.getElementById("chatRoomTitle");
-          const t2 = document.getElementById("menuGuildNameText");
-          const t3 = document.getElementById("loginGuildTitle");
-          const t4 = document.getElementById("mainTabHeaderSubtitle");
-          if (t1 && !window.currentActiveRoomId) t1.innerText = gTitle + " 대화방";
-          if (t2) t2.innerText = gTitle;
-          if (t3 && !currentGuild) t3.innerText = gTitle + " 로그인";
-          if (t4 && !currentGuild) t4.innerText = gTitle;
+          const customName = item.value;
+          const fullTitle = gGame ? `[${gGame}] ${customName}` : customName;
+          if (t1 && !window.currentActiveRoomId) t1.innerText = fullTitle;
+          if (t2) t2.innerText = fullTitle;
+          if (t3 && !currentGuild) t3.innerText = `${fullTitle} 로그인`;
+          if (t4 && !currentGuild) t4.innerText = fullTitle;
         }
       });
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn("loadGuildSettings error:", e);
+  }
 }
 
 // 현재 길드(guild_id)의 길드원만 조회
@@ -619,7 +628,6 @@ async function executeGuildLogin(forcedGuildId = null) {
     return showKakaoToast("👑 슈퍼관리자(Master)로 로그인되었습니다.", "🎉");
   }
 
-  // DB 닉네임 검색
   let candidates = [];
   const currentGid = forcedGuildId || localStorage.getItem("current_guild_id") || "";
 
@@ -648,7 +656,6 @@ async function executeGuildLogin(forcedGuildId = null) {
     return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
   }
 
-  // PIN 일치 후보 필터
   const pinMatchedList = candidates.filter(m => {
     const expectedPin = m.pin ? String(m.pin).trim() : "000000";
     return (inputPin === expectedPin) ||
@@ -740,7 +747,6 @@ async function executeGuildLogin(forcedGuildId = null) {
     localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
   } catch (e) {}
 
-  // ⚡ 핵심 수정: '길드장' 또는 '슈퍼관리자' 직책일 경우 무조건 admin_role = 'super'로 부여하여 권한 부족 오류 원천 해결!
   if (userRole === "길드장" || userRole === "길마" || userRole === "슈퍼관리자") {
     sessionStorage.setItem("admin_auth", "true");
     sessionStorage.setItem("admin_role", "super");
@@ -1065,7 +1071,6 @@ async function cleanupOldChatsBackground() {
 }
 window.cleanOldChatMessages = cleanupOldChatsBackground;
 
-// 실시간 대화 수신 & 알림음 재생 연동
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
 
@@ -1080,7 +1085,6 @@ function listenRealtimeChatMessages() {
       const activeRoom = window.currentActiveRoomId;
       const msgRoom = (!newMsg.room_id || newMsg.room_id === "public" || newMsg.room_id === "default_public") ? "default_public" : newMsg.room_id;
 
-      // 내가 보낸 메시지가 아닐 때 선택된 MP3 알림음 재생 및 시스템 푸시 발송
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         window.triggerChatAlarmSound();
         notifyWebDesktopMessage(newMsg.sender_name, newMsg.message || "새 메시지");
@@ -1222,7 +1226,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
   }
 
-  // 마스터 긴급 시스템 공지 카드
   if (msg.msg_type === "system_notice" || msg.sender_name === "시스템마스터") {
     html = `
       <div class="chat-item-row other" id="${msgKey}">
