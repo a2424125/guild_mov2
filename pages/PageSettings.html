@@ -2153,7 +2153,7 @@
   }
 
   // ==========================================
-  // [보스 추가 - 23502 오류 완전 방어 & 필수값 정밀 주입]
+  // [보스 추가 - 23502 NOT NULL 컬럼 완벽 탑재]
   // ==========================================
   async function addNewBossItem() {
     if (!checkBossGroundPermission()) return;
@@ -2173,15 +2173,17 @@
       ? nowIso 
       : new Date(Date.now() + cycle_min * 60 * 1000).toISOString();
 
-    // ⚡ [핵심 교정] 존재하지 않는 컬럼을 배제하고 필수 NOT NULL 컬럼을 빈틈없이 채워 23502 에러 원천 방어
+    // ⚡ [핵심 교정] 스크린샷에 확인된 모든 컬럼(spawn_time, cycle_hours 등)을 빈틈없이 채워 23502 완벽 해결
     const bossPayload = {
       guild_id: currentGid,
       boss_name: boss_name,
-      is_fixed: (type === 'fixed'),
       cycle_min: (type === 'fixed' ? 0 : cycle_min),
+      cycle_hours: (type === 'fixed' ? 0 : parseFloat((cycle_min / 60).toFixed(2))),
+      is_fixed: (type === 'fixed'),
       fixed_schedule: (type === 'fixed' ? (fixed_schedule || "고정젠") : ""),
-      last_cut_time: nowIso,
-      next_spawn_time: nextSpawnIso
+      spawn_time: nextSpawnIso,
+      next_spawn_time: nextSpawnIso,
+      last_cut_time: nowIso
     };
 
     try {
