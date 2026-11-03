@@ -205,7 +205,6 @@
       </div>
       <p style="font-size: 0.74rem; color: var(--home-text-sub); margin-bottom: 10px; text-align: left;">참여 중인 길드를 선택하거나 닉네임과 비밀번호로 바로 로그인하세요.</p>
 
-      <!-- 최근 참여한 길드 목록 -->
       <div id="homeJoinedGuildsList" class="mb-2"></div>
 
       <button type="button" class="btn btn-warning w-100 fw-bold py-2" style="background: #fee500; border: none; color: #191919; font-size: 0.86rem; border-radius: 10px;" onclick="openHomeLoginModal()">
@@ -231,7 +230,7 @@
       </div>
     </div>
 
-    <!-- 5. 고객센터 & 자주 묻는 질문 요약 카드 (DB 연동 동적 렌더링) -->
+    <!-- 5. FAQ 요약 카드 -->
     <div class="saas-card">
       <div class="d-flex align-items-center justify-content-between mb-2">
         <h6 class="fw-bold mb-0" style="font-size: 0.9rem;">
@@ -241,15 +240,11 @@
           1:1 문의하기 <i class="fa-solid fa-chevron-right ms-1"></i>
         </button>
       </div>
-
-      <!-- DB(saas_faqs 테이블)에서 불러와 렌더링되는 영역 -->
       <div id="homeFaqListContainer"></div>
     </div>
   </div>
 
-  <!-- ========================================================
-       모달 1: 스마트 길드원 로그인 모달
-       ======================================================== -->
+  <!-- 모달 1: 스마트 길드원 로그인 모달 -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none; z-index: 100000;" onclick="if(event.target===this) closeModalById('guildLoginModal')">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fee500; margin-bottom: 12px;">
@@ -293,9 +288,7 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       모달 2: 초기 비밀번호(000000) 필수 변경 모달
-       ======================================================== -->
+  <!-- 모달 2: 초기 비밀번호 필수 변경 모달 -->
   <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div class="mb-2" style="font-size: 2rem;">🔐</div>
@@ -313,9 +306,7 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       모달 3: 어드민 전체 공지 모달
-       ======================================================== -->
+  <!-- 모달 3: 어드민 전체 공지 모달 -->
   <div id="modalSaasGlobalNotice" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
     <div class="kakao-modal-card" style="max-width: 340px; text-align: left;">
       <div class="d-flex align-items-center justify-content-between mb-2">
@@ -336,9 +327,7 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       모달 4: 고객센터 문의 모달
-       ======================================================== -->
+  <!-- 모달 4: 고객센터 문의 모달 -->
   <div id="modalSupportCenter" class="kakao-modal-backdrop" style="display: none; z-index: 100002;" onclick="if(event.target===this) closeModalById('modalSupportCenter')">
     <div class="kakao-modal-card" style="max-width: 340px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-headset text-primary me-1"></i>레이드온 고객센터 문의</h6>
@@ -361,9 +350,7 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       모달 5: 초대 코드 / 신규 개설 / 라이선스 신청 모달
-       ======================================================== -->
+  <!-- 모달 5: 길드 가입 및 개설 모달 -->
   <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;" onclick="if(event.target===this) closeModalById('modalJoinGuild')">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
@@ -413,27 +400,25 @@
     </div>
   </div>
 
-  <!-- ========================================================
-       [NEW] 강제 업데이트 차단 전체 화면 모달 & v1.1.1 검사기
-       ======================================================== -->
+  <!-- [중앙 연동형] 강제 업데이트 차단 전체 화면 모달 -->
   <div id="modalForceUpdate" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 20, 0.94); backdrop-filter: blur(8px); z-index: 2147483647 !important; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
     <div style="width: 100%; max-width: 330px; background: #181d24; border: 1.5px solid #2d3748; border-radius: 20px; padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); color: #f3f4f6;">
       <div style="width: 56px; height: 56px; border-radius: 18px; background: #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 4px 18px rgba(254, 229, 0, 0.35);">
         🚀
       </div>
       <h5 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: #ffffff;">새 버전 업데이트 안내</h5>
-      <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
-        레이드온 <strong>v1.1.1</strong> 정식 버전이 출시되었습니다.<br>트레이 최소화 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
+      <p id="forceUpdateDesc" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
+        레이드온 최신 정식 버전이 출시되었습니다.<br>트레이 최소화 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
       </p>
 
       <div style="background: #11151a; border: 1px solid #202732; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; font-size: 0.76rem; text-align: left; display: flex; flex-direction: column; gap: 6px;">
         <div style="display: flex; justify-content: space-between;">
           <span style="color: #64748b;">내 현재 버전</span>
-          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">구버전 (v1.1.0 이하)</span>
+          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">구버전</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
           <span style="color: #64748b;">필수 최신 버전</span>
-          <span style="color: #22c55e; font-weight: 700;">v1.1.1 (최신)</span>
+          <span id="requiredClientVerText" style="color: #22c55e; font-weight: 700;">최신</span>
         </div>
       </div>
 
@@ -448,7 +433,6 @@
     var homeToastTimer = null;
     var homeSelectedGuildIdForLogin = null;
 
-    // 기본 공지 및 FAQ 데이터
     var currentNoticeData = {
       title: "레이드온 서비스 안내 및 업데이트 소식",
       content: "환영합니다! 레이드온을 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요.",
@@ -522,7 +506,6 @@
       }
     }
 
-    // 1. 최근 참여 길드 렌더링
     async function renderJoinedGuildsOnHome() {
       var listElem = document.getElementById("homeJoinedGuildsList");
       if (!listElem) return;
@@ -588,7 +571,6 @@
       openHomeLoginModal(true);
     }
 
-    // 2. 스마트 로그인 모달 오픈
     async function openHomeLoginModal(keepGuildSelection) {
       if (!keepGuildSelection) {
         homeSelectedGuildIdForLogin = null;
@@ -615,7 +597,6 @@
       }, 100);
     }
 
-    // 3. 로그인 실행
     async function executeHomeGuildLogin(forcedGuildId) {
       var searchInput = document.getElementById("loginNickSearchInput");
       var selectedName = (searchInput && searchInput.value.trim()) || "";
@@ -826,7 +807,6 @@
       }
     }
 
-    // 4. 어드민 공지 & FAQ 조회
     function renderHomeFaqList(faqArray) {
       var container = document.getElementById("homeFaqListContainer");
       if (!container) return;
@@ -1124,31 +1104,45 @@
       }
     }
 
-    // ⚡ 홈 화면 강제 업데이트 검사기 (v1.1.1 미만 데스크톱 클라이언트 즉시 차단)
-    (function enforceHomeClientUpdate() {
+    // ⚡ [중앙 연동] version.json을 읽어와 v1.1.1 미만 데스크톱 클라이언트 즉시 차단
+    (async function enforceHomeClientUpdate() {
       const ua = navigator.userAgent || "";
       const isDesktopClient = ua.includes("Electron") || ua.includes("RaidOn");
       if (!isDesktopClient) return;
 
-      const isLatestV111 = ua.includes("RaidOn/1.1.1");
+      try {
+        const res = await fetch('/version.json?t=' + Date.now());
+        if (!res.ok) return;
+        const config = await res.json();
+        const requiredVer = config.min_required_version || config.latest_version || '1.1.1';
 
-      function applyLock() {
-        if (!isLatestV111) {
-          const modal = document.getElementById("modalForceUpdate");
-          if (modal) {
-            modal.style.display = "flex";
-            document.body.style.overflow = "hidden";
-            const wrapper = document.querySelector(".saas-home-wrapper");
-            if (wrapper) wrapper.style.pointerEvents = "none";
+        // User-Agent에 필수 버전이 포함되어 있지 않으면 구버전 간주
+        const isUpToDate = ua.includes(`RaidOn/${requiredVer}`);
+
+        if (!isUpToDate) {
+          const applyLock = () => {
+            const modal = document.getElementById("modalForceUpdate");
+            if (modal) {
+              const reqText = document.getElementById("requiredClientVerText");
+              if (reqText) reqText.innerText = `v${requiredVer} (최신)`;
+              const desc = document.getElementById("forceUpdateDesc");
+              if (desc && config.update_notice) {
+                desc.innerHTML = `레이드온 <strong>v${requiredVer}</strong> 정식 버전이 출시되었습니다.<br>${escapeHomeHtml(config.update_notice)}`;
+              }
+              modal.style.display = "flex";
+              document.body.style.overflow = "hidden";
+              const wrapper = document.querySelector(".saas-home-wrapper");
+              if (wrapper) wrapper.style.pointerEvents = "none";
+            }
+          };
+
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", applyLock);
+          } else {
+            applyLock();
           }
         }
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", applyLock);
-      } else {
-        applyLock();
-      }
+      } catch (err) {}
     })();
 
     window.addEventListener("DOMContentLoaded", function() {
