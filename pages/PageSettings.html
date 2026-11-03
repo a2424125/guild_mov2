@@ -1281,9 +1281,6 @@
     return (stored && stored !== 'null' && stored !== 'undefined') ? stored : 'default';
   }
 
-  // ==========================================
-  // [슈퍼관리자 권한 판별 안전 유틸]
-  // ==========================================
   function isSuperAdminUser() {
     const adminRole = sessionStorage.getItem("admin_role") || "";
     const myRole = localStorage.getItem("guild_my_role") || "";
@@ -1296,7 +1293,6 @@
            (myNick === "슈퍼관리자");
   }
 
-  // 일반 관리자(부길마, 수호, 정예 등) 권한 판별 유틸
   function isManagerAdminUser() {
     if (isSuperAdminUser()) return true;
     const adminRole = sessionStorage.getItem("admin_role") || "";
@@ -1310,9 +1306,6 @@
            (myRole === "정예");
   }
 
-  // ==========================================
-  // [커스텀 알림/확인 다이얼로그]
-  // ==========================================
   function showAppAlert(message, title = "안내", icon = "⚠️") {
     const modal = document.getElementById("modalCustomAlert");
     if (!modal) {
@@ -1370,9 +1363,6 @@
     }, 2400);
   }
 
-  // ==========================================
-  // [글자 크기 조절 옵션]
-  // ==========================================
   function setFontScaleMode(scale, showNotice = true) {
     const root = document.getElementById("settingsRootCard");
     const group = document.getElementById("fontScaleToggleGroup");
@@ -1405,9 +1395,6 @@
     setFontScaleMode(savedScale, false);
   }
 
-  // ==========================================
-  // [채팅 & 보스 알림음(MP3) 설정 및 재생]
-  // ==========================================
   function initAlarmSoundSettings() {
     const chatEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== 'false';
     const chatPreset = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
@@ -1484,26 +1471,20 @@
     } catch (e) {}
   }
 
-  // ==========================================
-  // [탭 전환 및 직책별 세부 권한 검사 (일반/정예 차등 제어)]
-  // ==========================================
   function switchSettingsTab(tab) {
     const isSuper = isSuperAdminUser();
     const isManager = isManagerAdminUser();
 
-    // 1. 관리자 권한 제어판은 슈퍼관리자(길드장)만 진입 가능
     if (tab === 'permissions' && !isSuper) {
       showAppAlert("[관리자 권한] 제어판은 슈퍼관리자(Master/길드장)만 진입할 수 있습니다.", "권한 부족", "👑");
       return;
     }
 
-    // 2. 길드원보안(직책/PIN초기화)은 최소 관리자/정예 이상만 접근 가능
     if (tab === 'memberAuth' && !isManager) {
       showAppAlert("길드원 직책 관리 및 PIN 초기화는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
       return;
     }
 
-    // 3. 토벌설정: 슈퍼관리자가 아니면 관리자 권한 허용 여부 체크
     if (tab === 'raid' && !isSuper) {
       if (!isManager) {
         showAppAlert("토벌설정은 관리자 이상만 접근할 수 있습니다.", "접근 제한", "🔒");
@@ -1516,7 +1497,6 @@
       }
     }
 
-    // 4. 설정보안: 슈퍼관리자가 아니면 관리자 권한 허용 여부 체크
     if (tab === 'security' && !isSuper) {
       if (!isManager) {
         showAppAlert("설정보안 탭은 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
@@ -1529,7 +1509,6 @@
       }
     }
 
-    // 5. 보스/사냥터: 슈퍼관리자가 아니면 관리자 권한 허용 여부 체크
     if (tab === 'bossGround' && !isSuper) {
       if (!isManager) {
         showAppAlert("보스 및 사냥터 관리는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
@@ -1657,9 +1636,6 @@
     }
   }
 
-  // ==========================================
-  // [통합 프로필 & 비밀번호 모달]
-  // ==========================================
   function openCombinedProfileModal(initialTab = 'job') {
     const modal = document.getElementById("modalCombinedProfile");
     if (modal) {
@@ -1774,9 +1750,6 @@
     }
   }
 
-  // ==========================================
-  // [테마 모드 토글]
-  // ==========================================
   function onThemeToggleSwitch(isChecked) {
     setThemeMode(isChecked ? 'dark' : 'light');
   }
@@ -1859,9 +1832,6 @@
     if (modal) modal.style.display = "none";
   }
 
-  // ==========================================
-  // [설정 데이터 로드 및 저장]
-  // ==========================================
   async function loadCurrentSettingsToForm() {
     const currentGid = getSafeCurrentGid();
     window.currentSettingsMap = {};
@@ -2048,9 +2018,6 @@
     }
   }
 
-  // ==========================================
-  // [직책 및 관리 권한 임명]
-  // ==========================================
   async function executeAssignMemberRole() {
     const isSuper = isSuperAdminUser();
     if (!isSuper) return showAppAlert("길드원 직책 및 관리 권한 임명은 길드장(슈퍼관리자)만 가능합니다.", "권한 부족", "👑");
@@ -2077,9 +2044,6 @@
     }
   }
 
-  // ==========================================
-  // [길드원 비밀번호 초기화]
-  // ==========================================
   async function executeMemberPinReset() {
     const isSuper = isSuperAdminUser();
     const isAuth = isManagerAdminUser();
@@ -2171,9 +2135,6 @@
     }
   }
 
-  // ==========================================
-  // [보스 및 사냥터 관리 - 23502 오류 완전 교정]
-  // ==========================================
   function toggleBossInputType() {
     const type = document.getElementById('newBossType').value;
     document.getElementById('newBossCycle').style.display = (type === 'cool') ? 'block' : 'none';
@@ -2191,6 +2152,9 @@
     return true;
   }
 
+  // ==========================================
+  // [보스 추가 - PGRST204 및 23502 완벽 교정]
+  // ==========================================
   async function addNewBossItem() {
     if (!checkBossGroundPermission()) return;
 
@@ -2204,14 +2168,20 @@
     if (!boss_name) return showToast("보스명을 입력하세요!", "⚠️");
     if (type === 'cool' && cycle_min <= 0) return showToast("쿨타임은 1분 이상 입력하세요!", "⚠️");
 
-    // ⚡ [핵심 교정: code 23502 방지] 필수 DB 컬럼 완벽 탑재
+    // ⚡ [핵심 교정] 존재하지 않는 name 컬럼을 제거하고 필수 타임스탬프를 제공하여 저장 보장
+    const nowIso = new Date().toISOString();
+    const nextSpawnIso = (type === 'fixed') 
+      ? nowIso 
+      : new Date(Date.now() + cycle_min * 60 * 1000).toISOString();
+
     const bossPayload = {
       guild_id: currentGid,
       boss_name: boss_name,
-      name: boss_name,
       is_fixed: (type === 'fixed'),
       cycle_min: (type === 'fixed' ? 0 : cycle_min),
-      fixed_schedule: (type === 'fixed' ? (fixed_schedule || "고정젠") : null)
+      fixed_schedule: (type === 'fixed' ? (fixed_schedule || "고정젠") : ""),
+      last_cut_time: nowIso,
+      next_spawn_time: nextSpawnIso
     };
 
     try {
