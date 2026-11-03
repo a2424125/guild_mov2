@@ -311,11 +311,11 @@ window.loadGuildMembersData = async function() {
   }
 };
 
+// ⚡ [수호 제거 완료] 4단계 직책 우선순위 정립
 function getRolePriority(role) {
   const r = String(role || '').trim();
   if (r === '길드장' || r === '길마' || r === '슈퍼관리자') return 1;
   if (r === '부길드장' || r === '부길마') return 2;
-  if (r === '수호') return 2;
   if (r === '정예') return 3;
   return 4;
 }
@@ -744,10 +744,11 @@ async function executeGuildLogin(forcedGuildId = null) {
     localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
   } catch (e) {}
 
+  // ⚡ [수호 제거 반영] 권한 세션 부여
   if (userRole === "길드장" || userRole === "길마" || userRole === "슈퍼관리자") {
     sessionStorage.setItem("admin_auth", "true");
     sessionStorage.setItem("admin_role", "super");
-  } else if (userRole === "부길드장" || userRole === "부길마" || userRole === "수호") {
+  } else if (userRole === "부길드장" || userRole === "부길마") {
     sessionStorage.setItem("admin_auth", "true");
     sessionStorage.setItem("admin_role", "admin");
   } else if (userRole === "정예") {
@@ -1559,7 +1560,7 @@ function closeMentionPopup() {
 }
 
 // --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더 (권한 가드 보정)
+// 9. 서브 모듈 화면 오버레이 로더 (권한 가드 정밀 보정)
 // --------------------------------------------------------
 window.openModulePage = async function(pageName) {
   if (pageName === "PageMembers") {
@@ -1574,14 +1575,16 @@ window.openModulePage = async function(pageName) {
   const myRole = localStorage.getItem("guild_my_role") || "일반";
   const adminRole = sessionStorage.getItem("admin_role") || "";
   const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "슈퍼관리자");
-  const isAdmin = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마") || (myRole === "수호");
-  const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
+  const isSub = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마");
+  const isElite = isSub || (adminRole === "elite") || (myRole === "정예");
 
-  // ⚡ [핵심 교정] PageSettings는 일반 길드원도 화면에 진입하여 내 프로필/테마/알림음을 제어할 수 있도록 입구를 허용합니다.
-  // (관리자/길드장 전용 탭은 PageSettings.html 내부에서 자물쇠 처리됨)
-  if (pageName === 'PageFinance' && !isAdmin) {
+  // ⚡ [수호 제거 & 정예 권한 동기화]
+  // 1. PageSettings: 모든 길드원(일반 포함)이 화면 자체는 진입 가능 (세부 탭은 PageSettings.html에서 통제)
+  // 2. PageFinance(길드비용현황): 부길마 이상 또는 정예에게 열려 있으면 접근 허용
+  if (pageName === 'PageFinance' && !isElite) {
     return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
   }
+  // 3. PageRegister(보스참여등록): 정예 이상 진입 가능
   if (pageName === 'PageRegister' && !isElite) {
     return showKakaoToast("보스참여등록은 정예 이상만 접근할 수 있습니다.", "⚠️");
   }
