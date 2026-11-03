@@ -597,7 +597,7 @@
     <input type="hidden" id="cfgGuildName" value="">
   </div>
 
-  <!-- 카카오톡 '더보기' 스타일 3열 2행 메뉴 그리드 (가로스크롤 완전 제거) -->
+  <!-- 카카오톡 '더보기' 스타일 3열 2행 메뉴 그리드 -->
   <div class="kt-menu-grid-container">
     <div class="kt-menu-tile-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
       <span class="tile-icon">🏢</span>
@@ -964,7 +964,7 @@
         <span class="badge bg-warning bg-opacity-25 text-warning" style="font-size: 0.68rem;">슈퍼관리자</span>
       </div>
       <p class="sub-desc-text mb-3">
-        현재 길드의 일반 관리자가 사용할 수 있는 각 기능의 활성화 여부를 설정합니다.
+        현재 길드의 일반 관리자(부길드장, 수호, 정예)가 사용할 수 있는 각 기능의 활성화 여부를 설정합니다.
       </p>
 
       <div class="perm-switch-item" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.3);">
@@ -1296,6 +1296,20 @@
            (myNick === "슈퍼관리자");
   }
 
+  // 일반 관리자(부길마, 수호, 정예 등) 권한 판별 유틸
+  function isManagerAdminUser() {
+    if (isSuperAdminUser()) return true;
+    const adminRole = sessionStorage.getItem("admin_role") || "";
+    const myRole = localStorage.getItem("guild_my_role") || "";
+    return (sessionStorage.getItem("admin_auth") === "true") || 
+           (adminRole === "admin") || 
+           (adminRole === "elite") || 
+           (myRole === "부길드장") || 
+           (myRole === "부길마") || 
+           (myRole === "수호") || 
+           (myRole === "정예");
+  }
+
   // ==========================================
   // [커스텀 알림/확인 다이얼로그]
   // ==========================================
@@ -1471,17 +1485,30 @@
   }
 
   // ==========================================
-  // [탭 전환 및 권한 검사 (카카오 그리드 타일 연동)]
+  // [탭 전환 및 직책별 세부 권한 검사 (일반/정예 차등 제어)]
   // ==========================================
   function switchSettingsTab(tab) {
     const isSuper = isSuperAdminUser();
+    const isManager = isManagerAdminUser();
 
+    // 1. 관리자 권한 제어판은 슈퍼관리자(길드장)만 진입 가능
     if (tab === 'permissions' && !isSuper) {
-      showAppAlert("[관리자 권한] 제어판은 슈퍼관리자(Master/길드장)만 진입할 수 있습니다.", "권한 부족", "🛡️");
+      showAppAlert("[관리자 권한] 제어판은 슈퍼관리자(Master/길드장)만 진입할 수 있습니다.", "권한 부족", "👑");
       return;
     }
 
+    // 2. 길드원보안(직책/PIN초기화)은 최소 관리자/정예 이상만 접근 가능
+    if (tab === 'memberAuth' && !isManager) {
+      showAppAlert("길드원 직책 관리 및 PIN 초기화는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
+      return;
+    }
+
+    // 3. 토벌설정: 슈퍼관리자가 아니면 관리자 권한 허용 여부 체크
     if (tab === 'raid' && !isSuper) {
+      if (!isManager) {
+        showAppAlert("토벌설정은 관리자 이상만 접근할 수 있습니다.", "접근 제한", "🔒");
+        return;
+      }
       const allowRaid = window.currentSettingsMap['perm_settings_raid'] !== 'false';
       if (!allowRaid) {
         showAppAlert("일반 관리자에게는 토벌설정 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
@@ -1489,7 +1516,12 @@
       }
     }
 
+    // 4. 설정보안: 슈퍼관리자가 아니면 관리자 권한 허용 여부 체크
     if (tab === 'security' && !isSuper) {
+      if (!isManager) {
+        showAppAlert("설정보안 탭은 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
+        return;
+      }
       const allowSecurity = window.currentSettingsMap['perm_settings_security'] !== 'false';
       if (!allowSecurity) {
         showAppAlert("일반 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
@@ -1497,7 +1529,12 @@
       }
     }
 
+    // 5. 보스/사냥터: 슈퍼관리자가 아니면 관리자 권한 허용 여부 체크
     if (tab === 'bossGround' && !isSuper) {
+      if (!isManager) {
+        showAppAlert("보스 및 사냥터 관리는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
+        return;
+      }
       const allowBossGround = window.currentSettingsMap['perm_settings_boss_ground'] !== 'false';
       if (!allowBossGround) {
         showAppAlert("일반 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
@@ -1526,17 +1563,21 @@
     const badge = document.getElementById("badgeSettingsRoleStatus");
     if (!badge) return;
     const isSuper = isSuperAdminUser();
+    const myRole = localStorage.getItem("guild_my_role") || "일반";
     const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuper;
 
     if (isSuper) {
       badge.className = "badge bg-warning text-dark";
       badge.innerHTML = `<i class="fa-solid fa-crown me-1"></i>길드장(슈퍼)`;
-    } else if (isAuth) {
+    } else if (isAuth || myRole === "부길드장" || myRole === "부길마" || myRole === "수호") {
+      badge.className = "badge bg-primary bg-opacity-25 text-info";
+      badge.innerHTML = `<i class="fa-solid fa-shield-halved me-1"></i>관리자(${myRole})`;
+    } else if (myRole === "정예") {
       badge.className = "badge bg-success bg-opacity-25 text-success";
-      badge.innerHTML = `<i class="fa-solid fa-shield-halved me-1"></i>관리자`;
+      badge.innerHTML = `<i class="fa-solid fa-star me-1"></i>정예`;
     } else {
       badge.className = "badge bg-secondary bg-opacity-25 text-secondary";
-      badge.innerHTML = `<i class="fa-solid fa-lock me-1"></i>로그인 필요`;
+      badge.innerHTML = `<i class="fa-solid fa-user me-1"></i>길드원`;
     }
   }
 
@@ -1892,7 +1933,7 @@
 
   function applyMemberPinResetUI() {
     const isSuper = isSuperAdminUser();
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuper;
+    const isAuth = isManagerAdminUser();
     const allowReset = isSuper || (isAuth && window.currentSettingsMap['perm_member_pin_reset'] !== 'false');
 
     const select = document.getElementById("resetMemberPinSelect");
@@ -1918,7 +1959,7 @@
   }
 
   async function saveScoreSettings() {
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuperAdminUser();
+    const isAuth = isManagerAdminUser();
     if (!isAuth) return showToast("관리자 권한이 필요합니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -1944,7 +1985,7 @@
   }
 
   async function saveSecuritySettings() {
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuperAdminUser();
+    const isAuth = isManagerAdminUser();
     if (!isAuth) return showToast("관리자 권한이 필요합니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -1960,7 +2001,7 @@
   }
 
   async function registerNewGeminiApiKey() {
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuperAdminUser();
+    const isAuth = isManagerAdminUser();
     if (!isAuth) return showToast("관리자 권한이 필요합니다.", "⚠️");
 
     const currentGid = getSafeCurrentGid();
@@ -2030,6 +2071,7 @@
       await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${memberId}`, "PATCH", { role: newRole });
       showToast(`[${memberName}] 님이 [${newRole}] 직책으로 변경되었습니다!`, "🎉");
       await loadGuildMembersForPinResetDropdown();
+      if (typeof window.loadGuildMembersData === "function") window.loadGuildMembersData();
     } catch (err) {
       showToast("직책 변경 실패: " + err.message, "❌");
     }
@@ -2040,7 +2082,7 @@
   // ==========================================
   async function executeMemberPinReset() {
     const isSuper = isSuperAdminUser();
-    const isAuth = (sessionStorage.getItem("admin_auth") === "true") || isSuper;
+    const isAuth = isManagerAdminUser();
     const currentGid = getSafeCurrentGid();
 
     if (!isAuth) return showToast("관리자 로그인이 필요합니다.", "⚠️");
@@ -2130,7 +2172,7 @@
   }
 
   // ==========================================
-  // [보스 및 사냥터 관리]
+  // [보스 및 사냥터 관리 - 23502 오류 완전 교정]
   // ==========================================
   function toggleBossInputType() {
     const type = document.getElementById('newBossType').value;
@@ -2153,25 +2195,31 @@
     if (!checkBossGroundPermission()) return;
 
     const currentGid = getSafeCurrentGid();
-    const boss_name = document.getElementById('newBossName').value.trim();
-    const type = document.getElementById('newBossType').value;
-    const cycle_min = parseInt(document.getElementById('newBossCycle').value, 10) || 0;
-    const fixed_schedule = document.getElementById('newBossFixed').value.trim();
+    const boss_name = (document.getElementById('newBossName')?.value || '').trim();
+    const type = document.getElementById('newBossType')?.value || 'cool';
+    const cycleInputVal = parseInt(document.getElementById('newBossCycle')?.value, 10);
+    const cycle_min = (!isNaN(cycleInputVal) && cycleInputVal > 0) ? cycleInputVal : 60;
+    const fixed_schedule = (document.getElementById('newBossFixed')?.value || '').trim();
 
     if (!boss_name) return showToast("보스명을 입력하세요!", "⚠️");
     if (type === 'cool' && cycle_min <= 0) return showToast("쿨타임은 1분 이상 입력하세요!", "⚠️");
 
+    // ⚡ [핵심 교정: code 23502 방지] 필수 DB 컬럼 완벽 탑재
+    const bossPayload = {
+      guild_id: currentGid,
+      boss_name: boss_name,
+      name: boss_name,
+      is_fixed: (type === 'fixed'),
+      cycle_min: (type === 'fixed' ? 0 : cycle_min),
+      fixed_schedule: (type === 'fixed' ? (fixed_schedule || "고정젠") : null)
+    };
+
     try {
-      await apiRequest("boss_timers", "POST", [{
-        guild_id: currentGid,
-        boss_name,
-        is_fixed: (type === 'fixed'),
-        cycle_min: (type === 'cool' ? cycle_min : 0),
-        fixed_schedule: (type === 'fixed' ? fixed_schedule : '')
-      }]);
+      await apiRequest("boss_timers", "POST", [bossPayload]);
       document.getElementById('newBossName').value = '';
       await loadBossAndGroundData();
-      showToast(`[${boss_name}] 보스 추가 완료`);
+      if (typeof window.loadBossTimersList === "function") await window.loadBossTimersList();
+      showToast(`[${boss_name}] 보스 추가 완료! 🎉`);
     } catch (err) {
       showToast("추가 실패: " + err.message, "❌");
     }
@@ -2186,6 +2234,7 @@
     try {
       await apiRequest(`boss_timers?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${id}`, "DELETE");
       await loadBossAndGroundData();
+      if (typeof window.loadBossTimersList === "function") await window.loadBossTimersList();
       showToast(`[${name}] 삭제 완료`, "🗑️");
     } catch (err) {
       showToast("삭제 실패: " + err.message, "❌");
@@ -2196,16 +2245,16 @@
     if (!checkBossGroundPermission()) return;
 
     const currentGid = getSafeCurrentGid();
-    const region = document.getElementById('newGroundRegionInput').value.trim();
-    const name = document.getElementById('newHuntingGroundName').value.trim();
+    const region = (document.getElementById('newGroundRegionInput')?.value || '').trim();
+    const name = (document.getElementById('newHuntingGroundName')?.value || '').trim();
 
     if (!region || !name) return showToast("대분류와 소분류를 모두 입력하세요!", "⚠️");
 
     try {
       await apiRequest("hunting_grounds", "POST", [{
         guild_id: currentGid,
-        name,
-        region
+        name: name,
+        region: region
       }]);
       document.getElementById('newHuntingGroundName').value = '';
       await loadBossAndGroundData();
@@ -2292,10 +2341,10 @@
       return `
         <div class="boss-item-card">
           <div class="text-truncate">
-            <span class="fw-bold small text-white">${b.boss_name}</span>
+            <span class="fw-bold small text-white">${b.boss_name || b.name}</span>
             <span class="text-info" style="font-size:0.7rem;">(${sub})</span>
           </div>
-          <i class="fa-solid fa-xmark boss-item-del" onclick="deleteBossItem(${b.id}, '${b.boss_name}')"></i>
+          <i class="fa-solid fa-xmark boss-item-del" onclick="deleteBossItem(${b.id}, '${b.boss_name || b.name}')"></i>
         </div>
       `;
     }).join('');
