@@ -45,7 +45,6 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* 하단 3탭 네비게이션 & 더보기 그리드 순정 테마 연동 */
     .kakao-bottom-tabbar {
       height: 52px;
       min-height: 52px;
@@ -206,10 +205,7 @@
     </div>
   </aside>
 
-
-  <!-- ========================================================
-       [VIEW 1] 메인 홈 화면 (친구 | 채팅 | 더보기 3탭)
-       ======================================================== -->
+  <!-- [VIEW 1] 메인 홈 화면 -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
@@ -217,13 +213,10 @@
         <span class="badge bg-secondary bg-opacity-25 text-secondary" id="mainTabGameBadge" style="display: none; font-size: 0.7rem; padding: 2px 6px;"></span>
         <span id="mainTabHeaderSubtitle" style="display:none;"></span>
       </div>
-
-      <div class="header-right-tools">
-        <!-- 대화방 입장 전 헤더 -->
-      </div>
+      <div class="header-right-tools"></div>
     </header>
 
-    <!-- [탭 1] 친구 (길드원 목록) -->
+    <!-- [탭 1] 친구 -->
     <div id="tabFriendsContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
       <div class="chat-room-card my-profile-card" onclick="openProfileEditModal()">
         <div class="room-avatar-large" id="mainTabMyAvatar">👤</div>
@@ -246,7 +239,7 @@
       </div>
     </div>
 
-    <!-- [탭 2] 대화방 목록 (채팅) -->
+    <!-- [탭 2] 대화방 목록 -->
     <div id="tabChatRoomsContent" class="kakao-tab-body" style="display: block; flex: 1; overflow-y: auto;">
       <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
         <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
@@ -298,7 +291,7 @@
       </div>
     </div>
 
-    <!-- 하단 3탭 네비게이션 바 -->
+    <!-- 하단 3탭 바 -->
     <nav class="kakao-bottom-tabbar">
       <div class="kakao-tab-item" id="tabItemFriends" onclick="switchMainBottomTab('friends')">
         <i class="fa-solid fa-user"></i>
@@ -315,13 +308,9 @@
     </nav>
   </div>
 
-
-  <!-- ========================================================
-       [VIEW 2] 개별 대화방 화면
-       ======================================================== -->
+  <!-- [VIEW 2] 개별 대화방 화면 -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header">
-      <!-- 상단 좌측: 뒤로가기 버튼(<) + G 심볼 아바타 + 대화방 타이틀/인원수 -->
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.15rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
           <i class="fa-solid fa-chevron-left"></i>
@@ -337,7 +326,6 @@
         </div>
       </div>
 
-      <!-- 상단 우측 툴 버튼 -->
       <div class="header-right-tools">
         <button type="button" class="btn-kakao-head text-danger" id="btnLeaveCurrentRoom" style="display: none;" title="방 나오기" onclick="handleLeaveCurrentRoomFromHeader()">
           <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -376,14 +364,10 @@
 
     <div id="mentionPopupBox" class="mention-popup-container"></div>
 
-    <!-- 하단 입력바 -->
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
-      
       <div class="input-bottom-tools" style="justify-content: flex-end;">
-        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">
-          전송
-        </button>
+        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">전송</button>
       </div>
     </footer>
 
@@ -406,7 +390,7 @@
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
-  <!-- 초기 비밀번호(000000) 필수 변경 모달 -->
+  <!-- 초기 비밀번호 변경 모달 -->
   <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div class="mb-2" style="font-size: 2rem;">🔐</div>
@@ -414,13 +398,9 @@
       <p class="text-secondary small mb-3" style="font-size: 0.74rem; line-height: 1.45;">
         현재 초기 비밀번호(<strong>000000</strong>)를 사용 중입니다.<br>안전한 계정 보호를 위해 새로운 6자리 비밀번호로 변경해 주세요.
       </p>
-
       <input type="password" id="forceNewPinInput" class="text-center" placeholder="새 비밀번호 6자리 숫자" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 8px;" onkeypress="if(event.keyCode===13){ document.getElementById('forceNewPinConfirmInput').focus(); }">
       <input type="password" id="forceNewPinConfirmInput" class="text-center" placeholder="새 비밀번호 6자리 다시 입력" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;" onkeypress="if(event.keyCode===13){ executeForceChangePin(); }">
-
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeForceChangePin()">
-        비밀번호 변경 완료
-      </button>
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeForceChangePin()">비밀번호 변경 완료</button>
     </div>
   </div>
 
@@ -443,39 +423,21 @@
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">프로필과 대화창에 표기될 직업을 선택하세요.</p>
-      
       <div class="class-preset-grid">
-        <div class="class-preset-cell" onclick="selectClassProfile('🏹', '궁수')">
-          <span class="class-icon-big">🏹</span><span class="class-title-small">궁수</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🌿', '힐러')">
-          <span class="class-icon-big">🌿</span><span class="class-title-small">힐러</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('⚔️', '전사')">
-          <span class="class-icon-big">⚔️</span><span class="class-title-small">전사</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🛡️', '탱커')">
-          <span class="class-icon-big">🛡️</span><span class="class-title-small">탱커</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🪄', '마법사')">
-          <span class="class-icon-big">🪄</span><span class="class-title-small">마법사</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('👊', '무투사')">
-          <span class="class-icon-big">👊</span><span class="class-title-small">무투사</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🥷', '암살자')">
-          <span class="class-icon-big">🥷</span><span class="class-title-small">암살자</span>
-        </div>
-        <div class="class-preset-cell" onclick="selectClassProfile('👑', '길드장')">
-          <span class="class-icon-big">👑</span><span class="class-title-small">길드장</span>
-        </div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🏹', '궁수')"><span class="class-icon-big">🏹</span><span class="class-title-small">궁수</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🌿', '힐러')"><span class="class-icon-big">🌿</span><span class="class-title-small">힐러</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('⚔️', '전사')"><span class="class-icon-big">⚔️</span><span class="class-title-small">전사</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🛡️', '탱커')"><span class="class-icon-big">🛡️</span><span class="class-title-small">탱커</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🪄', '마법사')"><span class="class-icon-big">🪄</span><span class="class-title-small">마법사</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👊', '무투사')"><span class="class-icon-big">👊</span><span class="class-title-small">무투사</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🥷', '암살자')"><span class="class-icon-big">🥷</span><span class="class-title-small">암살자</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👑', '길드장')"><span class="class-icon-big">👑</span><span class="class-title-small">길드장</span></div>
       </div>
-
       <button type="button" class="btn btn-light btn-sm w-100 py-1" style="font-size:0.78rem;" onclick="closeProfileEditModal()">닫기</button>
     </div>
   </div>
 
-  <!-- 0. 최초 진입 게이트웨이 모달 (정중앙 G 로고 장착) -->
+  <!-- 최초 진입 게이트웨이 모달 -->
   <div id="modalWelcomeGateway" class="kakao-modal-backdrop" style="display: none; z-index: 99999;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div style="width: 48px; height: 48px; border-radius: 14px; background: #181d24; border: 2.5px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35); line-height: 1;">
@@ -509,16 +471,14 @@
     </div>
   </div>
 
-  <!-- 라이선스 키로 길드 신규 개설 모달 -->
+  <!-- 라이선스 개설 모달 -->
   <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-key text-warning me-1"></i>라이선스 키로 길드 시작</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">발급받으신 라이선스 키를 입력하세요.</p>
-
       <input type="text" id="actLicenseKeyInput" class="text-center font-monospace text-uppercase" placeholder="ECL-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px;">
       <input type="text" id="actMasterNickInput" placeholder="길드장 닉네임 (본인 캐릭터명)" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px;">
       <input type="password" id="actPinInput" class="text-center" placeholder="길드장 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;">
-
       <div class="d-flex gap-2">
         <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeActivateGuildModal()">취소</button>
         <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="executeActivateGuild()">길드 개설 완료</button>
@@ -526,16 +486,14 @@
     </div>
   </div>
 
-  <!-- 초대 코드로 길드 가입 모달 -->
+  <!-- 초대 코드 가입 모달 -->
   <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">길드장에게 전달받은 초대 코드를 입력하세요.</p>
-
       <input type="text" id="joinInviteCodeInput" class="text-center font-monospace text-uppercase" placeholder="INV-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px;">
       <input type="text" id="joinMemberNickInput" placeholder="본인 캐릭터 닉네임" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px;">
       <input type="password" id="joinMemberPinInput" class="text-center" placeholder="개인 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;">
-
       <div class="d-flex gap-2">
         <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeJoinGuildModal()">취소</button>
         <button type="button" class="btn btn-success btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeJoinGuildWithCode()">입장하기</button>
@@ -543,17 +501,15 @@
     </div>
   </div>
 
-  <!-- 신규 라이선스 신청 모달 -->
+  <!-- 라이선스 신청 모달 -->
   <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-paper-plane text-primary me-1"></i>신규 길드 라이선스 신청</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">MMORPG 길드 전용 라이선스를 신청하세요.</p>
-
       <input type="text" id="reqGameNameInput" placeholder="게임명 (예: 리니지M, 로아, 오딘)" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
       <input type="text" id="reqGuildNameInput" placeholder="길드명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
       <input type="text" id="reqMasterNickInput" placeholder="신청자(길드장) 캐릭터명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
       <input type="text" id="reqContactInput" placeholder="연락처 (이메일 또는 카톡/디스코드)" style="height: 36px; font-size: 0.82rem; margin-bottom: 12px;">
-
       <div class="d-flex gap-2">
         <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeLicenseRequestModal()">취소</button>
         <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="submitLicenseRequestForm()">신청 완료</button>
@@ -561,7 +517,6 @@
     </div>
   </div>
 
-  <!-- 라이선스 발급 완료 안내 팝업 -->
   <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
     <div class="kakao-modal-card" style="max-width: 300px;">
       <div class="mb-2"><i class="fa-solid fa-circle-check text-success" style="font-size: 2.2rem;"></i></div>
@@ -571,26 +526,21 @@
     </div>
   </div>
 
-  <!-- 1:1 / 비밀 운영진 새 대화방 개설 모달 -->
   <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 대화방 만들기</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">개설할 대화방 종류를 선택하세요.</p>
-
       <select id="newRoomTypeSelect" class="form-select form-select-sm mb-2" onchange="onRoomTypeChange(this.value)">
         <option value="group">공개 그룹 대화방</option>
         <option value="secret">비밀 운영진방</option>
         <option value="one_on_one">1:1 개인 대화방</option>
       </select>
-
       <div id="roomTitleInputGroup" class="mb-2">
         <input type="text" id="newRoomTitleInput" class="form-control form-control-sm" placeholder="대화방 이름 입력">
       </div>
-
       <div id="oneOnOneTargetGroup" class="mb-2" style="display: none;">
         <select id="oneOnOneTargetSelect" class="form-select form-select-sm"></select>
       </div>
-
       <div class="d-flex gap-2 mt-3">
         <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeCreateRoomModal()">취소</button>
         <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeCreateNewRoom()">개설하기</button>
@@ -598,7 +548,6 @@
     </div>
   </div>
 
-  <!-- 스마트 길드 로그인 모달 (정중앙 G 로고 장착) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div style="width: 48px; height: 48px; border-radius: 14px; background: #181d24; border: 2.5px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35); line-height: 1;">
@@ -607,7 +556,6 @@
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
       
-      <!-- 닉네임 직접 입력창 -->
       <div style="position: relative; margin-bottom: 8px; text-align: left;">
         <i class="fa-solid fa-user" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="text" id="loginNickSearchInput" placeholder="본인 캐릭터 닉네임 입력" autocomplete="off"
@@ -615,7 +563,6 @@
                onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
       </div>
 
-      <!-- 비밀번호(PIN) 입력창 -->
       <div style="position: relative; margin-bottom: 10px; text-align: left;">
         <i class="fa-solid fa-lock" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 6자리 입력" maxlength="20"
@@ -623,7 +570,6 @@
                onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
       </div>
 
-      <!-- 다중 길드 동명이인 시 길드 선택 박스 -->
       <div id="loginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3);">
         <div class="small fw-bold text-info mb-2" style="font-size: 0.73rem;">
           <i class="fa-solid fa-circle-check me-1"></i>동일한 닉네임이 여러 길드에 있습니다. 입장할 길드를 선택하세요:
@@ -643,7 +589,6 @@
     </div>
   </div>
 
-  <!-- 게이트웨이 및 전송 보조 스크립트 -->
   <script>
     function openProfileEditModal() {
       var modal = document.getElementById("modalProfileEdit");
@@ -1123,27 +1068,25 @@
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 
-  <!-- ========================================================
-       [NEW] 강제 업데이트 차단 전체 화면 모달 & v1.1.1 강제 검사기
-       ======================================================== -->
+  <!-- [중앙 연동형] 강제 업데이트 차단 전체 화면 모달 -->
   <div id="modalForceUpdate" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 20, 0.94); backdrop-filter: blur(8px); z-index: 2147483647 !important; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
     <div style="width: 100%; max-width: 330px; background: #181d24; border: 1.5px solid #2d3748; border-radius: 20px; padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); color: #f3f4f6;">
       <div style="width: 56px; height: 56px; border-radius: 18px; background: #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 4px 18px rgba(254, 229, 0, 0.35);">
         🚀
       </div>
       <h5 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: #ffffff;">새 버전 업데이트 안내</h5>
-      <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
-        레이드온 <strong>v1.1.1</strong> 정식 버전이 출시되었습니다.<br>트레이 최소화 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
+      <p id="forceUpdateDescIndex" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
+        레이드온 최신 정식 버전이 출시되었습니다.<br>트레이 최소화 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
       </p>
 
       <div style="background: #11151a; border: 1px solid #202732; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; font-size: 0.76rem; text-align: left; display: flex; flex-direction: column; gap: 6px;">
         <div style="display: flex; justify-content: space-between;">
           <span style="color: #64748b;">내 현재 버전</span>
-          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">구버전 (v1.1.0 이하)</span>
+          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">구버전</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
           <span style="color: #64748b;">필수 최신 버전</span>
-          <span style="color: #22c55e; font-weight: 700;">v1.1.1 (최신)</span>
+          <span id="requiredClientVerTextIndex" style="color: #22c55e; font-weight: 700;">최신</span>
         </div>
       </div>
 
@@ -1154,38 +1097,47 @@
     </div>
   </div>
 
+  <!-- [중앙 연동 스크립트] version.json 검사기 -->
   <script>
-    (function enforceClientUpdate() {
-      // 1. 일반 웹 브라우저(모바일 Chrome/Safari 등)인지 일렉트론 PC 앱인지 확인
+    (async function enforceClientUpdate() {
       const ua = navigator.userAgent || "";
       const isDesktopClient = ua.includes("Electron") || ua.includes("RaidOn");
-
-      // 웹 브라우저 사용자는 잠금 해제 (PC 데스크톱 클라이언트만 버전 강제 검사)
       if (!isDesktopClient) return;
 
-      // 2. 최신 v1.1.1 클라이언트 여부 판별 (1.1.1이 아니면 즉시 화면 잠금)
-      const isLatestV111 = ua.includes("RaidOn/1.1.1");
+      try {
+        const res = await fetch('/version.json?t=' + Date.now());
+        if (!res.ok) return;
+        const config = await res.json();
+        const requiredVer = config.min_required_version || config.latest_version || '1.1.1';
 
-      function applyLock() {
-        if (!isLatestV111) {
-          const modal = document.getElementById("modalForceUpdate");
-          if (modal) {
-            modal.style.display = "flex";
-            document.body.style.overflow = "hidden";
-            // 뒤쪽 모든 탭과 대화방 화면 조작 차단
-            const mainTabs = document.getElementById("kakaoMainTabsView");
-            const chatView = document.getElementById("chatRoomView");
-            if (mainTabs) mainTabs.style.pointerEvents = "none";
-            if (chatView) chatView.style.pointerEvents = "none";
+        const isUpToDate = ua.includes(`RaidOn/${requiredVer}`);
+
+        if (!isUpToDate) {
+          const applyLock = () => {
+            const modal = document.getElementById("modalForceUpdate");
+            if (modal) {
+              const reqText = document.getElementById("requiredClientVerTextIndex");
+              if (reqText) reqText.innerText = `v${requiredVer} (최신)`;
+              const desc = document.getElementById("forceUpdateDescIndex");
+              if (desc && config.update_notice) {
+                desc.innerHTML = `레이드온 <strong>v${requiredVer}</strong> 정식 버전이 출시되었습니다.<br>${config.update_notice}`;
+              }
+              modal.style.display = "flex";
+              document.body.style.overflow = "hidden";
+              const mainTabs = document.getElementById("kakaoMainTabsView");
+              const chatView = document.getElementById("chatRoomView");
+              if (mainTabs) mainTabs.style.pointerEvents = "none";
+              if (chatView) chatView.style.pointerEvents = "none";
+            }
+          };
+
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", applyLock);
+          } else {
+            applyLock();
           }
         }
-      }
-
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", applyLock);
-      } else {
-        applyLock();
-      }
+      } catch (err) {}
     })();
   </script>
 </body>
