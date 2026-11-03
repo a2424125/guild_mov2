@@ -225,7 +225,6 @@ async function initApp() {
   }
 }
 
-// 🌟 현재 접속 중인 길드(guild_id)의 설정 로드 및 [게임명] 길드명 유동적 바인딩
 async function loadGuildSettings() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -282,7 +281,6 @@ async function loadGuildSettings() {
   }
 }
 
-// 현재 길드(guild_id)의 길드원만 조회
 window.loadGuildMembersData = async function() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -603,7 +601,6 @@ async function executeGuildLogin(forcedGuildId = null) {
   if (!selectedName) return showKakaoToast("본인 캐릭터 닉네임을 입력해주세요!", "⚠️");
   if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-  // 슈퍼관리자 마스터 로그인 체크
   const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
   if (isSuperId && (inputPin === "123456" || inputPin === "master7777")) {
     myCurrentNick = "슈퍼관리자";
@@ -899,7 +896,7 @@ window.updateProfileUI = function(nick) {
 function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 & 실시간 대화 수신 (길드별·방별 격리 & 알림음 재생)
+// 5. 과거 대화 로드 & 실시간 대화 수신
 // --------------------------------------------------------
 async function loadPastChatMessages() {
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
@@ -1562,7 +1559,7 @@ function closeMentionPopup() {
 }
 
 // --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더
+// 9. 서브 모듈 화면 오버레이 로더 (권한 가드 보정)
 // --------------------------------------------------------
 window.openModulePage = async function(pageName) {
   if (pageName === "PageMembers") {
@@ -1580,9 +1577,8 @@ window.openModulePage = async function(pageName) {
   const isAdmin = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마") || (myRole === "수호");
   const isElite = isAdmin || (adminRole === "elite") || (myRole === "정예");
 
-  if (pageName === 'PageSettings' && !isAdmin) {
-    return showKakaoToast("설정 페이지는 관리자만 접근할 수 있습니다.", "⚠️");
-  }
+  // ⚡ [핵심 교정] PageSettings는 일반 길드원도 화면에 진입하여 내 프로필/테마/알림음을 제어할 수 있도록 입구를 허용합니다.
+  // (관리자/길드장 전용 탭은 PageSettings.html 내부에서 자물쇠 처리됨)
   if (pageName === 'PageFinance' && !isAdmin) {
     return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
   }
