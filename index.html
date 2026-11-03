@@ -1124,7 +1124,7 @@
   <script src="rooms.js"></script>
 
   <!-- ========================================================
-       [NEW] 강제 업데이트 차단 전체 화면 모달 & v1.1.0 강제 검사기
+       [NEW] 강제 업데이트 차단 전체 화면 모달 & v1.1.1 강제 검사기
        ======================================================== -->
   <div id="modalForceUpdate" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 20, 0.94); backdrop-filter: blur(8px); z-index: 2147483647 !important; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
     <div style="width: 100%; max-width: 330px; background: #181d24; border: 1.5px solid #2d3748; border-radius: 20px; padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); color: #f3f4f6;">
@@ -1133,17 +1133,17 @@
       </div>
       <h5 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: #ffffff;">새 버전 업데이트 안내</h5>
       <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
-        레이드온 <strong>v1.1.0</strong> 정식 버전이 출시되었습니다.<br>아이콘 변경 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
+        레이드온 <strong>v1.1.1</strong> 정식 버전이 출시되었습니다.<br>트레이 최소화 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
       </p>
 
       <div style="background: #11151a; border: 1px solid #202732; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; font-size: 0.76rem; text-align: left; display: flex; flex-direction: column; gap: 6px;">
         <div style="display: flex; justify-content: space-between;">
           <span style="color: #64748b;">내 현재 버전</span>
-          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">v1.0.0 (구버전)</span>
+          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">구버전 (v1.1.0 이하)</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
           <span style="color: #64748b;">필수 최신 버전</span>
-          <span style="color: #22c55e; font-weight: 700;">v1.1.0 (최신)</span>
+          <span style="color: #22c55e; font-weight: 700;">v1.1.1 (최신)</span>
         </div>
       </div>
 
@@ -1163,11 +1163,11 @@
       // 웹 브라우저 사용자는 잠금 해제 (PC 데스크톱 클라이언트만 버전 강제 검사)
       if (!isDesktopClient) return;
 
-      // 2. 최신 v1.1.0 클라이언트 여부 판별
-      const isLatestV110 = ua.includes("RaidOn/1.1.0");
+      // 2. 최신 v1.1.1 클라이언트 여부 판별 (1.1.1이 아니면 즉시 화면 잠금)
+      const isLatestV111 = ua.includes("RaidOn/1.1.1");
 
       function applyLock() {
-        if (!isLatestV110) {
+        if (!isLatestV111) {
           const modal = document.getElementById("modalForceUpdate");
           if (modal) {
             modal.style.display = "flex";
