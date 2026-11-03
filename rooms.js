@@ -195,6 +195,21 @@ window.switchMainBottomTab = function(tabName) {
 };
 
 // --------------------------------------------------------
+// 헬퍼: 직업명에 따른 아바타 스타일 클래스 자동 부여 (용량 0KB)
+// --------------------------------------------------------
+function getClassAvatarStyle(className) {
+  const c = className || "";
+  if (c.includes("전사") || c.includes("무투") || c.includes("버서커")) return { cls: "avatar-warrior", icon: "⚔️" };
+  if (c.includes("궁수") || c.includes("레인저") || c.includes("스나이퍼")) return { cls: "avatar-archer", icon: "🏹" };
+  if (c.includes("마법") || c.includes("위자드") || c.includes("소서리스")) return { cls: "avatar-mage", icon: "🪄" };
+  if (c.includes("탱커") || c.includes("기사") || c.includes("가디언")) return { cls: "avatar-tanker", icon: "🛡️" };
+  if (c.includes("힐러") || c.includes("사제") || c.includes("프리스트")) return { cls: "avatar-healer", icon: "🌿" };
+  if (c.includes("암살") || c.includes("로그") || c.includes("도적")) return { cls: "avatar-assassin", icon: "🥷" };
+  if (c.includes("길드장") || c.includes("길마")) return { cls: "avatar-master", icon: "👑" };
+  return { cls: "avatar-default", icon: "👤" };
+}
+
+// --------------------------------------------------------
 // 2. [친구 탭] 길드원 리스트 렌더링 & 클릭 제어
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
@@ -211,7 +226,12 @@ window.loadMainTabFriendsList = async function() {
   const myClassElem = document.getElementById("mainTabMyClass");
 
   if (myNickElem) myNickElem.innerText = myNick || "로그인 필요";
-  if (myAvatarElem) myAvatarElem.innerText = myAvatar;
+  
+  const myStyle = getClassAvatarStyle(myClass);
+  if (myAvatarElem) {
+    myAvatarElem.className = `room-avatar-large my-avatar-box ${myStyle.cls}`;
+    myAvatarElem.innerText = (myAvatar && myAvatar !== "👤") ? myAvatar : myStyle.icon;
+  }
   if (myClassElem) myClassElem.innerText = myClass;
 
   try {
@@ -247,17 +267,22 @@ window.loadMainTabFriendsList = async function() {
     container.innerHTML = members.map(m => {
       const mName = m.nickname || m.name || "길드원";
       const isMe = (mName === myNick);
-      const mAvatar = m.avatar_icon || m.avatar || (m.job_class ? m.job_class.split(" ")[0] : "👤");
       const mClass = m.class_name || m.job_class || "클래스 미지정";
       const mRole = m.role || "일반";
 
+      const styleObj = getClassAvatarStyle(mClass);
+      let mAvatar = m.avatar_icon || m.avatar || "";
+      if (!mAvatar || mAvatar === "👤") {
+        mAvatar = styleObj.icon;
+      }
+
       let roleBadge = "";
       if (mRole === "길드장" || mRole === "길마") {
-        roleBadge = `<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.62rem;">길마</span>`;
+        roleBadge = `<span class="badge badge-master-pill me-1">길마</span>`;
       } else if (mRole === "부길드장" || mRole === "부길마" || mRole === "수호") {
-        roleBadge = `<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.62rem;">${mRole === "수호" ? "수호" : "부길마"}</span>`;
+        roleBadge = `<span class="badge badge-submaster-pill me-1">${mRole === "수호" ? "수호" : "부길마"}</span>`;
       } else if (mRole === "정예") {
-        roleBadge = `<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.62rem;">정예</span>`;
+        roleBadge = `<span class="badge badge-elite-pill me-1">정예</span>`;
       }
 
       const safeName = mName.replace(/'/g, "\\'");
@@ -267,18 +292,18 @@ window.loadMainTabFriendsList = async function() {
 
       return `
         <div class="friend-item-card" onclick="handleFriendItemClick('${safeName}', '${safeAvatar}', '${safeClass}', '${safeRole}')">
-          <div class="friend-avatar">${mAvatar}</div>
+          <div class="friend-avatar ${styleObj.cls}">${mAvatar}</div>
           <div class="room-content-box">
             <div class="d-flex align-items-center" style="gap: 4px;">
               ${roleBadge}
               <span class="room-name-text">${mName}</span>
-              ${isMe ? '<span class="badge bg-secondary bg-opacity-25 text-secondary ms-1" style="font-size:0.6rem;">나</span>' : ''}
+              ${isMe ? '<span class="badge badge-me-tag ms-1">나</span>' : ''}
             </div>
-            <p class="room-msg-preview">${mClass}</p>
+            <p class="room-msg-preview class-desc-text">${mClass}</p>
           </div>
           ${isMe ? 
-            '<i class="fa-solid fa-pen text-secondary me-1" style="font-size:0.8rem;" title="프로필 변경"></i>' : 
-            `<button type="button" class="btn btn-outline-warning btn-xs py-1 px-2" style="font-size:0.68rem; border-radius:5px;" onclick="event.stopPropagation(); startDirectChatWith('${safeName}');"><i class="fa-solid fa-comment-dots me-1"></i>1:1 대화</button>`
+            '<i class="fa-solid fa-pen text-secondary me-1 btn-edit-profile-icon" title="프로필 변경"></i>' : 
+            `<button type="button" class="btn btn-direct-chat-pill" onclick="event.stopPropagation(); startDirectChatWith('${safeName}');"><i class="fa-solid fa-comment-dots me-1"></i>1:1 대화</button>`
           }
         </div>
       `;
@@ -299,7 +324,7 @@ window.handleFriendItemClick = function(mName, mAvatar, mClass, mRole) {
 };
 
 // --------------------------------------------------------
-// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링 (방 중복 제거 및 [게임명] 길드명 표기)
+// 3. [채팅 탭] 참여 중인 대화방 목록 로딩 & 렌더링
 // --------------------------------------------------------
 window.loadMainTabRoomsList = async function() {
   const container = document.getElementById("mainTabRoomsList");
@@ -314,7 +339,6 @@ window.loadMainTabRoomsList = async function() {
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
     const curGuild = joined.find(g => g.guild_id === currentGid);
     
-    // 유동적 대화방 타이틀: [게임명] 길드명 형태
     const gName = curGuild?.guild_name || "길드";
     const gGame = curGuild?.game_name || "";
     const guildTitle = gGame ? `[${gGame}] ${gName}` : `${gName} 전체 대화방`;
@@ -330,7 +354,6 @@ window.loadMainTabRoomsList = async function() {
     const roomMap = new Map();
     let hasPublicRoomInDb = false;
 
-    // 1. DB 서버 방 처리 (길드 격리 및 내 참여 방만 추출)
     (serverRooms || []).forEach(r => {
       if (r && r.id && r.guild_id === currentGid) {
         if (r.room_type === "direct") {
@@ -359,7 +382,6 @@ window.loadMainTabRoomsList = async function() {
       }
     });
 
-    // 2. 전체 대화방 기본 객체
     if (!hasPublicRoomInDb) {
       roomMap.set("default_public", {
         id: "default_public",
@@ -383,7 +405,6 @@ window.loadMainTabRoomsList = async function() {
     const countElem = document.getElementById("mainTabRoomCount");
     if (countElem) countElem.innerText = myRooms.length;
 
-    // 최근 메시지 조회 (현재 guild_id만 격리)
     let recentChats = [];
     if (typeof apiRequest === "function") {
       try {
@@ -442,7 +463,6 @@ window.loadMainTabRoomsList = async function() {
           if (otherNick) displayTitle = otherNick;
         }
       } else {
-        // 전체 대화방: 정중앙 G 골드 옐로우 배지
         iconHtml = `<span style="font-weight:900; color:#fee500; font-size:1.15rem; line-height:1;">G</span>`;
         typeBadge = `<span class="badge bg-warning bg-opacity-25 text-warning ms-1" style="font-size:0.6rem;">전체</span>`;
         displayTitle = guildTitle;
@@ -611,7 +631,6 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
   }
 };
 
-// 🌟 대화방 입장 시 상단 헤더 아이콘 & 유동적 [게임명] 길드명 표기 완비
 window.openChatRoom = function(roomId, roomTitle, roomType) {
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   let joined = [];
@@ -654,7 +673,6 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
       avatarElem.style.background = "rgba(2, 132, 199, 0.15)";
       avatarElem.style.border = "1px solid rgba(2, 132, 199, 0.4)";
     } else {
-      // 전체 대화방: 디스코드 아이콘 완전 제거 -> 정중앙 G 골드 옐로우 심볼 탑재
       avatarElem.innerHTML = `<span style="font-weight:900; color:#fee500; font-size:1.05rem; line-height:1;">G</span>`;
       avatarElem.style.background = "#181d24";
       avatarElem.style.border = "1.5px solid #fee500";
@@ -697,9 +715,6 @@ window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
   }
 };
 
-// --------------------------------------------------------
-// 5. 1:1 개인 대화방 시작 (중복 확인 후 기존 방 재사용 + 자연스러운 상대방 이름)
-// --------------------------------------------------------
 window.startDirectChatWith = async function(targetNick) {
   const myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
   if (!myNick) {
@@ -764,9 +779,6 @@ window.startDirectChatWith = async function(targetNick) {
   }
 };
 
-// --------------------------------------------------------
-// 6. [설정 탭] 개인 환경설정 화면 로더
-// --------------------------------------------------------
 window.loadMainTabSettingsPage = async function() {
   const tabMore = document.getElementById("tabMoreContent");
   if (!tabMore) return;
@@ -788,9 +800,6 @@ window.loadMainTabSettingsPage = async function() {
   }
 };
 
-// --------------------------------------------------------
-// 7. 모달 제어 전역 함수 보장
-// --------------------------------------------------------
 window.openProfileEditModal = function() {
   const modal = document.getElementById("modalProfileEdit");
   if (modal) modal.style.display = "flex";
@@ -894,9 +903,6 @@ window.selectClassProfile = async function(icon, className) {
   }
 };
 
-// --------------------------------------------------------
-// 8. 새 대화방 개설 모달 제어
-// --------------------------------------------------------
 window.openCreateRoomModal = function() {
   const modal = document.getElementById("modalCreateRoom");
   if (modal) modal.style.display = "flex";
@@ -997,9 +1003,6 @@ window.executeCreateNewRoom = async function() {
   }
 };
 
-// --------------------------------------------------------
-// 9. 실시간 대화방 생성 동기화 & 초기화 (타 길드 이벤트 무시)
-// --------------------------------------------------------
 window.initRoomsRealtime = function() {
   if (!window.supabaseClient) return;
   try {
