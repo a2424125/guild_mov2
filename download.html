@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>길드톡 - 공식 클라이언트 다운로드</title>
+
+  <!-- 파비콘 및 앱 아이콘 연결 -->
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <!-- 부트스트랩 & 폰트어썸 아이콘 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-color: #0f1318;
+      --card-bg: #181d24;
+      --card-border: #28303c;
+      --text-main: #f3f4f6;
+      --text-sub: #94a3b8;
+      --gold-yellow: #fee500;
+      --kakao-brown: #382823;
+      --android-green: #3ddc84;
+      --win-blue: #00a4ef;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Pretendard", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 16px 60px 16px;
+      line-height: 1.5;
+    }
+
+    /* 상단 헤더 & 브랜드 섹션 */
+    .download-header {
+      text-align: center;
+      margin-bottom: 36px;
+      max-width: 640px;
+    }
+
+    .brand-logo-wrap {
+      width: 88px;
+      height: 88px;
+      border-radius: 26px;
+      background: var(--kakao-brown);
+      border: 4px solid var(--gold-yellow);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(254, 229, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.6);
+      margin-bottom: 18px;
+      position: relative;
+    }
+
+    .brand-logo-text {
+      font-size: 3.2rem;
+      font-weight: 900;
+      color: var(--gold-yellow);
+      line-height: 1;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      background: rgba(254, 229, 0, 0.12);
+      color: var(--gold-yellow);
+      border: 1px solid rgba(254, 229, 0, 0.35);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    .main-title {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .sub-title {
+      font-size: 0.92rem;
+      color: var(--text-sub);
+      word-break: keep-all;
+    }
+
+    /* 다운로드 2단 그리드 */
+    .download-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 340px));
+      gap: 22px;
+      width: 100%;
+      max-width: 720px;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+
+    .download-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 22px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .download-card:hover {
+      transform: translateY(-4px);
+      border-color: #3b4656;
+    }
+
+    .card-platform-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    /* 디바이스 시각 목업 그래픽 */
+    .mockup-container {
+      width: 100%;
+      height: 140px;
+      background: #11151a;
+      border: 1px solid #202732;
+      border-radius: 14px;
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 스마트폰 내부 미니 UI 목업 */
+    .mobile-screen-ui {
+      width: 130px;
+      height: 100%;
+      background: #1e242d;
+      border-radius: 8px 8px 0 0;
+      border: 2px solid #333d4d;
+      border-bottom: none;
+      display: flex;
+      flex-direction: column;
+      padding: 6px;
+      gap: 4px;
+    }
+    .mini-bubble-left {
+      align-self: flex-start;
+      background: #2a3341;
+      border-radius: 4px;
+      height: 14px;
+      width: 65%;
+    }
+    .mini-bubble-right {
+      align-self: flex-end;
+      background: var(--gold-yellow);
+      border-radius: 4px;
+      height: 14px;
+      width: 50%;
+    }
+    .mini-timer-bar {
+      margin-top: auto;
+      background: rgba(239, 68, 68, 0.25);
+      border: 1px solid #ef4444;
+      border-radius: 4px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.6rem;
+      color: #fca5a5;
+      font-weight: bold;
+    }
+
+    /* PC 모니터 내부 미니 UI 목업 */
+    .pc-screen-ui {
+      width: 190px;
+      height: 100%;
+      background: #1a2028;
+      border-radius: 6px;
+      border: 2px solid #333d4d;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+      gap: 6px;
+    }
+    .pc-top-bar {
+      height: 10px;
+      background: #242c38;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding-left: 4px;
+    }
+    .pc-dot { width: 4px; height: 4px; border-radius: 50%; background: #64748b; }
+    .pc-grid-area {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+    }
+    .pc-card-box {
+      background: #252e3b;
+      border-radius: 3px;
+    }
+
+    .card-title-text {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .card-desc-text {
+      font-size: 0.78rem;
+      color: var(--text-sub);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    /* 다운로드 버튼 스타일 */
+    .btn-download-main {
+      width: 100%;
+      height: 48px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-android {
+      background: var(--gold-yellow);
+      color: #191919;
+      box-shadow: 0 4px 16px rgba(254, 229, 0, 0.25);
+    }
+    .btn-android:hover {
+      background: #ecd500;
+      color: #111;
+      transform: scale(0.98);
+    }
+
+    .btn-windows {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.3);
+    }
+    .btn-windows:hover {
+      background: #0369a1;
+      color: #fff;
+      transform: scale(0.98);
+    }
+
+    .file-meta-info {
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 10px;
+    }
+
+    /* 하단 시각적 설치 가이드 (그림 카드) */
+    .guide-section {
+      width: 100%;
+      max-width: 720px;
+      background: #14181f;
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 22px 20px;
+    }
+
+    .guide-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--gold-yellow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .guide-steps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 600px) {
+      .guide-steps-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .step-box {
+      background: #1c222b;
+      border: 1px solid #28313e;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .step-box-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 가이드 그래픽 다이어그램 */
+    .guide-diagram-box {
+      height: 48px;
+      background: #0d1117;
+      border-radius: 6px;
+      border: 1px dashed #3b4555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .diagram-point-btn {
+      background: #2563eb;
+      color: #fff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #60a5fa;
+      font-size: 0.7rem;
+      margin: 0 4px;
+      animation: pulseBtn 1.5s infinite;
+    }
+
+    @keyframes pulseBtn {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.7); }
+      70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(96, 165, 250, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(96, 165, 250, 0); }
+    }
+
+    .step-box-desc {
+      font-size: 0.72rem;
+      color: var(--text-sub);
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. 상단 브랜드 헤더 -->
+  <header class="download-header">
+    <div class="brand-logo-wrap">
+      <span class="brand-logo-text">G</span>
+    </div>
+    <div>
+      <span class="brand-badge"><i class="fa-solid fa-shield-halved me-1"></i>공식 길드 클라이언트</span>
+    </div>
+    <h1 class="main-title">길드톡 메신저 다운로드</h1>
+    <p class="sub-title">모바일과 PC에서 보스 알림, 토벌 등록, 금고 장부까지 끊김 없이 관리하세요.</p>
+  </header>
+
+  <!-- 2. 중앙 2대 플랫폼 다운로드 카드 -->
+  <main class="download-grid">
+
+    <!-- 안드로이드 모바일 카드 -->
+    <div class="download-card">
+      <div class="card-platform-badge text-warning">
+        <i class="fa-brands fa-android text-success" style="font-size: 1.1rem;"></i>
+        <span>Android 스마트폰 전용</span>
+      </div>
+
+      <!-- 스마트폰 미니 목업 그래픽 -->
+      <div class="mockup-container">
+        <div class="mobile-screen-ui">
+          <div class="mini-bubble-left"></div>
+          <div class="mini-bubble-right"></div>
+          <div class="mini-timer-bar">
+            <i class="fa-regular fa-clock me-1"></i>보스타임 02:45
+          </div>
+        </div>
+      </div>
+
+      <div class="card-title-text">모바일 앱 (APK)</div>
+      <p class="card-desc-text">갤럭시 및 안드로이드 스마트폰에 직접 설치하여 백그라운드 푸시 알림과 진동을 수신합니다.</p>
+
+      <!-- 💡 GitHub Releases 직링크 삽입 자리 -->
+      <a href="https://github.com/your-username/your-repo/releases/latest/download/guildtalk.apk" class="btn-download-main btn-android" id="btnAndroidDownload">
+        <i class="fa-solid fa-download"></i>
+        <span>Android APK 다운로드</span>
+      </a>
+      <span class="file-meta-info">최신버전 v1.0.0 · APK Package</span>
+    </div>
+
+    <!-- 윈도우 PC 카드 -->
+    <div class="download-card">
+      <div class="card-platform-badge text-info">
+        <i class="fa-brands fa-windows" style="font-size: 1.1rem;"></i>
+        <span>Windows PC 데스크톱 전용</span>
+      </div>
+
+      <!-- PC 모니터 미니 목업 그래픽 -->
+      <div class="mockup-container">
+        <div class="pc-screen-ui">
+          <div class="pc-top-bar">
+            <div class="pc-dot"></div><div class="pc-dot"></div><div class="pc-dot"></div>
+          </div>
+          <div class="pc-grid-area">
+            <div class="pc-card-box"></div>
+            <div class="pc-card-box"></div>
+            <div class="pc-card-box"></div>
+            <div class="pc-card-box"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-title-text">PC 프로그램 (EXE)</div>
+      <p class="card-desc-text">게임 플레이 중 듀얼 모니터에 띄워두고 보스 젠 시간 확인 및 금고 정산을 진행합니다.</p>
+
+      <!-- 💡 GitHub Releases 직링크 삽입 자리 -->
+      <a href="https://github.com/your-username/your-repo/releases/latest/download/guildtalk-setup.exe" class="btn-download-main btn-windows" id="btnWindowsDownload">
+        <i class="fa-solid fa-download"></i>
+        <span>Windows EXE 다운로드</span>
+      </a>
+      <span class="file-meta-info">최신버전 v1.0.0 · Windows 64-bit EXE</span>
+    </div>
+
+  </main>
+
+  <!-- 3. 초보 길드원을 위한 비주얼 설치 가이드 (그림 박스) -->
+  <section class="guide-section">
+    <div class="guide-title">
+      <i class="fa-solid fa-circle-info"></i>
+      <span>설치 시 보안 경고가 뜰 때 해결법</span>
+    </div>
+
+    <div class="guide-steps-grid">
+      <!-- 윈도우 가이드 -->
+      <div class="step-box">
+        <div class="step-box-title text-info">
+          <i class="fa-brands fa-windows"></i>
+          <span>Windows PC 경고창 해결</span>
+        </div>
+        <div class="guide-diagram-box">
+          <span class="text-secondary">[추가 정보]</span>
+          <i class="fa-solid fa-arrow-right mx-1 text-secondary" style="font-size: 0.6rem;"></i>
+          <span class="diagram-point-btn">[실행] 클릭</span>
+        </div>
+        <p class="step-box-desc">
+          파란색 "Windows의 PC 보호" 창이 나타나면 <strong>[추가 정보]</strong> 글씨를 누른 뒤 활성화되는 <strong>[실행]</strong> 버튼을 누르면 정상 실행됩니다.
+        </p>
+      </div>
+
+      <!-- 안드로이드 가이드 -->
+      <div class="step-box">
+        <div class="step-box-title text-warning">
+          <i class="fa-brands fa-android"></i>
+          <span>Android 모바일 경고 해결</span>
+        </div>
+        <div class="guide-diagram-box">
+          <span class="text-secondary">[세부정보]</span>
+          <i class="fa-solid fa-arrow-right mx-1 text-secondary" style="font-size: 0.6rem;"></i>
+          <span class="diagram-point-btn" style="background: #eab308; border-color: #fde047; color: #111;">[무시하고 설치]</span>
+        </div>
+        <p class="step-box-desc">
+          출처를 알 수 없는 앱 경고가 뜰 경우 <strong>[무시하고 설치]</strong> 또는 브라우저의 <strong>[이 출처의 앱 허용]</strong>을 활성화해 주시면 완료됩니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</body>
+</html>
