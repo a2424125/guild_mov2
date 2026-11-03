@@ -48,7 +48,6 @@
       align-items: center;
     }
 
-    /* 상단 배너 */
     .top-badge {
       display: inline-flex;
       align-items: center;
@@ -80,7 +79,6 @@
       line-height: 1.5;
     }
 
-    /* 2열 대칭 그리드 시스템 */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -94,7 +92,6 @@
       }
     }
 
-    /* 카드 공통 스타일 */
     .download-card, .guide-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -120,7 +117,6 @@
     .tag-guide-android { color: #facc15; }
     .tag-guide-windows { color: #38bdf8; }
 
-    /* 프리뷰 시각 박스 (동일 높이 보정) */
     .preview-box {
       width: 100%;
       height: 140px;
@@ -135,7 +131,6 @@
       overflow: hidden;
     }
 
-    /* 모바일 목업 */
     .mockup-mobile {
       width: 100px;
       height: 110px;
@@ -166,7 +161,6 @@
       margin-top: auto;
     }
 
-    /* PC 목업 */
     .mockup-pc {
       width: 150px;
       height: 94px;
@@ -202,7 +196,6 @@
       border-radius: 4px;
     }
 
-    /* 카드 텍스트 */
     .card-title {
       font-size: 20px;
       font-weight: 700;
@@ -227,7 +220,6 @@
       gap: 8px;
     }
 
-    /* 버튼 스타일 */
     .btn-download {
       display: flex;
       align-items: center;
@@ -269,7 +261,6 @@
       text-align: center;
     }
 
-    /* 가이드 카드 스타일 */
     .guide-card-content {
       background: #111722;
       border: 1px solid #1f2a3a;
@@ -288,7 +279,6 @@
       color: #ffffff;
     }
 
-    /* 윈도우 SmartScreen 모의 다이어그램 */
     .smartscreen-box {
       background: #0078d4;
       border-radius: 8px;
@@ -340,7 +330,7 @@
     <div class="top-badge">
       <span>⚡</span> 공식 배포 클라이언트
     </div>
-    <h1 class="main-title">레이드온 메신저 다운로드</h1>
+    <h1 class="main-title">길드톡 메신저 다운로드</h1>
     <p class="sub-title">모바일과 PC에서 보스 알림, 토벌 등록, 금고 장부까지 끊김 없이 관리하세요.</p>
 
     <!-- 다운로드 버튼 카드 (1행) -->
@@ -359,11 +349,11 @@
         <div class="card-title">모바일 앱 (APK)</div>
         <div class="card-desc">갤럭시 및 안드로이드 스마트폰에 직접 설치하여 백그라운드 푸시 알림과 진동을 수신합니다.</div>
         <div class="card-footer-box">
-          <a href="https://github.com/a2424125/guild_mov2/releases/download/v1.0.0/app-release.apk" class="btn-download btn-android">
+          <a id="btnLinkAndroid" href="https://github.com/a2424125/guild_mov2/releases/download/v1.0.0/app-release.apk" class="btn-download btn-android">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Android 다운로드
           </a>
-          <div class="version-meta">최신버전 v1.0.0 · APK Package</div>
+          <div id="metaAndroidVersion" class="version-meta">최신버전 v1.0.0 · APK Package</div>
         </div>
       </div>
 
@@ -390,18 +380,17 @@
         <div class="card-title">PC 프로그램</div>
         <div class="card-desc">게임 플레이 중 보스 젠 시간 확인 및 금고 정산, 카톡형 실시간 채팅을 진행합니다.</div>
         <div class="card-footer-box">
-          <a href="https://github.com/a2424125/guild_mov2/releases/download/V1.1.1/RaidOn_Setup_v1.1.1.exe" class="btn-download btn-windows">
+          <a id="btnLinkWindows" href="https://github.com/a2424125/guild_mov2/releases/download/V1.1.1/RaidOn_Setup_v1.1.1.exe" class="btn-download btn-windows">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Windows 다운로드
           </a>
-          <div class="version-meta">최신버전 v1.1.1 · Windows 64-bit 설치형</div>
+          <div id="metaWindowsVersion" class="version-meta">최신버전 v1.1.1 · Windows 64-bit 설치형</div>
         </div>
       </div>
     </div>
 
     <!-- 설치 보안 안내 가이드 카드 (2행) -->
     <div class="grid-container">
-      <!-- 스마트폰 보안 해결법 -->
       <div class="guide-card">
         <div class="card-header-tag tag-guide-android">
           <span>🛡</span> 스마트폰 보안 경고 해결법
@@ -415,7 +404,6 @@
         </div>
       </div>
 
-      <!-- Windows 보호 창 해결법 -->
       <div class="guide-card">
         <div class="card-header-tag tag-guide-windows">
           <span>💻</span> Windows의 PC 보호 창 해결법
@@ -435,5 +423,29 @@
       </div>
     </div>
   </div>
+
+  <!-- version.json 실시간 연동 스크립트 -->
+  <script>
+    (async function syncVersionConfig() {
+      try {
+        const res = await fetch('/version.json?t=' + Date.now());
+        if (!res.ok) return;
+        const config = await res.json();
+
+        if (config.download_url_windows) {
+          const winBtn = document.getElementById('btnLinkWindows');
+          if (winBtn) winBtn.href = config.download_url_windows;
+        }
+        if (config.latest_version) {
+          const winMeta = document.getElementById('metaWindowsVersion');
+          if (winMeta) winMeta.innerText = `최신버전 v${config.latest_version} · Windows 64-bit 설치형`;
+        }
+        if (config.download_url_android) {
+          const apkBtn = document.getElementById('btnLinkAndroid');
+          if (apkBtn) apkBtn.href = config.download_url_android;
+        }
+      } catch (e) {}
+    })();
+  </script>
 </body>
 </html>
