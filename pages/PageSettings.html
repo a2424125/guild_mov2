@@ -2153,7 +2153,7 @@
   }
 
   // ==========================================
-  // [보스 추가 - PGRST204 및 23502 완벽 교정]
+  // [보스 추가 - 23502 오류 완전 방어 & 필수값 정밀 주입]
   // ==========================================
   async function addNewBossItem() {
     if (!checkBossGroundPermission()) return;
@@ -2168,12 +2168,12 @@
     if (!boss_name) return showToast("보스명을 입력하세요!", "⚠️");
     if (type === 'cool' && cycle_min <= 0) return showToast("쿨타임은 1분 이상 입력하세요!", "⚠️");
 
-    // ⚡ [핵심 교정] 존재하지 않는 name 컬럼을 제거하고 필수 타임스탬프를 제공하여 저장 보장
     const nowIso = new Date().toISOString();
     const nextSpawnIso = (type === 'fixed') 
       ? nowIso 
       : new Date(Date.now() + cycle_min * 60 * 1000).toISOString();
 
+    // ⚡ [핵심 교정] 존재하지 않는 컬럼을 배제하고 필수 NOT NULL 컬럼을 빈틈없이 채워 23502 에러 원천 방어
     const bossPayload = {
       guild_id: currentGid,
       boss_name: boss_name,
@@ -2191,7 +2191,8 @@
       if (typeof window.loadBossTimersList === "function") await window.loadBossTimersList();
       showToast(`[${boss_name}] 보스 추가 완료! 🎉`);
     } catch (err) {
-      showToast("추가 실패: " + err.message, "❌");
+      const errMsg = err.message || JSON.stringify(err);
+      showToast("추가 실패: " + errMsg, "❌");
     }
   }
 
