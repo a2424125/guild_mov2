@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>길드톡 - MMORPG 길드 전용 메신저 홈</title>
+  <title>레이드온 - MMORPG 길드 전용 메신저 홈</title>
 
   <!-- PWA 앱 설정 -->
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="길드톡">
+  <meta name="apple-mobile-web-app-title" content="레이드온">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3670/3670157.png">
 
   <!-- 부트스트랩 & 폰트어썸 아이콘 -->
@@ -135,6 +135,17 @@
       line-height: 1.45;
       white-space: pre-wrap;
     }
+    .login-empty-guide {
+      font-size: 0.76rem;
+      color: var(--home-text-sub);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      text-align: left;
+      padding: 10px 12px;
+      background: var(--home-bg);
+      border-radius: 10px;
+      border: 1px solid var(--home-card-border);
+    }
   </style>
 
   <script>
@@ -164,7 +175,7 @@
       <div class="saas-brand-box">
         <div class="saas-logo-badge">G</div>
         <div>
-          <div class="fw-bold" style="font-size: 1.05rem; letter-spacing: -0.3px;">길드톡 메신저</div>
+          <div class="fw-bold" style="font-size: 1.05rem; letter-spacing: -0.3px;">레이드온</div>
           <div style="font-size: 0.7rem; color: var(--home-text-sub);">MMORPG 길드 통합 관리 SaaS</div>
         </div>
       </div>
@@ -179,7 +190,7 @@
     <div class="saas-notice-bar" onclick="openSaasNoticeModal()">
       <div class="d-flex align-items-center gap-2 text-truncate">
         <i class="fa-solid fa-bullhorn text-warning"></i>
-        <span class="fw-bold small text-truncate" id="homeTopNoticeTitle" style="font-size: 0.78rem;">[공지] 길드톡 서비스 안내 및 업데이트 소식</span>
+        <span class="fw-bold small text-truncate" id="homeTopNoticeTitle" style="font-size: 0.78rem;">[공지] 레이드온 서비스 안내 및 업데이트 소식</span>
       </div>
       <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.7rem;"></i>
     </div>
@@ -192,7 +203,7 @@
         </h6>
         <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none" style="font-size: 0.68rem;" onclick="clearJoinedGuildsHistory()">기록 비우기</button>
       </div>
-      <p style="font-size: 0.74rem; color: var(--home-text-sub); margin-bottom: 12px;">참여 중인 길드를 선택하거나 닉네임과 비밀번호로 바로 로그인하세요.</p>
+      <p style="font-size: 0.74rem; color: var(--home-text-sub); margin-bottom: 10px; text-align: left;">참여 중인 길드를 선택하거나 닉네임과 비밀번호로 바로 로그인하세요.</p>
 
       <!-- 최근 참여한 길드 목록 -->
       <div id="homeJoinedGuildsList" class="mb-2"></div>
@@ -237,7 +248,7 @@
   </div>
 
   <!-- ========================================================
-       모달 1: 스마트 길드원 로그인 모달 (드롭다운 완전 제거 & 직접 입력 + 내 길드 자동 탐색)
+       모달 1: 스마트 길드원 로그인 모달
        ======================================================== -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none; z-index: 100000;" onclick="if(event.target===this) closeModalById('guildLoginModal')">
     <div class="kakao-modal-card" style="max-width: 320px;">
@@ -247,7 +258,6 @@
       <h6 class="fw-bold mb-1" style="font-size: 1rem;" id="loginGuildTitle">길드 메신저 로그인</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
 
-      <!-- 본인 닉네임 직접 입력창 (드롭다운 제거) -->
       <div style="position: relative; margin-bottom: 8px; text-align: left;">
         <i class="fa-solid fa-user" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="text" id="loginNickSearchInput" placeholder="본인 캐릭터 닉네임 입력" autocomplete="off"
@@ -255,7 +265,6 @@
                onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
       </div>
 
-      <!-- 비밀번호(PIN) 입력창 -->
       <div style="position: relative; margin-bottom: 10px; text-align: left;">
         <i class="fa-solid fa-lock" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 6자리 입력" maxlength="20"
@@ -263,7 +272,6 @@
                onkeypress="if(event.keyCode===13){ executeHomeGuildLogin(); }">
       </div>
 
-      <!-- 다중 길드 동명이인 발생 시 길드 선택 박스 (평소에는 숨김) -->
       <div id="homeLoginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3);">
         <div class="small fw-bold text-info mb-2" style="font-size: 0.73rem;">
           <i class="fa-solid fa-circle-check me-1"></i>동일한 닉네임이 여러 길드에 있습니다. 입장할 길드를 선택하세요:
@@ -286,7 +294,7 @@
   </div>
 
   <!-- ========================================================
-       모달 2: 초기 비밀번호(000000) 필수 변경 모달 ('나중에 변경' 버튼 제거)
+       모달 2: 초기 비밀번호(000000) 필수 변경 모달
        ======================================================== -->
   <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
     <div class="kakao-modal-card" style="max-width: 320px;">
@@ -306,7 +314,7 @@
   </div>
 
   <!-- ========================================================
-       모달 3: 어드민 전체 공지 모달 (오늘 하루 보지 않기 지원)
+       모달 3: 어드민 전체 공지 모달
        ======================================================== -->
   <div id="modalSaasGlobalNotice" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
     <div class="kakao-modal-card" style="max-width: 340px; text-align: left;">
@@ -314,7 +322,7 @@
         <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-bullhorn me-1"></i>전체 공지사항</span>
         <button type="button" class="btn-close-modal" style="background:transparent; border:none; color:#94a3b8; font-size:1.1rem;" onclick="closeSaasNoticeModal(false)">✕</button>
       </div>
-      <h6 class="fw-bold mb-2" id="saasNoticeModalTitle" style="font-size: 0.96rem;">길드톡 서비스 안내</h6>
+      <h6 class="fw-bold mb-2" id="saasNoticeModalTitle" style="font-size: 0.96rem;">레이드온 서비스 안내</h6>
       <div id="saasNoticeModalBody" class="p-2 rounded mb-3" style="font-size: 0.8rem; line-height: 1.55; max-height: 220px; overflow-y: auto; background: var(--home-bg); border: 1px solid var(--home-card-border); white-space: pre-wrap;">공지사항을 불러오는 중입니다.</div>
 
       <div class="d-flex align-items-center justify-content-between gap-2">
@@ -329,11 +337,11 @@
   </div>
 
   <!-- ========================================================
-       모달 4: 고객센터 (1:1 문의 접수) 모달
+       모달 4: 고객센터 문의 모달
        ======================================================== -->
   <div id="modalSupportCenter" class="kakao-modal-backdrop" style="display: none; z-index: 100002;" onclick="if(event.target===this) closeModalById('modalSupportCenter')">
     <div class="kakao-modal-card" style="max-width: 340px;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-headset text-primary me-1"></i>길드톡 고객센터 문의</h6>
+      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-headset text-primary me-1"></i>레이드온 고객센터 문의</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.72rem;">라이선스, 오류 제보, 기타 문의를 남겨주시면 빠르게 도와드립니다.</p>
 
       <select id="supCategoryInput" class="form-select form-select-sm mb-2" style="font-size: 0.8rem;">
@@ -354,7 +362,7 @@
   </div>
 
   <!-- ========================================================
-       모달 5: 초대 코드로 길드 가입 / 라이선스 개설 / 발급 신청 모달
+       모달 5: 초대 코드 / 신규 개설 / 라이선스 신청 모달
        ======================================================== -->
   <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;" onclick="if(event.target===this) closeModalById('modalJoinGuild')">
     <div class="kakao-modal-card" style="max-width: 320px;">
@@ -405,14 +413,45 @@
     </div>
   </div>
 
+  <!-- ========================================================
+       [NEW] 강제 업데이트 차단 전체 화면 모달 & v1.1.1 검사기
+       ======================================================== -->
+  <div id="modalForceUpdate" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 20, 0.94); backdrop-filter: blur(8px); z-index: 2147483647 !important; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div style="width: 100%; max-width: 330px; background: #181d24; border: 1.5px solid #2d3748; border-radius: 20px; padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); color: #f3f4f6;">
+      <div style="width: 56px; height: 56px; border-radius: 18px; background: #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 4px 18px rgba(254, 229, 0, 0.35);">
+        🚀
+      </div>
+      <h5 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: #ffffff;">새 버전 업데이트 안내</h5>
+      <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
+        레이드온 <strong>v1.1.1</strong> 정식 버전이 출시되었습니다.<br>트레이 최소화 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
+      </p>
+
+      <div style="background: #11151a; border: 1px solid #202732; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; font-size: 0.76rem; text-align: left; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #64748b;">내 현재 버전</span>
+          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">구버전 (v1.1.0 이하)</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #64748b;">필수 최신 버전</span>
+          <span style="color: #22c55e; font-weight: 700;">v1.1.1 (최신)</span>
+        </div>
+      </div>
+
+      <button type="button" style="width: 100%; height: 46px; background: #fee500; color: #191919; font-weight: 800; font-size: 0.92rem; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="location.href='/download.html'">
+        <i class="fa-solid fa-download"></i>
+        <span>최신 버전 다운로드하기</span>
+      </button>
+    </div>
+  </div>
+
   <script>
     var homeToastTimer = null;
     var homeSelectedGuildIdForLogin = null;
 
-    // 기본 공지 및 기본 FAQ 데이터 (DB에 없을 경우 자동 시드 저장)
+    // 기본 공지 및 FAQ 데이터
     var currentNoticeData = {
-      title: "길드톡 서비스 안내 및 업데이트 소식",
-      content: "환영합니다! 길드톡 메신저를 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요.",
+      title: "레이드온 서비스 안내 및 업데이트 소식",
+      content: "환영합니다! 레이드온을 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.\n\n* 최초 로그인 시 초기 비밀번호(000000)는 반드시 본인만의 6자리 숫자로 변경해 주세요.",
       popup: false
     };
 
@@ -491,7 +530,7 @@
       try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
 
       if (joined.length === 0) {
-        listElem.innerHTML = '<div class="text-secondary small text-center py-2" style="font-size: 0.75rem;">최근 참여한 길드 기록이 없습니다. 아래 버튼으로 바로 로그인하거나 초대코드로 입장하세요.</div>';
+        listElem.innerHTML = '<div class="login-empty-guide">최근 참여한 길드 기록이 없습니다.<br>아래 버튼으로 바로 로그인하거나 초대코드로 입장하세요.</div>';
         return;
       }
 
@@ -549,7 +588,7 @@
       openHomeLoginModal(true);
     }
 
-    // 2. 스마트 로그인 모달 오픈 (드롭다운 없이 닉네임 + PIN 직접 입력)
+    // 2. 스마트 로그인 모달 오픈
     async function openHomeLoginModal(keepGuildSelection) {
       if (!keepGuildSelection) {
         homeSelectedGuildIdForLogin = null;
@@ -576,7 +615,7 @@
       }, 100);
     }
 
-    // 3. 스마트 로그인 실행 (닉네임+PIN으로 내 길드 자동 탐색 및 동명이인 길드 선택 지원)
+    // 3. 로그인 실행
     async function executeHomeGuildLogin(forcedGuildId) {
       var searchInput = document.getElementById("loginNickSearchInput");
       var selectedName = (searchInput && searchInput.value.trim()) || "";
@@ -585,7 +624,6 @@
       if (!selectedName) return showKakaoToast("본인 캐릭터 닉네임을 입력해주세요!", "⚠️");
       if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-      // 1) 슈퍼관리자 체크
       var isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
       if (isSuperId && (inputPin === "123456" || inputPin === "master7777")) {
         localStorage.setItem("guild_my_nickname", "슈퍼관리자");
@@ -597,7 +635,6 @@
         return;
       }
 
-      // 2) DB에서 해당 닉네임을 가진 길드원 조회
       var candidates = [];
       var preferredGid = forcedGuildId || homeSelectedGuildIdForLogin || "";
 
@@ -626,7 +663,6 @@
         return showKakaoToast("등록된 닉네임이 없습니다. 닉네임을 확인하거나 [초대 코드로 길드 입장]을 이용해 주세요.", "⚠️");
       }
 
-      // 3) 입력한 비밀번호(PIN)가 일치하는 내역만 필터링
       var pinMatchedList = candidates.filter(function(m) {
         var expectedPin = m.pin ? String(m.pin).trim() : "000000";
         return (inputPin === expectedPin) ||
@@ -640,7 +676,6 @@
         return showKakaoToast("비밀번호가 올바르지 않습니다! (6자리 숫자 PIN)", "❌");
       }
 
-      // 4) 일치하는 길드가 여러 곳일 때 처리
       var targetMember = null;
       if (preferredGid) {
         targetMember = pinMatchedList.find(function(m) { return (m.guild_id || "default") === preferredGid; });
@@ -650,7 +685,6 @@
         if (pinMatchedList.length === 1) {
           targetMember = pinMatchedList[0];
         } else {
-          // 여러 길드에 동일한 닉네임 + 동일한 PIN이 존재하는 경우 길드 선택 버튼 노출
           var multiBox = document.getElementById("homeLoginMultiGuildSelectBox");
           var multiBtns = document.getElementById("homeLoginMultiGuildButtons");
           if (multiBox && multiBtns) {
@@ -679,7 +713,6 @@
         }
       }
 
-      // 5) 로그인 확정 및 세션/최근 참여 길드 자동 저장
       var resolvedGid = targetMember.guild_id || "default";
       var memberName = targetMember.name || targetMember.nickname;
       var userRole = targetMember.role || "일반";
@@ -696,7 +729,6 @@
         localStorage.setItem("guild_my_avatar", targetMember.avatar);
       }
 
-      // 내 참여 길드 목록(my_joined_guilds) 자동 저장 (다음 로그인부터 1클릭 입장 가능)
       try {
         var guildTitle = "길드";
         var gameTitle = "게임";
@@ -732,7 +764,6 @@
 
       closeModalById("guildLoginModal");
 
-      // ⚡ 초기 비밀번호(000000 또는 0000)인 경우 필수 변경 모달 오픈
       if (inputPin === "000000" || inputPin === "0000" || expectedPin === "000000" || expectedPin === "0000") {
         showKakaoToast("초기 비밀번호(000000)입니다. 새 비밀번호를 설정해 주세요.", "🔐");
         openModalById("modalForceChangePin");
@@ -795,7 +826,7 @@
       }
     }
 
-    // 4. 어드민 연동 전체 공지(saas_notices) & 자주 묻는 질문(saas_faqs) 전용 테이블 연동
+    // 4. 어드민 공지 & FAQ 조회
     function renderHomeFaqList(faqArray) {
       var container = document.getElementById("homeFaqListContainer");
       if (!container) return;
@@ -819,7 +850,6 @@
 
       if (typeof apiRequest !== "function") return;
 
-      // 1) 전체 공지사항 조회 (saas_notices 전용 테이블)
       try {
         var notices = await apiRequest("saas_notices?is_active=eq.true&order=id.desc&limit=1");
         if (Array.isArray(notices) && notices.length > 0) {
@@ -843,11 +873,8 @@
             openModalById("modalSaasGlobalNotice");
           }
         }
-      } catch (noticeErr) {
-        console.warn("홈 전체 공지 조회 실패:", noticeErr);
-      }
+      } catch (noticeErr) {}
 
-      // 2) 자주 묻는 질문(FAQ) 조회 (saas_faqs 전용 테이블)
       try {
         var faqs = await apiRequest("saas_faqs?is_active=eq.true&order=sort_order.asc,id.asc");
         if (Array.isArray(faqs) && faqs.length > 0) {
@@ -865,9 +892,7 @@
             await apiRequest("saas_faqs", "POST", seedPayload);
           } catch (seedErr) {}
         }
-      } catch (faqErr) {
-        console.warn("홈 FAQ 조회 실패:", faqErr);
-      }
+      } catch (faqErr) {}
     }
 
     function openSaasNoticeModal() {
@@ -887,7 +912,6 @@
       closeModalById("modalSaasGlobalNotice");
     }
 
-    // 5. 고객센터 1:1 문의 접수 (saas_inquiries 전용 테이블에 직접 POST)
     function openSupportCenterModal() {
       openModalById("modalSupportCenter");
     }
@@ -919,7 +943,6 @@
       }
     }
 
-    // 6. 초대 코드 가입 / 라이선스 개설 / 라이선스 신청
     async function executeJoinGuildWithCode() {
       var code = (document.getElementById("joinInviteCodeInput")?.value || "").trim().toUpperCase();
       var nick = (document.getElementById("joinMemberNickInput")?.value || "").trim();
@@ -1101,12 +1124,38 @@
       }
     }
 
+    // ⚡ 홈 화면 강제 업데이트 검사기 (v1.1.1 미만 데스크톱 클라이언트 즉시 차단)
+    (function enforceHomeClientUpdate() {
+      const ua = navigator.userAgent || "";
+      const isDesktopClient = ua.includes("Electron") || ua.includes("RaidOn");
+      if (!isDesktopClient) return;
+
+      const isLatestV111 = ua.includes("RaidOn/1.1.1");
+
+      function applyLock() {
+        if (!isLatestV111) {
+          const modal = document.getElementById("modalForceUpdate");
+          if (modal) {
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+            const wrapper = document.querySelector(".saas-home-wrapper");
+            if (wrapper) wrapper.style.pointerEvents = "none";
+          }
+        }
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", applyLock);
+      } else {
+        applyLock();
+      }
+    })();
+
     window.addEventListener("DOMContentLoaded", function() {
       applySavedThemeOnHome();
       renderJoinedGuildsOnHome();
       loadSaasGlobalNoticeAndFaq();
 
-      // ⚡ 로그아웃 후 이동해 온 경우 즉시 "로그아웃 되었습니다." 표시
       var params = new URLSearchParams(window.location.search);
       var logoutMsg = sessionStorage.getItem("logout_toast_msg");
       if (params.get("logout") === "1" || logoutMsg) {
