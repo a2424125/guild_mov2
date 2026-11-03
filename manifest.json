@@ -1,13 +1,22 @@
 {
+  "id": "https://guildmov2.vercel.app/",
   "name": "길드톡 메신저",
   "short_name": "길드톡",
   "description": "MMORPG 게임 통합 길드 메신저 & 관리 시스템",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#181d24",
   "theme_color": "#bacee0",
   "orientation": "portrait-primary",
+  "categories": ["games", "social", "productivity"],
   "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icon.png",
       "sizes": "512x512",
@@ -16,8 +25,9 @@
     },
     {
       "src": "icon.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
