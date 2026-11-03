@@ -1152,12 +1152,18 @@
       // 서버에서 요구하는 최소 버전
       const MIN_REQUIRED_VERSION = "1.1.0";
 
+      // 1. 일렉트론 데스크톱 클라이언트인지 확인
+      const isElectron = navigator.userAgent.includes("Electron") || navigator.userAgent.includes("RaidOn");
+      if (!isElectron) return; // 일반 크롬/모바일 웹 브라우저는 검사 제외
+
+      // 2. 버전 추출 (RaidOn/1.x.x 명시가 없으면 최초 배포본인 1.0.0으로 간주)
       let currentVersion = "1.0.0";
       const match = navigator.userAgent.match(/RaidOn\/([0-9.]+)/);
-      if (match) {
+      if (match && match[1]) {
         currentVersion = match[1];
       }
 
+      // 3. 버전 비교 로직
       function isOutdated(cur, req) {
         const c = cur.split('.').map(Number);
         const r = req.split('.').map(Number);
@@ -1168,11 +1174,9 @@
         return false;
       }
 
-      window.addEventListener('DOMContentLoaded', function() {
-        const isElectron = navigator.userAgent.includes("Electron") || navigator.userAgent.includes("RaidOn");
-        
-        // 일렉트론 PC 앱이면서 버전이 1.1.0 미만인 구버전은 접속 차단
-        if (isElectron && isOutdated(currentVersion, MIN_REQUIRED_VERSION)) {
+      // 4. 구버전이면 화면 즉시 차단
+      function blockIfOutdated() {
+        if (isOutdated(currentVersion, MIN_REQUIRED_VERSION)) {
           const modal = document.getElementById("modalForceUpdate");
           if (modal) {
             const verText = document.getElementById("currentClientVer");
@@ -1181,7 +1185,13 @@
             document.body.style.overflow = "hidden";
           }
         }
-      });
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", blockIfOutdated);
+      } else {
+        blockIfOutdated();
+      }
     })();
   </script>
 </body>
