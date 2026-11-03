@@ -1124,73 +1124,67 @@
   <script src="rooms.js"></script>
 
   <!-- ========================================================
-       [NEW] 강제 업데이트 차단 모달 & 클라이언트 버전 검사
+       [NEW] 강제 업데이트 차단 전체 화면 모달 & v1.1.0 강제 검사기
        ======================================================== -->
-  <div id="modalForceUpdate" class="kakao-modal-backdrop" style="display: none; z-index: 20000000 !important; background: rgba(0, 0, 0, 0.88); align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%;">
-    <div class="kakao-modal-card" style="max-width: 320px; text-align: center; padding: 24px 20px; background: #181d24; border: 1px solid #28303c; border-radius: 16px; color: #fff;">
-      <div style="width: 52px; height: 52px; border-radius: 16px; background: #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 12px auto; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.3);">
+  <div id="modalForceUpdate" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 20, 0.94); backdrop-filter: blur(8px); z-index: 2147483647 !important; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
+    <div style="width: 100%; max-width: 330px; background: #181d24; border: 1.5px solid #2d3748; border-radius: 20px; padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); color: #f3f4f6;">
+      <div style="width: 56px; height: 56px; border-radius: 18px; background: #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 4px 18px rgba(254, 229, 0, 0.35);">
         🚀
       </div>
-      <h6 class="fw-bold mb-1" style="font-size: 1.05rem; color: #fff;">새 버전 업데이트 안내</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.76rem; line-height: 1.5; color: #94a3b8;">
-        레이드온 v1.1.0 정식 버전이 출시되었습니다.<br>안정적인 메신저 이용을 위해 <strong>최신 버전으로 업데이트</strong>해 주세요.
+      <h5 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: #ffffff;">새 버전 업데이트 안내</h5>
+      <p style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
+        레이드온 <strong>v1.1.0</strong> 정식 버전이 출시되었습니다.<br>아이콘 변경 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
       </p>
 
-      <div style="background: rgba(255,255,255,0.06); padding: 10px; border-radius: 8px; margin-bottom: 16px; font-size: 0.75rem;">
-        <div>현재 내 버전: <span id="currentClientVer" style="color: #ef4444; font-weight: bold;">v1.0.0</span></div>
-        <div>필수 최신 버전: <span style="color: #22c55e; font-weight: bold;">v1.1.0</span></div>
+      <div style="background: #11151a; border: 1px solid #202732; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; font-size: 0.76rem; text-align: left; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #64748b;">내 현재 버전</span>
+          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">v1.0.0 (구버전)</span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #64748b;">필수 최신 버전</span>
+          <span style="color: #22c55e; font-weight: 700;">v1.1.0 (최신)</span>
+        </div>
       </div>
 
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.88rem; border-radius: 8px; cursor: pointer;" onclick="location.href='/download.html'">
-        <i class="fa-solid fa-download me-1"></i>최신 버전 다운로드하기
+      <button type="button" style="width: 100%; height: 46px; background: #fee500; color: #191919; font-weight: 800; font-size: 0.92rem; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="location.href='/download.html'">
+        <i class="fa-solid fa-download"></i>
+        <span>최신 버전 다운로드하기</span>
       </button>
     </div>
   </div>
 
   <script>
-    (function checkAppVersion() {
-      // 서버에서 요구하는 최소 버전
-      const MIN_REQUIRED_VERSION = "1.1.0";
+    (function enforceClientUpdate() {
+      // 1. 일반 웹 브라우저(모바일 Chrome/Safari 등)인지 일렉트론 PC 앱인지 확인
+      const ua = navigator.userAgent || "";
+      const isDesktopClient = ua.includes("Electron") || ua.includes("RaidOn");
 
-      // 1. 일렉트론 데스크톱 클라이언트인지 확인
-      const isElectron = navigator.userAgent.includes("Electron") || navigator.userAgent.includes("RaidOn");
-      if (!isElectron) return; // 일반 크롬/모바일 웹 브라우저는 검사 제외
+      // 웹 브라우저 사용자는 잠금 해제 (PC 데스크톱 클라이언트만 버전 강제 검사)
+      if (!isDesktopClient) return;
 
-      // 2. 버전 추출 (RaidOn/1.x.x 명시가 없으면 최초 배포본인 1.0.0으로 간주)
-      let currentVersion = "1.0.0";
-      const match = navigator.userAgent.match(/RaidOn\/([0-9.]+)/);
-      if (match && match[1]) {
-        currentVersion = match[1];
-      }
+      // 2. 최신 v1.1.0 클라이언트 여부 판별
+      const isLatestV110 = ua.includes("RaidOn/1.1.0");
 
-      // 3. 버전 비교 로직
-      function isOutdated(cur, req) {
-        const c = cur.split('.').map(Number);
-        const r = req.split('.').map(Number);
-        for (let i = 0; i < 3; i++) {
-          if ((c[i] || 0) < (r[i] || 0)) return true;
-          if ((c[i] || 0) > (r[i] || 0)) return false;
-        }
-        return false;
-      }
-
-      // 4. 구버전이면 화면 즉시 차단
-      function blockIfOutdated() {
-        if (isOutdated(currentVersion, MIN_REQUIRED_VERSION)) {
+      function applyLock() {
+        if (!isLatestV110) {
           const modal = document.getElementById("modalForceUpdate");
           if (modal) {
-            const verText = document.getElementById("currentClientVer");
-            if (verText) verText.innerText = "v" + currentVersion;
             modal.style.display = "flex";
             document.body.style.overflow = "hidden";
+            // 뒤쪽 모든 탭과 대화방 화면 조작 차단
+            const mainTabs = document.getElementById("kakaoMainTabsView");
+            const chatView = document.getElementById("chatRoomView");
+            if (mainTabs) mainTabs.style.pointerEvents = "none";
+            if (chatView) chatView.style.pointerEvents = "none";
           }
         }
       }
 
       if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", blockIfOutdated);
+        document.addEventListener("DOMContentLoaded", applyLock);
       } else {
-        blockIfOutdated();
+        applyLock();
       }
     })();
   </script>
