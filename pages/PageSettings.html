@@ -1277,12 +1277,12 @@
   }
 
   // ==========================================
-  // [슈퍼관리자 / 부길드장 / 정예 판별: admin.html 호환 완벽 보강]
+  // [슈퍼관리자 / 부길드장 / 정예 판별: 엄격 분리]
   // ==========================================
   function isSuperAdminUser() {
     const adminRole = sessionStorage.getItem("admin_role") || "";
-    const myRole = localStorage.getItem("guild_my_role") || "";
-    const myNick = localStorage.getItem("guild_my_nickname") || "";
+    const myRole = (localStorage.getItem("guild_my_role") || "").trim();
+    const myNick = (localStorage.getItem("guild_my_nickname") || "").trim();
 
     return (adminRole === "super") || 
            (myRole === "길드장") || 
@@ -1293,15 +1293,16 @@
 
   function isSubMasterUser() {
     if (isSuperAdminUser()) return true;
+    const myRole = (localStorage.getItem("guild_my_role") || "").trim();
     const adminRole = sessionStorage.getItem("admin_role") || "";
-    const myRole = localStorage.getItem("guild_my_role") || "";
-    return (adminRole === "admin") || 
-           (myRole === "부길드장") || 
-           (myRole === "부길마");
+    // 정예가 부길마로 잘못 뚫리는 것을 100% 원천 차단
+    if (myRole === "정예" || adminRole === "elite") return false;
+    return (myRole === "부길드장") || (myRole === "부길마") || (adminRole === "admin");
   }
 
   function isEliteUser() {
-    const myRole = localStorage.getItem("guild_my_role") || "";
+    if (isSuperAdminUser()) return false;
+    const myRole = (localStorage.getItem("guild_my_role") || "").trim();
     const adminRole = sessionStorage.getItem("admin_role") || "";
     return (myRole === "정예") || (adminRole === "elite");
   }
@@ -1488,57 +1489,85 @@
     const isSub = isSubMasterUser();
     const isElite = isEliteUser();
 
-    // 1. 관리자 권한 제어판: 오직 길드장(슈퍼관리자)만 접근 가능
-    if (tab === 'permissions' && !isSuper) {
-      showAppAlert("[관리자 권한] 제어판은 길드장(슈퍼관리자)만 진입할 수 있습니다.", "권한 부족", "👑");
+    // 1. 기본설정 탭은 누구나 진입 가능
+    if (tab === 'general') {
+      activateTabUI('general');
       return;
     }
 
-    // 2. 길드원보안 탭: 부길드장 이상 접근 가능
-    if (tab === 'memberAuth' && !isSub) {
-      showAppAlert("길드원 직책 관리 및 PIN 초기화는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
+    // 2. 관리자 권한 제어판: 오직 길드장(슈퍼관리자)만 접근 가능
+    if (tab === 'permissions') {
+      if (!isSuper) {
+        showAppAlert("[관리자 권한] 제어판은 길드장(슈퍼관리자)만 진입할 수 있습니다.", "권한 부족", "👑");
+        return;
+      }
+      activateTabUI('permissions');
       return;
     }
 
-    // 3. 토벌설정 탭: 부길마 이상 자동 통과, 정예는 DB 값 기준 확인 (꺼져 있으면 즉시 차단)
-    if (tab === 'raid' && !isSub) {
-      if (!isElite) {
-        showAppAlert("토벌설정은 관리자 이상만 접근할 수 있습니다.", "접근 제한", "🔒");
+    // 3. 길드원보안 탭: 부길드장 이상 접근 가능
+    if (tab === 'memberAuth') {
+      if (!isSub) {
+        showAppAlert("길드원 직책 관리 및 PIN 초기화는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
         return;
       }
-      const allowRaid = (String(window.currentSettingsMap['perm_settings_raid']) === 'true');
-      if (!allowRaid) {
-        showAppAlert("정예 관리자에게는 토벌설정 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
-        return;
-      }
+      activateTabUI('memberAuth');
+      return;
     }
 
-    // 4. 설정보안 탭: 부길마 이상 자동 통과, 정예는 DB 값 기준 확인 (꺼져 있으면 즉시 차단)
-    if (tab === 'security' && !isSub) {
-      if (!isElite) {
-        showAppAlert("설정보안 탭은 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
-        return;
+    // 4. 토벌설정 탭: 부길마 이상 통과, 정예는 DB 스위치 true 일 때만 통과
+    if (tab === 'raid') {
+      if (!isSub) {
+        if (!isElite) {
+          showAppAlert("토벌설정은 관리자 이상만 접근할 수 있습니다.", "접근 제한", "🔒");
+          return;
+        }
+        const allowRaid = (String(window.currentSettingsMap['perm_settings_raid']) === 'true');
+        if (!allowRaid) {
+          showAppAlert("정예 관리자에게는 토벌설정 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
+          return;
+        }
       }
-      const allowSecurity = (String(window.currentSettingsMap['perm_settings_security']) === 'true');
-      if (!allowSecurity) {
-        showAppAlert("정예 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
-        return;
-      }
+      activateTabUI('raid');
+      return;
     }
 
-    // 5. 보스/사냥터 탭: 부길마 이상 자동 통과, 정예는 DB 값 기준 확인 (꺼져 있으면 즉시 차단)
-    if (tab === 'bossGround' && !isSub) {
-      if (!isElite) {
-        showAppAlert("보스 및 사냥터 관리는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
-        return;
+    // 5. 설정보안 탭: 부길마 이상 통과, 정예는 DB 스위치 true 일 때만 통과
+    if (tab === 'security') {
+      if (!isSub) {
+        if (!isElite) {
+          showAppAlert("설정보안 탭은 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
+          return;
+        }
+        const allowSecurity = (String(window.currentSettingsMap['perm_settings_security']) === 'true');
+        if (!allowSecurity) {
+          showAppAlert("정예 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
+          return;
+        }
       }
-      const allowBossGround = (String(window.currentSettingsMap['perm_settings_boss_ground']) === 'true');
-      if (!allowBossGround) {
-        showAppAlert("정예 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
-        return;
-      }
+      activateTabUI('security');
+      return;
     }
 
+    // 6. 보스/사냥터 탭: 부길마 이상 통과, 정예는 DB 스위치 true 일 때만 통과
+    if (tab === 'bossGround') {
+      if (!isSub) {
+        if (!isElite) {
+          showAppAlert("보스 및 사냥터 관리는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
+          return;
+        }
+        const allowBossGround = (String(window.currentSettingsMap['perm_settings_boss_ground']) === 'true');
+        if (!allowBossGround) {
+          showAppAlert("정예 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
+          return;
+        }
+      }
+      activateTabUI('bossGround');
+      return;
+    }
+  }
+
+  function activateTabUI(tab) {
     const tabs = ['general', 'raid', 'memberAuth', 'security', 'permissions', 'bossGround'];
     tabs.forEach(t => {
       const panel = document.getElementById('tabSettings' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -1560,7 +1589,7 @@
     const badge = document.getElementById("badgeSettingsRoleStatus");
     if (!badge) return;
     const isSuper = isSuperAdminUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
+    const myRole = (localStorage.getItem("guild_my_role") || "일반").trim();
 
     if (isSuper) {
       badge.className = "badge bg-warning text-dark";
@@ -1865,34 +1894,48 @@
       }
     } catch (err) {}
 
-    document.getElementById('cfgScoreBase').value = window.currentSettingsMap['score_base'] || '1';
-    document.getElementById('cfgScoreInternal').value = window.currentSettingsMap['score_war_internal'] || '1';
-    document.getElementById('cfgScoreInter').value = window.currentSettingsMap['score_war_inter'] || '2';
+    const scoreBaseElem = document.getElementById('cfgScoreBase');
+    const scoreIntElem = document.getElementById('cfgScoreInternal');
+    const scoreInterElem = document.getElementById('cfgScoreInter');
+    if (scoreBaseElem) scoreBaseElem.value = window.currentSettingsMap['score_base'] || '1';
+    if (scoreIntElem) scoreIntElem.value = window.currentSettingsMap['score_war_internal'] || '1';
+    if (scoreInterElem) scoreInterElem.value = window.currentSettingsMap['score_war_inter'] || '2';
 
     await loadGuildNameDisplay();
 
     const useSelf = window.currentSettingsMap['use_self_checkin'];
-    document.getElementById('cfgUseSelfCheckin').checked = (useSelf !== 'false');
+    const useSelfElem = document.getElementById('cfgUseSelfCheckin');
+    if (useSelfElem) useSelfElem.checked = (useSelf !== 'false');
 
     updateGeminiKeyStatusUI();
 
     const parseBool = (k) => String(window.currentSettingsMap[k]) === 'true';
 
-    document.getElementById('permSettingsSecurity').checked = parseBool('perm_settings_security');
-    document.getElementById('permSettingsRaid').checked = parseBool('perm_settings_raid');
-    document.getElementById('permSettingsBossGround').checked = parseBool('perm_settings_boss_ground');
-    document.getElementById('permBossRegister').checked = parseBool('perm_boss_register');
-    document.getElementById('permBossRecordsEdit').checked = parseBool('perm_boss_records_edit');
-    document.getElementById('permMemberPinReset').checked = parseBool('perm_member_pin_reset');
-    document.getElementById('permWishDistribute').checked = parseBool('perm_wish_distribute');
-    document.getElementById('permSettleFundDist').checked = parseBool('perm_settle_fund_dist');
-    document.getElementById('permFinanceInput').checked = parseBool('perm_finance_input');
+    const pSec = document.getElementById('permSettingsSecurity');
+    const pRaid = document.getElementById('permSettingsRaid');
+    const pBoss = document.getElementById('permSettingsBossGround');
+    const pReg = document.getElementById('permBossRegister');
+    const pRec = document.getElementById('permBossRecordsEdit');
+    const pPin = document.getElementById('permMemberPinReset');
+    const pWish = document.getElementById('permWishDistribute');
+    const pSettle = document.getElementById('permSettleFundDist');
+    const pFin = document.getElementById('permFinanceInput');
+    const pNot = document.getElementById('permNoticeWrite');
 
-    const permNoticeElem = document.getElementById('permNoticeWrite');
-    if (permNoticeElem) permNoticeElem.checked = parseBool('perm_notice_write');
+    if (pSec) pSec.checked = parseBool('perm_settings_security');
+    if (pRaid) pRaid.checked = parseBool('perm_settings_raid');
+    if (pBoss) pBoss.checked = parseBool('perm_settings_boss_ground');
+    if (pReg) pReg.checked = parseBool('perm_boss_register');
+    if (pRec) pRec.checked = parseBool('perm_boss_records_edit');
+    if (pPin) pPin.checked = parseBool('perm_member_pin_reset');
+    if (pWish) pWish.checked = parseBool('perm_wish_distribute');
+    if (pSettle) pSettle.checked = parseBool('perm_settle_fund_dist');
+    if (pFin) pFin.checked = parseBool('perm_finance_input');
+    if (pNot) pNot.checked = parseBool('perm_notice_write');
 
     applyMemberPinResetUI();
   }
+  window.loadCurrentSettingsToForm = loadCurrentSettingsToForm;
 
   function updateGeminiKeyStatusUI() {
     const badge = document.getElementById("geminiKeyStatusBadge");
