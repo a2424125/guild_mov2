@@ -227,7 +227,7 @@ async function initApp() {
   }
 }
 
-// ⚡ [실시간 직책 & 세션 동기화: admin.html 호환 완벽 보강]
+// ⚡ [실시간 직책 & 세션 동기화: admin.html 호환 및 직책 판별 엄격 분리]
 async function refreshMyRoleFromServer() {
   const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -240,10 +240,10 @@ async function refreshMyRoleFromServer() {
     }
 
     if (rows && rows.length > 0) {
-      const liveRole = rows[0].role || "일반";
+      const liveRole = (rows[0].role || "일반").trim();
       localStorage.setItem("guild_my_role", liveRole);
 
-      // admin.html에서 지정한 '길드장', '슈퍼관리자', '길마' 모두 슈퍼관리자로 완벽 매핑
+      // admin.html 및 마스터 직책과 완벽 매핑 (정예와 관리자 엄격 분리)
       if (liveRole === "길드장" || liveRole === "길마" || liveRole === "슈퍼관리자") {
         sessionStorage.setItem("admin_auth", "true");
         sessionStorage.setItem("admin_role", "super");
@@ -262,7 +262,7 @@ async function refreshMyRoleFromServer() {
 }
 window.refreshMyRoleFromServer = refreshMyRoleFromServer;
 
-// ⚡ [Supabase Realtime: 직책 변경 및 권한 설정 스위치 실시간 감지]
+// ⚡ [Supabase Realtime: 직책 변경 및 권한 설정 스위치 실시간 감지 + 오버레이 강제 갱신]
 function listenRealtimeRoleUpdates() {
   if (!supabaseClient) return;
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -280,6 +280,7 @@ function listenRealtimeRoleUpdates() {
         refreshMyRoleFromServer().then(() => {
           showKakaoToast(`내 직책이 [${payload.new.role || '일반'}] (으)로 실시간 반영되었습니다.`, "🛡️");
           if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
+          if (typeof window.updateRoleBadge === "function") window.updateRoleBadge();
         });
       }
     })
@@ -292,11 +293,36 @@ function listenRealtimeRoleUpdates() {
       const targetGid = payload.new?.guild_id || payload.old?.guild_id;
       if (targetGid && targetGid !== currentGid) return;
 
-      if (window.currentSettingsMap && payload.new && payload.new.key) {
-        window.currentSettingsMap[payload.new.key] = String(payload.new.value);
+      const key = payload.new?.key;
+      const val = String(payload.new?.value);
+
+      if (window.currentSettingsMap && key) {
+        window.currentSettingsMap[key] = val;
       }
       if (typeof window.loadCurrentSettingsToForm === "function") {
         window.loadCurrentSettingsToForm();
+      }
+
+      // 길드장이 권한 스위치를 껐을 때 정예 유저가 해당 화면에 머물러 있으면 실시간으로 창 닫기
+      const myRole = (localStorage.getItem("guild_my_role") || "").trim();
+      const adminRole = sessionStorage.getItem("admin_role") || "";
+      const isElite = (myRole === "정예") || (adminRole === "elite");
+
+      if (isElite && val === "false") {
+        const overlay = document.getElementById("moduleOverlay");
+        const currentTitle = document.getElementById("overlayNavTitle")?.innerText || "";
+
+        const permToTitleMap = {
+          "perm_finance_input": "길드비용현황",
+          "perm_boss_register": "보스참여등록",
+          "perm_wish_distribute": "분배희망신청",
+          "perm_settle_fund_dist": "정산내역"
+        };
+
+        if (overlay && overlay.style.display === "flex" && permToTitleMap[key] === currentTitle) {
+          window.closeModuleOverlay();
+          showKakaoToast(`[${currentTitle}] 접근 권한이 관리자에 의해 회수되었습니다.`, "⚠️");
+        }
       }
     })
     .subscribe();
@@ -779,7 +805,7 @@ async function executeGuildLogin(forcedGuildId = null) {
 
   const resolvedGid = targetMember.guild_id || "default";
   const memberName = targetMember.name || targetMember.nickname;
-  const userRole = targetMember.role || "일반";
+  const userRole = (targetMember.role || "일반").trim();
   const expectedPin = targetMember.pin ? String(targetMember.pin).trim() : "000000";
 
   localStorage.setItem("current_guild_id", resolvedGid);
@@ -1635,7 +1661,7 @@ function closeMentionPopup() {
 }
 
 // --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더 (DB 스위치 상태 보고 진입 통제)
+// 9. 서브 모듈 화면 오버레이 로더 (DB 스위치 상태 엄격 검증 및 진입 통제)
 // --------------------------------------------------------
 window.openModulePage = async function(pageName) {
   if (pageName === "PageMembers") {
@@ -1647,17 +1673,19 @@ window.openModulePage = async function(pageName) {
 
   closeAllDrawers();
 
-  // 최신 직책 및 DB 세팅 즉시 조회
+  // 1. 최신 직책 및 DB 실시간 세팅 즉시 조회
   await refreshMyRoleFromServer();
 
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  const myRole = localStorage.getItem("guild_my_role") || "일반";
+  const myRole = (localStorage.getItem("guild_my_role") || "일반").trim();
   const adminRole = sessionStorage.getItem("admin_role") || "";
-  const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "길마") || (myRole === "슈퍼관리자");
-  const isSub = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마");
-  const isElite = (myRole === "정예") || (adminRole === "elite");
 
-  // DB 스위치 실시간 검증
+  // 2. 직책 권한 엄격 분리
+  const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "길마") || (myRole === "슈퍼관리자");
+  const isSub = isSuper || (myRole === "부길드장") || (myRole === "부길마") || (adminRole === "admin" && myRole !== "정예");
+  const isElite = !isSuper && !isSub && ((myRole === "정예") || (adminRole === "elite"));
+
+  // 3. DB 스위치 실시간 검증
   let currentPerms = window.currentSettingsMap || {};
   try {
     const sRows = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
@@ -1666,30 +1694,32 @@ window.openModulePage = async function(pageName) {
     }
   } catch(e) {}
 
-  // 1. 길드비용현황 (PageFinance): 부길마 이상 통과, 정예는 스위치 확인
+  // 4. 서랍/더보기 메뉴별 엄격 권한 가드
+  // 4-1. 길드비용현황 (PageFinance): 부길마 이상 자동 통과, 정예는 스위치 확인
   if (pageName === 'PageFinance' && !isSub) {
     if (!isElite || String(currentPerms['perm_finance_input']) !== 'true') {
       return showKakaoToast("길드비용현황은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
     }
   }
-  // 2. 보스참여등록 (PageRegister): 부길마 이상 통과, 정예는 스위치 확인
+  // 4-2. 보스참여등록 (PageRegister): 부길마 이상 자동 통과, 정예는 스위치 확인
   if (pageName === 'PageRegister' && !isSub) {
     if (!isElite || String(currentPerms['perm_boss_register']) !== 'true') {
       return showKakaoToast("보스참여등록은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
     }
   }
-  // 3. 분배희망신청 (PageWish): 정예는 스위치 확인
+  // 4-3. 분배희망신청 (PageWish): 부길마 이상 자동 통과, 정예는 스위치 확인
   if (pageName === 'PageWish' && !isSub) {
     if (!isElite || String(currentPerms['perm_wish_distribute']) !== 'true') {
       return showKakaoToast("분배희망신청 권한이 비활성화되어 있습니다.", "⚠️");
     }
   }
-  // 4. 정산내역 (PageSettle): 정예는 스위치 확인
+  // 4-4. 정산내역 (PageSettle): 부길마 이상 자동 통과, 정예는 스위치 확인
   if (pageName === 'PageSettle' && !isSub) {
     if (!isElite || String(currentPerms['perm_settle_fund_dist']) !== 'true') {
       return showKakaoToast("정산내역 권한이 비활성화되어 있습니다.", "⚠️");
     }
   }
+  // 4-5. 공지사항 (PageNotice): 읽기는 누구나 가능하므로 통과
 
   const overlay = document.getElementById("moduleOverlay");
   const body = document.getElementById("overlayBodyContent");
