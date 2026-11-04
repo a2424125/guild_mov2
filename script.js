@@ -227,7 +227,7 @@ async function initApp() {
   }
 }
 
-// ⚡ [실시간 직책 동기화] 로그아웃 없이도 서버 최신 직책 반영
+// ⚡ [실시간 직책 & 세션 동기화] 로그아웃 없이도 서버 최신 직책 즉각 반영
 async function refreshMyRoleFromServer() {
   const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -261,12 +261,13 @@ async function refreshMyRoleFromServer() {
 }
 window.refreshMyRoleFromServer = refreshMyRoleFromServer;
 
-// ⚡ [Supabase 실시간 직책 변경 리스너]
+// ⚡ [Supabase Realtime: 직책 변경 및 권한 설정 스위치 실시간 감지]
 function listenRealtimeRoleUpdates() {
   if (!supabaseClient) return;
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
 
+  // 1. guild_members 테이블: 직책(role) 실시간 감지
   supabaseClient
     .channel("public:guild_members_roles")
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guild_members" }, (payload) => {
@@ -276,8 +277,25 @@ function listenRealtimeRoleUpdates() {
       const updatedName = payload.new.name || payload.new.nickname || "";
       if (updatedName === nick) {
         refreshMyRoleFromServer().then(() => {
-          showKakaoToast(`내 권한이 [${payload.new.role || '일반'}] (으)로 실시간 반영되었습니다.`, "🛡️");
+          showKakaoToast(`내 직책이 [${payload.new.role || '일반'}] (으)로 실시간 반영되었습니다.`, "🛡️");
+          if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
         });
+      }
+    })
+    .subscribe();
+
+  // 2. guild_settings 테이블: 권한 스위치(perm_xxx) 실시간 감지
+  supabaseClient
+    .channel("public:guild_settings_perms")
+    .on("postgres_changes", { event: "*", schema: "public", table: "guild_settings" }, (payload) => {
+      const targetGid = payload.new?.guild_id || payload.old?.guild_id;
+      if (targetGid && targetGid !== currentGid) return;
+
+      if (window.currentSettingsMap && payload.new && payload.new.key) {
+        window.currentSettingsMap[payload.new.key] = payload.new.value;
+      }
+      if (typeof window.loadCurrentSettingsToForm === "function") {
+        window.loadCurrentSettingsToForm();
       }
     })
     .subscribe();
@@ -1628,7 +1646,7 @@ window.openModulePage = async function(pageName) {
 
   closeAllDrawers();
 
-  // ⚡ [실시간 검증] 진입 전 서버에서 내 최신 직책을 즉시 조회하여 로그아웃 불필요화
+  // ⚡ [실시간 검증] 진입 전 서버에서 내 최신 직책을 즉각 동기화
   await refreshMyRoleFromServer();
 
   const myRole = localStorage.getItem("guild_my_role") || "일반";
@@ -1637,7 +1655,7 @@ window.openModulePage = async function(pageName) {
   const isSub = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마");
   const isElite = isSub || (adminRole === "elite") || (myRole === "정예");
 
-  // PageSettings는 일반 길드원도 접근 가능 (세부 탭은 내부에서 제어)
+  // PageSettings는 일반 길드원도 접근 가능 (세부 탭은 내부에서 통제)
   if (pageName === 'PageFinance' && !isElite) {
     return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
   }
