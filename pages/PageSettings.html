@@ -849,7 +849,7 @@
   </div>
 
   <!-- ========================================================
-       [탭 3] 길드원보안 탭 ('수호' 제거 및 4단계 직책 정립)
+       [탭 3] 길드원보안 탭
        ======================================================== -->
   <div id="tabSettingsMemberAuth" style="display: none;">
     <!-- 직책 및 관리자 권한 임명 -->
@@ -954,7 +954,7 @@
   </div>
 
   <!-- ========================================================
-       [탭 5] 관리자 권한 탭 ('수호' 제거 및 스위치 정책 안내)
+       [탭 5] 관리자 권한 탭
        ======================================================== -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box mb-3">
@@ -1281,7 +1281,7 @@
   }
 
   // ==========================================
-  // [슈퍼관리자 / 부길드장 / 정예 판별 유틸 ('수호' 완전 제거)]
+  // [슈퍼관리자 / 부길드장 / 정예 판별 유틸]
   // ==========================================
   function isSuperAdminUser() {
     const adminRole = sessionStorage.getItem("admin_role") || "";
@@ -1295,7 +1295,6 @@
            (myNick === "슈퍼관리자");
   }
 
-  // 부길드장 이상 판별
   function isSubMasterUser() {
     if (isSuperAdminUser()) return true;
     const adminRole = sessionStorage.getItem("admin_role") || "";
@@ -1305,7 +1304,6 @@
            (myRole === "부길마");
   }
 
-  // 관리자(부길드장 또는 정예) 판별
   function isManagerAdminUser() {
     if (isSuperAdminUser() || isSubMasterUser()) return true;
     const adminRole = sessionStorage.getItem("admin_role") || "";
@@ -1343,9 +1341,9 @@
         resolve(window.confirm(message));
         return;
       }
-      document.getElementById("customAlertTitle").innerText = title;
-      document.getElementById("customAlertMessage").innerText = message;
-      document.getElementById("customAlertIcon").innerText = icon;
+      document.getElementById("customConfirmTitle").innerText = title;
+      document.getElementById("customConfirmMessage").innerText = message;
+      document.getElementById("customConfirmIcon").innerText = icon;
       modal.style.display = "flex";
     });
   }
@@ -1490,7 +1488,7 @@
   }
 
   // ==========================================
-  // [탭 전환 및 권한 검사 (정예 스위치 권한 100% 반영)]
+  // [탭 전환 및 권한 검사 (실시간 직책 & 정책 연동)]
   // ==========================================
   function switchSettingsTab(tab) {
     const isSuper = isSuperAdminUser();
@@ -2380,7 +2378,11 @@
     } catch (e) {}
   }
 
+  // ⚡ [실시간 내 직책 강제 갱신 후 설정 화면 초기화]
   (async function initSettingsPage() {
+    if (typeof window.refreshMyRoleFromServer === "function") {
+      await window.refreshMyRoleFromServer();
+    }
     initFontScaleMode();
     initThemeMode();
     initAlarmSoundSettings();
