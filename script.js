@@ -227,7 +227,7 @@ async function initApp() {
   }
 }
 
-// ⚡ [실시간 직책 & 세션 동기화: admin.html 호환 및 직책 판별 엄격 분리]
+// ⚡ [실시간 직책 & 세션 동기화: 슈퍼관리자 vs 일반관리자 엄격 분리]
 async function refreshMyRoleFromServer() {
   const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -243,7 +243,6 @@ async function refreshMyRoleFromServer() {
       const liveRole = (rows[0].role || "일반").trim();
       localStorage.setItem("guild_my_role", liveRole);
 
-      // admin.html 및 마스터 직책과 완벽 매핑 (정예와 관리자 엄격 분리)
       if (liveRole === "길드장" || liveRole === "길마" || liveRole === "슈퍼관리자") {
         sessionStorage.setItem("admin_auth", "true");
         sessionStorage.setItem("admin_role", "super");
@@ -303,12 +302,12 @@ function listenRealtimeRoleUpdates() {
         window.loadCurrentSettingsToForm();
       }
 
-      // 길드장이 권한 스위치를 껐을 때 정예 유저가 해당 화면에 머물러 있으면 실시간으로 창 닫기
       const myRole = (localStorage.getItem("guild_my_role") || "").trim();
       const adminRole = sessionStorage.getItem("admin_role") || "";
-      const isElite = (myRole === "정예") || (adminRole === "elite");
+      const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "길마") || (myRole === "슈퍼관리자");
+      const isNormalAdmin = !isSuper && ((myRole === "부길드장") || (myRole === "부길마") || (myRole === "정예") || (adminRole === "admin") || (adminRole === "elite"));
 
-      if (isElite && val === "false") {
+      if (isNormalAdmin && val === "false") {
         const overlay = document.getElementById("moduleOverlay");
         const currentTitle = document.getElementById("overlayNavTitle")?.innerText || "";
 
@@ -675,10 +674,6 @@ window.executeForceChangePin = async function() {
 };
 var executeForceChangePin = window.executeForceChangePin;
 
-function renderLoginMemberDropdown() {}
-function onLoginSearchInput() {}
-function onLoginSelectChange() {}
-
 function showGuildLoginModal() {
   const modal = document.getElementById("guildLoginModal");
   if (modal) modal.style.display = "flex";
@@ -1031,18 +1026,10 @@ async function loadPastChatMessages() {
 
   try {
     let list = [];
-    if (activeRoom !== "default_public") {
-      try {
-        list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
-      } catch (e) {
-        list = [];
-      }
-    } else {
-      try {
-        list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&select=*&order=id.desc&limit=150`);
-      } catch (e) {
-        list = [];
-      }
+    try {
+      list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
+    } catch (e) {
+      list = [];
     }
 
     let filtered = (list || []).filter(c => {
@@ -1275,7 +1262,7 @@ function listenRealtimeChatMessages() {
 }
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링
+// 6. 카카오톡 말풍선 렌더링 (내가 쓴 글 시간 위치: 말풍선 앞/왼쪽 배치 완료)
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1310,7 +1297,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   }
 
   const unreadSpanHtml = (unreadCount > 0) 
-    ? `<span class="chat-unread-count" style="text-align:left !important;">${unreadCount}</span>` 
+    ? `<span class="chat-unread-count" style="text-align: ${isMe ? 'right' : 'left'} !important;">${unreadCount}</span>` 
     : `<span class="chat-unread-count" style="display:none;"></span>`;
 
   let html = "";
@@ -1425,14 +1412,15 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     `;
   }
   else if (isMe) {
+    // ⭐️ [카카오톡 표준] 내가 보낸 메시지: [시간/안읽은수] 가 말풍선 왼쪽(앞)에 오도록 완벽 배치
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
       <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
         <div class="chat-msg-body">
-          <div class="chat-bubble-flex">
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+          <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: 4px;">
+            <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-end !important; text-align: right !important; margin-bottom: 2px;">
               ${unreadSpanHtml}
-              <span class="chat-timestamp">${timeStr}</span>
+              <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
             </div>
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
           </div>
@@ -1441,6 +1429,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     `;
   }
   else {
+    // 상대방 메시지: [말풍선] 오른쪽에 [시간/안읽은수] 배치
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
     const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
@@ -1449,11 +1438,11 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
         <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
         <div class="chat-msg-body">
           ${nameBlock}
-          <div class="chat-bubble-flex">
+          <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-start; gap: 4px;">
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+            <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-start !important; text-align: left !important; margin-bottom: 2px;">
               ${unreadSpanHtml}
-              <span class="chat-timestamp">${timeStr}</span>
+              <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
             </div>
           </div>
         </div>
@@ -1661,7 +1650,7 @@ function closeMentionPopup() {
 }
 
 // --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더 (DB 스위치 상태 엄격 검증 및 진입 통제)
+// 9. 서브 모듈 화면 오버레이 로더 (일반관리자 권한 스위치 엄격 검증)
 // --------------------------------------------------------
 window.openModulePage = async function(pageName) {
   if (pageName === "PageMembers") {
@@ -1673,19 +1662,15 @@ window.openModulePage = async function(pageName) {
 
   closeAllDrawers();
 
-  // 1. 최신 직책 및 DB 실시간 세팅 즉시 조회
   await refreshMyRoleFromServer();
 
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   const myRole = (localStorage.getItem("guild_my_role") || "일반").trim();
   const adminRole = sessionStorage.getItem("admin_role") || "";
 
-  // 2. 직책 권한 엄격 분리
   const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "길마") || (myRole === "슈퍼관리자");
-  const isSub = isSuper || (myRole === "부길드장") || (myRole === "부길마") || (adminRole === "admin" && myRole !== "정예");
-  const isElite = !isSuper && !isSub && ((myRole === "정예") || (adminRole === "elite"));
+  const isNormalAdmin = !isSuper && ((myRole === "부길드장") || (myRole === "부길마") || (myRole === "정예") || (adminRole === "admin") || (adminRole === "elite"));
 
-  // 3. DB 스위치 실시간 검증
   let currentPerms = window.currentSettingsMap || {};
   try {
     const sRows = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
@@ -1694,32 +1679,30 @@ window.openModulePage = async function(pageName) {
     }
   } catch(e) {}
 
-  // 4. 서랍/더보기 메뉴별 엄격 권한 가드
-  // 4-1. 길드비용현황 (PageFinance): 부길마 이상 자동 통과, 정예는 스위치 확인
-  if (pageName === 'PageFinance' && !isSub) {
-    if (!isElite || String(currentPerms['perm_finance_input']) !== 'true') {
+  // 1. 길드비용현황
+  if (pageName === 'PageFinance' && !isSuper) {
+    if (!isNormalAdmin || String(currentPerms['perm_finance_input']) !== 'true') {
       return showKakaoToast("길드비용현황은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
     }
   }
-  // 4-2. 보스참여등록 (PageRegister): 부길마 이상 자동 통과, 정예는 스위치 확인
-  if (pageName === 'PageRegister' && !isSub) {
-    if (!isElite || String(currentPerms['perm_boss_register']) !== 'true') {
+  // 2. 보스참여등록
+  if (pageName === 'PageRegister' && !isSuper) {
+    if (!isNormalAdmin || String(currentPerms['perm_boss_register']) !== 'true') {
       return showKakaoToast("보스참여등록은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
     }
   }
-  // 4-3. 분배희망신청 (PageWish): 부길마 이상 자동 통과, 정예는 스위치 확인
-  if (pageName === 'PageWish' && !isSub) {
-    if (!isElite || String(currentPerms['perm_wish_distribute']) !== 'true') {
+  // 3. 분배희망신청
+  if (pageName === 'PageWish' && !isSuper) {
+    if (!isNormalAdmin || String(currentPerms['perm_wish_distribute']) !== 'true') {
       return showKakaoToast("분배희망신청 권한이 비활성화되어 있습니다.", "⚠️");
     }
   }
-  // 4-4. 정산내역 (PageSettle): 부길마 이상 자동 통과, 정예는 스위치 확인
-  if (pageName === 'PageSettle' && !isSub) {
-    if (!isElite || String(currentPerms['perm_settle_fund_dist']) !== 'true') {
+  // 4. 정산내역
+  if (pageName === 'PageSettle' && !isSuper) {
+    if (!isNormalAdmin || String(currentPerms['perm_settle_fund_dist']) !== 'true') {
       return showKakaoToast("정산내역 권한이 비활성화되어 있습니다.", "⚠️");
     }
   }
-  // 4-5. 공지사항 (PageNotice): 읽기는 누구나 가능하므로 통과
 
   const overlay = document.getElementById("moduleOverlay");
   const body = document.getElementById("overlayBodyContent");
