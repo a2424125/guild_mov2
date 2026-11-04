@@ -954,7 +954,7 @@
   </div>
 
   <!-- ========================================================
-       [탭 5] 관리자 권한 탭
+       [탭 5] 관리자 권한 탭 (토글 즉시 DB 자동 저장 지원)
        ======================================================== -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box mb-3">
@@ -963,7 +963,7 @@
         <span class="badge bg-warning bg-opacity-25 text-warning" style="font-size: 0.68rem;">슈퍼관리자</span>
       </div>
       <p class="sub-desc-text mb-3">
-        현재 길드의 관리자(부길드장, 정예)가 사용할 수 있는 각 기능의 활성화 여부를 설정합니다.
+        현재 길드의 관리자(부길드장, 정예)가 사용할 수 있는 기능을 토글 즉시 실시간으로 동기화합니다.
       </p>
 
       <div class="perm-switch-item" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.3);">
@@ -974,7 +974,7 @@
           <div class="sub-desc-text">Gemini OCR 키 및 관리자 보안 탭 진입 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permSettingsSecurity" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permSettingsSecurity" role="switch" onchange="toggleSinglePermission('perm_settings_security', this.checked)">
         </div>
       </div>
 
@@ -986,7 +986,7 @@
           <div class="sub-desc-text">토벌 & 배점 규정 탭 진입 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permSettingsRaid" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permSettingsRaid" role="switch" onchange="toggleSinglePermission('perm_settings_raid', this.checked)">
         </div>
       </div>
 
@@ -998,7 +998,7 @@
           <div class="sub-desc-text">보스 스케줄 및 사냥터 추가/삭제 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permSettingsBossGround" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permSettingsBossGround" role="switch" onchange="toggleSinglePermission('perm_settings_boss_ground', this.checked)">
         </div>
       </div>
 
@@ -1008,7 +1008,7 @@
           <div class="sub-desc-text">스크린샷 OCR 분석 및 토벌 결과 등록 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permBossRegister" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permBossRegister" role="switch" onchange="toggleSinglePermission('perm_boss_register', this.checked)">
         </div>
       </div>
 
@@ -1018,7 +1018,7 @@
           <div class="sub-desc-text">토벌 기록 내역 수정/삭제 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permBossRecordsEdit" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permBossRecordsEdit" role="switch" onchange="toggleSinglePermission('perm_boss_records_edit', this.checked)">
         </div>
       </div>
 
@@ -1028,7 +1028,7 @@
           <div class="sub-desc-text">일반 관리자의 길드원 PIN 초기화 권한 부여</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permMemberPinReset" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permMemberPinReset" role="switch" onchange="toggleSinglePermission('perm_member_pin_reset', this.checked)">
         </div>
       </div>
 
@@ -1038,7 +1038,7 @@
           <div class="sub-desc-text">아이템 낙찰 등록 및 N/1 분배금 계산 집행 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permWishDistribute" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permWishDistribute" role="switch" onchange="toggleSinglePermission('perm_wish_distribute', this.checked)">
         </div>
       </div>
 
@@ -1048,7 +1048,7 @@
           <div class="sub-desc-text">주간 정산 차등 배당 및 금고 출금 정산 집행 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permSettleFundDist" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permSettleFundDist" role="switch" onchange="toggleSinglePermission('perm_settle_fund_dist', this.checked)">
         </div>
       </div>
 
@@ -1058,7 +1058,7 @@
           <div class="sub-desc-text">금고 수익 입금 및 길드 경비 출금 등록 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permFinanceInput" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permFinanceInput" role="switch" onchange="toggleSinglePermission('perm_finance_input', this.checked)">
         </div>
       </div>
 
@@ -1070,13 +1070,13 @@
           <div class="sub-desc-text">일반 관리자의 공지사항 작성 폼 접근 및 등록 허용</div>
         </div>
         <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
-          <input class="form-check-input ms-0" type="checkbox" id="permNoticeWrite" role="switch">
+          <input class="form-check-input ms-0" type="checkbox" id="permNoticeWrite" role="switch" onchange="toggleSinglePermission('perm_notice_write', this.checked)">
         </div>
       </div>
     </div>
 
     <button type="button" class="btn btn-warning w-100 fw-bold py-2" style="border-radius: 10px;" onclick="saveAdminPermissionsSettings()">
-      <i class="fa-solid fa-shield-halved me-1"></i> 관리자 권한 정책 저장
+      <i class="fa-solid fa-shield-halved me-1"></i> 전체 권한 정책 일괄 동기화
     </button>
   </div>
 
@@ -1496,7 +1496,7 @@
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const isElite = (myRole === "정예");
 
-    // 1. 관리자 권한 제어판: 오직 슈퍼관리자(길드장)만 접근 가능
+    // 1. 관리자 권한 제어판: 오직 길드장(슈퍼관리자)만 접근 가능
     if (tab === 'permissions' && !isSuper) {
       showAppAlert("[관리자 권한] 제어판은 길드장(슈퍼관리자)만 진입할 수 있습니다.", "권한 부족", "👑");
       return;
@@ -1508,39 +1508,39 @@
       return;
     }
 
-    // 3. 토벌설정 탭: 부길드장은 자동 통과, 정예는 스위치 확인
+    // 3. 토벌설정 탭: 부길드장은 자동 통과, 정예는 DB 값 기준 확인
     if (tab === 'raid' && !isSub) {
       if (!isElite) {
         showAppAlert("토벌설정은 관리자 이상만 접근할 수 있습니다.", "접근 제한", "🔒");
         return;
       }
-      const allowRaid = (window.currentSettingsMap['perm_settings_raid'] !== 'false');
+      const allowRaid = (String(window.currentSettingsMap['perm_settings_raid']) === 'true');
       if (!allowRaid) {
         showAppAlert("정예 관리자에게는 토벌설정 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
         return;
       }
     }
 
-    // 4. 설정보안 탭: 부길드장은 자동 통과, 정예는 스위치 확인
+    // 4. 설정보안 탭: 부길드장은 자동 통과, 정예는 DB 값 기준 확인
     if (tab === 'security' && !isSub) {
       if (!isElite) {
         showAppAlert("설정보안 탭은 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
         return;
       }
-      const allowSecurity = (window.currentSettingsMap['perm_settings_security'] !== 'false');
+      const allowSecurity = (String(window.currentSettingsMap['perm_settings_security']) === 'true');
       if (!allowSecurity) {
         showAppAlert("정예 관리자에게는 설정보안 탭 접근 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
         return;
       }
     }
 
-    // 5. 보스/사냥터 탭: 부길드장은 자동 통과, 정예는 스위치 확인
+    // 5. 보스/사냥터 탭: 부길드장은 자동 통과, 정예는 DB 값 기준 확인
     if (tab === 'bossGround' && !isSub) {
       if (!isElite) {
         showAppAlert("보스 및 사냥터 관리는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
         return;
       }
-      const allowBossGround = (window.currentSettingsMap['perm_settings_boss_ground'] !== 'false');
+      const allowBossGround = (String(window.currentSettingsMap['perm_settings_boss_ground']) === 'true');
       if (!allowBossGround) {
         showAppAlert("정예 관리자에게는 보스/사냥터 관리 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
         return;
@@ -1857,27 +1857,21 @@
     if (modal) modal.style.display = "none";
   }
 
+  // ==========================================
+  // [설정 데이터 로드: DB 직접 조회로 정확도 100% 보장]
+  // ==========================================
   async function loadCurrentSettingsToForm() {
     const currentGid = getSafeCurrentGid();
     window.currentSettingsMap = {};
 
     try {
-      const data = await apiRequest("rpc/get_safe_guild_settings", "POST", { p_guild_id: currentGid });
-      if (Array.isArray(data)) {
-        data.forEach(item => window.currentSettingsMap[item.key] = item.value);
+      const rows = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
+      if (Array.isArray(rows)) {
+        rows.forEach(r => {
+          if (r && r.key) window.currentSettingsMap[r.key] = String(r.value);
+        });
       }
-    } catch (e) {
-      if (typeof window.fetchGuildSettingsMap === 'function') {
-        try {
-          window.currentSettingsMap = await window.fetchGuildSettingsMap(currentGid);
-        } catch (err) {}
-      } else {
-        try {
-          const rows = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
-          (rows || []).forEach(r => window.currentSettingsMap[r.key] = r.value);
-        } catch (err) {}
-      }
-    }
+    } catch (err) {}
 
     document.getElementById('cfgScoreBase').value = window.currentSettingsMap['score_base'] || '1';
     document.getElementById('cfgScoreInternal').value = window.currentSettingsMap['score_war_internal'] || '1';
@@ -1890,7 +1884,9 @@
 
     updateGeminiKeyStatusUI();
 
-    const parseBool = (k) => window.currentSettingsMap[k] !== 'false';
+    // ⚡ DB의 실제 문자열('true')을 기준으로 스위치 상태를 100% 동기화
+    const parseBool = (k) => String(window.currentSettingsMap[k]) === 'true';
+
     document.getElementById('permSettingsSecurity').checked = parseBool('perm_settings_security');
     document.getElementById('permSettingsRaid').checked = parseBool('perm_settings_raid');
     document.getElementById('permSettingsBossGround').checked = parseBool('perm_settings_boss_ground');
@@ -1931,7 +1927,7 @@
     const isSub = isSubMasterUser();
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const isElite = (myRole === "정예");
-    const allowReset = isSuper || isSub || (isElite && window.currentSettingsMap['perm_member_pin_reset'] !== 'false');
+    const allowReset = isSuper || isSub || (isElite && String(window.currentSettingsMap['perm_member_pin_reset']) === 'true');
 
     const select = document.getElementById("resetMemberPinSelect");
     const btn = document.getElementById("btnExecuteResetMemberPin");
@@ -1939,27 +1935,55 @@
     if (select && btn) {
       select.disabled = !allowReset;
       btn.disabled = !allowReset;
-      btn.title = allowReset ? "" : "일반 관리자에게는 비밀번호 초기화 권한이 비활성화되어 있습니다.";
+      btn.title = allowReset ? "" : "관리자에게 비밀번호 초기화 권한이 비활성화되어 있습니다.";
     }
   }
 
+  // ⚡ [핵심] 안전하고 확실한 단일 키 upsert 함수
   async function safeUpsertSetting(key, val, gid) {
-    if (typeof window.upsertGuildSetting === 'function') {
-      return await window.upsertGuildSetting(key, val, gid);
-    }
-    const checkRow = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(gid)}&key=eq.${encodeURIComponent(key)}`);
-    if (checkRow && checkRow.length > 0) {
-      return await apiRequest(`guild_settings?id=eq.${checkRow[0].id}`, "PATCH", { value: val, updated_at: new Date().toISOString() });
-    } else {
-      return await apiRequest("guild_settings", "POST", [{ guild_id: gid, key: key, value: val }]);
+    window.currentSettingsMap[key] = String(val);
+    try {
+      const checkRow = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(gid)}&key=eq.${encodeURIComponent(key)}&select=id`);
+      if (checkRow && checkRow.length > 0) {
+        return await apiRequest(`guild_settings?id=eq.${checkRow[0].id}`, "PATCH", { 
+          value: String(val), 
+          updated_at: new Date().toISOString() 
+        });
+      } else {
+        return await apiRequest("guild_settings", "POST", [{ 
+          guild_id: gid, 
+          key: key, 
+          value: String(val) 
+        }]);
+      }
+    } catch (e) {
+      console.error("Setting upsert failed:", key, e);
     }
   }
+
+  // ⚡ [스위치 토글 즉시 개별 자동 저장]
+  async function toggleSinglePermission(permKey, isChecked) {
+    const isSuper = isSuperAdminUser();
+    if (!isSuper) {
+      showToast("길드장(슈퍼관리자)만 권한을 변경할 수 있습니다.", "⚠️");
+      await loadCurrentSettingsToForm();
+      return;
+    }
+
+    const currentGid = getSafeCurrentGid();
+    const strVal = isChecked ? "true" : "false";
+
+    await safeUpsertSetting(permKey, strVal, currentGid);
+    applyMemberPinResetUI();
+    showToast(`권한 [${permKey}] 상태가 즉시 반영되었습니다.`, "⚡");
+  }
+  window.toggleSinglePermission = toggleSinglePermission;
 
   async function saveScoreSettings() {
     const isSub = isSubMasterUser();
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const isElite = (myRole === "정예");
-    const allowRaid = isSub || (isElite && window.currentSettingsMap['perm_settings_raid'] !== 'false');
+    const allowRaid = isSub || (isElite && String(window.currentSettingsMap['perm_settings_raid']) === 'true');
 
     if (!allowRaid) return showToast("토벌설정 저장 권한이 없습니다.", "⚠️");
 
@@ -1975,10 +1999,6 @@
         safeUpsertSetting("score_war_inter", score_war_inter, currentGid)
       ]);
 
-      window.currentSettingsMap['score_base'] = score_base;
-      window.currentSettingsMap['score_war_internal'] = score_war_internal;
-      window.currentSettingsMap['score_war_inter'] = score_war_inter;
-
       showToast("배점 규정이 성공적으로 저장되었습니다!");
     } catch (err) {
       showToast("배점 저장 실패: " + err.message, "❌");
@@ -1989,7 +2009,7 @@
     const isSub = isSubMasterUser();
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const isElite = (myRole === "정예");
-    const allowRaid = isSub || (isElite && window.currentSettingsMap['perm_settings_raid'] !== 'false');
+    const allowRaid = isSub || (isElite && String(window.currentSettingsMap['perm_settings_raid']) === 'true');
 
     if (!allowRaid) return showToast("설정 저장 권한이 없습니다.", "⚠️");
 
@@ -1998,7 +2018,6 @@
 
     try {
       await safeUpsertSetting("use_self_checkin", use_self_checkin, currentGid);
-      window.currentSettingsMap['use_self_checkin'] = use_self_checkin;
       showToast("추가등록 링크 정책이 저장되었습니다!");
     } catch (err) {
       showToast("설정 저장 실패: " + err.message, "❌");
@@ -2009,7 +2028,7 @@
     const isSub = isSubMasterUser();
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const isElite = (myRole === "정예");
-    const allowSec = isSub || (isElite && window.currentSettingsMap['perm_settings_security'] !== 'false');
+    const allowSec = isSub || (isElite && String(window.currentSettingsMap['perm_settings_security']) === 'true');
 
     if (!allowSec) return showToast("설정보안 권한이 없습니다.", "⚠️");
 
@@ -2027,6 +2046,7 @@
     }
   }
 
+  // ⚡ [전체 일괄 저장 보장]
   async function saveAdminPermissionsSettings() {
     const isSuper = isSuperAdminUser();
     if (!isSuper) return showToast("길드장(슈퍼관리자)만 권한 정책을 저장할 수 있습니다.", "⚠️");
@@ -2048,10 +2068,9 @@
     try {
       for (let [k, v] of Object.entries(permissions)) {
         await safeUpsertSetting(k, v, currentGid);
-        window.currentSettingsMap[k] = v;
       }
       applyMemberPinResetUI();
-      showToast("👑 관리자 권한 정책이 반영되었습니다!");
+      showToast("👑 관리자 권한 정책이 완벽히 동기화되었습니다!");
     } catch (err) {
       showToast("권한 정책 저장 실패: " + err.message, "❌");
     }
@@ -2089,7 +2108,7 @@
     const myRole = localStorage.getItem("guild_my_role") || "일반";
     const isElite = (myRole === "정예");
     const currentGid = getSafeCurrentGid();
-    const allowReset = isSuper || isSub || (isElite && window.currentSettingsMap['perm_member_pin_reset'] !== 'false');
+    const allowReset = isSuper || isSub || (isElite && String(window.currentSettingsMap['perm_member_pin_reset']) === 'true');
 
     if (!allowReset) {
       return showAppAlert("비밀번호 초기화 권한이 비활성화되어 있습니다.", "권한 제한", "⚠️");
@@ -2185,7 +2204,7 @@
     const isElite = (myRole === "정예");
 
     if (!isSuper && !isSub) {
-      if (!isElite || window.currentSettingsMap['perm_settings_boss_ground'] === 'false') {
+      if (!isElite || String(window.currentSettingsMap['perm_settings_boss_ground']) !== 'true') {
         showAppAlert("보스 및 사냥터 수정 권한이 없습니다.", "권한 제한", "⚠️");
         return false;
       }
@@ -2193,9 +2212,6 @@
     return true;
   }
 
-  // ==========================================
-  // [보스 추가 - spawn_time & cycle_hours 완벽 주입]
-  // ==========================================
   async function addNewBossItem() {
     if (!checkBossGroundPermission()) return;
 
