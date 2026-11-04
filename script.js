@@ -191,11 +191,13 @@ async function initApp() {
 
   await loadGuildSettings();
   await window.loadGuildMembersData();
+  await refreshMyRoleFromServer();
 
   if (typeof window.loadBossTimersList === 'function') await window.loadBossTimersList();
   if (typeof window.startLocalBossWatchTimer === 'function') window.startLocalBossWatchTimer();
 
   listenRealtimeChatMessages();
+  listenRealtimeRoleUpdates();
   if (typeof window.listenRealtimeBossTimers === 'function') window.listenRealtimeBossTimers();
 
   setupPwaInstallation();
@@ -223,6 +225,62 @@ async function initApp() {
       }, 300);
     }
   }
+}
+
+// ⚡ [실시간 직책 동기화] 로그아웃 없이도 서버 최신 직책 반영
+async function refreshMyRoleFromServer() {
+  const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  if (!nick || typeof apiRequest !== "function") return;
+
+  try {
+    let rows = await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(nick)}&select=role,job_class,avatar`);
+    if (!rows || rows.length === 0) {
+      rows = await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(nick)}&select=role,job_class,avatar`);
+    }
+
+    if (rows && rows.length > 0) {
+      const liveRole = rows[0].role || "일반";
+      localStorage.setItem("guild_my_role", liveRole);
+
+      if (liveRole === "길드장" || liveRole === "길마" || liveRole === "슈퍼관리자") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "super");
+      } else if (liveRole === "부길드장" || liveRole === "부길마") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "admin");
+      } else if (liveRole === "정예") {
+        sessionStorage.setItem("admin_auth", "true");
+        sessionStorage.setItem("admin_role", "elite");
+      } else {
+        sessionStorage.removeItem("admin_auth");
+        sessionStorage.removeItem("admin_role");
+      }
+    }
+  } catch (e) {}
+}
+window.refreshMyRoleFromServer = refreshMyRoleFromServer;
+
+// ⚡ [Supabase 실시간 직책 변경 리스너]
+function listenRealtimeRoleUpdates() {
+  if (!supabaseClient) return;
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
+
+  supabaseClient
+    .channel("public:guild_members_roles")
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guild_members" }, (payload) => {
+      if (!payload.new) return;
+      if (payload.new.guild_id && payload.new.guild_id !== currentGid) return;
+
+      const updatedName = payload.new.name || payload.new.nickname || "";
+      if (updatedName === nick) {
+        refreshMyRoleFromServer().then(() => {
+          showKakaoToast(`내 권한이 [${payload.new.role || '일반'}] (으)로 실시간 반영되었습니다.`, "🛡️");
+        });
+      }
+    })
+    .subscribe();
 }
 
 async function loadGuildSettings() {
@@ -311,7 +369,6 @@ window.loadGuildMembersData = async function() {
   }
 };
 
-// ⚡ [수호 제거 완료] 4단계 직책 우선순위 정립
 function getRolePriority(role) {
   const r = String(role || '').trim();
   if (r === '길드장' || r === '길마' || r === '슈퍼관리자') return 1;
@@ -744,7 +801,6 @@ async function executeGuildLogin(forcedGuildId = null) {
     localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
   } catch (e) {}
 
-  // ⚡ [수호 제거 반영] 권한 세션 부여
   if (userRole === "길드장" || userRole === "길마" || userRole === "슈퍼관리자") {
     sessionStorage.setItem("admin_auth", "true");
     sessionStorage.setItem("admin_role", "super");
@@ -1560,7 +1616,7 @@ function closeMentionPopup() {
 }
 
 // --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더 (권한 가드 정밀 보정)
+// 9. 서브 모듈 화면 오버레이 로더 (서버 실시간 직책 즉시 검증)
 // --------------------------------------------------------
 window.openModulePage = async function(pageName) {
   if (pageName === "PageMembers") {
@@ -1572,19 +1628,19 @@ window.openModulePage = async function(pageName) {
 
   closeAllDrawers();
 
+  // ⚡ [실시간 검증] 진입 전 서버에서 내 최신 직책을 즉시 조회하여 로그아웃 불필요화
+  await refreshMyRoleFromServer();
+
   const myRole = localStorage.getItem("guild_my_role") || "일반";
   const adminRole = sessionStorage.getItem("admin_role") || "";
   const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "슈퍼관리자");
   const isSub = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마");
   const isElite = isSub || (adminRole === "elite") || (myRole === "정예");
 
-  // ⚡ [수호 제거 & 정예 권한 동기화]
-  // 1. PageSettings: 모든 길드원(일반 포함)이 화면 자체는 진입 가능 (세부 탭은 PageSettings.html에서 통제)
-  // 2. PageFinance(길드비용현황): 부길마 이상 또는 정예에게 열려 있으면 접근 허용
+  // PageSettings는 일반 길드원도 접근 가능 (세부 탭은 내부에서 제어)
   if (pageName === 'PageFinance' && !isElite) {
     return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
   }
-  // 3. PageRegister(보스참여등록): 정예 이상 진입 가능
   if (pageName === 'PageRegister' && !isElite) {
     return showKakaoToast("보스참여등록은 정예 이상만 접근할 수 있습니다.", "⚠️");
   }
