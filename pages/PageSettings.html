@@ -1341,9 +1341,9 @@
         resolve(window.confirm(message));
         return;
       }
-      document.getElementById("customConfirmTitle").innerText = title;
-      document.getElementById("customConfirmMessage").innerText = message;
-      document.getElementById("customConfirmIcon").innerText = icon;
+      document.getElementById("customAlertTitle").innerText = title;
+      document.getElementById("customAlertMessage").innerText = message;
+      document.getElementById("customAlertIcon").innerText = icon;
       modal.style.display = "flex";
     });
   }
@@ -2378,7 +2378,6 @@
     } catch (e) {}
   }
 
-  // ⚡ [실시간 내 직책 강제 갱신 후 설정 화면 초기화]
   (async function initSettingsPage() {
     if (typeof window.refreshMyRoleFromServer === "function") {
       await window.refreshMyRoleFromServer();
