@@ -954,7 +954,7 @@
   </div>
 
   <!-- ========================================================
-       [탭 5] 관리자 권한 탭 (토글 즉시 DB 자동 저장 지원)
+       [탭 5] 관리자 권한 탭 (토글 즉시 DB 실시간 자동 저장)
        ======================================================== -->
   <div id="tabSettingsPermissions" style="display: none;">
     <div class="settings-section-box mb-3">
@@ -963,7 +963,7 @@
         <span class="badge bg-warning bg-opacity-25 text-warning" style="font-size: 0.68rem;">슈퍼관리자</span>
       </div>
       <p class="sub-desc-text mb-3">
-        현재 길드의 관리자(부길드장, 정예)가 사용할 수 있는 기능을 토글 즉시 실시간으로 동기화합니다.
+        각 스위치를 켜거나 끄면 <strong>별도 저장 버튼 없이 0.05초 만에 DB에 즉시 반영</strong>됩니다.
       </p>
 
       <div class="perm-switch-item" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.3);">
@@ -1074,10 +1074,6 @@
         </div>
       </div>
     </div>
-
-    <button type="button" class="btn btn-warning w-100 fw-bold py-2" style="border-radius: 10px;" onclick="saveAdminPermissionsSettings()">
-      <i class="fa-solid fa-shield-halved me-1"></i> 전체 권한 정책 일괄 동기화
-    </button>
   </div>
 
   <!-- ========================================================
@@ -1281,7 +1277,7 @@
   }
 
   // ==========================================
-  // [슈퍼관리자 / 부길드장 / 정예 판별 유틸]
+  // [슈퍼관리자 / 부길드장 / 정예 판별: admin.html 호환 완벽 보강]
   // ==========================================
   function isSuperAdminUser() {
     const adminRole = sessionStorage.getItem("admin_role") || "";
@@ -1304,13 +1300,10 @@
            (myRole === "부길마");
   }
 
-  function isManagerAdminUser() {
-    if (isSuperAdminUser() || isSubMasterUser()) return true;
-    const adminRole = sessionStorage.getItem("admin_role") || "";
+  function isEliteUser() {
     const myRole = localStorage.getItem("guild_my_role") || "";
-    return (sessionStorage.getItem("admin_auth") === "true") || 
-           (adminRole === "elite") || 
-           (myRole === "정예");
+    const adminRole = sessionStorage.getItem("admin_role") || "";
+    return (myRole === "정예") || (adminRole === "elite");
   }
 
   // ==========================================
@@ -1488,13 +1481,12 @@
   }
 
   // ==========================================
-  // [탭 전환 및 권한 검사 (실시간 직책 & 정책 연동)]
+  // [탭 전환 및 권한 검사 (스위치 끄면 정예 즉시 차단)]
   // ==========================================
   function switchSettingsTab(tab) {
     const isSuper = isSuperAdminUser();
     const isSub = isSubMasterUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const isElite = (myRole === "정예");
+    const isElite = isEliteUser();
 
     // 1. 관리자 권한 제어판: 오직 길드장(슈퍼관리자)만 접근 가능
     if (tab === 'permissions' && !isSuper) {
@@ -1508,7 +1500,7 @@
       return;
     }
 
-    // 3. 토벌설정 탭: 부길드장은 자동 통과, 정예는 DB 값 기준 확인
+    // 3. 토벌설정 탭: 부길마 이상 자동 통과, 정예는 DB 값 기준 확인 (꺼져 있으면 즉시 차단)
     if (tab === 'raid' && !isSub) {
       if (!isElite) {
         showAppAlert("토벌설정은 관리자 이상만 접근할 수 있습니다.", "접근 제한", "🔒");
@@ -1521,7 +1513,7 @@
       }
     }
 
-    // 4. 설정보안 탭: 부길드장은 자동 통과, 정예는 DB 값 기준 확인
+    // 4. 설정보안 탭: 부길마 이상 자동 통과, 정예는 DB 값 기준 확인 (꺼져 있으면 즉시 차단)
     if (tab === 'security' && !isSub) {
       if (!isElite) {
         showAppAlert("설정보안 탭은 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
@@ -1534,7 +1526,7 @@
       }
     }
 
-    // 5. 보스/사냥터 탭: 부길드장은 자동 통과, 정예는 DB 값 기준 확인
+    // 5. 보스/사냥터 탭: 부길마 이상 자동 통과, 정예는 DB 값 기준 확인 (꺼져 있으면 즉시 차단)
     if (tab === 'bossGround' && !isSub) {
       if (!isElite) {
         showAppAlert("보스 및 사냥터 관리는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
@@ -1884,7 +1876,6 @@
 
     updateGeminiKeyStatusUI();
 
-    // ⚡ DB의 실제 문자열('true')을 기준으로 스위치 상태를 100% 동기화
     const parseBool = (k) => String(window.currentSettingsMap[k]) === 'true';
 
     document.getElementById('permSettingsSecurity').checked = parseBool('perm_settings_security');
@@ -1925,8 +1916,7 @@
   function applyMemberPinResetUI() {
     const isSuper = isSuperAdminUser();
     const isSub = isSubMasterUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const isElite = (myRole === "정예");
+    const isElite = isEliteUser();
     const allowReset = isSuper || isSub || (isElite && String(window.currentSettingsMap['perm_member_pin_reset']) === 'true');
 
     const select = document.getElementById("resetMemberPinSelect");
@@ -1939,7 +1929,7 @@
     }
   }
 
-  // ⚡ [핵심] 안전하고 확실한 단일 키 upsert 함수
+  // ⚡ [안전한 단일 키 upsert 함수]
   async function safeUpsertSetting(key, val, gid) {
     window.currentSettingsMap[key] = String(val);
     try {
@@ -1975,14 +1965,13 @@
 
     await safeUpsertSetting(permKey, strVal, currentGid);
     applyMemberPinResetUI();
-    showToast(`권한 [${permKey}] 상태가 즉시 반영되었습니다.`, "⚡");
+    showToast(`권한 상태가 즉시 반영되었습니다.`, "⚡");
   }
   window.toggleSinglePermission = toggleSinglePermission;
 
   async function saveScoreSettings() {
     const isSub = isSubMasterUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const isElite = (myRole === "정예");
+    const isElite = isEliteUser();
     const allowRaid = isSub || (isElite && String(window.currentSettingsMap['perm_settings_raid']) === 'true');
 
     if (!allowRaid) return showToast("토벌설정 저장 권한이 없습니다.", "⚠️");
@@ -2007,8 +1996,7 @@
 
   async function saveSecuritySettings() {
     const isSub = isSubMasterUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const isElite = (myRole === "정예");
+    const isElite = isEliteUser();
     const allowRaid = isSub || (isElite && String(window.currentSettingsMap['perm_settings_raid']) === 'true');
 
     if (!allowRaid) return showToast("설정 저장 권한이 없습니다.", "⚠️");
@@ -2026,8 +2014,7 @@
 
   async function registerNewGeminiApiKey() {
     const isSub = isSubMasterUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const isElite = (myRole === "정예");
+    const isElite = isEliteUser();
     const allowSec = isSub || (isElite && String(window.currentSettingsMap['perm_settings_security']) === 'true');
 
     if (!allowSec) return showToast("설정보안 권한이 없습니다.", "⚠️");
@@ -2043,36 +2030,6 @@
       showToast("Gemini API 키가 안전하게 등록되었습니다! 🎉");
     } catch (err) {
       showToast("API 키 등록 실패: " + err.message, "❌");
-    }
-  }
-
-  // ⚡ [전체 일괄 저장 보장]
-  async function saveAdminPermissionsSettings() {
-    const isSuper = isSuperAdminUser();
-    if (!isSuper) return showToast("길드장(슈퍼관리자)만 권한 정책을 저장할 수 있습니다.", "⚠️");
-
-    const currentGid = getSafeCurrentGid();
-    const permissions = {
-      perm_settings_security: document.getElementById('permSettingsSecurity').checked ? 'true' : 'false',
-      perm_settings_raid: document.getElementById('permSettingsRaid').checked ? 'true' : 'false',
-      perm_settings_boss_ground: document.getElementById('permSettingsBossGround').checked ? 'true' : 'false',
-      perm_boss_register: document.getElementById('permBossRegister').checked ? 'true' : 'false',
-      perm_boss_records_edit: document.getElementById('permBossRecordsEdit').checked ? 'true' : 'false',
-      perm_member_pin_reset: document.getElementById('permMemberPinReset').checked ? 'true' : 'false',
-      perm_wish_distribute: document.getElementById('permWishDistribute').checked ? 'true' : 'false',
-      perm_settle_fund_dist: document.getElementById('permSettleFundDist').checked ? 'true' : 'false',
-      perm_finance_input: document.getElementById('permFinanceInput').checked ? 'true' : 'false',
-      perm_notice_write: document.getElementById('permNoticeWrite').checked ? 'true' : 'false'
-    };
-
-    try {
-      for (let [k, v] of Object.entries(permissions)) {
-        await safeUpsertSetting(k, v, currentGid);
-      }
-      applyMemberPinResetUI();
-      showToast("👑 관리자 권한 정책이 완벽히 동기화되었습니다!");
-    } catch (err) {
-      showToast("권한 정책 저장 실패: " + err.message, "❌");
     }
   }
 
@@ -2105,8 +2062,7 @@
   async function executeMemberPinReset() {
     const isSuper = isSuperAdminUser();
     const isSub = isSubMasterUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const isElite = (myRole === "정예");
+    const isElite = isEliteUser();
     const currentGid = getSafeCurrentGid();
     const allowReset = isSuper || isSub || (isElite && String(window.currentSettingsMap['perm_member_pin_reset']) === 'true');
 
@@ -2200,8 +2156,7 @@
   function checkBossGroundPermission() {
     const isSuper = isSuperAdminUser();
     const isSub = isSubMasterUser();
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const isElite = (myRole === "정예");
+    const isElite = isEliteUser();
 
     if (!isSuper && !isSub) {
       if (!isElite || String(window.currentSettingsMap['perm_settings_boss_ground']) !== 'true') {
