@@ -227,7 +227,7 @@ async function initApp() {
   }
 }
 
-// ⚡ [실시간 직책 & 세션 동기화] 로그아웃 없이도 서버 최신 직책 즉각 반영
+// ⚡ [실시간 직책 & 세션 동기화: admin.html 호환 완벽 보강]
 async function refreshMyRoleFromServer() {
   const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -243,6 +243,7 @@ async function refreshMyRoleFromServer() {
       const liveRole = rows[0].role || "일반";
       localStorage.setItem("guild_my_role", liveRole);
 
+      // admin.html에서 지정한 '길드장', '슈퍼관리자', '길마' 모두 슈퍼관리자로 완벽 매핑
       if (liveRole === "길드장" || liveRole === "길마" || liveRole === "슈퍼관리자") {
         sessionStorage.setItem("admin_auth", "true");
         sessionStorage.setItem("admin_role", "super");
@@ -292,7 +293,7 @@ function listenRealtimeRoleUpdates() {
       if (targetGid && targetGid !== currentGid) return;
 
       if (window.currentSettingsMap && payload.new && payload.new.key) {
-        window.currentSettingsMap[payload.new.key] = payload.new.value;
+        window.currentSettingsMap[payload.new.key] = String(payload.new.value);
       }
       if (typeof window.loadCurrentSettingsToForm === "function") {
         window.loadCurrentSettingsToForm();
@@ -766,7 +767,7 @@ async function executeGuildLogin(forcedGuildId = null) {
         const gObj = guildInfoMap[gid];
         const gLabel = gObj ? `[${gObj.game_name || '게임'}] ${gObj.guild_name || gObj.name || '길드'}` : `길드 (${gid})`;
         return `<button type="button" class="btn btn-outline-info btn-sm text-start fw-bold py-2 px-3" style="font-size:0.78rem; border-radius:8px;" onclick="executeGuildLogin('${gid}')">
-          <i class="fa-solid fa-shield-halved me-1"></i>${escapeHtmlText(gLabel)} <span class="badge bg-secondary float-end">${escapeHtmlText(m.role || '일반')}</span>
+          <i class="fa-solid fa-shield-halved me-1"></i>${escapeAdminHtml(gLabel)} <span class="badge bg-secondary float-end">${escapeAdminHtml(m.role || '일반')}</span>
         </button>`;
       }).join("");
       multiBox.style.display = "block";
@@ -1634,7 +1635,7 @@ function closeMentionPopup() {
 }
 
 // --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더 (서버 실시간 직책 즉시 검증)
+// 9. 서브 모듈 화면 오버레이 로더 (DB 스위치 상태 보고 진입 통제)
 // --------------------------------------------------------
 window.openModulePage = async function(pageName) {
   if (pageName === "PageMembers") {
@@ -1646,21 +1647,48 @@ window.openModulePage = async function(pageName) {
 
   closeAllDrawers();
 
-  // ⚡ [실시간 검증] 진입 전 서버에서 내 최신 직책을 즉각 동기화
+  // 최신 직책 및 DB 세팅 즉시 조회
   await refreshMyRoleFromServer();
 
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   const myRole = localStorage.getItem("guild_my_role") || "일반";
   const adminRole = sessionStorage.getItem("admin_role") || "";
-  const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "슈퍼관리자");
+  const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "길마") || (myRole === "슈퍼관리자");
   const isSub = isSuper || (adminRole === "admin") || (myRole === "부길드장") || (myRole === "부길마");
-  const isElite = isSub || (adminRole === "elite") || (myRole === "정예");
+  const isElite = (myRole === "정예") || (adminRole === "elite");
 
-  // PageSettings는 일반 길드원도 접근 가능 (세부 탭은 내부에서 통제)
-  if (pageName === 'PageFinance' && !isElite) {
-    return showKakaoToast("길드비용현황은 관리자 전용 메뉴입니다.", "⚠️");
+  // DB 스위치 실시간 검증
+  let currentPerms = window.currentSettingsMap || {};
+  try {
+    const sRows = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
+    if (Array.isArray(sRows)) {
+      sRows.forEach(r => { if (r && r.key) currentPerms[r.key] = String(r.value); });
+    }
+  } catch(e) {}
+
+  // 1. 길드비용현황 (PageFinance): 부길마 이상 통과, 정예는 스위치 확인
+  if (pageName === 'PageFinance' && !isSub) {
+    if (!isElite || String(currentPerms['perm_finance_input']) !== 'true') {
+      return showKakaoToast("길드비용현황은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
+    }
   }
-  if (pageName === 'PageRegister' && !isElite) {
-    return showKakaoToast("보스참여등록은 정예 이상만 접근할 수 있습니다.", "⚠️");
+  // 2. 보스참여등록 (PageRegister): 부길마 이상 통과, 정예는 스위치 확인
+  if (pageName === 'PageRegister' && !isSub) {
+    if (!isElite || String(currentPerms['perm_boss_register']) !== 'true') {
+      return showKakaoToast("보스참여등록은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
+    }
+  }
+  // 3. 분배희망신청 (PageWish): 정예는 스위치 확인
+  if (pageName === 'PageWish' && !isSub) {
+    if (!isElite || String(currentPerms['perm_wish_distribute']) !== 'true') {
+      return showKakaoToast("분배희망신청 권한이 비활성화되어 있습니다.", "⚠️");
+    }
+  }
+  // 4. 정산내역 (PageSettle): 정예는 스위치 확인
+  if (pageName === 'PageSettle' && !isSub) {
+    if (!isElite || String(currentPerms['perm_settle_fund_dist']) !== 'true') {
+      return showKakaoToast("정산내역 권한이 비활성화되어 있습니다.", "⚠️");
+    }
   }
 
   const overlay = document.getElementById("moduleOverlay");
