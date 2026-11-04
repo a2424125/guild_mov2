@@ -7,7 +7,7 @@
   /* 폰트 및 모듈 루트 카드 */
   #settingsRootCard {
     font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Apple SD Gothic Neo", sans-serif;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.25px;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
@@ -139,7 +139,7 @@
   }
   .kt-menu-tile-btn .tile-label {
     font-size: 0.71rem;
-    font-weight: 700;
+    font-weight: 600;
     white-space: nowrap;
   }
   .kt-menu-tile-btn.active {
@@ -167,7 +167,7 @@
     border: 1px solid #374151;
     border-radius: 12px;
     padding: 10px 11px;
-    margin-bottom: 9px;
+    margin-bottom: 8px;
     transition: all 0.2s ease;
   }
   .sub-desc-text {
@@ -176,7 +176,7 @@
     line-height: 1.4;
   }
 
-  /* 🏰 상단 소속 길드 배너 (선명도 극대화) */
+  /* 🏰 상단 소속 길드 배너 (카카오톡 스타일 세미볼드 600 적용) */
   .guild-info-banner {
     background: #1e293b !important;
     border: 1px solid #334155 !important;
@@ -191,25 +191,25 @@
   .guild-label {
     color: #38bdf8;
     font-size: 0.76rem;
-    font-weight: 800;
+    font-weight: 700;
   }
   .settings-card.light-mode .guild-label {
     color: #0284c7;
   }
   .guild-title {
     font-size: 0.95rem;
-    font-weight: 800;
-    letter-spacing: -0.4px;
+    font-weight: 600 !important; /* 과도한 두께 완화 */
+    letter-spacing: -0.2px;
     color: #ffffff;
   }
   .settings-card.light-mode .guild-title {
-    color: #0f172a !important;
+    color: #111827 !important;
   }
   .game-badge {
     background: rgba(254, 229, 0, 0.25);
     color: #facc15;
     border: 1px solid rgba(250, 204, 21, 0.5);
-    font-weight: 800;
+    font-weight: 700;
     font-size: 0.68rem;
     padding: 1px 6px;
     border-radius: 5px;
@@ -243,7 +243,7 @@
     background-color: #fee500 !important;
     color: #191919 !important;
     border: none !important;
-    font-weight: 800 !important;
+    font-weight: 700 !important;
     border-radius: 8px !important;
     transition: all 0.15s ease !important;
     box-shadow: 0 1.5px 5px rgba(0, 0, 0, 0.1) !important;
@@ -261,7 +261,7 @@
     box-shadow: 0 3px 8px rgba(254, 229, 0, 0.25) !important;
   }
 
-  /* 👤 프로필 카드 (슬림화) */
+  /* 👤 프로필 카드 (카카오톡 설정 프로필 스타일 세미볼드 600) */
   .kt-profile-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -300,8 +300,8 @@
   }
   .kt-profile-name {
     font-size: 0.92rem;
-    font-weight: 800;
-    letter-spacing: -0.3px;
+    font-weight: 600 !important; /* 과도한 두께 완화 */
+    letter-spacing: -0.2px;
   }
   .kt-role-badge {
     background: rgba(254, 229, 0, 0.15);
@@ -332,7 +332,7 @@
     background: transparent;
     border: none;
     color: #9ca3af;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 0.72rem;
     padding: 3px 6px;
     border-radius: 5px;
@@ -344,38 +344,11 @@
     color: #ffffff;
   }
 
-  /* 🎚️ 테마 스위치 */
-  .custom-theme-switch-wrap {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-    margin: 0;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .custom-theme-switch-wrap input { opacity: 0; width: 0; height: 0; position: absolute; }
-  .theme-slider-track {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #374151;
-    border: 1.5px solid #4b5563;
-    border-radius: 24px;
-    transition: all 0.25s ease;
-  }
-  .theme-slider-knob {
-    position: absolute;
-    height: 18px; width: 18px; left: 2px; bottom: 1.5px;
-    background-color: #ffffff !important;
-    border-radius: 50%;
-    transition: transform 0.25s ease;
-  }
-  .custom-theme-switch-wrap input:checked + .theme-slider-track {
-    background-color: #0284c7;
-    border-color: #38bdf8;
-  }
-  .custom-theme-switch-wrap input:checked + .theme-slider-track .theme-slider-knob {
-    transform: translateX(19px);
+  /* 🎚️ 3번 스크린샷 규격과 동일한 표준 슬림 토글 스위치 */
+  .form-switch .form-check-input {
+    width: 2.5em !important;
+    height: 1.3em !important;
+    cursor: pointer !important;
   }
 
   /* 🎯 점수 조절 스테퍼 */
@@ -406,7 +379,7 @@
     width: 30px;
     height: 30px;
     font-size: 1rem;
-    font-weight: 800;
+    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -420,7 +393,7 @@
     background: transparent;
     border: none;
     color: #facc15;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 0.9rem;
     outline: none;
   }
@@ -437,13 +410,8 @@
     align-items: center;
     gap: 8px;
   }
-  .form-switch .form-check-input {
-    width: 2.5em !important;
-    height: 1.3em !important;
-    cursor: pointer !important;
-  }
 
-  /* ⚔️ 보스 목록 그리드 (사냥터 삭제 후 보스 전용 확장) */
+  /* ⚔️ 보스 목록 그리드 */
   .boss-grid-container {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -464,6 +432,19 @@
   }
   .boss-item-del { color: #9ca3af; cursor: pointer; flex-shrink: 0; }
   .boss-item-del:hover { color: #ef4444; }
+
+  /* 🎵 슬림 재생 아이콘 버튼 */
+  .btn-sound-play-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
 
   /* 직업 모달 그리드 */
   .profile-class-grid {
@@ -551,7 +532,7 @@
     </span>
   </div>
 
-  <!-- 소속 길드 배너 (또렷하고 선명하게 개선) -->
+  <!-- 소속 길드 배너 (선명하고 단정한 세미볼드) -->
   <div class="guild-info-banner d-flex align-items-center justify-content-between mb-2">
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <span style="font-size: 1.05rem;">🏰</span>
@@ -562,7 +543,7 @@
     <input type="hidden" id="cfgGuildName" value="">
   </div>
 
-  <!-- 카카오톡 스타일 3열 2행 메뉴 그리드 (슬림 콤팩트 규격) -->
+  <!-- 카카오톡 스타일 3열 2행 메뉴 그리드 -->
   <div class="kt-menu-grid-container">
     <div class="kt-menu-tile-btn active" id="btnNavGeneral" onclick="switchSettingsTab('general')">
       <span class="tile-icon">🏢</span>
@@ -594,7 +575,7 @@
        [탭 1] 기본 탭
        ======================================================== -->
   <div id="tabSettingsGeneral">
-    <!-- 내 프로필 카드 -->
+    <!-- 내 프로필 카드 (카카오톡 설정 스타일 폰트) -->
     <div class="settings-section-box mb-2">
       <div class="kt-profile-card" onclick="openCombinedProfileModal()" title="캐릭터 직업 및 비밀번호 변경">
         <div class="kt-avatar-circle" id="profileCurrentAvatarDisplay">👤</div>
@@ -629,7 +610,7 @@
       </div>
     </div>
 
-    <!-- 화면 테마 토글 스위치 -->
+    <!-- 화면 테마 토글 스위치 (3번 스크린샷 표준 슬림 스위치로 통합) -->
     <div class="settings-section-box d-flex justify-content-between align-items-center py-2 px-2 mb-2">
       <div class="d-flex align-items-center gap-2">
         <div id="themeToggleIconBox" style="width: 30px; height: 30px; border-radius: 7px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1rem;">
@@ -643,13 +624,12 @@
           <div class="sub-desc-text" id="themeToggleSubtext">눈이 편안한 다크 테마 적용 중</div>
         </div>
       </div>
-      <label class="custom-theme-switch-wrap" for="themeToggleSwitch" title="다크/라이트 전환">
-        <input type="checkbox" id="themeToggleSwitch" onchange="onThemeToggleSwitch(this.checked)">
-        <span class="theme-slider-track"><span class="theme-slider-knob"></span></span>
-      </label>
+      <div class="form-check form-switch m-0 ps-0 flex-shrink-0">
+        <input class="form-check-input ms-0" type="checkbox" id="themeToggleSwitch" role="switch" onchange="onThemeToggleSwitch(this.checked)" title="다크/라이트 전환">
+      </div>
     </div>
 
-    <!-- 새 채팅 알림음 설정 -->
+    <!-- 새 채팅 알림음 설정 (콤팩트 재생 아이콘 버튼 적용) -->
     <div class="settings-section-box mb-2">
       <div class="d-flex justify-content-between align-items-center mb-1">
         <div class="d-flex align-items-center gap-2">
@@ -661,8 +641,8 @@
         </div>
       </div>
 
-      <div class="row g-2 align-items-center">
-        <div class="col-8">
+      <div class="d-flex align-items-center gap-2">
+        <div style="flex: 1; min-width: 0;">
           <select id="cfgChatAlarmPreset" class="form-select input-custom-set" onchange="saveAlarmSoundPreferences()">
             <option value="alarm1.mp3">알림음 01 (alarm1)</option>
             <option value="alarm2.mp3">알림음 02 (alarm2)</option>
@@ -685,18 +665,16 @@
             <option value="alarm19.mp3">알림음 19 (alarm19)</option>
           </select>
         </div>
-        <div class="col-4">
-          <button type="button" class="btn btn-outline-info btn-sm w-100 fw-bold" style="height: 36px; border-radius: 8px; font-size: 0.76rem;" onclick="previewChatAlarmSound()">
-            <i class="fa-solid fa-play me-1"></i>듣기
-          </button>
-        </div>
+        <button type="button" class="btn btn-outline-info btn-sound-play-icon" onclick="previewChatAlarmSound()" title="미리듣기">
+          <i class="fa-solid fa-play"></i>
+        </button>
       </div>
       <div class="sub-desc-text mt-1">
         * 대화방에서 새 메시지를 수신했을 때 재생되는 사운드입니다.
       </div>
     </div>
 
-    <!-- 보스 타이머 경보 알림음 설정 -->
+    <!-- 보스 타이머 경보 알림음 설정 (콤팩트 재생 아이콘 버튼 적용) -->
     <div class="settings-section-box">
       <div class="d-flex justify-content-between align-items-center mb-1">
         <div class="d-flex align-items-center gap-2">
@@ -708,8 +686,8 @@
         </div>
       </div>
 
-      <div class="row g-2 align-items-center">
-        <div class="col-8">
+      <div class="d-flex align-items-center gap-2">
+        <div style="flex: 1; min-width: 0;">
           <select id="cfgAlarmSoundPreset" class="form-select input-custom-set" onchange="saveAlarmSoundPreferences()">
             <option value="alarm1.mp3">알림음 01 (alarm1 - 추천)</option>
             <option value="alarm2.mp3">알림음 02 (alarm2 - 추천)</option>
@@ -732,11 +710,9 @@
             <option value="alarm19.mp3">알림음 19 (alarm19)</option>
           </select>
         </div>
-        <div class="col-4">
-          <button type="button" class="btn btn-outline-warning btn-sm w-100 fw-bold" style="height: 36px; border-radius: 8px; font-size: 0.76rem;" onclick="previewAlarmSound()">
-            <i class="fa-solid fa-play me-1"></i>듣기
-          </button>
-        </div>
+        <button type="button" class="btn btn-outline-warning btn-sound-play-icon" onclick="previewAlarmSound()" title="미리듣기">
+          <i class="fa-solid fa-play"></i>
+        </button>
       </div>
       <div class="sub-desc-text mt-1">
         * 보스 젠 5분 전 및 젠 완료 시 재생되는 경보 사운드입니다.
@@ -1042,7 +1018,7 @@
   </div>
 
   <!-- ========================================================
-       [탭 6] 보스관리 (사냥터 삭제 후 보스 목록 전용 확장)
+       [탭 6] 보스관리 (보스 목록 전용 확장)
        ======================================================== -->
   <div id="tabSettingsBossGround" style="display: none;">
     <div class="settings-section-box mb-2">
@@ -1180,7 +1156,7 @@
 </div>
 
 <!-- ========================================================
-     [커스텀 모달 4] Confirm 모달 (내용 미출력 버그 완벽 수정)
+     [커스텀 모달 4] Confirm 모달 (내용 문구 정상 출력 완비)
      ======================================================== -->
 <div id="modalCustomConfirm" class="custom-modal-backdrop" style="display: none; z-index: 10000000;">
   <div class="custom-modal-card text-center" style="max-width: 310px; padding: 18px 14px;">
@@ -1215,9 +1191,7 @@
   }
 
   // ==========================================
-  // [슈퍼관리자 / 일반관리자 판별: 대표님 설계 규칙 100% 반영]
-  // 슈퍼관리자: 길드장 (슈퍼)
-  // 일반관리자: 부길드장(부길마), 정예
+  // [슈퍼관리자 / 일반관리자 판별]
   // ==========================================
   function isSuperAdminUser() {
     const adminRole = sessionStorage.getItem("admin_role") || "";
@@ -1239,7 +1213,7 @@
   }
 
   // ==========================================
-  // [커스텀 알림/확인 다이얼로그 (Confirm 문구 완벽 바인딩)]
+  // [커스텀 알림/확인 다이얼로그]
   // ==========================================
   function showAppAlert(message, title = "안내", icon = "⚠️") {
     const modal = document.getElementById("modalCustomAlert");
@@ -1266,7 +1240,6 @@
         resolve(window.confirm(message));
         return;
       }
-      // Confirm 모달 전용 엘리먼트 ID로 정확히 주입 (오류 원천 교정)
       const tEl = document.getElementById("customConfirmTitle");
       const mEl = document.getElementById("customConfirmMessage");
       const iEl = document.getElementById("customConfirmIcon");
@@ -1417,19 +1390,17 @@
   }
 
   // ==========================================
-  // [탭 전환 및 권한 검사 (스위치 끄면 일반관리자 즉시 차단)]
+  // [탭 전환 및 권한 검사]
   // ==========================================
   function switchSettingsTab(tab) {
     const isSuper = isSuperAdminUser();
     const isNormalAdmin = isNormalAdminUser();
 
-    // 1. 기본설정 탭은 누구나 진입 가능
     if (tab === 'general') {
       activateTabUI('general');
       return;
     }
 
-    // 2. 관리자 권한 제어판: 오직 길드장(슈퍼관리자)만 접근 가능
     if (tab === 'permissions') {
       if (!isSuper) {
         showAppAlert("[관리자 권한] 제어판은 길드장(슈퍼관리자)만 진입할 수 있습니다.", "권한 부족", "👑");
@@ -1439,7 +1410,6 @@
       return;
     }
 
-    // 3. 길드원보안 탭: 일반관리자 이상 접근 가능
     if (tab === 'memberAuth') {
       if (!isNormalAdmin) {
         showAppAlert("길드원 직책 관리 및 PIN 초기화는 관리자 전용 메뉴입니다.", "접근 제한", "🔒");
@@ -1449,7 +1419,6 @@
       return;
     }
 
-    // 4. 토벌설정 탭: 슈퍼는 통과, 일반관리자(부길마, 정예)는 스위치 확인
     if (tab === 'raid') {
       if (!isSuper) {
         if (!isNormalAdmin) {
@@ -1466,7 +1435,6 @@
       return;
     }
 
-    // 5. 설정보안 탭: 슈퍼는 통과, 일반관리자는 스위치 확인
     if (tab === 'security') {
       if (!isSuper) {
         if (!isNormalAdmin) {
@@ -1483,7 +1451,6 @@
       return;
     }
 
-    // 6. 보스관리 탭: 슈퍼는 통과, 일반관리자는 스위치 확인
     if (tab === 'bossGround') {
       if (!isSuper) {
         if (!isNormalAdmin) {
@@ -1607,7 +1574,7 @@
       if (isSuper) {
         roleBadge.innerText = (myRole === "길드장") ? "👑 길드장(슈퍼)" : "👑 슈퍼관리자";
         roleBadge.className = "kt-role-badge badge-super";
-        roleBadge.style = "background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important; color: #ffffff !important; border: none !important; font-weight: 800 !important; font-size: 0.65rem !important; padding: 1px 6px !important; border-radius: 16px !important;";
+        roleBadge.style = "background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%) !important; color: #ffffff !important; border: none !important; font-weight: 700 !important; font-size: 0.65rem !important; padding: 1px 6px !important; border-radius: 16px !important;";
       } else if (myRole === "부길드장" || myRole === "부길마") {
         roleBadge.innerText = "🛡️ 부길드장(관리자)";
         roleBadge.className = "kt-role-badge";
@@ -1821,7 +1788,7 @@
   }
 
   // ==========================================
-  // [설정 데이터 로드: DB 직접 조회로 정확도 100% 보장]
+  // [설정 데이터 로드: DB 직접 조회]
   // ==========================================
   async function loadCurrentSettingsToForm() {
     const currentGid = getSafeCurrentGid();
