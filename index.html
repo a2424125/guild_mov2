@@ -130,6 +130,60 @@
       color: var(--main-header-text, #f3f4f6);
       font-weight: 600;
     }
+
+    /* 🚀 자동 업데이트 진행률 & 완료 커스텀 모달 스타일 */
+    .auto-update-modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(11, 15, 20, 0.9);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2147483647 !important;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .auto-update-card {
+      width: 100%;
+      max-width: 320px;
+      background: #181d24;
+      border: 1.5px solid #2d3748;
+      border-radius: 20px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+      color: #f3f4f6;
+      animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .auto-update-icon-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: #fee500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 16px rgba(254, 229, 0, 0.3);
+    }
+    .auto-progress-bar-wrap {
+      width: 100%;
+      height: 8px;
+      background: #11151a;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 14px 0 8px 0;
+      border: 1px solid #202732;
+    }
+    .auto-progress-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #fee500;
+      border-radius: 8px;
+      transition: width 0.2s ease;
+    }
   </style>
 </head>
 <body class="in-main-tabs">
@@ -605,6 +659,37 @@
     </div>
   </div>
 
+  <!-- [대표님 1안 선택 반영] 최신 버전 자동 업데이트 인앱 모달 -->
+  <div id="modalAutoUpdateContainer" class="auto-update-modal-backdrop" style="display: none;">
+    <div class="auto-update-card">
+      <div class="auto-update-icon-box">🚀</div>
+      
+      <!-- 상태 1: 다운로드 중일 때 -->
+      <div id="autoUpdateDownloadingView">
+        <h5 class="fw-bold mb-1" style="font-size: 1.05rem; color: #ffffff;">새 버전 다운로드 중</h5>
+        <p class="text-secondary small mb-2" style="font-size: 0.76rem;">최신 업데이트 패치를 안전하게 내려받고 있습니다.</p>
+        <div class="auto-progress-bar-wrap">
+          <div class="auto-progress-bar-fill" id="autoUpdateProgressFill"></div>
+        </div>
+        <div class="d-flex justify-content-between text-secondary" style="font-size: 0.7rem;">
+          <span>진행 상태</span>
+          <span id="autoUpdatePercentText" style="color: #fee500; font-weight: 700;">0%</span>
+        </div>
+      </div>
+
+      <!-- 상태 2: 다운로드 완료 시 (대표님 1안 문구 적용) -->
+      <div id="autoUpdateReadyView" style="display: none;">
+        <h5 class="fw-bold mb-2" style="font-size: 1.1rem; color: #ffffff;">최신 버전 업데이트 완료</h5>
+        <p class="text-secondary small mb-3" style="font-size: 0.78rem; line-height: 1.5; word-break: keep-all;">
+          새로운 레이드온이 준비되었습니다.<br>지금 다시 시작하여 최신 기능을 적용할까요?
+        </p>
+        <button type="button" class="btn btn-warning w-100 fw-bold py-2" style="background: #fee500; border: none; color: #191919; border-radius: 10px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25);" onclick="executeRestartAppNow()">
+          지금 바로 시작하기
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     function openProfileEditModal() {
       var modal = document.getElementById("modalProfileEdit");
@@ -1043,76 +1128,40 @@
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 
-  <!-- 강제 업데이트 차단 전체 화면 모달 -->
-  <div id="modalForceUpdate" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 20, 0.94); backdrop-filter: blur(8px); z-index: 2147483647 !important; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
-    <div style="width: 100%; max-width: 330px; background: #181d24; border: 1.5px solid #2d3748; border-radius: 20px; padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); color: #f3f4f6;">
-      <div style="width: 56px; height: 56px; border-radius: 18px; background: #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 4px 18px rgba(254, 229, 0, 0.35);">
-        🚀
-      </div>
-      <h5 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: #ffffff;">새 버전 업데이트 안내</h5>
-      <p id="forceUpdateDescIndex" style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-bottom: 18px; word-break: keep-all;">
-        레이드온 최신 정식 버전이 출시되었습니다.<br>트레이 최소화 및 시스템 안정화를 위해 <strong>최신 버전 업데이트 후 이용</strong>해 주세요.
-      </p>
-
-      <div style="background: #11151a; border: 1px solid #202732; border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; font-size: 0.76rem; text-align: left; display: flex; flex-direction: column; gap: 6px;">
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: #64748b;">내 현재 버전</span>
-          <span id="currentClientVerText" style="color: #ef4444; font-weight: 700;">구버전</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span style="color: #64748b;">필수 최신 버전</span>
-          <span id="requiredClientVerTextIndex" style="color: #22c55e; font-weight: 700;">최신</span>
-        </div>
-      </div>
-
-      <button type="button" style="width: 100%; height: 46px; background: #fee500; color: #191919; font-weight: 800; font-size: 0.92rem; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25); display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="location.href='/download.html'">
-        <i class="fa-solid fa-download"></i>
-        <span>최신 버전 다운로드하기</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- version.json 검사기 -->
+  <!-- ⚡ [Electron 연동] 자동 업데이트 실시간 제어 스크립트 -->
   <script>
-    (async function enforceClientUpdate() {
-      const ua = navigator.userAgent || "";
-      const isDesktopClient = ua.includes("Electron") || ua.includes("RaidOn");
-      if (!isDesktopClient) return;
+    function executeRestartAppNow() {
+      if (window.electronAPI && typeof window.electronAPI.restartAndInstall === 'function') {
+        window.electronAPI.restartAndInstall();
+      } else {
+        location.reload();
+      }
+    }
 
-      try {
-        const res = await fetch('/version.json?t=' + Date.now());
-        if (!res.ok) return;
-        const config = await res.json();
-        const requiredVer = config.min_required_version || config.latest_version || '1.1.1';
+    (function setupDesktopAutoUpdateListener() {
+      if (!window.electronAPI) return;
 
-        const isUpToDate = ua.includes(`RaidOn/${requiredVer}`);
+      const modal = document.getElementById("modalAutoUpdateContainer");
+      const downloadingView = document.getElementById("autoUpdateDownloadingView");
+      const readyView = document.getElementById("autoUpdateReadyView");
+      const fillBar = document.getElementById("autoUpdateProgressFill");
+      const percentText = document.getElementById("autoUpdatePercentText");
 
-        if (!isUpToDate) {
-          const applyLock = () => {
-            const modal = document.getElementById("modalForceUpdate");
-            if (modal) {
-              const reqText = document.getElementById("requiredClientVerTextIndex");
-              if (reqText) reqText.innerText = `v${requiredVer} (최신)`;
-              const desc = document.getElementById("forceUpdateDescIndex");
-              if (desc && config.update_notice) {
-                desc.innerHTML = `레이드온 <strong>v${requiredVer}</strong> 정식 버전이 출시되었습니다.<br>${config.update_notice}`;
-              }
-              modal.style.display = "flex";
-              document.body.style.overflow = "hidden";
-              const mainTabs = document.getElementById("kakaoMainTabsView");
-              const chatView = document.getElementById("chatRoomView");
-              if (mainTabs) mainTabs.style.pointerEvents = "none";
-              if (chatView) chatView.style.pointerEvents = "none";
-            }
-          };
+      // 1. 다운로드 진행률 수신 (게이지 바 채우기)
+      window.electronAPI.onUpdateProgress((percent) => {
+        if (modal) modal.style.display = "flex";
+        if (downloadingView) downloadingView.style.display = "block";
+        if (readyView) readyView.style.display = "none";
+        if (fillBar) fillBar.style.width = percent + "%";
+        if (percentText) percentText.innerText = percent + "%";
+      });
 
-          if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", applyLock);
-          } else {
-            applyLock();
-          }
-        }
-      } catch (err) {}
+      // 2. 다운로드 완료 수신 (대표님 1안 문구 모달 노출)
+      window.electronAPI.onUpdateDownloaded(() => {
+        if (modal) modal.style.display = "flex";
+        if (downloadingView) downloadingView.style.display = "none";
+        if (readyView) readyView.style.display = "block";
+      });
     })();
   </script>
 </body>
