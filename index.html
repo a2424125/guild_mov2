@@ -45,11 +45,26 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* 카카오톡 상단 헤더 여백 & 창 이동 영역 확보 */
-    .kakao-chat-header {
-      padding: 18px 14px 12px 14px !important;
+    /* ⭐️ 카카오톡 표준 2단 헤더: 1층 윈도우 시스템 버튼 전용 드래그 바 (높이 30px) */
+    .window-titlebar-spacer {
+      width: 100%;
+      height: 30px;
+      min-height: 30px;
       -webkit-app-region: drag;
       user-select: none;
+      flex-shrink: 0;
+      background: transparent;
+    }
+
+    /* ⭐️ 2층 대화방 및 메인 헤더: 방 제목과 툴 버튼들이 여유롭게 배치되는 영역 */
+    .kakao-chat-header {
+      padding: 6px 14px 10px 14px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      -webkit-app-region: no-drag;
+      user-select: none;
+      flex-shrink: 0;
     }
     .kakao-chat-header button,
     .kakao-chat-header .room-count-text,
@@ -61,11 +76,10 @@
       letter-spacing: -0.2px !important;
     }
 
-    /* 윈도우 시스템 버튼(최소화/최대화/닫기 3종)과 겹치지 않도록 우측 여백 확보 */
     .header-right-tools {
       display: flex !important;
       align-items: center !important;
-      padding-right: 140px !important;
+      gap: 4px !important;
       flex-shrink: 0 !important;
     }
 
@@ -284,6 +298,10 @@
 
   <!-- [VIEW 1] 메인 홈 화면 -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
+    <!-- ⭐️ 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (드래그 가능) -->
+    <div class="window-titlebar-spacer"></div>
+
+    <!-- ⭐️ 2층: 메인 탭 헤더 본문 -->
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
         <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">대화방</div>
@@ -387,6 +405,10 @@
 
   <!-- [VIEW 2] 개별 대화방 화면 -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
+    <!-- ⭐️ 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (드래그 가능) -->
+    <div class="window-titlebar-spacer"></div>
+
+    <!-- ⭐️ 2층: 대화방 헤더 본문 (방 제목 및 툴 버튼 여유 배치) -->
     <header class="kakao-chat-header">
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.15rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
@@ -396,7 +418,7 @@
           <span style="font-weight: 800; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
         </div>
         <div class="room-info-box" style="display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: hidden; justify-content: center;">
-          <div class="room-title-text" id="chatRoomTitle" style="font-size: 0.92rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;">길드 대화방</div>
+          <div class="room-title-text" id="chatRoomTitle" style="font-size: 0.95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;">길드 대화방</div>
           <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)" style="font-size: 0.68rem; line-height: 1.2; margin-top: 1px; cursor: pointer;">
             <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
           </div>
