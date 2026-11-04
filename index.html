@@ -47,7 +47,7 @@
   <style>
     /* 카카오톡 상단 헤더 여백 & 창 이동 영역 확보 */
     .kakao-chat-header {
-      padding: 12px 14px 10px 14px !important;
+      padding: 18px 14px 12px 14px !important;
       -webkit-app-region: drag;
       user-select: none;
     }
@@ -59,6 +59,14 @@
     .kakao-chat-header .room-title-text {
       font-weight: 600 !important;
       letter-spacing: -0.2px !important;
+    }
+
+    /* 윈도우 시스템 버튼(최소화/최대화/닫기 3종)과 겹치지 않도록 우측 여백 확보 */
+    .header-right-tools {
+      display: flex !important;
+      align-items: center !important;
+      padding-right: 140px !important;
+      flex-shrink: 0 !important;
     }
 
     .kakao-bottom-tabbar {
@@ -131,7 +139,7 @@
       font-weight: 600;
     }
 
-    /* 🚀 자동 업데이트 진행률 & 완료 커스텀 모달 스타일 */
+    /* 자동 업데이트 진행률 & 완료 커스텀 모달 스타일 */
     .auto-update-modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -154,7 +162,6 @@
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
       color: #f3f4f6;
-      animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .auto-update-icon-box {
       width: 52px;
@@ -659,7 +666,7 @@
     </div>
   </div>
 
-  <!-- [대표님 1안 선택 반영] 최신 버전 자동 업데이트 인앱 모달 -->
+  <!-- 최신 버전 자동 업데이트 인앱 모달 -->
   <div id="modalAutoUpdateContainer" class="auto-update-modal-backdrop" style="display: none;">
     <div class="auto-update-card">
       <div class="auto-update-icon-box">🚀</div>
@@ -1128,7 +1135,7 @@
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 
-  <!-- ⚡ [Electron 연동] 자동 업데이트 실시간 제어 스크립트 -->
+  <!-- [Electron 연동] 자동 업데이트 실시간 제어 스크립트 -->
   <script>
     function executeRestartAppNow() {
       if (window.electronAPI && typeof window.electronAPI.restartAndInstall === 'function') {
