@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>길드 대화방</title>
+  <title></title>
 
   <!-- PWA 앱 설정 & 새 G 앱 아이콘 연결 -->
   <link rel="manifest" href="/manifest.json">
@@ -41,10 +41,26 @@
     })();
   </script>
 
-  <!-- 외부 분리 스타일시트 연결 (순정 100%) -->
+  <!-- 외부 분리 스타일시트 연결 -->
   <link rel="stylesheet" href="style.css">
 
   <style>
+    /* 카카오톡 상단 헤더 여백 & 창 이동 영역 확보 */
+    .kakao-chat-header {
+      padding: 12px 14px 10px 14px !important;
+      -webkit-app-region: drag;
+      user-select: none;
+    }
+    .kakao-chat-header button,
+    .kakao-chat-header .room-count-text,
+    .kakao-chat-header input {
+      -webkit-app-region: no-drag;
+    }
+    .kakao-chat-header .room-title-text {
+      font-weight: 600 !important;
+      letter-spacing: -0.2px !important;
+    }
+
     .kakao-bottom-tabbar {
       height: 52px;
       min-height: 52px;
@@ -121,7 +137,7 @@
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
 
-  <!-- 1. 햄버거 메뉴 서랍 (순정 260px 슬라이드 드로어) -->
+  <!-- 1. 햄버거 메뉴 서랍 -->
   <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -184,7 +200,7 @@
     </div>
   </aside>
 
-  <!-- 4. 보스타임 전용 서랍 -->
+  <!-- 3. 보스타임 전용 서랍 -->
   <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header-bar">
       <div class="boss-drawer-title-box">
@@ -209,7 +225,7 @@
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
-        <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.3px;">대화방</div>
+        <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">대화방</div>
         <span class="badge bg-secondary bg-opacity-25 text-secondary" id="mainTabGameBadge" style="display: none; font-size: 0.7rem; padding: 2px 6px;"></span>
         <span id="mainTabHeaderSubtitle" style="display:none;"></span>
       </div>
@@ -316,11 +332,11 @@
           <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div class="room-avatar-circle" id="chatRoomAvatar" style="width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #181d24; border: 1.5px solid #fee500;">
-          <span style="font-weight: 900; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
+          <span style="font-weight: 800; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
         </div>
         <div class="room-info-box" style="display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: hidden; justify-content: center;">
-          <div class="room-title-text" id="chatRoomTitle" style="font-size: 0.92rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;">길드 대화방</div>
-          <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)" style="font-size: 0.68rem; line-height: 1.2; margin-top: 1px;">
+          <div class="room-title-text" id="chatRoomTitle" style="font-size: 0.92rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;">길드 대화방</div>
+          <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)" style="font-size: 0.68rem; line-height: 1.2; margin-top: 1px; cursor: pointer;">
             <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
           </div>
         </div>
@@ -647,47 +663,6 @@
       if (modal) modal.style.display = "none";
     }
     window.closeMemberProfileCard = closeMemberProfileCard;
-
-    function handleInputState(textarea) {
-      if (!textarea) return;
-      textarea.style.height = "auto";
-      var newH = Math.min(textarea.scrollHeight, 100);
-      textarea.style.height = (newH > 36 ? newH : 36) + "px";
-
-      var btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
-      if (btn) {
-        if (textarea.value.trim().length > 0) {
-          btn.classList.add("active");
-        } else {
-          btn.classList.remove("active");
-        }
-      }
-    }
-
-    function checkEnterKey(event) {
-      if (event.key === "Enter" && !event.shiftKey) {
-        if (event.isComposing) return;
-        event.preventDefault();
-        handleSendMessage();
-      }
-    }
-    window.checkEnterKey = checkEnterKey;
-    window.handleChatInputKeydown = checkEnterKey;
-
-    function handleSendMessage() {
-      if (typeof window.executeSendMessage === "function") {
-        window.executeSendMessage();
-        return;
-      }
-      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
-      if (!input) return;
-      var text = input.value.trim();
-      if (!text) return;
-      input.value = "";
-      handleInputState(input);
-      if (typeof showKakaoToast === "function") showKakaoToast("전송 중...", "💬");
-    }
-    window.handleSendMessage = handleSendMessage;
 
     function focusChatInput() {
       var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
@@ -1063,12 +1038,12 @@
     }
   </script>
 
-  <!-- 외부 분리 스크립트 연결 (boss.js 포함) -->
+  <!-- 외부 분리 스크립트 연결 -->
   <script src="boss.js"></script>
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 
-  <!-- [중앙 연동형] 강제 업데이트 차단 전체 화면 모달 -->
+  <!-- 강제 업데이트 차단 전체 화면 모달 -->
   <div id="modalForceUpdate" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(11, 15, 20, 0.94); backdrop-filter: blur(8px); z-index: 2147483647 !important; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;">
     <div style="width: 100%; max-width: 330px; background: #181d24; border: 1.5px solid #2d3748; border-radius: 20px; padding: 26px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7); color: #f3f4f6;">
       <div style="width: 56px; height: 56px; border-radius: 18px; background: #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 2rem; margin-bottom: 14px; box-shadow: 0 4px 18px rgba(254, 229, 0, 0.35);">
@@ -1097,7 +1072,7 @@
     </div>
   </div>
 
-  <!-- [중앙 연동 스크립트] version.json 검사기 -->
+  <!-- version.json 검사기 -->
   <script>
     (async function enforceClientUpdate() {
       const ua = navigator.userAgent || "";
