@@ -45,20 +45,20 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* ⭐️ 카카오톡 표준 2단 헤더: 1층 윈도우 시스템 버튼 전용 드래그 바 (높이 30px) */
+    /* 카카오톡 슬림 2단 헤더: 1층 윈도우 시스템 버튼 전용 드래그 바 (높이 28px) */
     .window-titlebar-spacer {
       width: 100%;
-      height: 30px;
-      min-height: 30px;
+      height: 28px;
+      min-height: 28px;
       -webkit-app-region: drag;
       user-select: none;
       flex-shrink: 0;
       background: transparent;
     }
 
-    /* ⭐️ 2층 대화방 및 메인 헤더: 방 제목과 툴 버튼들이 여유롭게 배치되는 영역 */
+    /* 2층 대화방 및 메인 헤더: 방 제목과 툴 버튼들이 여유롭게 배치되는 영역 */
     .kakao-chat-header {
-      padding: 6px 14px 10px 14px !important;
+      padding: 4px 14px 10px 14px !important;
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
@@ -71,9 +71,40 @@
     .kakao-chat-header input {
       -webkit-app-region: no-drag;
     }
-    .kakao-chat-header .room-title-text {
-      font-weight: 600 !important;
-      letter-spacing: -0.2px !important;
+
+    /* 방 제목 2단 계층 구조 스타일 */
+    .room-header-two-tier {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      line-height: 1.2;
+    }
+    .room-server-subtitle {
+      font-size: 0.72rem;
+      color: #64748b;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 1px;
+    }
+    .room-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .room-main-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--kakao-header-text, #191919);
     }
 
     .header-right-tools {
@@ -298,10 +329,10 @@
 
   <!-- [VIEW 1] 메인 홈 화면 -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
-    <!-- ⭐️ 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (드래그 가능) -->
+    <!-- 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (높이 28px) -->
     <div class="window-titlebar-spacer"></div>
 
-    <!-- ⭐️ 2층: 메인 탭 헤더 본문 -->
+    <!-- 2층: 메인 탭 헤더 본문 -->
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
         <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">대화방</div>
@@ -405,22 +436,27 @@
 
   <!-- [VIEW 2] 개별 대화방 화면 -->
   <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
-    <!-- ⭐️ 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (드래그 가능) -->
+    <!-- 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (높이 28px) -->
     <div class="window-titlebar-spacer"></div>
 
-    <!-- ⭐️ 2층: 대화방 헤더 본문 (방 제목 및 툴 버튼 여유 배치) -->
+    <!-- 2층: 대화방 헤더 본문 (2단 계층형 방제목 적용) -->
     <header class="kakao-chat-header">
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
-        <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.15rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
+        <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.1rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <div class="room-avatar-circle" id="chatRoomAvatar" style="width: 32px; height: 32px; border-radius: 11px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #181d24; border: 1.5px solid #fee500;">
+        <div class="room-avatar-circle" id="chatRoomAvatar" style="width: 34px; height: 34px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #181d24; border: 1.5px solid #fee500;">
           <span style="font-weight: 800; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
         </div>
-        <div class="room-info-box" style="display: flex; flex-direction: column; min-width: 0; flex: 1; overflow: hidden; justify-content: center;">
-          <div class="room-title-text" id="chatRoomTitle" style="font-size: 0.95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.25;">길드 대화방</div>
-          <div class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)" style="font-size: 0.68rem; line-height: 1.2; margin-top: 1px; cursor: pointer;">
-            <i class="fa-solid fa-user me-1"></i><span id="roomMemberCountText">0</span>
+        
+        <!-- ⭐️ 2단 계층형 방제목 영역 (상단: 서버명, 하단: 길드명 + 인원수) -->
+        <div class="room-header-two-tier">
+          <div class="room-server-subtitle" id="chatRoomServerSub">[서버]</div>
+          <div class="room-title-row">
+            <span class="room-main-title" id="chatRoomTitle">대화방</span>
+            <span class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)" style="font-size: 0.7rem; color: #64748b; cursor: pointer; display: inline-flex; align-items: center;">
+              <i class="fa-solid fa-user me-1" style="font-size: 0.65rem;"></i><span id="roomMemberCountText">0</span>
+            </span>
           </div>
         </div>
       </div>
@@ -712,7 +748,7 @@
         <p class="text-secondary small mb-3" style="font-size: 0.78rem; line-height: 1.5; word-break: keep-all;">
           새로운 레이드온이 준비되었습니다.<br>지금 다시 시작하여 최신 기능을 적용할까요?
         </p>
-        <button type="button" class="btn btn-warning w-100 fw-bold py-2" style="background: #fee500; border: none; color: #191919; border-radius: 10px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25);" onclick="executeRestartAppNow()">
+        <button type="button" id="btnExecuteRestartNow" class="btn btn-warning w-100 fw-bold py-2" style="background: #fee500; border: none; color: #191919; border-radius: 10px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25);" onclick="executeRestartAppNow()">
           지금 바로 시작하기
         </button>
       </div>
@@ -1160,11 +1196,19 @@
   <!-- [Electron 연동] 자동 업데이트 실시간 제어 스크립트 -->
   <script>
     function executeRestartAppNow() {
-      if (window.electronAPI && typeof window.electronAPI.restartAndInstall === 'function') {
-        window.electronAPI.restartAndInstall();
-      } else {
-        location.reload();
+      var btn = document.getElementById("btnExecuteRestartNow");
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>최신 버전으로 교체 중...';
       }
+
+      setTimeout(function() {
+        if (window.electronAPI && typeof window.electronAPI.restartAndInstall === 'function') {
+          window.electronAPI.restartAndInstall();
+        } else {
+          location.reload();
+        }
+      }, 400);
     }
 
     (function setupDesktopAutoUpdateListener() {
