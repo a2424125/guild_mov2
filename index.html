@@ -67,43 +67,26 @@
     }
 
     /* ========================================================
-       [시안 1:1 완벽 구현] 산뜻한 파스텔 옐로우 ↔ 스카이블루 웰컴 뷰
+       [웰컴 게이트웨이 디자인] 대표님의 실제 배경 이미지 연동
        ======================================================== */
     #welcomeGatewayView {
-      background: linear-gradient(125deg, #fef9c3 0%, #fef08a 32%, #e0f2fe 72%, #bae6fd 100%) !important;
+      /* 이미지가 로드되기 전 대체 배경색 및 실제 배경 이미지 지정 */
+      background-color: #fef08a;
+      background-image: url('assets/welcome_bg.png') !important;
+      background-repeat: no-repeat !important;
+      background-position: center center !important;
+      background-size: cover !important;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: inset 0 0 0 2.5px rgba(254, 229, 0, 0.65);
-    }
-
-    /* 하단 뽀얀 뭉게구름 배경 (순수 SVG) */
-    .bg-clouds-layer {
-      position: absolute;
-      bottom: -15px;
-      left: 0;
-      width: 100%;
-      height: 170px;
-      pointer-events: none;
-      z-index: 1;
-      opacity: 0.96;
-    }
-
-    /* 배경에 흩뿌려진 아기자기한 파스텔 게임 심볼들 */
-    .scattered-symbol {
-      position: absolute;
-      pointer-events: none;
-      user-select: none;
-      z-index: 2;
-      opacity: 0.55;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.06));
+      box-shadow: inset 0 0 0 2px rgba(254, 229, 0, 0.4);
     }
 
     /* 상단 화이트 아치형 브랜드 헤더 바 */
     .hero-curved-white-header {
       width: 100%;
-      padding: 6px 16px 18px 16px;
+      padding: 8px 16px 18px 16px;
       background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -115,13 +98,19 @@
       z-index: 10;
       border-bottom-left-radius: 50% 22px;
       border-bottom-right-radius: 50% 22px;
-      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
     }
     .hero-brand-row {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-top: 2px;
+    }
+    .hero-emblem-img {
+      width: 52px;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 6px rgba(234, 179, 8, 0.3));
     }
     .hero-text-col {
       display: flex;
@@ -137,7 +126,7 @@
       display: flex;
       align-items: center;
       gap: 5px;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      text-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .hero-title-raidon .on-text {
       color: #eab308;
@@ -162,7 +151,7 @@
       z-index: 10;
     }
     .capsule-btn-soft {
-      background: rgba(255, 255, 255, 0.88);
+      background: rgba(255, 255, 255, 0.9);
       border: 1.2px solid rgba(226, 232, 240, 0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -198,13 +187,20 @@
       border-radius: 26px !important;
       padding: 24px 20px 20px 20px !important;
       text-align: center;
-      box-shadow: 0 16px 40px rgba(71, 85, 105, 0.1), 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+      box-shadow: 0 16px 40px rgba(71, 85, 105, 0.12), 0 2px 10px rgba(0, 0, 0, 0.03) !important;
       position: relative;
       z-index: 10;
       color: #1e293b;
     }
+    .card-mini-emblem {
+      width: 44px;
+      height: auto;
+      object-fit: contain;
+      margin-bottom: 4px;
+      filter: drop-shadow(0 2px 5px rgba(234, 179, 8, 0.3));
+    }
 
-    /* 버튼 마우스 오버 인터랙션 */
+    /* 쫀득한 마우스 오버(Hover) 3D 액션 버튼 */
     .btn-action-soft {
       width: 100%;
       height: 46px;
@@ -262,7 +258,7 @@
       background: linear-gradient(180deg, #ffedd5 0%, #fed7aa 100%);
     }
 
-    /* 4. 신규 라이선스 텍스트 링크 버튼 */
+    /* 4. 신규 라이선스 링크 */
     .btn-soft-link {
       background: transparent;
       border: none;
@@ -682,29 +678,9 @@
   </aside>
 
   <!-- ========================================================
-       [VIEW 0] 로그인 전 전용 웰컴 화면 (파스텔 옐로우 & 블루 소프트 감성)
+       [VIEW 0] 로그인 전 전용 웰컴 화면 (대표님 배경 및 엠블럼 적용)
        ======================================================== -->
   <div id="welcomeGatewayView" class="app-main-layout" style="display: flex;">
-
-    <!-- 1. 배경 흩뿌려진 아기자기한 게임 심볼 (인라인 SVG) -->
-    <!-- 좌측 상단 방패 -->
-    <svg class="scattered-symbol" style="top: 26%; left: 8%; width: 28px; height: 32px;" viewBox="0 0 24 24"><path fill="#facc15" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-    <!-- 좌측 중단 말풍선 -->
-    <svg class="scattered-symbol" style="top: 36%; left: 16%; width: 26px; height: 26px;" viewBox="0 0 24 24"><path fill="#fef08a" d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-    <!-- 좌측 하단 하트 -->
-    <svg class="scattered-symbol" style="bottom: 18%; left: 10%; width: 24px; height: 24px;" viewBox="0 0 24 24"><path fill="#f87171" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-    
-    <!-- 우측 상단 검 -->
-    <svg class="scattered-symbol" style="top: 25%; right: 14%; width: 26px; height: 26px;" viewBox="0 0 24 24"><path fill="#93c5fd" d="M19.7 4.3a1 1 0 0 0-1.4 0L12 10.6l-2-2-1.4 1.4 2 2-6.3 6.3a1 1 0 0 0 0 1.4l1.4 1.4a1 1 0 0 0 1.4 0l6.3-6.3 2 2 1.4-1.4-2-2 6.3-6.3a1 1 0 0 0 0-1.4z"/></svg>
-    <!-- 우측 중단 하트 -->
-    <svg class="scattered-symbol" style="top: 33%; right: 8%; width: 22px; height: 22px;" viewBox="0 0 24 24"><path fill="#f472b6" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-    <!-- 우측 하단 방패 -->
-    <svg class="scattered-symbol" style="bottom: 22%; right: 12%; width: 28px; height: 32px;" viewBox="0 0 24 24"><path fill="#bae6fd" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
-
-    <!-- 2. 하단 뽀얀 뭉게구름 곡선 레이어 (SVG) -->
-    <svg class="bg-clouds-layer" viewBox="0 0 500 150" preserveAspectRatio="none">
-      <path fill="#ffffff" d="M0,80 C40,40 100,50 140,75 C180,30 250,25 290,65 C340,35 410,40 450,75 C480,55 500,65 500,85 L500,150 L0,150 Z"></path>
-    </svg>
 
     <!-- 타이틀바 -->
     <div class="view-custom-titlebar">
@@ -721,36 +697,11 @@
       </div>
     </div>
 
-    <!-- 3. 상단 아치형 브랜드 화이트 헤더 바 -->
+    <!-- 1. 상단 아치형 브랜드 화이트 헤더 바 -->
     <div class="hero-curved-white-header">
       <div class="hero-brand-row">
-        <!-- 양날개 달린 황금빛 G 실드 엠블럼 (SVG 정밀 벡터 구현) -->
-        <svg style="width: 58px; height: 50px; filter: drop-shadow(0 3px 6px rgba(234, 179, 8, 0.35));" viewBox="0 0 120 100">
-          <!-- 좌측 날개 -->
-          <path d="M 46 42 C 28 28 10 32 4 45 C 10 50 24 49 32 58 C 22 62 12 68 10 76 C 22 78 35 72 45 64 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5" stroke-linejoin="round"/>
-          <path d="M 44 48 C 30 38 18 42 12 50 C 18 53 28 53 36 60 Z" fill="#f8fafc"/>
-          <!-- 우측 날개 -->
-          <path d="M 74 42 C 92 28 110 32 116 45 C 110 50 96 49 88 58 C 98 62 108 68 110 76 C 98 78 85 72 75 64 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5" stroke-linejoin="round"/>
-          <path d="M 76 48 C 90 38 102 42 108 50 C 102 53 92 53 84 60 Z" fill="#f8fafc"/>
-          <!-- 중앙 골든 실드 본체 -->
-          <path d="M 60 12 C 78 12 84 25 84 48 C 84 72 60 92 60 92 C 60 92 36 72 36 48 C 36 25 42 12 60 12 Z" fill="url(#goldShieldGrad)" stroke="#b45309" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M 60 18 C 74 18 78 28 78 48 C 78 68 60 84 60 84 C 60 84 42 68 42 48 C 42 28 46 18 60 18 Z" fill="url(#goldInnerGrad)"/>
-          <!-- 엠블럼 G 텍스트 -->
-          <text x="60" y="58" font-size="34" font-family="'Impact', sans-serif" font-weight="900" fill="#18181b" text-anchor="middle" dominant-baseline="central">G</text>
-          <!-- 그라데이션 정의 -->
-          <defs>
-            <linearGradient id="goldShieldGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fffbeb"/>
-              <stop offset="25%" stop-color="#fef08a"/>
-              <stop offset="70%" stop-color="#facc15"/>
-              <stop offset="100%" stop-color="#d97706"/>
-            </linearGradient>
-            <linearGradient id="goldInnerGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#fffde7"/>
-              <stop offset="100%" stop-color="#fee500"/>
-            </linearGradient>
-          </defs>
-        </svg>
+        <!-- 💡 대표님이 준비하신 날개 달린 황금 G 엠블럼 이미지 연동 -->
+        <img src="assets/raidon_shield.png" alt="RaidOn Logo" class="hero-emblem-img" onerror="this.style.display='none';">
 
         <div class="hero-text-col">
           <div class="hero-title-raidon">
@@ -761,7 +712,7 @@
       </div>
     </div>
 
-    <!-- 4. 중앙 컨텐츠 영역 -->
+    <!-- 2. 중앙 컨텐츠 영역 -->
     <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px 14px 16px; position: relative; z-index: 10;">
       
       <!-- 공지사항 & FAQ/문의 캡슐 바 -->
@@ -776,15 +727,10 @@
         </a>
       </div>
 
-      <!-- 5. 뽀얀 프로스티드 화이트 글래스 카드 -->
+      <!-- 3. 뽀얀 프로스티드 화이트 글래스 카드 -->
       <div class="raidon-hero-soft-card">
-        <!-- 카드 상단 미니 양날개 G 엠블럼 (SVG) -->
-        <svg style="width: 48px; height: 38px; margin-bottom: 4px; filter: drop-shadow(0 2px 4px rgba(234, 179, 8, 0.3));" viewBox="0 0 120 100">
-          <path d="M 46 42 C 28 28 10 32 4 45 C 10 50 24 49 32 58 C 22 62 12 68 10 76 C 22 78 35 72 45 64 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5"/>
-          <path d="M 74 42 C 92 28 110 32 116 45 C 110 50 96 49 88 58 C 98 62 108 68 110 76 C 98 78 85 72 75 64 Z" fill="#ffffff" stroke="#e2e8f0" stroke-width="2.5"/>
-          <path d="M 60 12 C 78 12 84 25 84 48 C 84 72 60 92 60 92 C 60 92 36 72 36 48 C 36 25 42 12 60 12 Z" fill="#fee500" stroke="#b45309" stroke-width="3"/>
-          <text x="60" y="58" font-size="34" font-family="'Impact', sans-serif" font-weight="900" fill="#18181b" text-anchor="middle" dominant-baseline="central">G</text>
-        </svg>
+        <!-- 💡 카드 상단 미니 엠블럼 이미지 연동 -->
+        <img src="assets/raidon_shield.png" alt="RaidOn Mini" class="card-mini-emblem" onerror="this.style.display='none';">
 
         <h5 class="fw-bold mb-1" style="font-size: 1.15rem; letter-spacing: -0.3px; color: #1e293b;">레이드온</h5>
         <p class="small mb-3" style="font-size: 0.74rem; color: #64748b;">원하시는 시작 방식을 선택하세요.</p>
@@ -1048,9 +994,7 @@
   <!-- 1. 길드 메신저 로그인 모달 (취소 시 웰컴 뷰 복귀) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px; background:#ffffff; border:1px solid #cbd5e1; color:#1e293b;">
-      <div style="width: 48px; height: 48px; border-radius: 14px; background: #181d24; border: 2.5px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-        G
-      </div>
+      <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width: 48px; height: auto; margin-bottom: 10px;" onerror="this.style.display='none';">
       <h6 class="fw-bold mb-1" style="font-size: 1.05rem;" id="loginGuildTitle">레이드온 로그인</h6>
       <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
       
@@ -1347,7 +1291,6 @@
   </div>
 
   <script>
-    // 윈도우 창 제어 브릿지
     function handleWinMinimize() {
       if (window.electronAPI && typeof window.electronAPI.minimizeWindow === 'function') {
         window.electronAPI.minimizeWindow();
@@ -1364,7 +1307,6 @@
       }
     }
 
-    // 자동로그인 선택 시 로그인 상태 유지는 필수 체크 처리
     function handleAutoLoginCheckChange(elem) {
       var keepCheck = document.getElementById("chkKeepLogin");
       if (elem && elem.checked && keepCheck) {
@@ -1373,7 +1315,6 @@
     }
     window.handleAutoLoginCheckChange = handleAutoLoginCheckChange;
 
-    // 네비게이션: 로그인 모달 제어 (취소 시 웰컴 화면 복귀)
     function showGuildLoginModal() {
       var modal = document.getElementById("guildLoginModal");
       if (modal) modal.style.display = "flex";
@@ -1429,7 +1370,6 @@
       location.reload();
     }
 
-    // 로그인 전 웰컴 게이트웨이 안전 노출 보장 함수
     function ensureWelcomeGatewayVisible() {
       var isLogged = !!localStorage.getItem("guild_my_nickname");
       if (!isLogged) {
@@ -1446,7 +1386,6 @@
     window.ensureWelcomeGatewayVisible = ensureWelcomeGatewayVisible;
     window.openWelcomeGatewayModal = ensureWelcomeGatewayVisible;
 
-    // 최근 참여 길드 렌더링
     async function renderWelcomeJoinedGuilds() {
       var joined = [];
       try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
@@ -1504,7 +1443,6 @@
       showGuildLoginModal();
     }
 
-    // 고객센터 및 FAQ 모달 제어
     function openSupportCenterModal() {
       var modal = document.getElementById("modalSupportCenter");
       if (modal) modal.style.display = "flex";
