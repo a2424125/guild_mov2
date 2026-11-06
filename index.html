@@ -348,6 +348,44 @@
       border-radius: 8px;
       transition: width 0.2s ease;
     }
+
+    /* 카카오톡 스타일 체크박스 UI */
+    .kakao-checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.72rem;
+      color: #64748b;
+      margin-bottom: 0;
+    }
+    .kakao-checkbox-wrap input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 15px;
+      height: 15px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #ffffff;
+      transition: all 0.15s ease;
+      margin: 0;
+    }
+    .kakao-checkbox-wrap input[type="checkbox"]:checked {
+      background-color: #fee500;
+      border-color: #f59e0b;
+    }
+    .kakao-checkbox-wrap input[type="checkbox"]:checked::after {
+      content: '✔';
+      font-size: 0.65rem;
+      color: #191919;
+      font-weight: 800;
+    }
   </style>
 </head>
 <body class="in-main-tabs">
@@ -817,6 +855,7 @@
     </div>
   </div>
 
+  <!-- [길드 메신저 로그인 모달] 자동 로그인 및 상태 유지 옵션 탑재 -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div style="width: 48px; height: 48px; border-radius: 14px; background: #181d24; border: 2.5px solid #fee500; display: inline-flex; align-items: center; justify-content: center; font-size: 1.6rem; font-weight: 900; color: #fee500; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35); line-height: 1;">
@@ -837,6 +876,18 @@
         <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 6자리 입력" maxlength="20"
                style="padding-left: 24px; height: 40px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 0;"
                onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
+      </div>
+
+      <!-- 카카오톡 순정 스타일: 자동 로그인 & 로그인 유지 옵션 -->
+      <div class="d-flex align-items-center justify-content-between px-1 mb-3" style="margin-top: 2px;">
+        <label class="kakao-checkbox-wrap">
+          <input type="checkbox" id="chkAutoLogin" onchange="handleAutoLoginCheckChange(this)">
+          <span>자동 로그인</span>
+        </label>
+        <label class="kakao-checkbox-wrap">
+          <input type="checkbox" id="chkKeepLogin" checked>
+          <span>로그인 상태 유지</span>
+        </label>
       </div>
 
       <div id="loginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3);">
@@ -899,6 +950,15 @@
   </div>
 
   <script>
+    // 자동로그인 선택 시 로그인 상태 유지는 필수 체크 처리
+    function handleAutoLoginCheckChange(elem) {
+      var keepCheck = document.getElementById("chkKeepLogin");
+      if (elem && elem.checked && keepCheck) {
+        keepCheck.checked = true;
+      }
+    }
+    window.handleAutoLoginCheckChange = handleAutoLoginCheckChange;
+
     // 윈도우 창 제어 브릿지
     function handleWinMinimize() {
       if (window.electronAPI && typeof window.electronAPI.minimizeWindow === 'function') {
@@ -1356,7 +1416,7 @@
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 
-  <!-- [Electron 연동] 자동 업데이트 및 2줄 방제목 실시간 제어 스크립트 -->
+  <!-- [Electron 연동] 자동 업데이트, 트레이 로그아웃 신호 및 2줄 방제목 실시간 제어 스크립트 -->
   <script>
     const RAIDON_FEATURES = [
       {
@@ -1469,7 +1529,8 @@
       observer.observe(titleElem, { childList: true, characterData: true, subtree: true });
     })();
 
-    (function setupDesktopAutoUpdateListener() {
+    // Electron 이벤트 연동 (무인 업데이트 + 윈도우 하단 트레이 로그아웃 신호 수신)
+    (function setupDesktopListeners() {
       if (!window.electronAPI) return;
 
       const modal = document.getElementById("modalAutoUpdateContainer");
@@ -1480,30 +1541,51 @@
       const statusText = document.getElementById("autoUpdateStatusText");
       const phaseLabel = document.getElementById("autoUpdatePhaseLabel");
 
-      window.electronAPI.onUpdateProgress((percent) => {
-        if (modal) modal.style.display = "flex";
-        if (downloadingView) downloadingView.style.display = "block";
-        if (readyView) readyView.style.display = "none";
-        if (fillBar) fillBar.style.width = percent + "%";
-        if (percentText) percentText.innerText = percent + "%";
+      if (typeof window.electronAPI.onUpdateProgress === 'function') {
+        window.electronAPI.onUpdateProgress((percent) => {
+          if (modal) modal.style.display = "flex";
+          if (downloadingView) downloadingView.style.display = "block";
+          if (readyView) readyView.style.display = "none";
+          if (fillBar) fillBar.style.width = percent + "%";
+          if (percentText) percentText.innerText = percent + "%";
 
-        startFeatureShowcase();
+          startFeatureShowcase();
 
-        if (percent >= 90) {
-          if (statusText) statusText.innerText = "새 버전 압축 해제 및 무인 교체 준비 완료 중...";
-          if (phaseLabel) phaseLabel.innerText = "사전 교체 준비 완료 중";
-        } else {
-          if (statusText) statusText.innerText = "최신 패치를 다운로드하고 있습니다.";
-          if (phaseLabel) phaseLabel.innerText = "패치 다운로드 및 압축 준비";
-        }
-      });
+          if (percent >= 90) {
+            if (statusText) statusText.innerText = "새 버전 압축 해제 및 무인 교체 준비 완료 중...";
+            if (phaseLabel) phaseLabel.innerText = "사전 교체 준비 완료 중";
+          } else {
+            if (statusText) statusText.innerText = "최신 패치를 다운로드하고 있습니다.";
+            if (phaseLabel) phaseLabel.innerText = "패치 다운로드 및 압축 준비";
+          }
+        });
+      }
 
-      window.electronAPI.onUpdateDownloaded(() => {
-        stopFeatureShowcase();
-        if (modal) modal.style.display = "flex";
-        if (downloadingView) downloadingView.style.display = "none";
-        if (readyView) readyView.style.display = "block";
-      });
+      if (typeof window.electronAPI.onUpdateDownloaded === 'function') {
+        window.electronAPI.onUpdateDownloaded(() => {
+          stopFeatureShowcase();
+          if (modal) modal.style.display = "flex";
+          if (downloadingView) downloadingView.style.display = "none";
+          if (readyView) readyView.style.display = "block";
+        });
+      }
+
+      // 트레이 메뉴에서 [로그아웃] 버튼 클릭 시 실시간 수신
+      if (typeof window.electronAPI.onTrayLogout === 'function') {
+        window.electronAPI.onTrayLogout(() => {
+          if (typeof window.handleUserLogout === 'function') {
+            window.handleUserLogout();
+          } else {
+            localStorage.removeItem("guild_my_nickname");
+            localStorage.removeItem("guild_my_role");
+            localStorage.removeItem("guild_my_pin");
+            localStorage.removeItem("raidon_auto_login");
+            localStorage.removeItem("raidon_keep_login");
+            sessionStorage.clear();
+            location.reload();
+          }
+        });
+      }
     })();
   </script>
 </body>
