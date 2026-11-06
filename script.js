@@ -179,16 +179,6 @@ async function initApp() {
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
-  if (!myCurrentNick) {
-    try {
-      const checkHome = await fetch("home.html", { method: "HEAD" });
-      if (checkHome.ok) {
-        window.location.href = "home.html";
-        return;
-      }
-    } catch (e) {}
-  }
-
   await loadGuildSettings();
   await window.loadGuildMembersData();
   await refreshMyRoleFromServer();
@@ -208,6 +198,7 @@ async function initApp() {
     Notification.requestPermission();
   }
 
+  // 로그인 상태 분기 처리 (다운로드 페이지 이동 제거, 게이트웨이 또는 로그인창 호출)
   if (!myCurrentNick) {
     if (typeof openWelcomeGatewayModal === 'function') {
       openWelcomeGatewayModal();
@@ -687,6 +678,12 @@ function showGuildLoginModal() {
     searchInput.value = myCurrentNick || "";
   }
   if (pinInput) pinInput.value = "";
+
+  // 저장된 체크박스 옵션 복원
+  const chkAuto = document.getElementById("chkAutoLogin");
+  const chkKeep = document.getElementById("chkKeepLogin");
+  if (chkAuto) chkAuto.checked = (localStorage.getItem("raidon_auto_login") === "true");
+  if (chkKeep) chkKeep.checked = (localStorage.getItem("raidon_keep_login") !== "false");
 }
 window.showGuildLoginModal = showGuildLoginModal;
 
@@ -697,6 +694,15 @@ async function executeGuildLogin(forcedGuildId = null) {
 
   if (!selectedName) return showKakaoToast("본인 캐릭터 닉네임을 입력해주세요!", "⚠️");
   if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
+
+  // [카카오톡 방식] 자동 로그인 & 상태 유지 체크 상태 저장
+  const chkAuto = document.getElementById("chkAutoLogin");
+  const chkKeep = document.getElementById("chkKeepLogin");
+  const isAuto = chkAuto ? chkAuto.checked : false;
+  const isKeep = chkKeep ? chkKeep.checked : true;
+
+  localStorage.setItem("raidon_auto_login", isAuto ? "true" : "false");
+  localStorage.setItem("raidon_keep_login", isKeep ? "true" : "false");
 
   const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
   if (isSuperId && (inputPin === "123456" || inputPin === "master7777")) {
@@ -894,10 +900,12 @@ function handleUserLogout() {
 }
 window.handleUserLogout = handleUserLogout;
 
+// ⚡ [로그아웃 처리] 다운로드 랜딩 강제 이동 제거 & 첫 화면(게이트웨이/로그인) 안전 복귀
 window.executeLogoutProcess = async function() {
   localStorage.removeItem("guild_my_nickname");
   localStorage.removeItem("guild_my_pin");
   localStorage.removeItem("guild_my_role");
+  localStorage.removeItem("raidon_auto_login");
   sessionStorage.removeItem("admin_auth");
   sessionStorage.removeItem("admin_role");
   sessionStorage.setItem("logout_toast_msg", "로그아웃 되었습니다.");
@@ -914,17 +922,17 @@ window.executeLogoutProcess = async function() {
 
   showKakaoToast("로그아웃 되었습니다.", "👋");
 
-  try {
-    const checkHome = await fetch("home.html", { method: "HEAD" });
-    if (checkHome.ok) {
-      setTimeout(() => {
-        window.location.href = "home.html?logout=1";
-      }, 350);
-      return;
-    }
-  } catch (e) {}
+  // 대기방/대화방 뷰를 숨기고 로그인 첫 화면 띄우기
+  const mainTabs = document.getElementById("kakaoMainTabsView");
+  const chatView = document.getElementById("chatRoomView");
+  if (mainTabs) mainTabs.style.display = "none";
+  if (chatView) chatView.style.display = "none";
 
-  showGuildLoginModal();
+  if (typeof openWelcomeGatewayModal === "function") {
+    openWelcomeGatewayModal();
+  } else {
+    showGuildLoginModal();
+  }
 };
 
 window.switchActiveGuild = function(guildId) {
