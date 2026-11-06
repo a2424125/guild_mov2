@@ -67,7 +67,7 @@
     }
 
     /* ========================================================
-       [웰컴 게이트웨이 디자인] 앱 창 리사이징 반응형 배경
+       [웰컴 게이트웨이 디자인] 비율 유지 무찌그러짐 반응형 배경
        ======================================================== */
     #welcomeGatewayView {
       width: 100%;
@@ -77,19 +77,19 @@
       overflow-x: hidden;
       display: flex;
       flex-direction: column;
-      /* 앱 크기 변경에 유동적으로 반응하는 배경 */
       background-color: #fef08a;
       background-image: url('assets/welcome_bg.png') !important;
       background-repeat: no-repeat !important;
       background-position: center bottom !important;
-      background-size: 100% 100% !important; /* 창 크기에 따라 배경 완벽 스케일링 */
+      /* 비율을 유지하면서 화면 전체를 꽉 채워 찌그러짐 방지 */
+      background-size: cover !important;
     }
 
     /* 상단 화이트 아치형 브랜드 헤더 바 */
     .hero-curved-white-header {
       width: 100%;
-      padding: 8px 16px 16px 16px;
-      background: rgba(255, 255, 255, 0.94);
+      padding: 10px 16px 20px 16px;
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       display: flex;
@@ -98,40 +98,40 @@
       justify-content: center;
       position: relative;
       z-index: 10;
-      border-bottom-left-radius: 50% 24px;
-      border-bottom-right-radius: 50% 24px;
-      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+      border-bottom-left-radius: 50% 26px;
+      border-bottom-right-radius: 50% 26px;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
       flex-shrink: 0;
     }
     .hero-brand-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 12px;
+      gap: 16px;
       margin-top: 2px;
     }
 
-    /* ⭐️ 상단 엠블럼 크기 대폭 확대 (너비 84px) */
+    /* ⭐️ 상단 엠블럼 로고 대폭 확대 */
     .hero-emblem-img {
-      width: 84px;
+      width: 88px;
       height: auto;
-      max-height: 72px;
+      max-height: 76px;
       object-fit: contain;
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      filter: drop-shadow(0 3px 6px rgba(234, 179, 8, 0.35));
+      filter: drop-shadow(0 4px 8px rgba(234, 179, 8, 0.4));
     }
 
-    /* ⭐️ 두 번째 이미지로 교체된 RAID ON 정식 타이포 로고 */
+    /* ⭐️ 상단 RAID ON 텍스트 로고 이미지 대폭 확대 */
     .hero-typo-logo-img {
-      height: 58px;
+      height: 68px;
       width: auto;
-      max-width: 220px;
+      max-width: 260px;
       object-fit: contain;
       background: transparent !important;
       border: none !important;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.1));
     }
 
     /* 중앙 카드 배치 컨테이너 */
@@ -141,7 +141,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px 16px 16px 16px;
+      padding: 24px 16px 20px 16px;
       position: relative;
       z-index: 10;
     }
@@ -149,28 +149,28 @@
     /* 중앙 뽀얀 프로스티드 화이트 글래스 카드 */
     .raidon-hero-soft-card {
       width: 100%;
-      max-width: 334px;
+      max-width: 336px;
       background: rgba(255, 255, 255, 0.96) !important;
       backdrop-filter: blur(18px) !important;
       -webkit-backdrop-filter: blur(18px) !important;
       border: 1.5px solid #ffffff !important;
       border-radius: 26px !important;
-      padding: 38px 20px 22px 20px !important;
+      padding: 42px 20px 24px 20px !important;
       text-align: center;
       box-shadow: 0 16px 40px rgba(71, 85, 105, 0.12), 0 2px 10px rgba(0, 0, 0, 0.03) !important;
       position: relative;
       color: #1e293b;
-      margin-top: 28px; /* 엠블럼 크기 확대에 맞춘 카드 여백 */
+      margin-top: 32px;
     }
 
-    /* ⭐️ 카드 상단에 큼직하게 얹히는 3D 엠블럼 (크기 대폭 확대: 96px x 84px) */
+    /* ⭐️ 카드 상단에 걸쳐지는 대형 3D 엠블럼 (104px x 92px) */
     .card-top-anchor-emblem {
       position: absolute;
-      top: -46px;
+      top: -50px;
       left: 50%;
       transform: translateX(-50%);
-      width: 96px;
-      height: 84px;
+      width: 104px;
+      height: 92px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -184,17 +184,17 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      filter: drop-shadow(0 4px 12px rgba(234, 179, 8, 0.45));
+      filter: drop-shadow(0 4px 14px rgba(234, 179, 8, 0.45));
     }
 
-    /* ⭐️ 하단으로 이동한 공지사항 & FAQ/문의 캡슐 바 */
+    /* ⭐️ 카드 하단 공지사항 & FAQ/문의 캡슐 바 */
     .hero-info-bar-bottom {
       width: 100%;
-      max-width: 334px;
+      max-width: 336px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-top: 14px;
+      margin-top: 16px;
       z-index: 10;
     }
     .capsule-btn-soft {
@@ -701,7 +701,7 @@
   </aside>
 
   <!-- ========================================================
-       [VIEW 0] 로그인 전 전용 웰컴 화면 (수정 완료)
+       [VIEW 0] 로그인 전 전용 웰컴 화면
        ======================================================== -->
   <div id="welcomeGatewayView" class="app-main-layout" style="display: flex;">
 
@@ -726,7 +726,7 @@
         <!-- ⭐️ 엠블럼 로고 대폭 확대 -->
         <img src="assets/raidon_shield.png" alt="RaidOn Emblem" class="hero-emblem-img" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
 
-        <!-- ⭐️ 대표님이 주신 두 번째 타이포 로고 이미지로 교체 -->
+        <!-- ⭐️ RAID ON 텍스트 로고 대폭 확대 -->
         <img src="assets/raidon_logo_text.png" alt="RAID ON" class="hero-typo-logo-img" onerror="this.onerror=null; this.src='./assets/raidon_logo_text.png';">
       </div>
     </div>
@@ -736,7 +736,7 @@
       
       <!-- 3. 뽀얀 프로스티드 화이트 글래스 카드 -->
       <div class="raidon-hero-soft-card">
-        <!-- ⭐️ 카드 상단에 걸쳐지는 대형 3D 엠블럼 (96px x 84px) -->
+        <!-- ⭐️ 카드 상단에 걸쳐지는 대형 3D 엠블럼 -->
         <div class="card-top-anchor-emblem">
           <img src="assets/raidon_shield.png" alt="RaidOn Emblem" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
         </div>
@@ -781,7 +781,7 @@
         </div>
       </div>
 
-      <!-- ⭐️ 4. 카드 아래쪽(하단)으로 이동하여 엠블럼과 간섭 없는 공지 & FAQ 바 -->
+      <!-- ⭐️ 4. 하단 공지사항 & FAQ/문의 바 -->
       <div class="hero-info-bar-bottom">
         <a href="javascript:void(0)" class="capsule-btn-soft" onclick="openSaasNoticeModal()">
           <span style="color: #f59e0b;">📢</span>
@@ -1034,7 +1034,7 @@
                onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
       </div>
 
-      <!-- 카카오톡 스타일: 자동 로그인 & 상태 유지 체크박스 -->
+      <!-- 자동 로그인 & 상태 유지 체크박스 -->
       <div class="d-flex align-items-center justify-content-between px-1 mb-3" style="margin-top: 2px;">
         <label class="kakao-checkbox-wrap">
           <input type="checkbox" id="chkAutoLogin" onchange="handleAutoLoginCheckChange(this)">
