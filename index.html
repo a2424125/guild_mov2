@@ -8,7 +8,7 @@
   <!-- PWA 앱 설정 & 앱 아이콘 -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="icon.png">
-  <meta name="theme-color" content="#17202e">
+  <meta name="theme-color" content="#e5e7eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="레이드온">
@@ -53,7 +53,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      background: #111827;
+      background: #e5e7eb;
       font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -67,7 +67,7 @@
     }
 
     /* ========================================================
-       [웰컴 게이트웨이 디자인] 산뜻한 미드나잇 블루 게이밍 톤
+       [웰컴 게이트웨이 디자인] B안: 소프트 세미 라이트 웜그레이
        ======================================================== */
     #welcomeGatewayView {
       width: 100%;
@@ -77,14 +77,14 @@
       overflow-x: hidden;
       display: flex;
       flex-direction: column;
-      /* 너무 어둡지 않고 생기 있는 소프트 미드나잇 블루 그라데이션 */
-      background: radial-gradient(circle at 50% 20%, #26354a 0%, #17202e 55%, #101622 100%) !important;
+      /* 눈이 편안하고 차분한 세미 라이트 웜그레이 그라데이션 */
+      background: linear-gradient(180deg, #f4f5f7 0%, #e5e8ed 50%, #d8dce3 100%) !important;
     }
 
-    /* 상단 헤더: 커튼형 라인을 없애고 플랫하고 자연스럽게 연결 */
+    /* 상단 헤더: 커튼선 없이 자연스럽고 플랫하게 배치 */
     .hero-curved-dark-header {
       width: 100%;
-      padding: 10px 16px 4px 16px;
+      padding: 12px 16px 4px 16px;
       background: transparent !important;
       display: flex;
       flex-direction: column;
@@ -98,28 +98,29 @@
       flex-shrink: 0;
     }
 
-    /* ⭐️ 엠블럼과 텍스트 로고가 착 붙도록 간격(gap) 최적화 */
+    /* ⭐️ 엠블럼과 텍스트 로고가 바짝 붙도록 gap 0 및 음수 마진 적용 */
     .hero-brand-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px; /* 두 이미지를 밀착 */
+      gap: 0px;
       margin-top: 4px;
     }
 
-    /* 상단 날개 엠블럼 (대표님이 조절하신 크기 보존) */
+    /* ⭐️ 상단 엠블럼 확대 및 과한 노란 광채 제거(자연스러운 섀도우) */
     .hero-emblem-img {
-      width: 150px;
+      width: 175px;
       height: auto;
-      max-height: 120px;
+      max-height: 135px;
       object-fit: contain;
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      filter: drop-shadow(0 4px 14px rgba(254, 229, 0, 0.4));
+      margin-right: -12px; /* 텍스트 로고 쪽으로 바짝 밀착 */
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
     }
 
-    /* 상단 로고 타이포그래피 (대표님이 조절하신 크기 보존) */
+    /* 상단 RAID ON 텍스트 로고 (하단 서브텍스트 시인성 확보) */
     .hero-typo-logo-img {
       height: 100px;
       width: auto;
@@ -127,7 +128,7 @@
       object-fit: contain;
       background: transparent !important;
       border: none !important;
-      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.1));
     }
 
     /* 중앙 카드 배치 컨테이너 */
@@ -142,24 +143,24 @@
       z-index: 10;
     }
 
-    /* 산뜻하고 세련된 미드나잇 글래스모피즘 카드 */
+    /* 밝은 배경에 어울리는 뽀얀 화이트 글래스모피즘 카드 */
     .raidon-hero-dark-card {
       width: 100%;
-      max-width: 336px;
-      background: rgba(30, 41, 59, 0.78) !important;
+      max-width: 338px;
+      background: rgba(255, 255, 255, 0.94) !important;
       backdrop-filter: blur(20px) !important;
       -webkit-backdrop-filter: blur(20px) !important;
-      border: 1px solid rgba(254, 229, 0, 0.35) !important;
+      border: 1.5px solid #ffffff !important;
       border-radius: 26px !important;
       padding: 44px 20px 24px 20px !important;
       text-align: center;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), 0 0 24px rgba(254, 229, 0, 0.12) !important;
+      box-shadow: 0 16px 40px rgba(71, 85, 105, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
       position: relative;
-      color: #f8fafc;
-      margin-top: 32px;
+      color: #1e293b;
+      margin-top: 36px;
     }
 
-    /* 카드 상단에 걸쳐지는 대형 3D 엠블럼 (대표님이 조절하신 크기 보존) */
+    /* 카드 상단 대형 3D 엠블럼 (대표님이 조절하신 크기 보존 & 과한 발광 정돈) */
     .card-top-anchor-emblem {
       position: absolute;
       top: -70px;
@@ -180,13 +181,13 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      filter: drop-shadow(0 6px 18px rgba(234, 179, 8, 0.5));
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
     }
 
     /* 카드 하단 공지사항 & FAQ/문의 캡슐 바 */
     .hero-info-bar-bottom {
       width: 100%;
-      max-width: 336px;
+      max-width: 338px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -194,28 +195,29 @@
       z-index: 10;
     }
     .capsule-btn-dark {
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.9);
+      border: 1.2px solid rgba(203, 213, 225, 0.85);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-radius: 20px;
       padding: 6px 14px;
-      color: #e2e8f0;
+      color: #334155;
       font-size: 0.74rem;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
       transition: all 0.2s ease;
       text-decoration: none;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
     }
     .capsule-btn-dark:hover {
-      background: rgba(45, 60, 84, 0.95);
-      border-color: #fee500;
-      color: #fee500;
+      background: #ffffff;
+      border-color: #f59e0b;
+      color: #0f172a;
       transform: translateY(-1.5px);
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2);
     }
 
     /* 마우스 오버 3D 액션 버튼 */
@@ -240,52 +242,49 @@
       transform: scale(0.98) !important;
     }
 
-    /* 골든 옐로우 메인 버튼 */
+    /* 카카오 골든 옐로우 메인 버튼 */
     .btn-hero-yellow {
       background: linear-gradient(180deg, #fee500 0%, #fad000 100%);
       color: #191919;
-      box-shadow: 0 4px 14px rgba(254, 229, 0, 0.35);
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.45);
     }
     .btn-hero-yellow:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(254, 229, 0, 0.55), 0 0 14px rgba(254, 229, 0, 0.4);
+      box-shadow: 0 8px 22px rgba(250, 204, 21, 0.65), 0 0 14px rgba(254, 229, 0, 0.4);
       background: linear-gradient(180deg, #fff04d 0%, #fee500 100%);
     }
 
-    /* 사파이어 블루 버튼 */
+    /* 산뜻한 사파이어 블루 버튼 */
     .btn-hero-blue {
-      background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+      background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
     }
     .btn-hero-blue:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(37, 99, 235, 0.5);
-      background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 8px 22px rgba(14, 165, 233, 0.55);
+      background: linear-gradient(180deg, #60a5fa 0%, #38bdf8 100%);
     }
 
-    /* 골드 테두리 다크 버튼 */
+    /* 차분한 세미 다크/골드 아웃라인 버튼 */
     .btn-hero-dark-outline {
-      background: rgba(17, 24, 39, 0.85);
-      color: #fee500;
-      border: 1.5px solid rgba(254, 229, 0, 0.45);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(180deg, #fed7aa 0%, #fdba74 100%);
+      color: #431407;
+      box-shadow: 0 4px 14px rgba(251, 146, 60, 0.25);
     }
     .btn-hero-dark-outline:hover {
       transform: translateY(-2px);
-      background: rgba(28, 38, 56, 0.95);
-      border-color: #fee500;
-      box-shadow: 0 6px 18px rgba(254, 229, 0, 0.3);
-      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(251, 146, 60, 0.45);
+      background: linear-gradient(180deg, #ffedd5 0%, #fed7aa 100%);
     }
 
     /* 신규 라이선스 텍스트 링크 */
     .btn-hero-text-link {
       background: transparent;
       border: none;
-      color: #cbd5e1;
+      color: #64748b;
       font-size: 0.78rem;
-      font-weight: 600;
+      font-weight: 700;
       padding: 10px 0 2px 0;
       cursor: pointer;
       display: inline-flex;
@@ -296,7 +295,7 @@
       text-decoration: none;
     }
     .btn-hero-text-link:hover {
-      color: #fee500;
+      color: #0284c7;
       transform: translateY(-1px);
     }
 
@@ -345,7 +344,7 @@
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
-      color: #94a3b8 !important;
+      color: #475569 !important;
       font-size: 0.65rem !important;
       cursor: pointer;
       padding: 0 !important;
@@ -353,8 +352,8 @@
       transition: background 0.15s ease, color 0.15s ease;
     }
     .btn-win-ctl:hover {
-      background: rgba(255, 255, 255, 0.15) !important;
-      color: #ffffff !important;
+      background: rgba(0, 0, 0, 0.08) !important;
+      color: #0f172a !important;
     }
     .btn-win-ctl.btn-win-close:hover {
       background: #e11d48 !important;
@@ -485,7 +484,7 @@
       cursor: pointer;
       user-select: none;
       font-size: 0.72rem;
-      color: #94a3b8;
+      color: #64748b;
       margin-bottom: 0;
     }
     .kakao-checkbox-wrap input[type="checkbox"] {
@@ -493,14 +492,14 @@
       -webkit-appearance: none;
       width: 15px;
       height: 15px;
-      border: 1.5px solid #475569;
+      border: 1.5px solid #cbd5e1;
       border-radius: 4px;
       outline: none;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #1e293b;
+      background-color: #ffffff;
       transition: all 0.15s ease;
       margin: 0;
     }
@@ -524,16 +523,16 @@
       align-items: center;
       padding: 8px 4px;
       border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-      color: #f1f5f9;
+      color: #1e293b;
     }
     .faq-a {
       font-size: 0.74rem;
-      color: #94a3b8;
+      color: #64748b;
       padding: 8px 6px;
       line-height: 1.45;
       display: none;
       white-space: pre-wrap;
-      background: rgba(0, 0, 0, 0.25);
+      background: #f8fafc;
       border-radius: 6px;
     }
 
@@ -695,7 +694,7 @@
   </aside>
 
   <!-- ========================================================
-       [VIEW 0] 로그인 전 웰컴 화면 (산뜻한 미드나잇 블루 게이밍)
+       [VIEW 0] 로그인 전 웰컴 화면 (B안: 웜그레이 모던 게이밍)
        ======================================================== -->
   <div id="welcomeGatewayView" class="app-main-layout" style="display: flex;">
 
@@ -714,13 +713,13 @@
       </div>
     </div>
 
-    <!-- 1. 상단 플랫 브랜드 헤더 바 (커튼선 제거 & 착 붙는 밀착 배치) -->
+    <!-- 1. 상단 플랫 브랜드 헤더 바 (커튼선 제거 & 착 밀착된 로고 세트) -->
     <div class="hero-curved-dark-header">
       <div class="hero-brand-row">
-        <!-- 상단 엠블럼 -->
+        <!-- ⭐️ 상단 엠블럼: 크기 확대 + gap 제거 밀착 + 과한 노란빛 제거 -->
         <img src="assets/raidon_shield.png" alt="RaidOn Emblem" class="hero-emblem-img" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
 
-        <!-- 상단 RAID ON 텍스트 로고 -->
+        <!-- 상단 RAID ON 텍스트 로고 (밝은 배경 덕에 하단 문구 선명 노출) -->
         <img src="assets/raidon_logo_text.png" alt="RAID ON" class="hero-typo-logo-img" onerror="this.onerror=null; this.src='./assets/raidon_logo_text.png';">
       </div>
     </div>
@@ -728,20 +727,20 @@
     <!-- 2. 중앙 컨텐츠 영역 -->
     <div class="welcome-center-container">
       
-      <!-- 3. 프리미엄 글래스모피즘 카드 -->
+      <!-- 3. 프리미엄 화이트 글래스모피즘 카드 -->
       <div class="raidon-hero-dark-card">
         <!-- 카드 상단 대형 3D 엠블럼 -->
         <div class="card-top-anchor-emblem">
           <img src="assets/raidon_shield.png" alt="RaidOn Emblem" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
         </div>
 
-        <h5 class="fw-bold mb-1" style="font-size: 1.25rem; letter-spacing: -0.4px; color: #ffffff; margin-top: 6px;">레이드온</h5>
-        <p class="small mb-3" style="font-size: 0.76rem; color: #94a3b8;">원하시는 시작 방식을 선택하세요.</p>
+        <h5 class="fw-bold mb-1" style="font-size: 1.25rem; letter-spacing: -0.4px; color: #1e293b; margin-top: 6px;">레이드온</h5>
+        <p class="small mb-3" style="font-size: 0.76rem; color: #64748b;">원하시는 시작 방식을 선택하세요.</p>
 
         <!-- 최근 참여 길드 목록 -->
         <div id="gatewayJoinedGuildsBox" style="display: none; margin-bottom: 12px; text-align: left;">
           <div class="d-flex align-items-center justify-content-between mb-1">
-            <label class="small mb-0 fw-bold" style="font-size: 0.68rem; color: #94a3b8;">최근 참여한 길드</label>
+            <label class="small mb-0 fw-bold" style="font-size: 0.68rem; color: #64748b;">최근 참여한 길드</label>
             <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none" style="font-size: 0.65rem;" onclick="clearAllGuildCache()">기록 비우기</button>
           </div>
           <div id="gatewayJoinedGuildsList"></div>
@@ -782,7 +781,7 @@
           <span id="gatewayNoticeTitle" class="text-truncate" style="max-width: 175px;">[공지] 레이드온 정식 오픈 안내</span>
         </a>
         <a href="javascript:void(0)" class="capsule-btn-dark" onclick="openSupportCenterModal()">
-          <span style="color: #60a5fa;">🎧</span>
+          <span style="color: #0284c7;">🎧</span>
           <span>FAQ/문의</span>
         </a>
       </div>
@@ -1009,22 +1008,22 @@
 
   <!-- 모달 1: 길드 메신저 로그인 모달 -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px; background:#1e293b; border:1px solid rgba(254,229,0,0.35); color:#f8fafc;">
+    <div class="kakao-modal-card" style="max-width: 320px; background:#ffffff; border:1px solid #cbd5e1; color:#1e293b;">
       <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width: 60px; height: auto; margin-bottom: 8px; background: transparent !important;" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
       <h6 class="fw-bold mb-1" style="font-size: 1.05rem;" id="loginGuildTitle">레이드온 로그인</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #94a3b8;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
+      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
       
       <div style="position: relative; margin-bottom: 8px; text-align: left;">
         <i class="fa-solid fa-user" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="text" id="loginNickSearchInput" placeholder="본인 캐릭터 닉네임 입력" autocomplete="off"
-               style="padding-left: 34px; height: 40px; margin-bottom: 0; font-weight: 600; background:#0f172a; border:1px solid #334155; color:#f8fafc;"
+               style="padding-left: 34px; height: 40px; margin-bottom: 0; font-weight: 600;"
                onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
       </div>
 
       <div style="position: relative; margin-bottom: 10px; text-align: left;">
         <i class="fa-solid fa-lock" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
         <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 6자리 입력" maxlength="20"
-               style="padding-left: 24px; height: 40px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 0; background:#0f172a; border:1px solid #334155; color:#f8fafc;"
+               style="padding-left: 24px; height: 40px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 0;"
                onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
       </div>
 
@@ -1040,7 +1039,7 @@
         </label>
       </div>
 
-      <div id="loginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(37, 99, 235, 0.4);">
+      <div id="loginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3);">
         <div class="small fw-bold text-info mb-2" style="font-size: 0.73rem;">
           <i class="fa-solid fa-circle-check me-1"></i>동일한 닉네임이 여러 길드에 있습니다. 입장할 길드를 선택하세요:
         </div>
@@ -1048,7 +1047,7 @@
       </div>
 
       <div class="d-flex gap-2 mb-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.82rem; border-radius: 8px; background:#334155; border:none;" onclick="closeGuildLoginModal()">
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="closeGuildLoginModal()">
           취소
         </button>
         <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeGuildLogin()">
@@ -1056,9 +1055,9 @@
         </button>
       </div>
 
-      <div class="d-flex align-items-center justify-content-between mt-1 pt-2 border-top" style="border-color: rgba(148,163,184,0.18) !important;">
-        <span style="font-size: 0.68rem; color: #94a3b8;">아직 길드에 가입하지 않으셨나요?</span>
-        <button type="button" class="btn btn-link p-0 fw-bold text-decoration-none" style="font-size: 0.7rem; color: #60a5fa;" onclick="closeGuildLoginModal(); openJoinGuildModal();">
+      <div class="d-flex align-items-center justify-content-between mt-1 pt-2 border-top" style="border-color: rgba(148,163,184,0.2) !important;">
+        <span style="font-size: 0.68rem; color: #64748b;">아직 길드에 가입하지 않으셨나요?</span>
+        <button type="button" class="btn btn-link p-0 fw-bold text-decoration-none" style="font-size: 0.7rem; color: #2563eb;" onclick="closeGuildLoginModal(); openJoinGuildModal();">
           초대코드로 가입 &gt;
         </button>
       </div>
@@ -1067,14 +1066,14 @@
 
   <!-- 모달 2: 라이선스 키 개설 모달 -->
   <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px; background:#1e293b; border:1px solid rgba(254,229,0,0.35); color:#f8fafc;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem; color:#fee500;"><i class="fa-solid fa-key me-1"></i>라이선스 키로 길드 시작</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #94a3b8;">발급받으신 라이선스 키를 입력하세요.</p>
-      <input type="text" id="actLicenseKeyInput" class="text-center font-monospace text-uppercase" placeholder="ECL-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-      <input type="text" id="actMasterNickInput" placeholder="길드장 닉네임 (본인 캐릭터명)" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-      <input type="password" id="actPinInput" class="text-center" placeholder="길드장 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
+    <div class="kakao-modal-card" style="max-width: 320px;">
+      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-key text-warning me-1"></i>라이선스 키로 길드 시작</h6>
+      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">발급받으신 라이선스 키를 입력하세요.</p>
+      <input type="text" id="actLicenseKeyInput" class="text-center font-monospace text-uppercase" placeholder="ECL-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px;">
+      <input type="text" id="actMasterNickInput" placeholder="길드장 닉네임 (본인 캐릭터명)" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px;">
+      <input type="password" id="actPinInput" class="text-center" placeholder="길드장 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;">
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px; background:#334155; border:none;" onclick="closeActivateGuildModal()">취소</button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeActivateGuildModal()">취소</button>
         <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="executeActivateGuild()">길드 개설 완료</button>
       </div>
     </div>
@@ -1082,48 +1081,48 @@
 
   <!-- 모달 3: 초대 코드 가입 모달 -->
   <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px; background:#1e293b; border:1px solid rgba(254,229,0,0.35); color:#f8fafc;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem; color:#60a5fa;"><i class="fa-solid fa-user-plus me-1"></i>초대 코드로 길드 가입</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #94a3b8;">길드장에게 전달받은 초대 코드를 입력하세요.</p>
-      <input type="text" id="joinInviteCodeInput" class="text-center font-monospace text-uppercase" placeholder="INV-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-      <input type="text" id="joinMemberNickInput" placeholder="본인 캐릭터 닉네임" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-      <input type="password" id="joinMemberPinInput" class="text-center" placeholder="개인 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
+    <div class="kakao-modal-card" style="max-width: 320px;">
+      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
+      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">길드장에게 전달받은 초대 코드를 입력하세요.</p>
+      <input type="text" id="joinInviteCodeInput" class="text-center font-monospace text-uppercase" placeholder="INV-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px;">
+      <input type="text" id="joinMemberNickInput" placeholder="본인 캐릭터 닉네임" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px;">
+      <input type="password" id="joinMemberPinInput" class="text-center" placeholder="개인 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;">
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px; background:#334155; border:none;" onclick="closeJoinGuildModal()">취소</button>
-        <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeJoinGuildWithCode()">입장하기</button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeJoinGuildModal()">취소</button>
+        <button type="button" class="btn btn-success btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeJoinGuildWithCode()">입장하기</button>
       </div>
     </div>
   </div>
 
   <!-- 모달 4: 라이선스 신청 모달 -->
   <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px; background:#1e293b; border:1px solid rgba(254,229,0,0.35); color:#f8fafc;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem; color:#fee500;"><i class="fa-solid fa-paper-plane me-1"></i>신규 길드 라이선스 신청</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #94a3b8;">MMORPG 길드 전용 라이선스를 신청하세요.</p>
-      <input type="text" id="reqGameNameInput" placeholder="게임명 (예: 리니지M, 로아, 오딘)" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-      <input type="text" id="reqGuildNameInput" placeholder="길드명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-      <input type="text" id="reqMasterNickInput" placeholder="신청자(길드장) 캐릭터명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-      <input type="text" id="reqContactInput" placeholder="연락처 (이메일 또는 카톡/디스코드)" style="height: 36px; font-size: 0.82rem; margin-bottom: 12px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
+    <div class="kakao-modal-card" style="max-width: 320px;">
+      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-paper-plane text-primary me-1"></i>신규 길드 라이선스 신청</h6>
+      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">MMORPG 길드 전용 라이선스를 신청하세요.</p>
+      <input type="text" id="reqGameNameInput" placeholder="게임명 (예: 리니지M, 로아, 오딘)" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
+      <input type="text" id="reqGuildNameInput" placeholder="길드명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
+      <input type="text" id="reqMasterNickInput" placeholder="신청자(길드장) 캐릭터명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
+      <input type="text" id="reqContactInput" placeholder="연락처 (이메일 또는 카톡/디스코드)" style="height: 36px; font-size: 0.82rem; margin-bottom: 12px;">
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px; background:#334155; border:none;" onclick="closeLicenseRequestModal()">취소</button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeLicenseRequestModal()">취소</button>
         <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="submitLicenseRequestForm()">신청 완료</button>
       </div>
     </div>
   </div>
 
-  <!-- 모달 5: 고객센터 & FAQ 통합 모달 -->
+  <!-- 모달 5: 고객센터 & FAQ 아코디언 통합 모달 -->
   <div id="modalSupportCenter" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
-    <div class="kakao-modal-card" style="max-width: 340px; max-height: 85vh; display: flex; flex-direction: column; background:#1e293b; border:1px solid rgba(254,229,0,0.35); color:#f8fafc;">
+    <div class="kakao-modal-card" style="max-width: 340px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h6 class="fw-bold mb-0" style="font-size: 0.95rem; color:#fee500;">
-          <i class="fa-solid fa-headset me-1"></i>고객센터 & FAQ
+        <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">
+          <i class="fa-solid fa-headset text-primary me-1"></i>고객센터 & FAQ
         </h6>
         <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0" onclick="closeSupportCenterModal()">✕</button>
       </div>
 
-      <div class="d-flex gap-1 mb-2 border-bottom pb-2" style="border-color:#334155 !important;">
+      <div class="d-flex gap-1 mb-2 border-bottom pb-2">
         <button type="button" class="btn btn-sm btn-warning flex-fill fw-bold py-1" id="tabBtnFaq" style="font-size: 0.74rem;" onclick="switchSupportTab('faq')">자주 묻는 질문</button>
-        <button type="button" class="btn btn-sm btn-dark flex-fill fw-bold py-1" id="tabBtnInquiry" style="font-size: 0.74rem; background:#0f172a; border:1px solid #334155;" onclick="switchSupportTab('inquiry')">1:1 문의하기</button>
+        <button type="button" class="btn btn-sm btn-light flex-fill fw-bold py-1" id="tabBtnInquiry" style="font-size: 0.74rem;" onclick="switchSupportTab('inquiry')">1:1 문의하기</button>
       </div>
 
       <div id="supportTabFaqContent" style="flex: 1; overflow-y: auto; text-align: left; padding-right: 4px;">
@@ -1153,33 +1152,33 @@
       </div>
 
       <div id="supportTabInquiryContent" style="display: none; text-align: left;">
-        <select id="supCategoryInput" class="form-select form-select-sm mb-2" style="font-size: 0.78rem; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
+        <select id="supCategoryInput" class="form-select form-select-sm mb-2" style="font-size: 0.78rem;">
           <option value="라이선스/결제 문의">라이선스 발급 / 연장 문의</option>
           <option value="비밀번호/계정 문의">비밀번호 초기화 / 계정 문의</option>
           <option value="버그/오류 제보">버그 및 오류 제보</option>
           <option value="기타 문의">기타 서비스 문의</option>
         </select>
-        <input type="text" id="supWriterInput" placeholder="길드명 및 본인 캐릭터명" style="height: 36px; font-size: 0.8rem; margin-bottom: 6px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-        <input type="text" id="supContactInput" placeholder="답변 받을 연락처 (카톡/전화/이메일)" style="height: 36px; font-size: 0.8rem; margin-bottom: 6px; background:#0f172a; border:1px solid #334155; color:#f8fafc;">
-        <textarea id="supContentInput" class="form-control form-control-sm mb-2" rows="3" placeholder="문의 내용을 작성해 주세요." style="font-size: 0.78rem; border-radius: 8px; background:#0f172a; border:1px solid #334155; color:#f8fafc;"></textarea>
+        <input type="text" id="supWriterInput" placeholder="길드명 및 본인 캐릭터명" style="height: 36px; font-size: 0.8rem; margin-bottom: 6px;">
+        <input type="text" id="supContactInput" placeholder="답변 받을 연락처 (카톡/전화/이메일)" style="height: 36px; font-size: 0.8rem; margin-bottom: 6px;">
+        <textarea id="supContentInput" class="form-control form-control-sm mb-2" rows="3" placeholder="문의 내용을 작성해 주세요." style="font-size: 0.78rem; border-radius: 8px;"></textarea>
         <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.82rem; border-radius: 8px;" onclick="submitSupportInquiry()">
           문의 접수하기
         </button>
       </div>
 
-      <button type="button" class="btn btn-secondary btn-sm w-100 mt-2 py-1" style="font-size: 0.78rem; background:#334155; border:none;" onclick="closeSupportCenterModal()">닫기</button>
+      <button type="button" class="btn btn-light btn-sm w-100 mt-2 py-1" style="font-size: 0.78rem;" onclick="closeSupportCenterModal()">닫기</button>
     </div>
   </div>
 
   <!-- 모달 6: 시스템 전체 공지 모달 -->
   <div id="modalSaasGlobalNotice" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
-    <div class="kakao-modal-card" style="max-width: 320px; text-align: left; background:#1e293b; border:1px solid rgba(254,229,0,0.35); color:#f8fafc;">
+    <div class="kakao-modal-card" style="max-width: 320px; text-align: left;">
       <div class="d-flex align-items-center justify-content-between mb-2">
         <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-bullhorn me-1"></i>공지사항</span>
         <button type="button" class="btn-close-modal" style="background:transparent; border:none; color:#94a3b8; font-size:1.1rem;" onclick="closeSaasNoticeModal()">✕</button>
       </div>
-      <h6 class="fw-bold mb-2" id="saasNoticeModalTitle" style="font-size: 0.94rem; color:#fee500;">레이드온 서비스 안내</h6>
-      <div id="saasNoticeModalBody" class="p-2 rounded mb-3" style="font-size: 0.78rem; line-height: 1.5; max-height: 200px; overflow-y: auto; background: #0f172a; border: 1px solid #334155; color:#cbd5e1; white-space: pre-wrap;">
+      <h6 class="fw-bold mb-2" id="saasNoticeModalTitle" style="font-size: 0.94rem;">레이드온 서비스 안내</h6>
+      <div id="saasNoticeModalBody" class="p-2 rounded mb-3" style="font-size: 0.78rem; line-height: 1.5; max-height: 200px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; color:#334155; white-space: pre-wrap;">
         환영합니다! 레이드온을 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.
       </div>
       <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="closeSaasNoticeModal()">
@@ -1190,10 +1189,10 @@
 
   <!-- 모달 7: 라이선스 성공 모달 -->
   <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
-    <div class="kakao-modal-card" style="max-width: 300px; background:#1e293b; border:1px solid rgba(254,229,0,0.35); color:#f8fafc;">
+    <div class="kakao-modal-card" style="max-width: 300px;">
       <div class="mb-2"><i class="fa-circle-check fa-solid text-success" style="font-size: 2.2rem;"></i></div>
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem; color:#fee500;">라이선스 등록 성공</h6>
-      <p class="small mb-3" style="font-size: 0.75rem; color:#94a3b8;">길드가 활성화되었습니다.<br>길드장으로 자동 로그인되었습니다.</p>
+      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">라이선스 등록 성공</h6>
+      <p class="small mb-3" style="font-size: 0.75rem; color:#64748b;">길드가 활성화되었습니다.<br>길드장으로 자동 로그인되었습니다.</p>
       <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.85rem; border-radius:8px;" onclick="closeLicenseSuccessModal()">대화방 시작하기</button>
     </div>
   </div>
@@ -1412,10 +1411,10 @@
       if (joined.length > 0) {
         box.style.display = "block";
         list.innerHTML = joined.map(function(g) {
-          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:#0f172a; border-color:#334155 !important;">' +
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:#ffffff; border-color:#e2e8f0 !important;">' +
             '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
               '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || "게임") + '</span>' +
-              '<span class="fw-bold text-light text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
+              '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
             '</div>' +
             '<div class="d-flex align-items-center gap-1 ms-2">' +
               '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem; cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">로그인</span>' +
@@ -1476,12 +1475,12 @@
       var cInq = document.getElementById("supportTabInquiryContent");
       if (tab === 'faq') {
         if (btnFaq) { btnFaq.className = "btn btn-sm btn-warning flex-fill fw-bold py-1"; }
-        if (btnInq) { btnInq.className = "btn btn-sm btn-dark flex-fill fw-bold py-1"; btnInq.style.background = "#0f172a"; btnInq.style.border = "1px solid #334155"; }
+        if (btnInq) { btnInq.className = "btn btn-sm btn-light flex-fill fw-bold py-1"; }
         if (cFaq) cFaq.style.display = "block";
         if (cInq) cInq.style.display = "none";
       } else {
-        if (btnFaq) { btnFaq.className = "btn btn-sm btn-dark flex-fill fw-bold py-1"; btnFaq.style.background = "#0f172a"; btnFaq.style.border = "1px solid #334155"; }
-        if (btnInq) { btnInq.className = "btn btn-sm btn-warning flex-fill fw-bold py-1"; btnInq.style.background = ""; btnInq.style.border = ""; }
+        if (btnFaq) { btnFaq.className = "btn btn-sm btn-light flex-fill fw-bold py-1"; }
+        if (btnInq) { btnInq.className = "btn btn-sm btn-warning flex-fill fw-bold py-1"; }
         if (cFaq) cFaq.style.display = "none";
         if (cInq) cInq.style.display = "block";
       }
