@@ -67,27 +67,28 @@
     }
 
     /* ========================================================
-       [웰컴 게이트웨이 디자인] 배경 이미지 + 엠블럼 최적화
+       [웰컴 게이트웨이 디자인] 앱 창 리사이징 반응형 배경
        ======================================================== */
     #welcomeGatewayView {
       width: 100%;
       height: 100%;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
-      /* 배경 이미지 로딩 우선 설정 */
-      background-color: #e0f2fe;
-      background-image: url('./assets/welcome_bg.png'), url('assets/welcome_bg.png'), linear-gradient(125deg, #fef9c3 0%, #fef08a 35%, #e0f2fe 75%, #bae6fd 100%) !important;
+      /* 앱 크기 변경에 유동적으로 반응하는 배경 */
+      background-color: #fef08a;
+      background-image: url('assets/welcome_bg.png') !important;
       background-repeat: no-repeat !important;
-      background-position: center center !important;
-      background-size: cover !important;
+      background-position: center bottom !important;
+      background-size: 100% 100% !important; /* 창 크기에 따라 배경 완벽 스케일링 */
     }
 
     /* 상단 화이트 아치형 브랜드 헤더 바 */
     .hero-curved-white-header {
       width: 100%;
-      padding: 10px 16px 18px 16px;
+      padding: 8px 16px 16px 16px;
       background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -97,66 +98,103 @@
       justify-content: center;
       position: relative;
       z-index: 10;
-      border-bottom-left-radius: 50% 20px;
-      border-bottom-right-radius: 50% 20px;
+      border-bottom-left-radius: 50% 24px;
+      border-bottom-right-radius: 50% 24px;
       box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+      flex-shrink: 0;
     }
     .hero-brand-row {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 12px;
       margin-top: 2px;
     }
 
-    /* 상단 투명 엠블럼 이미지 */
+    /* ⭐️ 상단 엠블럼 크기 대폭 확대 (너비 84px) */
     .hero-emblem-img {
-      width: 60px;
+      width: 84px;
       height: auto;
-      max-height: 52px;
+      max-height: 72px;
       object-fit: contain;
       background: transparent !important;
       border: none !important;
-      outline: none !important;
       box-shadow: none !important;
-      display: block;
+      filter: drop-shadow(0 3px 6px rgba(234, 179, 8, 0.35));
     }
 
-    .hero-text-col {
+    /* ⭐️ 두 번째 이미지로 교체된 RAID ON 정식 타이포 로고 */
+    .hero-typo-logo-img {
+      height: 58px;
+      width: auto;
+      max-width: 220px;
+      object-fit: contain;
+      background: transparent !important;
+      border: none !important;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.08));
+    }
+
+    /* 중앙 카드 배치 컨테이너 */
+    .welcome-center-container {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      text-align: left;
-    }
-    .hero-title-raidon {
-      font-size: 1.75rem;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      line-height: 1.1;
-      color: #2b1f02;
-      display: flex;
       align-items: center;
-      gap: 5px;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-    .hero-title-raidon .on-text {
-      color: #eab308;
-      text-shadow: 0 1px 0 #b45309;
-    }
-    .hero-sub-text {
-      font-size: 0.74rem;
-      color: #475569;
-      font-weight: 600;
-      letter-spacing: -0.2px;
-      margin-top: 2px;
+      justify-content: center;
+      padding: 24px 16px 16px 16px;
+      position: relative;
+      z-index: 10;
     }
 
-    /* 공지사항 & FAQ/문의 캡슐 바 */
-    .hero-info-bar {
+    /* 중앙 뽀얀 프로스티드 화이트 글래스 카드 */
+    .raidon-hero-soft-card {
+      width: 100%;
+      max-width: 334px;
+      background: rgba(255, 255, 255, 0.96) !important;
+      backdrop-filter: blur(18px) !important;
+      -webkit-backdrop-filter: blur(18px) !important;
+      border: 1.5px solid #ffffff !important;
+      border-radius: 26px !important;
+      padding: 38px 20px 22px 20px !important;
+      text-align: center;
+      box-shadow: 0 16px 40px rgba(71, 85, 105, 0.12), 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+      position: relative;
+      color: #1e293b;
+      margin-top: 28px; /* 엠블럼 크기 확대에 맞춘 카드 여백 */
+    }
+
+    /* ⭐️ 카드 상단에 큼직하게 얹히는 3D 엠블럼 (크기 대폭 확대: 96px x 84px) */
+    .card-top-anchor-emblem {
+      position: absolute;
+      top: -46px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 96px;
+      height: 84px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent !important;
+      z-index: 20;
+    }
+    .card-top-anchor-emblem img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      filter: drop-shadow(0 4px 12px rgba(234, 179, 8, 0.45));
+    }
+
+    /* ⭐️ 하단으로 이동한 공지사항 & FAQ/문의 캡슐 바 */
+    .hero-info-bar-bottom {
       width: 100%;
       max-width: 334px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin: 14px 0 16px 0;
+      margin-top: 14px;
       z-index: 10;
     }
     .capsule-btn-soft {
@@ -165,7 +203,7 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-radius: 20px;
-      padding: 5px 14px;
+      padding: 6px 14px;
       color: #334155;
       font-size: 0.74rem;
       font-weight: 700;
@@ -182,49 +220,7 @@
       border-color: #facc15;
       color: #0f172a;
       transform: translateY(-1.5px);
-      box-shadow: 0 6px 16px rgba(234, 179, 8, 0.2);
-    }
-
-    /* 중앙 뽀얀 프로스티드 화이트 글래스 카드 */
-    .raidon-hero-soft-card {
-      width: 100%;
-      max-width: 334px;
-      background: rgba(255, 255, 255, 0.96) !important;
-      backdrop-filter: blur(18px) !important;
-      -webkit-backdrop-filter: blur(18px) !important;
-      border: 1.5px solid #ffffff !important;
-      border-radius: 26px !important;
-      padding: 30px 20px 20px 20px !important;
-      text-align: center;
-      box-shadow: 0 16px 40px rgba(71, 85, 105, 0.12), 0 2px 10px rgba(0, 0, 0, 0.03) !important;
-      position: relative;
-      z-index: 10;
-      color: #1e293b;
-      margin-top: 18px; /* 상단 엠블럼 걸치기 공간 */
-    }
-
-    /* 카드 상단에 크게 걸쳐지는 3D 엠블럼 (샘플 2번 스크린샷 100% 동일) */
-    .card-top-anchor-emblem {
-      position: absolute;
-      top: -38px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 78px;
-      height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent !important;
-      z-index: 20;
-    }
-    .card-top-anchor-emblem img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      filter: drop-shadow(0 4px 10px rgba(234, 179, 8, 0.35));
+      box-shadow: 0 6px 16px rgba(234, 179, 8, 0.25);
     }
 
     /* 쫀득한 마우스 오버(Hover) 3D 액션 버튼 */
@@ -546,7 +542,7 @@
       border-radius: 6px;
     }
 
-    /* 자동 업데이트 모달 스타일 */
+    /* 자동 업데이트 모달 */
     .auto-update-modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -705,11 +701,11 @@
   </aside>
 
   <!-- ========================================================
-       [VIEW 0] 로그인 전 전용 웰컴 화면 (수정 반영)
+       [VIEW 0] 로그인 전 전용 웰컴 화면 (수정 완료)
        ======================================================== -->
   <div id="welcomeGatewayView" class="app-main-layout" style="display: flex;">
 
-    <!-- 타이틀바 -->
+    <!-- 윈도우 조절 타이틀바 -->
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
         <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
@@ -727,36 +723,20 @@
     <!-- 1. 상단 아치형 브랜드 화이트 헤더 바 -->
     <div class="hero-curved-white-header">
       <div class="hero-brand-row">
-        <!-- 상단 투명 배경 엠블럼 -->
-        <img src="assets/raidon_shield.png" alt="RaidOn Logo" class="hero-emblem-img" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
+        <!-- ⭐️ 엠블럼 로고 대폭 확대 -->
+        <img src="assets/raidon_shield.png" alt="RaidOn Emblem" class="hero-emblem-img" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
 
-        <div class="hero-text-col">
-          <div class="hero-title-raidon">
-            <span>RAID</span><span class="on-text">ON</span>
-          </div>
-          <div class="hero-sub-text">MMORPG 길드 관리 통합 메신저</div>
-        </div>
+        <!-- ⭐️ 대표님이 주신 두 번째 타이포 로고 이미지로 교체 -->
+        <img src="assets/raidon_logo_text.png" alt="RAID ON" class="hero-typo-logo-img" onerror="this.onerror=null; this.src='./assets/raidon_logo_text.png';">
       </div>
     </div>
 
     <!-- 2. 중앙 컨텐츠 영역 -->
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px 20px 16px; position: relative; z-index: 10;">
+    <div class="welcome-center-container">
       
-      <!-- 공지사항 & FAQ/문의 캡슐 바 -->
-      <div class="hero-info-bar">
-        <a href="javascript:void(0)" class="capsule-btn-soft" onclick="openSaasNoticeModal()">
-          <span style="color: #f59e0b;">📢</span>
-          <span id="gatewayNoticeTitle" class="text-truncate" style="max-width: 175px;">[공지] 레이드온 정식 오픈 안내</span>
-        </a>
-        <a href="javascript:void(0)" class="capsule-btn-soft" onclick="openSupportCenterModal()">
-          <span style="color: #0284c7;">🎧</span>
-          <span>FAQ/문의</span>
-        </a>
-      </div>
-
-      <!-- 3. 뽀얀 프로스티드 화이트 글래스 카드 (샘플 2번 디자인 반영) -->
+      <!-- 3. 뽀얀 프로스티드 화이트 글래스 카드 -->
       <div class="raidon-hero-soft-card">
-        <!-- ⭐️ 카드 상단에 걸쳐지는 큼직한 3D 엠블럼 -->
+        <!-- ⭐️ 카드 상단에 걸쳐지는 대형 3D 엠블럼 (96px x 84px) -->
         <div class="card-top-anchor-emblem">
           <img src="assets/raidon_shield.png" alt="RaidOn Emblem" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
         </div>
@@ -800,6 +780,19 @@
           </button>
         </div>
       </div>
+
+      <!-- ⭐️ 4. 카드 아래쪽(하단)으로 이동하여 엠블럼과 간섭 없는 공지 & FAQ 바 -->
+      <div class="hero-info-bar-bottom">
+        <a href="javascript:void(0)" class="capsule-btn-soft" onclick="openSaasNoticeModal()">
+          <span style="color: #f59e0b;">📢</span>
+          <span id="gatewayNoticeTitle" class="text-truncate" style="max-width: 175px;">[공지] 레이드온 정식 오픈 안내</span>
+        </a>
+        <a href="javascript:void(0)" class="capsule-btn-soft" onclick="openSupportCenterModal()">
+          <span style="color: #0284c7;">🎧</span>
+          <span>FAQ/문의</span>
+        </a>
+      </div>
+
     </div>
   </div>
 
@@ -1020,10 +1013,10 @@
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
-  <!-- 1. 길드 메신저 로그인 모달 (취소 시 웰컴 뷰 복귀) -->
+  <!-- 모달 1: 길드 메신저 로그인 모달 -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px; background:#ffffff; border:1px solid #cbd5e1; color:#1e293b;">
-      <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width: 54px; height: auto; margin-bottom: 8px; background: transparent !important;" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
+      <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width: 60px; height: auto; margin-bottom: 8px; background: transparent !important;" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
       <h6 class="fw-bold mb-1" style="font-size: 1.05rem;" id="loginGuildTitle">레이드온 로그인</h6>
       <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
       
@@ -1078,7 +1071,7 @@
     </div>
   </div>
 
-  <!-- 2. 라이선스 키 개설 모달 (취소 시 웰컴 뷰 복귀) -->
+  <!-- 모달 2: 라이선스 키 개설 모달 -->
   <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-key text-warning me-1"></i>라이선스 키로 길드 시작</h6>
@@ -1093,7 +1086,7 @@
     </div>
   </div>
 
-  <!-- 3. 초대 코드 가입 모달 (취소 시 웰컴 뷰 복귀) -->
+  <!-- 모달 3: 초대 코드 가입 모달 -->
   <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
@@ -1108,7 +1101,7 @@
     </div>
   </div>
 
-  <!-- 4. 라이선스 신청 모달 (취소 시 웰컴 뷰 복귀) -->
+  <!-- 모달 4: 라이선스 신청 모달 -->
   <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-paper-plane text-primary me-1"></i>신규 길드 라이선스 신청</h6>
@@ -1124,7 +1117,7 @@
     </div>
   </div>
 
-  <!-- 5. 고객센터 & FAQ 아코디언 통합 모달 -->
+  <!-- 모달 5: 고객센터 & FAQ 아코디언 통합 모달 -->
   <div id="modalSupportCenter" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
     <div class="kakao-modal-card" style="max-width: 340px; max-height: 85vh; display: flex; flex-direction: column;">
       <div class="d-flex align-items-center justify-content-between mb-2">
@@ -1184,7 +1177,7 @@
     </div>
   </div>
 
-  <!-- 6. 시스템 전체 공지 모달 -->
+  <!-- 모달 6: 시스템 전체 공지 모달 -->
   <div id="modalSaasGlobalNotice" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
     <div class="kakao-modal-card" style="max-width: 320px; text-align: left;">
       <div class="d-flex align-items-center justify-content-between mb-2">
@@ -1201,7 +1194,7 @@
     </div>
   </div>
 
-  <!-- 7. 라이선스 성공 모달 -->
+  <!-- 모달 7: 라이선스 성공 모달 -->
   <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
     <div class="kakao-modal-card" style="max-width: 300px;">
       <div class="mb-2"><i class="fa-circle-check fa-solid text-success" style="font-size: 2.2rem;"></i></div>
@@ -1211,7 +1204,7 @@
     </div>
   </div>
 
-  <!-- 8. 새 방 만들기 모달 -->
+  <!-- 모달 8: 새 방 만들기 모달 -->
   <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 대화방 만들기</h6>
@@ -1234,7 +1227,7 @@
     </div>
   </div>
 
-  <!-- 9. 초기 비밀번호 변경 모달 -->
+  <!-- 모달 9: 초기 비밀번호 변경 모달 -->
   <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
     <div class="kakao-modal-card" style="max-width: 320px;">
       <div class="mb-2" style="font-size: 2rem;">🔐</div>
@@ -1248,7 +1241,7 @@
     </div>
   </div>
 
-  <!-- 10. 길드원 미니 프로필 카드 모달 -->
+  <!-- 모달 10: 길드원 미니 프로필 카드 모달 -->
   <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeMemberProfileCard()">
     <div class="kakao-modal-card" style="max-width: 290px; padding: 22px 18px 16px 18px;">
       <div id="profCardAvatar" style="width: 60px; height: 60px; border-radius: 20px; background: rgba(0, 0, 0, 0.05); display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 10px; border: 1px solid var(--main-card-border); box-shadow: 0 4px 12px rgba(0,0,0,0.08);">👤</div>
@@ -1262,7 +1255,7 @@
     </div>
   </div>
 
-  <!-- 11. 프로필 직업 설정 모달 -->
+  <!-- 모달 11: 프로필 직업 설정 모달 -->
   <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeProfileEditModal()">
     <div class="kakao-modal-card">
       <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
@@ -1281,7 +1274,7 @@
     </div>
   </div>
 
-  <!-- 12. 자동 업데이트 인앱 모달 -->
+  <!-- 모달 12: 자동 업데이트 인앱 모달 -->
   <div id="modalAutoUpdateContainer" class="auto-update-modal-backdrop" style="display: none;">
     <div class="auto-update-card">
       <div class="auto-update-icon-box">🚀</div>
