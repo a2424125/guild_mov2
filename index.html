@@ -8,7 +8,7 @@
   <!-- PWA 앱 설정 & 앱 아이콘 -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="icon.png">
-  <meta name="theme-color" content="#bacee0">
+  <meta name="theme-color" content="#f2f3f5">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="길드톡">
@@ -53,82 +53,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-    }
-
-    /* 대기방 기본 배경: 카카오톡 PC 순정 소프트 그레이 */
-    body.in-main-tabs #kakaoMainTabsView {
-      background-color: #f2f3f5 !important;
-    }
-    #tabChatRoomsContent, #tabFriendsContent, #tabMoreContent {
-      background-color: #f2f3f5 !important;
-    }
-
-    /* 대기방 내부 카드 룩 정돈 */
-    .chat-room-card {
-      background: #ffffff !important;
-      border: 1px solid #e5e7eb !important;
-      border-radius: 12px !important;
-      margin: 8px 12px !important;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-    }
-
-    /* 상단 드래그 라인: 높이 30px, 배경 투명 */
-    .kakao-custom-titlebar {
-      width: 100%;
-      height: 30px !important;
-      min-height: 30px !important;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      -webkit-app-region: drag;
-      user-select: none;
-      flex-shrink: 0;
-      box-sizing: border-box;
-      padding-right: 4px;
-      z-index: 1000;
-    }
-
-    /* 뷰 상태에 따른 타이틀바 배경 동기화 */
-    body.in-main-tabs .kakao-custom-titlebar {
-      background-color: #f2f3f5 !important; /* 대기방 상단 색상 */
-    }
-    body.in-chat-room .kakao-custom-titlebar {
-      background-color: var(--kakao-bg, #bacee0) !important; /* 대화방 상단 하늘색 */
-    }
-
-    /* 윈도우 컨트롤 버튼 (- ㅁ X) 카카오톡 실물 크기 반영 */
-    .custom-window-controls {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      -webkit-app-region: no-drag;
-      gap: 2px;
-    }
-    .btn-win-ctl {
-      width: 32px !important;
-      height: 28px !important;
-      border: none !important;
-      background: transparent !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      color: #374151 !important;
-      cursor: pointer;
-      padding: 0 !important;
-      border-radius: 4px;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .btn-win-ctl i {
-      font-size: 0.85rem !important; /* 아이콘 크기 확장 */
-      line-height: 1 !important;
-    }
-    .btn-win-ctl:hover {
-      background: rgba(0, 0, 0, 0.08) !important;
-      color: #111111 !important;
-    }
-    .btn-win-ctl.btn-win-close:hover {
-      background: #e11d48 !important;
-      color: #ffffff !important;
+      background: #ffffff;
     }
 
     /* 메인 뷰 컨테이너 */
@@ -141,7 +66,91 @@
       position: relative;
     }
 
-    /* 대화방 헤더 (하늘색 영역) */
+    /* 대기방(홈 화면) 전체 색상 */
+    #kakaoMainTabsView {
+      background-color: #f2f3f5 !important;
+    }
+    #tabChatRoomsContent, #tabFriendsContent, #tabMoreContent {
+      background-color: #f2f3f5 !important;
+    }
+
+    /* 대기방 내부 카드 룩 */
+    .chat-room-card {
+      background: #ffffff !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 12px !important;
+      margin: 8px 12px !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    }
+
+    /* 대화방 전체 색상 (하늘색) */
+    #chatRoomView {
+      background-color: var(--kakao-bg, #bacee0) !important;
+    }
+
+    /* 각 화면별 상단 타이틀바 (배경색 100% 일체화) */
+    .view-custom-titlebar {
+      width: 100%;
+      height: 26px !important;
+      min-height: 26px !important;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      -webkit-app-region: drag;
+      user-select: none;
+      flex-shrink: 0;
+      padding-right: 4px;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+    /* 대기방 상단바 색상 */
+    #kakaoMainTabsView .view-custom-titlebar {
+      background-color: #f2f3f5 !important;
+    }
+    /* 대화방 상단바 색상 */
+    #chatRoomView .view-custom-titlebar {
+      background-color: var(--kakao-bg, #bacee0) !important;
+    }
+
+    /* ⭐️ 그전 크기로 롤백한 조밀한 윈도우 컨트롤 버튼 (- ㅁ X) */
+    .custom-window-controls {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      -webkit-app-region: no-drag;
+      gap: 1px;
+    }
+    .btn-win-ctl {
+      width: 24px !important;
+      height: 22px !important;
+      border: none !important;
+      background: transparent !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      color: #555555 !important;
+      font-size: 0.65rem !important;
+      cursor: pointer;
+      padding: 0 !important;
+      border-radius: 4px;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .btn-win-ctl:hover {
+      background: rgba(0, 0, 0, 0.08) !important;
+      color: #111111 !important;
+    }
+    .btn-win-ctl.btn-win-close:hover {
+      background: #e11d48 !important;
+      color: #ffffff !important;
+    }
+
+    /* 대기방 헤더 */
+    #kakaoMainTabsView .main-tabs-header {
+      background-color: #f2f3f5 !important;
+      padding: 0 14px 8px 14px !important;
+    }
+
+    /* 대화방 헤더 */
     #chatRoomView .kakao-chat-header {
       background-color: var(--kakao-bg, #bacee0) !important;
       padding: 0 14px 10px 14px !important;
@@ -152,17 +161,8 @@
       user-select: none;
       flex-shrink: 0;
     }
-    #chatRoomView {
-      background-color: var(--kakao-bg, #bacee0) !important;
-    }
 
-    /* 대기방 헤더 */
-    #kakaoMainTabsView .main-tabs-header {
-      background-color: #f2f3f5 !important;
-      padding: 0 14px 8px 14px !important;
-    }
-
-    /* 2줄 대화방 제목 */
+    /* 대화방 2줄 제목 */
     .room-header-two-tier {
       display: flex;
       flex-direction: column;
@@ -352,21 +352,6 @@
 </head>
 <body class="in-main-tabs">
 
-  <!-- 1층: 최상단 타이틀바 (화면 상태에 따라 하늘색/그레이 자동 연동) -->
-  <div class="kakao-custom-titlebar">
-    <div class="custom-window-controls">
-      <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
-        <i class="fa-solid fa-minus"></i>
-      </button>
-      <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()">
-        <i class="fa-regular fa-square"></i>
-      </button>
-      <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-    </div>
-  </div>
-
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
 
@@ -454,8 +439,25 @@
     </div>
   </aside>
 
-  <!-- [VIEW 1] 메인 대기방 화면 (탭 목록) -->
+  <!-- ========================================================
+       [VIEW 1] 메인 대기방 화면 (탭 목록)
+       ======================================================== -->
   <div id="kakaoMainTabsView" class="app-main-layout">
+    <!-- 대기방 전용 상단 타이틀바 (배경색: #f2f3f5 대기방과 100% 동일) -->
+    <div class="view-custom-titlebar">
+      <div class="custom-window-controls">
+        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
+          <i class="fa-solid fa-minus"></i>
+        </button>
+        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()">
+          <i class="fa-regular fa-square"></i>
+        </button>
+        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
         <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">대화방</div>
@@ -557,8 +559,25 @@
     </nav>
   </div>
 
-  <!-- [VIEW 2] 개별 대화방 화면 -->
+  <!-- ========================================================
+       [VIEW 2] 개별 대화방 화면
+       ======================================================== -->
   <div id="chatRoomView" class="app-main-layout" style="display: none;">
+    <!-- 대화방 전용 상단 타이틀바 (배경색: 대화방 하늘색과 100% 동일) -->
+    <div class="view-custom-titlebar">
+      <div class="custom-window-controls">
+        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
+          <i class="fa-solid fa-minus"></i>
+        </button>
+        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()">
+          <i class="fa-regular fa-square"></i>
+        </button>
+        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
     <header class="kakao-chat-header">
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.1rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
@@ -769,7 +788,7 @@
 
   <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
     <div class="kakao-modal-card" style="max-width: 300px;">
-      <div class="mb-2"><i class="fa-solid fa-circle-check text-success" style="font-size: 2.2rem;"></i></div>
+      <div class="mb-2"><i class="fa-circle-check fa-solid text-success" style="font-size: 2.2rem;"></i></div>
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">라이선스 등록 성공</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.75rem;">길드가 활성화되었습니다.<br>길드장으로 자동 로그인되었습니다.</p>
       <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.85rem; border-radius:8px;" onclick="closeLicenseSuccessModal()">대화방 시작하기</button>
@@ -980,7 +999,6 @@
         chatView.style.display = "none";
         mainTabs.style.display = "flex";
         
-        // ⭐️ 바디 클래스 동기화 (상단바 색상을 즉시 대기방 그레이로 전환)
         document.body.classList.remove("in-chat-room");
         document.body.classList.add("in-main-tabs");
 
@@ -1398,9 +1416,8 @@
       }, 400);
     }
 
-    // 대화방 진입 시 상단바를 하늘색으로 동기화하는 함수
+    // 2줄 방제목 및 대화방 진입 시 상단 일체화 함수
     function updateChatRoomHeaderTitle(fullTitle, memberCount) {
-      // ⭐️ 대화방 진입 플래그 (상단바를 하늘색으로 변경)
       document.body.classList.remove("in-main-tabs");
       document.body.classList.add("in-chat-room");
 
