@@ -179,6 +179,30 @@ async function initApp() {
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
+  // 시스템 공지 및 FAQ 데이터 백그라운드 사전 로드
+  loadSaasGlobalNoticeAndFaq();
+
+  // 로그인 상태 분기 처리 (배경 비침 방지: 로그인 전에는 웰컴 화면만 표시)
+  const welcomeView = document.getElementById("welcomeGatewayView");
+  const mainTabs = document.getElementById("kakaoMainTabsView");
+  const chatView = document.getElementById("chatRoomView");
+
+  if (!myCurrentNick) {
+    if (welcomeView) welcomeView.style.display = "flex";
+    if (mainTabs) mainTabs.style.display = "none";
+    if (chatView) chatView.style.display = "none";
+    document.body.classList.remove("in-main-tabs", "in-chat-room");
+    if (typeof window.renderWelcomeJoinedGuilds === 'function') {
+      window.renderWelcomeJoinedGuilds();
+    }
+    return;
+  }
+
+  // 로그인된 경우: 웰컴 뷰 숨김, 대기방 화면 활성화
+  if (welcomeView) welcomeView.style.display = "none";
+  if (mainTabs) mainTabs.style.display = "flex";
+  document.body.classList.add("in-main-tabs");
+
   await loadGuildSettings();
   await window.loadGuildMembersData();
   await refreshMyRoleFromServer();
@@ -198,24 +222,52 @@ async function initApp() {
     Notification.requestPermission();
   }
 
-  // 로그인 상태 분기 처리 (다운로드 페이지 이동 제거, 게이트웨이 또는 로그인창 호출)
-  if (!myCurrentNick) {
-    if (typeof openWelcomeGatewayModal === 'function') {
-      openWelcomeGatewayModal();
-    } else {
-      showGuildLoginModal();
-    }
-  } else {
-    updateProfileUI(myCurrentNick);
-    if (typeof window.loadMainTabRoomsList === 'function') {
-      window.loadMainTabRoomsList();
-    }
-    if (myCurrentPin === "000000" || myCurrentPin === "0000") {
-      setTimeout(() => {
-        openForceChangePinModal();
-      }, 300);
-    }
+  updateProfileUI(myCurrentNick);
+  if (typeof window.loadMainTabRoomsList === 'function') {
+    window.loadMainTabRoomsList();
   }
+  if (myCurrentPin === "000000" || myCurrentPin === "0000") {
+    setTimeout(() => {
+      openForceChangePinModal();
+    }, 300);
+  }
+}
+
+// ⚡ [공지 및 FAQ 동적 로더: home.html 기능 흡수]
+async function loadSaasGlobalNoticeAndFaq() {
+  if (typeof apiRequest !== "function") return;
+
+  try {
+    const notices = await apiRequest("saas_notices?is_active=eq.true&order=id.desc&limit=1");
+    if (Array.isArray(notices) && notices.length > 0) {
+      const latestNotice = notices[0];
+      const gTitle = document.getElementById("gatewayNoticeTitle");
+      const mTitle = document.getElementById("saasNoticeModalTitle");
+      const mBody = document.getElementById("saasNoticeModalBody");
+
+      if (gTitle && latestNotice.title) gTitle.innerText = `[공지] ${latestNotice.title}`;
+      if (mTitle && latestNotice.title) mTitle.innerText = latestNotice.title;
+      if (mBody && latestNotice.content) mBody.innerText = latestNotice.content;
+    }
+  } catch (e) {}
+
+  try {
+    const faqs = await apiRequest("saas_faqs?is_active=eq.true&order=sort_order.asc,id.asc");
+    if (Array.isArray(faqs) && faqs.length > 0) {
+      const container = document.getElementById("inAppFaqListContainer");
+      if (container) {
+        container.innerHTML = faqs.map(item => `
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleInAppFaq(this)">
+              <span>Q. ${escapeHtmlText(item.question || '')}</span>
+              <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.65rem;"></i>
+            </div>
+            <div class="faq-a">${escapeHtmlText(item.answer || '')}</div>
+          </div>
+        `).join("");
+      }
+    }
+  } catch (e) {}
 }
 
 // ⚡ [실시간 직책 & 세션 동기화: 슈퍼관리자 vs 일반관리자 엄격 분리]
@@ -665,28 +717,6 @@ window.executeForceChangePin = async function() {
 };
 var executeForceChangePin = window.executeForceChangePin;
 
-function showGuildLoginModal() {
-  const modal = document.getElementById("guildLoginModal");
-  if (modal) modal.style.display = "flex";
-
-  const multiBox = document.getElementById("loginMultiGuildSelectBox");
-  if (multiBox) multiBox.style.display = "none";
-
-  const searchInput = document.getElementById("loginNickSearchInput");
-  const pinInput = document.getElementById("loginPinInput");
-  if (searchInput && !searchInput.value) {
-    searchInput.value = myCurrentNick || "";
-  }
-  if (pinInput) pinInput.value = "";
-
-  // 저장된 체크박스 옵션 복원
-  const chkAuto = document.getElementById("chkAutoLogin");
-  const chkKeep = document.getElementById("chkKeepLogin");
-  if (chkAuto) chkAuto.checked = (localStorage.getItem("raidon_auto_login") === "true");
-  if (chkKeep) chkKeep.checked = (localStorage.getItem("raidon_keep_login") !== "false");
-}
-window.showGuildLoginModal = showGuildLoginModal;
-
 async function executeGuildLogin(forcedGuildId = null) {
   const searchInput = document.getElementById("loginNickSearchInput");
   const selectedName = (searchInput && searchInput.value.trim()) || "";
@@ -695,7 +725,7 @@ async function executeGuildLogin(forcedGuildId = null) {
   if (!selectedName) return showKakaoToast("본인 캐릭터 닉네임을 입력해주세요!", "⚠️");
   if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-  // [카카오톡 방식] 자동 로그인 & 상태 유지 체크 상태 저장
+  // 자동 로그인 & 상태 유지 체크 저장
   const chkAuto = document.getElementById("chkAutoLogin");
   const chkKeep = document.getElementById("chkKeepLogin");
   const isAuto = chkAuto ? chkAuto.checked : false;
@@ -721,9 +751,14 @@ async function executeGuildLogin(forcedGuildId = null) {
 
     updateProfileUI("슈퍼관리자");
     document.querySelectorAll(".kakao-modal-backdrop").forEach(m => { m.style.display = "none"; });
+    
+    // 웰컴 뷰 숨김 및 메인 대기방 뷰 활성화
+    const welcomeView = document.getElementById("welcomeGatewayView");
     const mainTabs = document.getElementById("kakaoMainTabsView");
+    if (welcomeView) welcomeView.style.display = "none";
     if (mainTabs) mainTabs.style.display = "flex";
     document.body.classList.add("in-main-tabs");
+
     resetAndReloadChatAfterAuth();
     return showKakaoToast("👑 슈퍼관리자(Master)로 로그인되었습니다.", "🎉");
   }
@@ -873,7 +908,10 @@ async function executeGuildLogin(forcedGuildId = null) {
     m.style.display = "none";
   });
 
+  // ⭐️ [중요] 웰컴 뷰를 숨기고 대기방 뷰를 깨끗하게 활성화 (배경 겹침 완전 해결)
+  const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
+  if (welcomeView) welcomeView.style.display = "none";
   if (mainTabs) mainTabs.style.display = "flex";
   document.body.classList.add("in-main-tabs");
 
@@ -900,7 +938,7 @@ function handleUserLogout() {
 }
 window.handleUserLogout = handleUserLogout;
 
-// ⚡ [로그아웃 처리] 다운로드 랜딩 강제 이동 제거 & 첫 화면(게이트웨이/로그인) 안전 복귀
+// ⚡ [로그아웃 처리] 대기방/대화방 완전 숨김 & 독립 웰컴 뷰 안전 복구
 window.executeLogoutProcess = async function() {
   localStorage.removeItem("guild_my_nickname");
   localStorage.removeItem("guild_my_pin");
@@ -922,16 +960,18 @@ window.executeLogoutProcess = async function() {
 
   showKakaoToast("로그아웃 되었습니다.", "👋");
 
-  // 대기방/대화방 뷰를 숨기고 로그인 첫 화면 띄우기
+  // 대기방/대화방 뷰를 숨기고 웰컴 전용 뷰 렌더링
+  const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
   const chatView = document.getElementById("chatRoomView");
+
   if (mainTabs) mainTabs.style.display = "none";
   if (chatView) chatView.style.display = "none";
+  if (welcomeView) welcomeView.style.display = "flex";
+  document.body.classList.remove("in-main-tabs", "in-chat-room");
 
-  if (typeof openWelcomeGatewayModal === "function") {
-    openWelcomeGatewayModal();
-  } else {
-    showGuildLoginModal();
+  if (typeof window.renderWelcomeJoinedGuilds === "function") {
+    window.renderWelcomeJoinedGuilds();
   }
 };
 
@@ -1420,7 +1460,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     `;
   }
   else if (isMe) {
-    // ⭐️ [카카오톡 표준] 내가 보낸 메시지: [시간/안읽은수] 가 말풍선 왼쪽(앞)에 오도록 완벽 배치
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
       <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
@@ -1437,7 +1476,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     `;
   }
   else {
-    // 상대방 메시지: [말풍선] 오른쪽에 [시간/안읽은수] 배치
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
     const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
@@ -1510,7 +1548,7 @@ async function handleSendMessage() {
   }
   if (!myCurrentNick) {
     showKakaoToast("로그인이 필요합니다.", "⚠️");
-    showGuildLoginModal();
+    if (typeof showGuildLoginModal === "function") showGuildLoginModal();
     return;
   }
 
@@ -1687,25 +1725,21 @@ window.openModulePage = async function(pageName) {
     }
   } catch(e) {}
 
-  // 1. 길드비용현황
   if (pageName === 'PageFinance' && !isSuper) {
     if (!isNormalAdmin || String(currentPerms['perm_finance_input']) !== 'true') {
       return showKakaoToast("길드비용현황은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
     }
   }
-  // 2. 보스참여등록
   if (pageName === 'PageRegister' && !isSuper) {
     if (!isNormalAdmin || String(currentPerms['perm_boss_register']) !== 'true') {
       return showKakaoToast("보스참여등록은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
     }
   }
-  // 3. 분배희망신청
   if (pageName === 'PageWish' && !isSuper) {
     if (!isNormalAdmin || String(currentPerms['perm_wish_distribute']) !== 'true') {
       return showKakaoToast("분배희망신청 권한이 비활성화되어 있습니다.", "⚠️");
     }
   }
-  // 4. 정산내역
   if (pageName === 'PageSettle' && !isSuper) {
     if (!isNormalAdmin || String(currentPerms['perm_settle_fund_dist']) !== 'true') {
       return showKakaoToast("정산내역 권한이 비활성화되어 있습니다.", "⚠️");
