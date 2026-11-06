@@ -67,26 +67,27 @@
     }
 
     /* ========================================================
-       [웰컴 게이트웨이 디자인] 대표님의 실제 배경 이미지 연동
+       [웰컴 게이트웨이 디자인] 배경 이미지 + 엠블럼 최적화
        ======================================================== */
     #welcomeGatewayView {
-      /* 이미지가 로드되기 전 대체 배경색 및 실제 배경 이미지 지정 */
-      background-color: #fef08a;
-      background-image: url('assets/welcome_bg.png') !important;
-      background-repeat: no-repeat !important;
-      background-position: center center !important;
-      background-size: cover !important;
+      width: 100%;
+      height: 100%;
       position: relative;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: inset 0 0 0 2px rgba(254, 229, 0, 0.4);
+      /* 배경 이미지 로딩 우선 설정 */
+      background-color: #e0f2fe;
+      background-image: url('./assets/welcome_bg.png'), url('assets/welcome_bg.png'), linear-gradient(125deg, #fef9c3 0%, #fef08a 35%, #e0f2fe 75%, #bae6fd 100%) !important;
+      background-repeat: no-repeat !important;
+      background-position: center center !important;
+      background-size: cover !important;
     }
 
     /* 상단 화이트 아치형 브랜드 헤더 바 */
     .hero-curved-white-header {
       width: 100%;
-      padding: 8px 16px 18px 16px;
+      padding: 10px 16px 18px 16px;
       background: rgba(255, 255, 255, 0.94);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -96,8 +97,8 @@
       justify-content: center;
       position: relative;
       z-index: 10;
-      border-bottom-left-radius: 50% 22px;
-      border-bottom-right-radius: 50% 22px;
+      border-bottom-left-radius: 50% 20px;
+      border-bottom-right-radius: 50% 20px;
       box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
     }
     .hero-brand-row {
@@ -106,19 +107,27 @@
       gap: 12px;
       margin-top: 2px;
     }
+
+    /* 상단 투명 엠블럼 이미지 */
     .hero-emblem-img {
-      width: 52px;
+      width: 60px;
       height: auto;
+      max-height: 52px;
       object-fit: contain;
-      filter: drop-shadow(0 3px 6px rgba(234, 179, 8, 0.3));
+      background: transparent !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      display: block;
     }
+
     .hero-text-col {
       display: flex;
       flex-direction: column;
       text-align: left;
     }
     .hero-title-raidon {
-      font-size: 1.7rem;
+      font-size: 1.75rem;
       font-weight: 900;
       letter-spacing: 0.5px;
       line-height: 1.1;
@@ -133,7 +142,7 @@
       text-shadow: 0 1px 0 #b45309;
     }
     .hero-sub-text {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: #475569;
       font-weight: 600;
       letter-spacing: -0.2px;
@@ -147,16 +156,16 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin: 10px 0 12px 0;
+      margin: 14px 0 16px 0;
       z-index: 10;
     }
     .capsule-btn-soft {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.92);
       border: 1.2px solid rgba(226, 232, 240, 0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border-radius: 20px;
-      padding: 5px 13px;
+      padding: 5px 14px;
       color: #334155;
       font-size: 0.74rem;
       font-weight: 700;
@@ -180,34 +189,52 @@
     .raidon-hero-soft-card {
       width: 100%;
       max-width: 334px;
-      background: rgba(255, 255, 255, 0.95) !important;
+      background: rgba(255, 255, 255, 0.96) !important;
       backdrop-filter: blur(18px) !important;
       -webkit-backdrop-filter: blur(18px) !important;
       border: 1.5px solid #ffffff !important;
       border-radius: 26px !important;
-      padding: 24px 20px 20px 20px !important;
+      padding: 30px 20px 20px 20px !important;
       text-align: center;
       box-shadow: 0 16px 40px rgba(71, 85, 105, 0.12), 0 2px 10px rgba(0, 0, 0, 0.03) !important;
       position: relative;
       z-index: 10;
       color: #1e293b;
+      margin-top: 18px; /* 상단 엠블럼 걸치기 공간 */
     }
-    .card-mini-emblem {
-      width: 44px;
-      height: auto;
+
+    /* 카드 상단에 크게 걸쳐지는 3D 엠블럼 (샘플 2번 스크린샷 100% 동일) */
+    .card-top-anchor-emblem {
+      position: absolute;
+      top: -38px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 78px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent !important;
+      z-index: 20;
+    }
+    .card-top-anchor-emblem img {
+      width: 100%;
+      height: 100%;
       object-fit: contain;
-      margin-bottom: 4px;
-      filter: drop-shadow(0 2px 5px rgba(234, 179, 8, 0.3));
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      filter: drop-shadow(0 4px 10px rgba(234, 179, 8, 0.35));
     }
 
     /* 쫀득한 마우스 오버(Hover) 3D 액션 버튼 */
     .btn-action-soft {
       width: 100%;
-      height: 46px;
+      height: 48px;
       border-radius: 14px;
       border: none;
       font-weight: 750;
-      font-size: 0.88rem;
+      font-size: 0.9rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -263,7 +290,7 @@
       background: transparent;
       border: none;
       color: #475569;
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       font-weight: 700;
       padding: 10px 0 2px 0;
       cursor: pointer;
@@ -678,7 +705,7 @@
   </aside>
 
   <!-- ========================================================
-       [VIEW 0] 로그인 전 전용 웰컴 화면 (대표님 배경 및 엠블럼 적용)
+       [VIEW 0] 로그인 전 전용 웰컴 화면 (수정 반영)
        ======================================================== -->
   <div id="welcomeGatewayView" class="app-main-layout" style="display: flex;">
 
@@ -700,8 +727,8 @@
     <!-- 1. 상단 아치형 브랜드 화이트 헤더 바 -->
     <div class="hero-curved-white-header">
       <div class="hero-brand-row">
-        <!-- 💡 대표님이 준비하신 날개 달린 황금 G 엠블럼 이미지 연동 -->
-        <img src="assets/raidon_shield.png" alt="RaidOn Logo" class="hero-emblem-img" onerror="this.style.display='none';">
+        <!-- 상단 투명 배경 엠블럼 -->
+        <img src="assets/raidon_shield.png" alt="RaidOn Logo" class="hero-emblem-img" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
 
         <div class="hero-text-col">
           <div class="hero-title-raidon">
@@ -713,7 +740,7 @@
     </div>
 
     <!-- 2. 중앙 컨텐츠 영역 -->
-    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px 14px 16px; position: relative; z-index: 10;">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 16px 20px 16px; position: relative; z-index: 10;">
       
       <!-- 공지사항 & FAQ/문의 캡슐 바 -->
       <div class="hero-info-bar">
@@ -727,13 +754,15 @@
         </a>
       </div>
 
-      <!-- 3. 뽀얀 프로스티드 화이트 글래스 카드 -->
+      <!-- 3. 뽀얀 프로스티드 화이트 글래스 카드 (샘플 2번 디자인 반영) -->
       <div class="raidon-hero-soft-card">
-        <!-- 💡 카드 상단 미니 엠블럼 이미지 연동 -->
-        <img src="assets/raidon_shield.png" alt="RaidOn Mini" class="card-mini-emblem" onerror="this.style.display='none';">
+        <!-- ⭐️ 카드 상단에 걸쳐지는 큼직한 3D 엠블럼 -->
+        <div class="card-top-anchor-emblem">
+          <img src="assets/raidon_shield.png" alt="RaidOn Emblem" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
+        </div>
 
-        <h5 class="fw-bold mb-1" style="font-size: 1.15rem; letter-spacing: -0.3px; color: #1e293b;">레이드온</h5>
-        <p class="small mb-3" style="font-size: 0.74rem; color: #64748b;">원하시는 시작 방식을 선택하세요.</p>
+        <h5 class="fw-bold mb-1" style="font-size: 1.25rem; letter-spacing: -0.4px; color: #1e293b; margin-top: 6px;">레이드온</h5>
+        <p class="small mb-3" style="font-size: 0.76rem; color: #64748b;">원하시는 시작 방식을 선택하세요.</p>
 
         <!-- 최근 참여 길드 목록 -->
         <div id="gatewayJoinedGuildsBox" style="display: none; margin-bottom: 12px; text-align: left;">
@@ -994,7 +1023,7 @@
   <!-- 1. 길드 메신저 로그인 모달 (취소 시 웰컴 뷰 복귀) -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
     <div class="kakao-modal-card" style="max-width: 320px; background:#ffffff; border:1px solid #cbd5e1; color:#1e293b;">
-      <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width: 48px; height: auto; margin-bottom: 10px;" onerror="this.style.display='none';">
+      <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width: 54px; height: auto; margin-bottom: 8px; background: transparent !important;" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
       <h6 class="fw-bold mb-1" style="font-size: 1.05rem;" id="loginGuildTitle">레이드온 로그인</h6>
       <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
       
