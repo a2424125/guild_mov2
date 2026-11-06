@@ -46,7 +46,7 @@
 
   <style>
     /* ========================================================
-       전체 레이아웃: 높이 계산 오류 없는 Flex 구조
+       전체 레이아웃: 높이 계산 오류 방지 및 자연스러운 배경 투과
        ======================================================== */
     html, body {
       width: 100%;
@@ -56,43 +56,44 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      background: transparent !important;
     }
 
-    /* 1층: 카카오톡 순정 규격 상단 드래그 바 (배경색 일체화, 레이드온 글자 제거) */
+    /* 1층: 최상단 드래그 영역 (대기방/대화방의 본래 배경이 100% 투과되도록 설정) */
     .kakao-custom-titlebar {
       width: 100%;
-      height: 26px;
-      min-height: 26px;
+      height: 28px;
+      min-height: 28px;
       display: flex;
       align-items: center;
-      justify-content: flex-end; /* 우측 버튼만 정렬 */
+      justify-content: flex-end;
       -webkit-app-region: drag;
       user-select: none;
       flex-shrink: 0;
-      background: transparent !important; /* 본문 하늘색/다크색과 100% 일체화 */
-      padding-right: 2px;
+      background: transparent !important;
+      padding-right: 4px;
       box-sizing: border-box;
       z-index: 1000;
     }
 
-    /* 카카오톡 순정 조밀한 창 제어 버튼 (- ㅁ X) */
+    /* ⭐️ 카카오톡 순정 크기로 살짝 키운 슬림 제어 버튼 (- ㅁ X) */
     .custom-window-controls {
       display: flex;
       align-items: center;
       height: 100%;
       -webkit-app-region: no-drag;
-      gap: 1px;
+      gap: 2px;
     }
     .btn-win-ctl {
-      width: 24px !important;       /* 카카오톡 순정 폭: 24px */
-      height: 22px !important;
+      width: 28px !important;        /* 기존 24px -> 28px로 카카오톡 크기 동기화 */
+      height: 26px !important;       /* 높이감 살림 */
       border: none;
       background: transparent;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       color: #555555;
-      font-size: 0.62rem !important; /* 아이콘 컴팩트화 */
+      font-size: 0.72rem !important; /* 아이콘 가시성 확보 */
       cursor: pointer;
       transition: background 0.15s ease, color 0.15s ease;
       padding: 0;
@@ -132,7 +133,7 @@
       -webkit-app-region: no-drag;
     }
 
-    /* ⭐️ 대화방 이름 2줄 분리 스타일 */
+    /* 대화방 이름 2줄 분리 스타일 */
     .room-header-two-tier {
       display: flex;
       flex-direction: column;
@@ -322,7 +323,7 @@
 </head>
 <body class="in-main-tabs">
 
-  <!-- 1층: 최상단 드래그 영역 & 카카오톡 순정형 조밀한 - ㅁ X 버튼 -->
+  <!-- 1층: 카카오톡 크기로 커진 슬림 제어 버튼 (- ㅁ X) -->
   <div class="kakao-custom-titlebar">
     <div class="custom-window-controls">
       <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
@@ -424,7 +425,7 @@
     </div>
   </aside>
 
-  <!-- [VIEW 1] 메인 홈 화면 (탭 목록) -->
+  <!-- [VIEW 1] 메인 대기방 화면 (탭 목록) -->
   <div id="kakaoMainTabsView" class="app-main-layout">
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
@@ -538,11 +539,10 @@
           <span style="font-weight: 800; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
         </div>
         
-        <!-- ⭐️ 2줄 대화방 방제목: 1줄 [이클립스] / 2줄 불편한사람들 (중복된 👤2 아이콘 완전 삭제) -->
+        <!-- 2줄 대화방 방제목 (상단 태그 / 하단 길드명) -->
         <div class="room-header-two-tier">
           <div class="room-server-subtitle" id="chatRoomServerSub" style="display: none;"></div>
           <div class="room-main-title" id="chatRoomTitle">대화방</div>
-          <!-- 하위 호환용 숨김 인원수 텍스트 -->
           <span id="roomMemberCountText" style="display: none;">0</span>
         </div>
       </div>
@@ -740,7 +740,7 @@
 
   <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
     <div class="kakao-modal-card" style="max-width: 300px;">
-      <div class="mb-2"><i class="fa-solid fa-circle-check text-success" style="font-size: 2.2rem;"></i></div>
+      <div class="mb-2"><i class="fa-circle-check fa-solid text-success" style="font-size: 2.2rem;"></i></div>
       <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">라이선스 등록 성공</h6>
       <p class="text-secondary small mb-3" style="font-size: 0.75rem;">길드가 활성화되었습니다.<br>길드장으로 자동 로그인되었습니다.</p>
       <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.85rem; border-radius:8px;" onclick="closeLicenseSuccessModal()">대화방 시작하기</button>
@@ -1365,7 +1365,6 @@
       }, 400);
     }
 
-    // ⭐️ [이클립스] / 불편한사람들 2줄 완벽 분리 함수
     function updateChatRoomHeaderTitle(fullTitle, memberCount) {
       const subElem = document.getElementById("chatRoomServerSub");
       const titleElem = document.getElementById("chatRoomTitle");
@@ -1380,11 +1379,11 @@
       const tagMatch = fullTitle.match(/^(\[[^\]]+\])\s*(.*)$/);
       if (tagMatch) {
         if (subElem) {
-          subElem.innerText = tagMatch[1]; // 예: [이클립스]
+          subElem.innerText = tagMatch[1];
           subElem.style.display = "block";
         }
         if (titleElem) {
-          titleElem.innerText = tagMatch[2] || fullTitle; // 예: 불편한사람들
+          titleElem.innerText = tagMatch[2] || fullTitle;
         }
       } else {
         if (subElem) {
@@ -1397,7 +1396,6 @@
     }
     window.updateChatRoomHeaderTitle = updateChatRoomHeaderTitle;
 
-    // 대화방 제목 변경 시 2줄 분리 감지 자동 적용 (MutationObserver)
     (function observeChatRoomTitle() {
       const titleElem = document.getElementById("chatRoomTitle");
       if (!titleElem) return;
