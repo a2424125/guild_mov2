@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title></title>
+  <title>레이드온</title>
 
-  <!-- PWA 앱 설정 & 새 G 앱 아이콘 연결 -->
+  <!-- PWA 앱 설정 & 앱 아이콘 -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="icon.png">
   <meta name="theme-color" content="#bacee0">
@@ -18,11 +18,11 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-  <!-- Supabase 공식 SDK 및 설정 파일 로드 -->
+  <!-- Supabase SDK 및 설정 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <!-- 초기 렌더링 깜빡임 방지 즉시 실행 테마 스크립트 -->
+  <!-- 테마 깜빡임 방지 스크립트 -->
   <script>
     (function() {
       try {
@@ -45,18 +45,66 @@
   <link rel="stylesheet" href="style.css">
 
   <style>
-    /* 카카오톡 슬림 2단 헤더: 1층 윈도우 시스템 버튼 전용 드래그 바 (높이 28px) */
-    .window-titlebar-spacer {
+    /* ========================================================
+       1층: 카카오톡 규격 최상단 드래그 라인 & 슬림 커스텀 컨트롤 버튼
+       ======================================================== */
+    .kakao-custom-titlebar {
       width: 100%;
-      height: 28px;
-      min-height: 28px;
+      height: 30px;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       -webkit-app-region: drag;
       user-select: none;
       flex-shrink: 0;
+      background: var(--main-top-bar-bg, rgba(24, 29, 36, 0.03));
+      padding-left: 12px;
+      box-sizing: border-box;
+      z-index: 1000;
+    }
+    .custom-titlebar-drag-area {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: -0.2px;
+    }
+    .custom-window-controls {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      -webkit-app-region: no-drag;
+    }
+    .btn-win-ctl {
+      width: 34px;
+      height: 100%;
+      border: none;
       background: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+      padding: 0;
+    }
+    .btn-win-ctl:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: #1e293b;
+    }
+    .btn-win-ctl.btn-win-close:hover {
+      background: #e11d48;
+      color: #ffffff;
     }
 
-    /* 2층 대화방 및 메인 헤더: 방 제목과 툴 버튼들이 여유롭게 배치되는 영역 */
+    /* ========================================================
+       2층: 대화방 및 메인 탭 헤더
+       ======================================================== */
     .kakao-chat-header {
       padding: 4px 14px 10px 14px !important;
       display: flex !important;
@@ -72,7 +120,7 @@
       -webkit-app-region: no-drag;
     }
 
-    /* 방 제목 2단 계층 구조 스타일 */
+    /* 2단 계층형 방제목 스타일 (서버/분류명 상단 + 길드명 하단) */
     .room-header-two-tier {
       display: flex;
       flex-direction: column;
@@ -80,12 +128,12 @@
       min-width: 0;
       flex: 1;
       overflow: hidden;
-      line-height: 1.2;
+      line-height: 1.25;
     }
     .room-server-subtitle {
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       color: #64748b;
-      font-weight: 500;
+      font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -110,7 +158,7 @@
     .header-right-tools {
       display: flex !important;
       align-items: center !important;
-      gap: 4px !important;
+      gap: 3px !important;
       flex-shrink: 0 !important;
     }
 
@@ -184,11 +232,13 @@
       font-weight: 600;
     }
 
-    /* 자동 업데이트 진행률 & 완료 커스텀 모달 스타일 */
+    /* ========================================================
+       고도화된 레이드온 자동 업데이트 모달 스타일
+       ======================================================== */
     .auto-update-modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(11, 15, 20, 0.9);
+      background: rgba(11, 15, 20, 0.88);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
@@ -199,34 +249,65 @@
     }
     .auto-update-card {
       width: 100%;
-      max-width: 320px;
+      max-width: 330px;
       background: #181d24;
-      border: 1.5px solid #2d3748;
+      border: 1.5px solid #28303c;
       border-radius: 20px;
-      padding: 24px 20px;
+      padding: 22px 20px;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
       color: #f3f4f6;
     }
     .auto-update-icon-box {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
       background: #fee500;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       margin-bottom: 12px;
-      box-shadow: 0 4px 16px rgba(254, 229, 0, 0.3);
+      box-shadow: 0 4px 14px rgba(254, 229, 0, 0.3);
     }
+
+    /* 기능 소개 롤링 배너 박스 */
+    .update-feature-showcase {
+      background: #11151a;
+      border: 1px solid #222933;
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin: 12px 0;
+      text-align: left;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .feature-showcase-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .feature-showcase-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #f3f4f6;
+      line-height: 1.2;
+    }
+    .feature-showcase-desc {
+      font-size: 0.67rem;
+      color: #94a3b8;
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
     .auto-progress-bar-wrap {
       width: 100%;
-      height: 8px;
+      height: 7px;
       background: #11151a;
       border-radius: 8px;
       overflow: hidden;
-      margin: 14px 0 8px 0;
+      margin: 12px 0 6px 0;
       border: 1px solid #202732;
     }
     .auto-progress-bar-fill {
@@ -239,6 +320,24 @@
   </style>
 </head>
 <body class="in-main-tabs">
+
+  <!-- 1층: 윈도우 커스텀 타이틀바 (마우스 창 이동 및 초슬림 제어 버튼) -->
+  <div class="kakao-custom-titlebar">
+    <div class="custom-titlebar-drag-area">
+      <span>레이드온</span>
+    </div>
+    <div class="custom-window-controls">
+      <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+      <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()">
+        <i class="fa-regular fa-square"></i>
+      </button>
+      <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
 
   <!-- 공통 백드롭 -->
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
@@ -328,11 +427,7 @@
   </aside>
 
   <!-- [VIEW 1] 메인 홈 화면 -->
-  <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: 100vh;">
-    <!-- 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (높이 28px) -->
-    <div class="window-titlebar-spacer"></div>
-
-    <!-- 2층: 메인 탭 헤더 본문 -->
+  <div id="kakaoMainTabsView" class="app-main-layout" style="display: flex; flex-direction: column; width: 100%; height: calc(100vh - 30px);">
     <header class="kakao-chat-header main-tabs-header">
       <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
         <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">대화방</div>
@@ -435,11 +530,7 @@
   </div>
 
   <!-- [VIEW 2] 개별 대화방 화면 -->
-  <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: 100vh;">
-    <!-- 1층: 윈도우 컨트롤 버튼 전용 상단 여백 (높이 28px) -->
-    <div class="window-titlebar-spacer"></div>
-
-    <!-- 2층: 대화방 헤더 본문 (2단 계층형 방제목 적용) -->
+  <div id="chatRoomView" class="app-main-layout" style="display: none; flex-direction: column; width: 100%; height: calc(100vh - 30px);">
     <header class="kakao-chat-header">
       <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
         <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.1rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
@@ -449,9 +540,9 @@
           <span style="font-weight: 800; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
         </div>
         
-        <!-- ⭐️ 2단 계층형 방제목 영역 (상단: 서버명, 하단: 길드명 + 인원수) -->
+        <!-- 2단 계층형 방제목 영역 (상단: 서버/게임명 태그, 하단: 길드명 + 인원수) -->
         <div class="room-header-two-tier">
-          <div class="room-server-subtitle" id="chatRoomServerSub">[서버]</div>
+          <div class="room-server-subtitle" id="chatRoomServerSub" style="display: none;"></div>
           <div class="room-title-row">
             <span class="room-main-title" id="chatRoomTitle">대화방</span>
             <span class="room-count-text" title="길드원 목록 열기" onclick="toggleMembersDrawer(true)" style="font-size: 0.7rem; color: #64748b; cursor: pointer; display: inline-flex; align-items: center;">
@@ -724,25 +815,37 @@
     </div>
   </div>
 
-  <!-- 최신 버전 자동 업데이트 인앱 모달 -->
+  <!-- ========================================================
+       ⚡ 고도화된 레이드온 최신 버전 자동 업데이트 인앱 모달
+       ======================================================== -->
   <div id="modalAutoUpdateContainer" class="auto-update-modal-backdrop" style="display: none;">
     <div class="auto-update-card">
       <div class="auto-update-icon-box">🚀</div>
       
-      <!-- 상태 1: 다운로드 중일 때 -->
+      <!-- 상태 1: 다운로드 및 사전 설치 준비 중 (기능 소개 롤링) -->
       <div id="autoUpdateDownloadingView">
-        <h5 class="fw-bold mb-1" style="font-size: 1.05rem; color: #ffffff;">새 버전 다운로드 중</h5>
-        <p class="text-secondary small mb-2" style="font-size: 0.76rem;">최신 업데이트 패치를 안전하게 내려받고 있습니다.</p>
+        <h5 class="fw-bold mb-1" style="font-size: 1.05rem; color: #ffffff;">새로운 레이드온 준비 중</h5>
+        <p class="text-secondary small mb-1" id="autoUpdateStatusText" style="font-size: 0.74rem;">최신 패치를 다운로드하고 있습니다.</p>
+
+        <!-- 기능 소개 카드 롤링 영역 -->
+        <div class="update-feature-showcase">
+          <div class="feature-showcase-icon" id="featureShowcaseIcon">⚔️</div>
+          <div>
+            <div class="feature-showcase-title" id="featureShowcaseTitle">실시간 보스타임 브리핑</div>
+            <div class="feature-showcase-desc" id="featureShowcaseDesc">젠 타이머 자동 카운트다운과 채팅방 알림 연동</div>
+          </div>
+        </div>
+
         <div class="auto-progress-bar-wrap">
           <div class="auto-progress-bar-fill" id="autoUpdateProgressFill"></div>
         </div>
         <div class="d-flex justify-content-between text-secondary" style="font-size: 0.7rem;">
-          <span>진행 상태</span>
+          <span id="autoUpdatePhaseLabel">패치 다운로드 및 압축 준비</span>
           <span id="autoUpdatePercentText" style="color: #fee500; font-weight: 700;">0%</span>
         </div>
       </div>
 
-      <!-- 상태 2: 다운로드 완료 시 (대표님 1안 문구 적용) -->
+      <!-- 상태 2: 다운로드 및 준비 완료 시 -->
       <div id="autoUpdateReadyView" style="display: none;">
         <h5 class="fw-bold mb-2" style="font-size: 1.1rem; color: #ffffff;">최신 버전 업데이트 완료</h5>
         <p class="text-secondary small mb-3" style="font-size: 0.78rem; line-height: 1.5; word-break: keep-all;">
@@ -756,6 +859,23 @@
   </div>
 
   <script>
+    // 윈도우 창 제어 커스텀 브릿지 호출 함수
+    function handleWinMinimize() {
+      if (window.electronAPI && typeof window.electronAPI.minimizeWindow === 'function') {
+        window.electronAPI.minimizeWindow();
+      }
+    }
+    function handleWinMaximize() {
+      if (window.electronAPI && typeof window.electronAPI.maximizeWindow === 'function') {
+        window.electronAPI.maximizeWindow();
+      }
+    }
+    function handleWinClose() {
+      if (window.electronAPI && typeof window.electronAPI.closeWindow === 'function') {
+        window.electronAPI.closeWindow();
+      }
+    }
+
     function openProfileEditModal() {
       var modal = document.getElementById("modalProfileEdit");
       if (modal) modal.style.display = "flex";
@@ -1193,13 +1313,59 @@
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 
-  <!-- [Electron 연동] 자동 업데이트 실시간 제어 스크립트 -->
+  <!-- ========================================================
+       ⚡ [Electron 연동] 자동 업데이트 실시간 롤링 & 즉각 실행 제어
+       ======================================================== -->
   <script>
+    // 기능 안내 롤링 카드 데이터
+    const RAIDON_FEATURES = [
+      {
+        icon: "⚔️",
+        title: "실시간 보스타임 브리핑",
+        desc: "젠 타이머 카운트다운과 채팅방 원클릭 브리핑"
+      },
+      {
+        icon: "💰",
+        title: "투명한 분배 및 정산",
+        desc: "보스 토벌 참여자 기록 및 길드 금고 자동화"
+      },
+      {
+        icon: "💬",
+        title: "길드 전용 고성능 메신저",
+        desc: "카카오톡 스타일 다크 모드와 1:1 비밀 소통"
+      }
+    ];
+
+    let featureRollingTimer = null;
+    let currentFeatureIndex = 0;
+
+    function startFeatureShowcase() {
+      if (featureRollingTimer) return;
+      featureRollingTimer = setInterval(() => {
+        currentFeatureIndex = (currentFeatureIndex + 1) % RAIDON_FEATURES.length;
+        const item = RAIDON_FEATURES[currentFeatureIndex];
+        const iconElem = document.getElementById("featureShowcaseIcon");
+        const titleElem = document.getElementById("featureShowcaseTitle");
+        const descElem = document.getElementById("featureShowcaseDesc");
+        if (iconElem) iconElem.innerText = item.icon;
+        if (titleElem) titleElem.innerText = item.title;
+        if (descElem) descElem.innerText = item.desc;
+      }, 2500);
+    }
+
+    function stopFeatureShowcase() {
+      if (featureRollingTimer) {
+        clearInterval(featureRollingTimer);
+        featureRollingTimer = null;
+      }
+    }
+
+    // 재시작 버튼 클릭 시 즉각적인 시각 피드백 후 0.4초 만에 교체 실행
     function executeRestartAppNow() {
-      var btn = document.getElementById("btnExecuteRestartNow");
+      const btn = document.getElementById("btnExecuteRestartNow");
       if (btn) {
         btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>최신 버전으로 교체 중...';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>최신 버전으로 즉시 교체 구동 중...';
       }
 
       setTimeout(function() {
@@ -1211,6 +1377,39 @@
       }, 400);
     }
 
+    // 2단 방 제목 파싱 및 렌더링 헬퍼 (대괄호 태그 분리)
+    function updateChatRoomHeaderTitle(fullTitle, memberCount) {
+      const subElem = document.getElementById("chatRoomServerSub");
+      const titleElem = document.getElementById("chatRoomTitle");
+      const countElem = document.getElementById("roomMemberCountText");
+
+      if (countElem && memberCount !== undefined) {
+        countElem.innerText = memberCount;
+      }
+
+      if (!fullTitle) return;
+
+      const tagMatch = fullTitle.match(/^(\[[^\]]+\])\s*(.*)$/);
+      if (tagMatch) {
+        if (subElem) {
+          subElem.innerText = tagMatch[1]; // 예: [이클립스]
+          subElem.style.display = "block";
+        }
+        if (titleElem) {
+          titleElem.innerText = tagMatch[2] || fullTitle; // 예: 불편한사람들
+        }
+      } else {
+        if (subElem) {
+          subElem.style.display = "none";
+        }
+        if (titleElem) {
+          titleElem.innerText = fullTitle;
+        }
+      }
+    }
+    window.updateChatRoomHeaderTitle = updateChatRoomHeaderTitle;
+
+    // Electron 자동 업데이트 리스너 등록
     (function setupDesktopAutoUpdateListener() {
       if (!window.electronAPI) return;
 
@@ -1219,18 +1418,31 @@
       const readyView = document.getElementById("autoUpdateReadyView");
       const fillBar = document.getElementById("autoUpdateProgressFill");
       const percentText = document.getElementById("autoUpdatePercentText");
+      const statusText = document.getElementById("autoUpdateStatusText");
+      const phaseLabel = document.getElementById("autoUpdatePhaseLabel");
 
-      // 1. 다운로드 진행률 수신 (게이지 바 채우기)
+      // 1. 다운로드 진행률 수신 (게이지 바 및 설치 사전 준비 시각화)
       window.electronAPI.onUpdateProgress((percent) => {
         if (modal) modal.style.display = "flex";
         if (downloadingView) downloadingView.style.display = "block";
         if (readyView) readyView.style.display = "none";
         if (fillBar) fillBar.style.width = percent + "%";
         if (percentText) percentText.innerText = percent + "%";
+
+        startFeatureShowcase();
+
+        if (percent >= 90) {
+          if (statusText) statusText.innerText = "새 버전 압축 해제 및 무인 교체 준비 완료 중...";
+          if (phaseLabel) phaseLabel.innerText = "사전 교체 준비 완료 중";
+        } else {
+          if (statusText) statusText.innerText = "최신 패치를 다운로드하고 있습니다.";
+          if (phaseLabel) phaseLabel.innerText = "패치 다운로드 및 압축 준비";
+        }
       });
 
-      // 2. 다운로드 완료 수신 (대표님 1안 문구 모달 노출)
+      // 2. 다운로드 및 교체 준비 완료 수신 (대표님 1안 모달 노출)
       window.electronAPI.onUpdateDownloaded(() => {
+        stopFeatureShowcase();
         if (modal) modal.style.display = "flex";
         if (downloadingView) downloadingView.style.display = "none";
         if (readyView) readyView.style.display = "block";
