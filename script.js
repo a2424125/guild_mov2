@@ -8,7 +8,7 @@ var cachedMemberList = [];
 var myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
 var myCurrentPin = localStorage.getItem("guild_my_pin") || "";
 var myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
-var myCurrentClass = localStorage.getItem("guild_my_class") || "미설정";
+var myCurrentClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
 var deferredPrompt = null;
 var kakaoToastTimer = null;
 var pendingOptimisticMessages = [];
@@ -176,7 +176,7 @@ async function initApp() {
 
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
-  myCurrentClass = localStorage.getItem("guild_my_class") || "직업 미지정";
+  myCurrentClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
   // 시스템 공지 및 FAQ 데이터 백그라운드 사전 로드
@@ -225,6 +225,9 @@ async function initApp() {
   updateProfileUI(myCurrentNick);
   if (typeof window.loadMainTabRoomsList === 'function') {
     window.loadMainTabRoomsList();
+  }
+  if (typeof window.loadMainTabFriendsList === 'function') {
+    window.loadMainTabFriendsList();
   }
   if (myCurrentPin === "000000" || myCurrentPin === "0000") {
     setTimeout(() => {
@@ -286,6 +289,15 @@ async function refreshMyRoleFromServer() {
       const liveRole = (rows[0].role || "일반").trim();
       localStorage.setItem("guild_my_role", liveRole);
 
+      if (rows[0].job_class) {
+        myCurrentClass = rows[0].job_class;
+        localStorage.setItem("guild_my_class", myCurrentClass);
+      }
+      if (rows[0].avatar) {
+        myCurrentAvatar = rows[0].avatar;
+        localStorage.setItem("guild_my_avatar", myCurrentAvatar);
+      }
+
       if (liveRole === "길드장" || liveRole === "길마" || liveRole === "슈퍼관리자") {
         sessionStorage.setItem("admin_auth", "true");
         sessionStorage.setItem("admin_role", "super");
@@ -299,6 +311,7 @@ async function refreshMyRoleFromServer() {
         sessionStorage.removeItem("admin_auth");
         sessionStorage.removeItem("admin_role");
       }
+      updateProfileUI(nick);
     }
   } catch (e) {}
 }
@@ -324,6 +337,8 @@ function listenRealtimeRoleUpdates() {
           if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
           if (typeof window.updateRoleBadge === "function") window.updateRoleBadge();
         });
+      } else {
+        if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
       }
     })
     .subscribe();
@@ -465,6 +480,94 @@ function getRolePriority(role) {
 }
 
 // --------------------------------------------------------
+// 2-B. ⭐️ [친구 탭 길드원 목록 렌더링 - 나 제외 & 직업 아바타 연동]
+// --------------------------------------------------------
+function getJobAvatarClass(jobClass) {
+  const text = String(jobClass || "");
+  if (text.includes("전사") || text.includes("⚔️")) return "avatar-warrior";
+  if (text.includes("궁수") || text.includes("🏹")) return "avatar-archer";
+  if (text.includes("마법사") || text.includes("🪄")) return "avatar-mage";
+  if (text.includes("탱커") || text.includes("🛡️")) return "avatar-tanker";
+  if (text.includes("힐러") || text.includes("🌿")) return "avatar-healer";
+  if (text.includes("암살자") || text.includes("🥷")) return "avatar-assassin";
+  if (text.includes("길드장") || text.includes("👑")) return "avatar-master";
+  return "avatar-default";
+}
+
+window.loadMainTabFriendsList = async function() {
+  const container = document.getElementById("mainTabFriendsList");
+  const countBadge = document.getElementById("mainTabMemberCount");
+  if (!container) return;
+
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
+
+  try {
+    if (!cachedMemberList || cachedMemberList.length === 0) {
+      await window.loadGuildMembersData();
+    }
+
+    // ⭐️ [핵심] 최상단에 내 프로필이 있으므로 친구 목록에서는 본인(myNick)을 완벽히 제외
+    const friendsOnly = (cachedMemberList || []).filter(m => {
+      const name = m.nickname || m.name || "";
+      return name && name !== myNick;
+    });
+
+    if (countBadge) {
+      countBadge.innerText = String(friendsOnly.length);
+    }
+
+    if (friendsOnly.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-5 text-secondary" style="font-size: 0.8rem;">
+          <i class="fa-solid fa-user-group mb-2 d-block" style="font-size: 1.8rem; color: #cbd5e1;"></i>
+          아직 다른 길드원이 없습니다.<br>초대 코드로 길드원을 초대해 보세요!
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = friendsOnly.map(m => {
+      const name = m.nickname || m.name || "길드원";
+      const role = (m.role || "일반").trim();
+      const jobClass = m.job_class || m.class_name || "직업 미설정";
+      const avatarIcon = m.avatar || (jobClass.split(" ")[0]) || "👤";
+      const avatarBgClass = getJobAvatarClass(jobClass);
+
+      let roleBadgeHtml = '';
+      if (role === "길드장" || role === "길마" || role === "슈퍼관리자") {
+        roleBadgeHtml = '<span class="badge-master-pill">길마</span>';
+      } else if (role === "부길드장" || role === "부길마") {
+        roleBadgeHtml = '<span class="badge-submaster-pill">부길마</span>';
+      } else if (role === "정예") {
+        roleBadgeHtml = '<span class="badge-elite-pill">정예</span>';
+      }
+
+      return `
+        <div class="friend-item-card" onclick="openMemberProfileCard('${escapeHtmlText(name)}', '${avatarIcon}', '${escapeHtmlText(jobClass)}', '${escapeHtmlText(role)}')">
+          <div class="friend-avatar ${avatarBgClass}">
+            <span>${avatarIcon}</span>
+          </div>
+          <div class="room-content-box">
+            <div class="d-flex align-items-center gap-1">
+              ${roleBadgeHtml}
+              <span class="room-name-text">${escapeHtmlText(name)}</span>
+            </div>
+            <p class="class-desc-text m-0">${escapeHtmlText(jobClass)}</p>
+          </div>
+          <button type="button" class="btn-direct-chat-pill" onclick="event.stopPropagation(); startDirectChatWith('${escapeHtmlText(name)}');">
+            <i class="fa-solid fa-comment-dots"></i> 1:1 대화
+          </button>
+        </div>
+      `;
+    }).join("");
+
+  } catch (err) {
+    container.innerHTML = `<div class="text-danger small text-center py-4">길드원 목록 로드 실패: ${err.message}</div>`;
+  }
+};
+
+// --------------------------------------------------------
 // 3. 서랍(드로어) 및 프로필 편집 모달 제어
 // --------------------------------------------------------
 function toggleMenuDrawer(isOpen) {
@@ -590,43 +693,61 @@ function checkBackdropState() {
 }
 
 window.openProfileEditModal = function openProfileEditModal() {
-  document.getElementById("modalProfileEdit").style.display = "flex";
+  const m = document.getElementById("modalProfileEdit");
+  if (m) m.style.display = "flex";
 };
 window.closeProfileEditModal = function closeProfileEditModal() {
-  document.getElementById("modalProfileEdit").style.display = "none";
+  const m = document.getElementById("modalProfileEdit");
+  if (m) m.style.display = "none";
 };
 
+// ⭐️ [직업 선택 즉시 동기화 보강] 상단 프로필 및 친구 탭 실시간 동시 반영
 async function selectClassProfile(icon, className) {
   myCurrentAvatar = icon;
   myCurrentClass = `${icon} ${className}`;
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   
   localStorage.setItem("guild_my_avatar", icon);
   localStorage.setItem("guild_my_class", myCurrentClass);
 
-  const aIcon = document.getElementById("sidebarAvatarIcon");
-  const uClass = document.getElementById("sidebarUserClassText");
-  if (aIcon) aIcon.innerText = icon;
-  if (uClass) uClass.innerText = myCurrentClass;
+  // 로컬 화면 최상단 프로필 즉시 갱신
+  updateProfileUI(myNick);
 
-  if (myCurrentNick) {
+  // 캐시된 목록 내 본인 데이터도 즉시 동기화
+  if (cachedMemberList && Array.isArray(cachedMemberList)) {
+    const me = cachedMemberList.find(m => (m.name === myNick || m.nickname === myNick));
+    if (me) {
+      me.job_class = myCurrentClass;
+      me.avatar = icon;
+    }
+  }
+
+  // 친구 목록 다시 그려주기
+  if (typeof window.loadMainTabFriendsList === "function") {
+    window.loadMainTabFriendsList();
+  }
+
+  if (myNick) {
     try {
-      await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+      await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(myNick)}`, "PATCH", {
         job_class: myCurrentClass,
         avatar: icon
       });
     } catch (e) {
       try {
-        await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(myCurrentNick)}`, "PATCH", {
+        await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(myNick)}`, "PATCH", {
           job_class: myCurrentClass,
           avatar: icon
         });
       } catch (e2) {}
     }
   }
+
   closeProfileEditModal();
   showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
 }
+window.selectClassProfile = selectClassProfile;
 
 // --------------------------------------------------------
 // 4. 스마트 길드 로그인 / 로그아웃 / 초기 비밀번호 필수 변경
@@ -908,7 +1029,7 @@ async function executeGuildLogin(forcedGuildId = null) {
     m.style.display = "none";
   });
 
-  // ⭐️ [중요] 웰컴 뷰를 숨기고 대기방 뷰를 깨끗하게 활성화 (배경 겹침 완전 해결)
+  // 웰컴 뷰 숨김 & 메인 대기방 뷰 활성화
   const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
   if (welcomeView) welcomeView.style.display = "none";
@@ -1035,7 +1156,11 @@ window.updateProfileUI = function(nick) {
   const tabClass = document.getElementById("mainTabMyClass");
 
   if (tabNick) tabNick.innerText = myCurrentNick || "내 프로필";
-  if (tabAvatar) tabAvatar.innerText = myCurrentAvatar;
+  if (tabAvatar) {
+    tabAvatar.innerText = myCurrentAvatar;
+    // 아바타 배경 클래스도 최신 직업에 맞춰 실시간 갱신
+    tabAvatar.className = "room-avatar-large " + getJobAvatarClass(myCurrentClass);
+  }
   if (tabClass) tabClass.innerText = myCurrentClass;
 };
 function updateProfileUI(nick) { window.updateProfileUI(nick); }
