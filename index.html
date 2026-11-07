@@ -39,7 +39,7 @@
         }
       } catch (e) {}
 
-      // ⭐️ 화면이 렌더링되기도 전 0.001초 시점에 Electron 창 크기 및 트레이 상태 1차 동기화
+      // 화면이 렌더링되기도 전 0.001초 시점에 Electron 창 크기 및 트레이 상태 1차 동기화
       try {
         var isLogged = !!localStorage.getItem("guild_my_nickname");
         if (window.electronAPI) {
@@ -166,18 +166,18 @@
       z-index: 10;
     }
 
-    /* 화이트 글래스모피즘 카드 */
+    /* 화이트 글래스모피즘 카드: 탁한 번짐을 없애고 맑고 단정한 섀도우 적용 */
     .raidon-hero-dark-card {
       width: 100%;
       max-width: 338px;
       background: rgba(255, 255, 255, 0.94) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
       border: 1.5px solid #ffffff !important;
       border-radius: 26px !important;
       padding: 44px 20px 24px 20px !important;
       text-align: center;
-      box-shadow: 0 16px 40px rgba(71, 85, 105, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+      box-shadow: 0 12px 30px rgba(100, 116, 139, 0.09), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
       position: relative;
       color: #1e293b;
       margin-top: 36px;
@@ -240,10 +240,10 @@
       border-color: #f59e0b;
       color: #0f172a;
       transform: translateY(-1.5px);
-      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.2);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
     }
 
-    /* 마우스 오버 3D 액션 버튼 */
+    /* 마우스 오버 3D 액션 버튼: 과한 가우시안 블러를 걷어내고 맑고 세련된 소프트 섀도우 적용 */
     .btn-action-hero {
       width: 100%;
       height: 48px;
@@ -256,7 +256,7 @@
       justify-content: space-between;
       padding: 0 16px;
       cursor: pointer;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       user-select: none;
       outline: none;
@@ -265,39 +265,43 @@
       transform: scale(0.98) !important;
     }
 
+    /* 1. 노란색 로그인 버튼 */
     .btn-hero-yellow {
       background: linear-gradient(180deg, #fee500 0%, #fad000 100%);
       color: #191919;
-      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.45);
+      box-shadow: 0 2px 6px rgba(234, 179, 8, 0.25);
     }
     .btn-hero-yellow:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(250, 204, 21, 0.65), 0 0 14px rgba(254, 229, 0, 0.4);
+      transform: translateY(-1.5px);
+      box-shadow: 0 5px 14px rgba(234, 179, 8, 0.32);
       background: linear-gradient(180deg, #fff04d 0%, #fee500 100%);
     }
 
+    /* 2. 파란색 초대코드 가입 버튼 */
     .btn-hero-blue {
       background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
       color: #ffffff;
-      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.35);
+      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.22);
     }
     .btn-hero-blue:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(14, 165, 233, 0.55);
+      transform: translateY(-1.5px);
+      box-shadow: 0 5px 14px rgba(14, 165, 233, 0.3);
       background: linear-gradient(180deg, #60a5fa 0%, #38bdf8 100%);
     }
 
+    /* 3. 살구색 라이선스 개설 버튼: 과도한 주황색 멍 블러 완전 제거 */
     .btn-hero-dark-outline {
       background: linear-gradient(180deg, #fed7aa 0%, #fdba74 100%);
       color: #431407;
-      box-shadow: 0 4px 14px rgba(251, 146, 60, 0.25);
+      box-shadow: 0 2px 6px rgba(251, 146, 60, 0.16);
     }
     .btn-hero-dark-outline:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(251, 146, 60, 0.45);
+      transform: translateY(-1.5px);
+      box-shadow: 0 5px 14px rgba(249, 115, 22, 0.22);
       background: linear-gradient(180deg, #ffedd5 0%, #fed7aa 100%);
     }
 
+    /* 4. 하단 텍스트 링크 */
     .btn-hero-text-link {
       background: transparent;
       border: none;
@@ -1332,7 +1336,7 @@
       }
     }
     function handleWinMaximize() {
-      // ⭐️ 로그인 화면일 때는 창 최대화 차단
+      // 로그인 화면일 때는 창 최대화 차단
       if (document.body.classList.contains("is-login-gateway")) return;
       if (window.electronAPI && typeof window.electronAPI.maximizeWindow === 'function') {
         window.electronAPI.maximizeWindow();
@@ -1407,7 +1411,7 @@
       location.reload();
     }
 
-    // ⭐️ 로그인/비로그인 전환 시 창 크기 고정 및 트레이 상태 동기화 함수
+    // 로그인/비로그인 전환 시 창 크기 고정 및 트레이 상태 동기화 함수
     function applyWindowMode(isLogged) {
       if (isLogged) {
         document.body.classList.remove("is-login-gateway");
@@ -2043,7 +2047,7 @@
         });
       }
 
-      // ⭐️ 트레이에서 [로그인] 클릭 시
+      // 트레이에서 [로그인] 클릭 시
       if (typeof window.electronAPI.onTrayLogin === 'function') {
         window.electronAPI.onTrayLogin(() => {
           ensureWelcomeGatewayVisible();
@@ -2051,7 +2055,7 @@
         });
       }
 
-      // ⭐️ 트레이에서 [로그아웃] 클릭 시
+      // 트레이에서 [로그아웃] 클릭 시
       if (typeof window.electronAPI.onTrayLogout === 'function') {
         window.electronAPI.onTrayLogout(() => {
           if (typeof window.handleUserLogout === 'function') {
