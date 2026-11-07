@@ -942,15 +942,15 @@ body.theme-dark .records-report-card .rec-date-badge {
   box-sizing: border-box !important;
   text-decoration: none !important;
   user-select: none !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.01) !important;
 }
 
 .chat-room-card:hover,
 .friend-item-card:hover {
   background: #ffffff !important;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12) !important;
-  transform: translateY(-1.5px) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  transform: translateY(-1px) !important;
 }
 body.theme-dark .chat-room-card:hover,
 body.theme-dark .friend-item-card:hover {
@@ -960,54 +960,60 @@ body.theme-dark .friend-item-card:hover {
   transform: translateY(-1.5px) !important;
 }
 
-/* 내 프로필 카드 (골드 포인트) */
+/* ⭐️ [내 프로필 카드] 과한 노란 테두리 걷어내고 세련된 화이트 플랫 카드로 개편 */
 #tabFriendsContent > .chat-room-card,
 #tabFriendsContent .my-profile-card {
-  margin: 10px 12px 12px 12px !important;
+  margin: 10px 12px 14px 12px !important;
   border-radius: 16px !important;
-  border: 1.5px solid rgba(254, 229, 0, 0.75) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
   background: #ffffff !important;
-  padding: 12px 15px !important;
-  min-height: 60px !important;
-  box-shadow: 0 4px 12px rgba(254, 229, 0, 0.15) !important;
+  padding: 12px 16px !important;
+  min-height: 64px !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03), 0 1px 3px rgba(0, 0, 0, 0.02) !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 body.theme-dark #tabFriendsContent > .chat-room-card,
 body.theme-dark #tabFriendsContent .my-profile-card {
   background: #18202c !important;
-  border-color: rgba(254, 229, 0, 0.4) !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid #283446 !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
 }
 #tabFriendsContent > .chat-room-card:hover,
 #tabFriendsContent .my-profile-card:hover {
-  box-shadow: 0 6px 18px rgba(254, 229, 0, 0.28) !important;
-  transform: translateY(-1.5px) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06) !important;
+  transform: translateY(-1px) !important;
+}
+body.theme-dark #tabFriendsContent > .chat-room-card:hover,
+body.theme-dark #tabFriendsContent .my-profile-card:hover {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5) !important;
 }
 
 #mainTabFriendsList .friend-item-card {
   border-radius: 14px !important;
-  margin: 7px 12px !important;
+  margin: 6px 12px !important;
   border: 1px solid var(--main-card-border) !important;
   background: var(--main-card-bg) !important;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02) !important;
 }
 #mainTabFriendsList .friend-item-card:hover {
   background: #ffffff !important;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.12) !important;
-  transform: translateY(-1.5px) !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-1px) !important;
 }
 
 /* ========================================================
-   ✨ [직업별 원형 그라데이션 아바타 시스템 (용량 0KB)]
+   ✨ [직업별 원형 그라데이션 아바타 시스템 (소프트 프리미엄 톤)]
    ======================================================== */
 .room-avatar-large,
 .friend-avatar {
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px !important;
-  max-width: 40px !important;
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
   border-radius: 14px !important;
   display: flex !important;
   align-items: center !important;
@@ -1015,36 +1021,36 @@ body.theme-dark #tabFriendsContent .my-profile-card {
   font-size: 1.25rem !important;
   flex-shrink: 0 !important;
   color: #ffffff !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
   border: none !important;
   transition: transform 0.15s ease !important;
 }
 
-/* ⚔️ 전사: 강렬한 크림슨 레드 그라데이션 */
+/* ⚔️ 전사: 강렬한 크림슨 레드 */
 .avatar-warrior {
-  background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%) !important;
+  background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%) !important;
 }
-/* 🏹 궁수: 날렵한 에메랄드 그린 그라데이션 */
+/* 🏹 궁수: 날렵한 에메랄드 그린 */
 .avatar-archer {
   background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
 }
-/* 🪄 마법사: 신비로운 바이올렛 퍼플 그라데이션 */
+/* 🪄 마법사: 신비로운 바이올렛 퍼플 */
 .avatar-mage {
   background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%) !important;
 }
-/* 🛡️ 탱커: 단단한 사파이어 블루 그라데이션 */
+/* 🛡️ 탱커: 촌스러운 원색을 걷어내고 깊이감 있는 사파이어 블루 */
 .avatar-tanker {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
 }
-/* 🌿 힐러: 부드러운 민트/시안 그라데이션 */
+/* 🌿 힐러: 부드러운 민트/시안 */
 .avatar-healer {
   background: linear-gradient(135deg, #06b6d4 0%, #0e7490 100%) !important;
 }
-/* 🥷 암살자: 다크 슬레이트 & 차콜 그라데이션 */
+/* 🥷 암살자: 다크 슬레이트 & 차콜 */
 .avatar-assassin {
   background: linear-gradient(135deg, #475569 0%, #0f172a 100%) !important;
 }
-/* 👑 길드장: 화려한 골드 옐로우 그라데이션 */
+/* 👑 길드장: 고급스러운 골드 앰버 */
 .avatar-master {
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
 }
@@ -1053,30 +1059,33 @@ body.theme-dark #tabFriendsContent .my-profile-card {
   background: linear-gradient(135deg, #64748b 0%, #475569 100%) !important;
 }
 
-/* 1:1 대화 알약형 소프트 버튼 */
+/* 1:1 대화 알약형 소프트 버튼: 탁한 색상 제거 및 소프트 골드 캡슐화 */
 .btn-direct-chat-pill {
-  background: rgba(254, 229, 0, 0.18) !important;
-  border: 1px solid rgba(234, 179, 8, 0.5) !important;
-  color: #854d0e !important;
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  color: #92400e !important;
   font-size: 0.72rem !important;
   font-weight: 700 !important;
-  padding: 5px 10px !important;
+  padding: 4px 11px !important;
   border-radius: 20px !important;
   cursor: pointer !important;
   display: inline-flex !important;
   align-items: center !important;
+  gap: 4px !important;
   transition: all 0.15s ease !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
 }
 body.theme-dark .btn-direct-chat-pill {
-  background: rgba(254, 229, 0, 0.12) !important;
-  border-color: rgba(254, 229, 0, 0.35) !important;
+  background: rgba(254, 229, 0, 0.1) !important;
+  border-color: rgba(254, 229, 0, 0.25) !important;
   color: #facc15 !important;
 }
 .btn-direct-chat-pill:hover {
   background: #fee500 !important;
+  border-color: #f59e0b !important;
   color: #191919 !important;
-  transform: scale(1.03) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 3px 8px rgba(254, 229, 0, 0.3) !important;
 }
 
 /* 직책 뱃지 디자인 강화 */
