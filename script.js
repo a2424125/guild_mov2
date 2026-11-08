@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 마우스 휠 줌/드래그 사진 뷰어 / OS 트레이 알림 / 1 숫자 보존 / 실시간 스트림
+// 마우스 휠 줌/드래그 사진 뷰어 / OS 트레이 알림 / 1 숫자 보존 / 독립 창 완벽 바인딩
 // ========================================================
 
 var supabaseClient = null;
@@ -239,8 +239,18 @@ async function initApp() {
 
   loadSaasGlobalNoticeAndFaq();
 
+  // ⭐️ [핵심] URL 파라미터(open_room_id) 즉시 파싱 및 팝업 모드 확정
   const urlParams = new URLSearchParams(window.location.search);
   const isPopupMode = urlParams.has('open_room_id');
+  const popupRoomId = urlParams.get('open_room_id');
+  const popupRoomTitle = urlParams.get('open_room_title');
+  const popupRoomType = urlParams.get('open_room_type');
+
+  if (isPopupMode && popupRoomId) {
+    window.currentActiveRoomId = (popupRoomId === "public" || popupRoomId === "default_public") ? "default_public" : popupRoomId;
+    window.currentActiveRoomType = popupRoomType || (window.currentActiveRoomId.includes("-") ? "direct" : "public");
+    window.currentActiveRoomTitle = popupRoomTitle || "대화방";
+  }
 
   const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
@@ -263,6 +273,9 @@ async function initApp() {
     if (chatView) chatView.style.display = "flex";
     document.body.classList.remove("in-main-tabs");
     document.body.classList.add("in-chat-room");
+
+    const tElem = document.getElementById("chatRoomTitle");
+    if (tElem && popupRoomTitle) tElem.innerText = popupRoomTitle;
   } else {
     if (welcomeView) welcomeView.style.display = "none";
     if (mainTabs) mainTabs.style.display = "flex";
@@ -290,18 +303,10 @@ async function initApp() {
   }
 
   updateProfileUI(myCurrentNick);
-  if (!isPopupMode) {
-    if (typeof window.loadMainTabRoomsList === 'function') window.loadMainTabRoomsList();
-    if (typeof window.loadMainTabFriendsList === 'function') window.loadMainTabFriendsList();
-  }
-  if (myCurrentPin === "000000" || myCurrentPin === "0000") {
-    setTimeout(() => {
-      openForceChangePinModal();
-    }, 300);
-  }
 
-  // ⭐️ 독립 대화방 팝업 진입 시 입력창 잠금 강제 해제 및 즉시 포커스
+  // ⭐️ 팝업 모드일 때는 즉시 해당 방의 과거 대화 로드 실행
   if (isPopupMode) {
+    await loadPastChatMessages();
     const unlockChatInput = () => {
       const input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
       if (input) {
@@ -317,6 +322,15 @@ async function initApp() {
     setTimeout(unlockChatInput, 50);
     setTimeout(unlockChatInput, 200);
     setTimeout(unlockChatInput, 500);
+  } else {
+    if (typeof window.loadMainTabRoomsList === 'function') window.loadMainTabRoomsList();
+    if (typeof window.loadMainTabFriendsList === 'function') window.loadMainTabFriendsList();
+  }
+
+  if (myCurrentPin === "000000" || myCurrentPin === "0000") {
+    setTimeout(() => {
+      openForceChangePinModal();
+    }, 300);
   }
 }
 
@@ -1432,7 +1446,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 9. 메시지 입력 및 전송
+// 9. ⭐️ [메시지 입력 및 전송 엔진 - 전송/저장 실패 원천 차단]
 // --------------------------------------------------------
 function handleInputState(textarea) {
   if (!textarea) return;
@@ -1461,6 +1475,7 @@ async function handleSendMessage() {
   const text = inputElem.value.trim();
   if (!text) return;
 
+  // 1. 닉네임 유효성 엄격 검증
   if (!myCurrentNick) {
     myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   }
@@ -1470,10 +1485,23 @@ async function handleSendMessage() {
     return;
   }
 
-  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  const rawActiveRoom = window.currentActiveRoomId || "default_public";
-  const targetRoomId = (rawActiveRoom === "public") ? "default_public" : rawActiveRoom;
+  // 2. 방 ID 유효성 확보 (URL 파라미터 백업 검사)
+  let activeRoom = window.currentActiveRoomId;
+  if (!activeRoom) {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      activeRoom = p.get('open_room_id');
+      if (activeRoom) window.currentActiveRoomId = activeRoom;
+    } catch(e) {}
+  }
+  if (!activeRoom || activeRoom === "public") {
+    activeRoom = "default_public";
+    window.currentActiveRoomId = activeRoom;
+  }
 
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+
+  // 3. 입력창 비우기 및 높이 초기화
   inputElem.value = "";
   handleInputState(inputElem);
 
@@ -1481,7 +1509,7 @@ async function handleSendMessage() {
   const optimisticMsg = {
     id: tempId,
     guild_id: currentGid,
-    room_id: targetRoomId,
+    room_id: activeRoom,
     sender_name: myCurrentNick,
     message: text,
     msg_type: "chat",
@@ -1489,16 +1517,22 @@ async function handleSendMessage() {
     created_at: new Date().toISOString()
   };
 
-  pendingOptimisticMessages.push(optimisticMsg);
-  const isConsecutive = (myCurrentNick === lastRenderedSender);
-  renderKakaoChatBubble(optimisticMsg, true, isConsecutive);
-  scrollChatBottom();
-  lastRenderedSender = myCurrentNick;
+  // 4. 화면에 먼저 표시 (렌더링 에러가 나도 통신이 끊기지 않도록 방어)
+  try {
+    pendingOptimisticMessages.push(optimisticMsg);
+    const isConsecutive = (myCurrentNick === lastRenderedSender);
+    renderKakaoChatBubble(optimisticMsg, true, isConsecutive);
+    scrollChatBottom();
+    lastRenderedSender = myCurrentNick;
+  } catch (renderErr) {
+    console.warn("Optimistic bubble render error:", renderErr);
+  }
 
+  // 5. DB 테이블 실제 삽입 (POST 전송 및 에러 가시화)
   try {
     const chatPayload = {
       guild_id: currentGid,
-      room_id: targetRoomId,
+      room_id: activeRoom,
       sender_name: myCurrentNick,
       message: text,
       msg_type: "chat",
@@ -1512,7 +1546,8 @@ async function handleSendMessage() {
       if (rowElem) rowElem.id = "msg_" + realId;
     }
   } catch (err) {
-    showKakaoToast("전송 실패: " + err.message, "❌");
+    console.error("Chat send DB error:", err);
+    showKakaoToast("전송 실패: " + (err.message || "서버 응답 없음"), "❌");
   }
 }
 window.handleSendMessage = handleSendMessage;
