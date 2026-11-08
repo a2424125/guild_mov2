@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 카카오톡 인터페이스 / 스마트 포커스 감지 알림 / 사진 첨부 및 3일 만료 / 실시간 스트림
+// 카카오톡 인터페이스 / 정밀 포커스 읽음 감지 / 1 숫자 완벽 보존 / 실시간 스트림 / 3일 사진 만료
 // ========================================================
 
 var supabaseClient = null;
@@ -14,6 +14,25 @@ var kakaoToastTimer = null;
 var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
 var activeRealtimeChatChannel = null;
+
+// 창 활성화 상태 정밀 추적 변수
+var isWindowCurrentlyFocused = true;
+
+window.addEventListener("focus", function() {
+  isWindowCurrentlyFocused = true;
+  // 창을 다시 클릭해서 활성화했을 때만 현재 열려있는 대화방의 읽음 처리 동기화 실행
+  const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
+  if (isInChatView && window.currentActiveRoomId) {
+    if (typeof window.markRoomAsReadNow === "function") {
+      window.markRoomAsReadNow(window.currentActiveRoomId);
+    }
+    syncCurrentRoomAllUnreadToServer();
+  }
+});
+
+window.addEventListener("blur", function() {
+  isWindowCurrentlyFocused = false;
+});
 
 // --------------------------------------------------------
 // 1. 공통 토스트 및 시간 포맷 유틸리티
@@ -86,19 +105,19 @@ window.formatTime24HourWithDate = formatTime24HourWithDate;
 window.formatKSTChatTime = formatKSTChatTime;
 
 // --------------------------------------------------------
-// 1-B. ⭐️ [스마트 포커스 감지 알림음 및 윈도우 토스트 엔진]
+// 1-B. ⭐️ [알림음 및 윈도우 트레이 알림 엔진 - 확실한 알림 보장]
 // --------------------------------------------------------
-// 현재 사용자가 메신저 창을 직접 보고 있는지 확인하는 함수
-function isUserActivelyViewingChat(msgRoomId) {
-  // 1. 창이 숨겨져 있거나(최소화 등) 브라우저 포커스를 잃은 상태면 안 보고 있는 것으로 판별
-  if (document.hidden || document.visibilityState === 'hidden') return false;
-  if (typeof document.hasFocus === 'function' && !document.hasFocus()) return false;
-
-  // 2. 대화방 뷰가 활성화되어 있지 않으면 안 보고 있는 상태
+function isUserActivelyFocusedOnRoom(msgRoomId) {
+  // 사용자가 창에 포커스를 두고 있고, 숨김(최소화) 상태가 아니어야 함
+  if (!isWindowCurrentlyFocused || document.hidden || document.visibilityState === 'hidden') {
+    return false;
+  }
+  // 대화방 화면이 열려있어야 함
   const chatView = document.getElementById("chatRoomView");
-  if (!chatView || chatView.style.display === 'none') return false;
-
-  // 3. 현재 열려있는 대화방과 메시지가 온 방이 일치하는지 검사
+  if (!chatView || chatView.style.display === 'none') {
+    return false;
+  }
+  // 현재 보고 있는 방과 메시지가 도착한 방이 일치해야 진짜로 보고 있는 것임
   const activeRoom = window.currentActiveRoomId || "default_public";
   const targetRoom = (!msgRoomId || msgRoomId === "public" || msgRoomId === "default_public") ? "default_public" : msgRoomId;
 
@@ -106,12 +125,11 @@ function isUserActivelyViewingChat(msgRoomId) {
 }
 
 window.triggerChatAlarmSound = function(msgRoomId) {
-  // 알림 꺼짐 설정 검사
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
 
-  // 사용자가 이미 해당 대화방을 직접 보고 활성화 중이면 알림음을 울리지 않음
-  if (isUserActivelyViewingChat(msgRoomId)) return;
+  // ⭐️ 내가 대화방 창을 활성화해서 직접 보고 있는 경우에만 소리를 끄고, 그 외(게임 중, 최소화, 대기방)에는 무조건 울림
+  if (isUserActivelyFocusedOnRoom(msgRoomId)) return;
 
   const soundFile = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
   const audioPath = soundFile.startsWith("http") ? soundFile : `/assets/sounds/${soundFile}`;
@@ -144,12 +162,11 @@ function playFallbackChatBeep() {
 }
 
 function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
-  // 알림 꺼짐 설정 검사
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
 
-  // ⭐️ [핵심] 사용자가 대화방 창을 직접 켜놓고 보고 있을 때는 윈도우 트레이 알림을 발생시키지 않음!
-  if (isUserActivelyViewingChat(msgRoomId)) return;
+  // ⭐️ 내가 대화방을 직접 활성화해서 보고 있는 동안에는 트레이 알림 팝업 차단 (그 외 상황에는 무조건 팝업)
+  if (isUserActivelyFocusedOnRoom(msgRoomId)) return;
 
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") {
@@ -157,7 +174,7 @@ function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
       const noti = new Notification(`💬 [${sender}]`, {
         body: msgText || "새 메시지가 도착했습니다.",
         icon: "/favicon.ico",
-        silent: true // 소리는 Audio 태그로 일원화
+        silent: true
       });
       noti.onclick = function() {
         window.focus();
@@ -170,20 +187,6 @@ function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
     Notification.requestPermission();
   }
 }
-
-// 🔔 알림 켜기/끄기 토글 제어 함수
-window.toggleChatNotificationMode = function() {
-  const current = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
-  const next = !current;
-  localStorage.setItem("guild_chat_alarm_enabled", next ? "true" : "false");
-
-  const btn = document.getElementById("btnToggleChatNoti");
-  if (btn) {
-    btn.innerHTML = next ? '<i class="fa-solid fa-bell"></i>' : '<i class="fa-solid fa-bell-slash text-secondary"></i>';
-    btn.title = next ? "알림 끄기" : "알림 켜기";
-  }
-  showKakaoToast(next ? "채팅 알림이 켜졌습니다." : "채팅 알림이 꺼졌습니다.", next ? "🔔" : "🔕");
-};
 
 // --------------------------------------------------------
 // 2. 테마 설정 및 앱 초기화 진입점
@@ -555,7 +558,7 @@ async function loadDrawerPageTimer() {
       const sc = document.createElement("script");
       sc.className = "drawer-dynamic-script";
       if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
-      document.body.appendChild(sc);
+      document.body.appendChild(newScript = sc);
     });
   } catch (e) {
     area.innerHTML = `<div class="text-danger small text-center py-4">로드 실패: ${e.message}</div>`;
@@ -767,7 +770,7 @@ window.updateProfileUI = function(nick) {
 };
 
 // --------------------------------------------------------
-// 5. ⭐️ [실시간 대화 스트림 완벽 동기화 엔진]
+// 5. ⭐️ [실시간 대화 스트림 & 포커스 연동 엔진]
 // --------------------------------------------------------
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
@@ -793,7 +796,7 @@ function listenRealtimeChatMessages() {
       const normalizedMsgRoom = (rawMsgRoom === "public" || rawMsgRoom === "default_public") ? "default_public" : rawMsgRoom;
       const normalizedActiveRoom = (!window.currentActiveRoomId || window.currentActiveRoomId === "public" || window.currentActiveRoomId === "default_public") ? "default_public" : window.currentActiveRoomId;
 
-      // ⭐️ 상대방 메시지 수신 시 알림 트리거 (방 ID 함께 전달하여 포커스 여부 검사)
+      // ⭐️ 알림음 & 윈도우 트레이 알림 (내가 직접 창을 보고 있는 상태가 아니면 무조건 실행)
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         window.triggerChatAlarmSound(normalizedMsgRoom);
         notifyWebDesktopMessage(newMsg.sender_name, (newMsg.msg_type === "image" ? "📷 사진을 보냈습니다." : (newMsg.message || "새 메시지")), normalizedMsgRoom);
@@ -816,8 +819,11 @@ function listenRealtimeChatMessages() {
       const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
       if (!isInChatView || normalizedMsgRoom !== normalizedActiveRoom) return;
 
+      // ⭐️ [버그 원천 차단] 내가 실제로 창을 띄워두고 포커스를 두고 보고 있을 때만 서버에 '읽음'을 전송하여 숫자 1을 지움!
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
-        syncMyReadStatusToServer([newMsg]);
+        if (isUserActivelyFocusedOnRoom(normalizedMsgRoom)) {
+          syncMyReadStatusToServer([newMsg]);
+        }
       }
 
       const optimisticIdx = pendingOptimisticMessages.findIndex(m => 
@@ -870,7 +876,7 @@ function listenRealtimeChatMessages() {
 window.listenRealtimeChatMessages = listenRealtimeChatMessages;
 
 // --------------------------------------------------------
-// 6. 과거 대화 로드
+// 6. 과거 대화 로드 & 창 활성화 시 일괄 읽음 처리
 // --------------------------------------------------------
 async function loadPastChatMessages() {
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
@@ -923,13 +929,30 @@ async function loadPastChatMessages() {
         window.markRoomAsReadNow(activeRoom, finalSorted);
       }
       renderMessageHistoryList(finalSorted);
-      syncMyReadStatusToServer(finalSorted);
+
+      // ⭐️ 대화방 화면에 들어왔고 창이 포커스 상태일 때만 서버 읽음 동기화 실행
+      if (isUserActivelyFocusedOnRoom(activeRoom)) {
+        syncMyReadStatusToServer(finalSorted);
+      }
     }
   } catch (e) {
     console.warn("loadPastChatMessages error:", e);
   }
 }
 window.loadPastChatMessages = loadPastChatMessages;
+
+// 사용자가 창으로 복귀했을 때 현재 대화방의 안 읽은 글들을 일괄 읽음 처리
+async function syncCurrentRoomAllUnreadToServer() {
+  const activeRoom = window.currentActiveRoomId || "default_public";
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const cacheKey = `chat_history_cache_${currentGid}_${activeRoom}`;
+  try {
+    const localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
+    if (localMsgs.length > 0) {
+      syncMyReadStatusToServer(localMsgs);
+    }
+  } catch(e) {}
+}
 
 async function syncMyReadStatusToServer(msgList) {
   if (!myCurrentNick || !Array.isArray(msgList) || msgList.length === 0) return;
@@ -977,7 +1000,7 @@ function renderMessageHistoryList(msgList) {
 }
 
 // --------------------------------------------------------
-// 7. 📸 [사진 첨부 / 클립보드 붙여넣기 / 3일 자동 만료 압축 엔진]
+// 7. 📸 [사진 첨부 / 클립보드 붙여넣기 / 3일 만료 엔진]
 // --------------------------------------------------------
 function bindClipboardImagePaste() {
   const inputElem = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
@@ -1112,7 +1135,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
 
   const readerSet = new Set(Array.isArray(msg.read_members) ? msg.read_members : []);
   if (msg.sender_name) readerSet.add(msg.sender_name);
-  if (myCurrentNick) readerSet.add(myCurrentNick);
+  if (myCurrentNick && isMe) readerSet.add(myCurrentNick);
 
   let unreadCount = isDirect ? (!isMe ? 0 : (readerSet.size >= 2 ? 0 : 1)) : Math.max(0, totalMembers - readerSet.size);
 
