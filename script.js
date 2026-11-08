@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 카카오톡 인터페이스 / 정밀 포커스 읽음 감지 / 1 숫자 완벽 보존 / 실시간 스트림 / 3일 사진 만료
+// 카카오톡 인터페이스 / OS 네이티브 트레이 알림 / 1 숫자 보존 / 3일 사진 만료 / 실시간 스트림
 // ========================================================
 
 var supabaseClient = null;
@@ -20,7 +20,6 @@ var isWindowCurrentlyFocused = true;
 
 window.addEventListener("focus", function() {
   isWindowCurrentlyFocused = true;
-  // 창을 다시 클릭해서 활성화했을 때만 현재 열려있는 대화방의 읽음 처리 동기화 실행
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
   if (isInChatView && window.currentActiveRoomId) {
     if (typeof window.markRoomAsReadNow === "function") {
@@ -105,19 +104,16 @@ window.formatTime24HourWithDate = formatTime24HourWithDate;
 window.formatKSTChatTime = formatKSTChatTime;
 
 // --------------------------------------------------------
-// 1-B. ⭐️ [알림음 및 윈도우 트레이 알림 엔진 - 확실한 알림 보장]
+// 1-B. ⭐️ [윈도우 OS 순정 트레이 알림 & 알림음 엔진]
 // --------------------------------------------------------
 function isUserActivelyFocusedOnRoom(msgRoomId) {
-  // 사용자가 창에 포커스를 두고 있고, 숨김(최소화) 상태가 아니어야 함
   if (!isWindowCurrentlyFocused || document.hidden || document.visibilityState === 'hidden') {
     return false;
   }
-  // 대화방 화면이 열려있어야 함
   const chatView = document.getElementById("chatRoomView");
   if (!chatView || chatView.style.display === 'none') {
     return false;
   }
-  // 현재 보고 있는 방과 메시지가 도착한 방이 일치해야 진짜로 보고 있는 것임
   const activeRoom = window.currentActiveRoomId || "default_public";
   const targetRoom = (!msgRoomId || msgRoomId === "public" || msgRoomId === "default_public") ? "default_public" : msgRoomId;
 
@@ -128,7 +124,6 @@ window.triggerChatAlarmSound = function(msgRoomId) {
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
 
-  // ⭐️ 내가 대화방 창을 활성화해서 직접 보고 있는 경우에만 소리를 끄고, 그 외(게임 중, 최소화, 대기방)에는 무조건 울림
   if (isUserActivelyFocusedOnRoom(msgRoomId)) return;
 
   const soundFile = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
@@ -161,13 +156,21 @@ function playFallbackChatBeep() {
   } catch (e) {}
 }
 
+// ⭐️ [핵심] Electron 네이티브 윈도우 알림 IPC 호출 (100% 확실한 트레이 팝업)
 function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
 
-  // ⭐️ 내가 대화방을 직접 활성화해서 보고 있는 동안에는 트레이 알림 팝업 차단 (그 외 상황에는 무조건 팝업)
+  // 내가 직접 창을 열어보고 있는 상태면 알림 스킵
   if (isUserActivelyFocusedOnRoom(msgRoomId)) return;
 
+  // 1. Electron 데스크톱 앱 환경인 경우: 윈도우 OS 순정 트레이 알림 100% 발송
+  if (window.electronAPI && typeof window.electronAPI.showNativeNotification === 'function') {
+    window.electronAPI.showNativeNotification(`[${sender}]`, msgText || "새 메시지가 도착했습니다.", msgRoomId);
+    return;
+  }
+
+  // 2. 일반 웹 브라우저 환경인 경우: Web Notification API 백업 호출
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") {
     try {
@@ -235,6 +238,10 @@ async function initApp() {
 
   loadSaasGlobalNoticeAndFaq();
 
+  // URL 파라미터로 개별 대화방 팝업으로 뜬 경우 검사
+  const urlParams = new URLSearchParams(window.location.search);
+  const isPopupMode = urlParams.has('open_room_id');
+
   const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
   const chatView = document.getElementById("chatRoomView");
@@ -250,9 +257,17 @@ async function initApp() {
     return;
   }
 
-  if (welcomeView) welcomeView.style.display = "none";
-  if (mainTabs) mainTabs.style.display = "flex";
-  document.body.classList.add("in-main-tabs");
+  if (isPopupMode) {
+    if (welcomeView) welcomeView.style.display = "none";
+    if (mainTabs) mainTabs.style.display = "none";
+    if (chatView) chatView.style.display = "flex";
+    document.body.classList.remove("in-main-tabs");
+    document.body.classList.add("in-chat-room");
+  } else {
+    if (welcomeView) welcomeView.style.display = "none";
+    if (mainTabs) mainTabs.style.display = "flex";
+    document.body.classList.add("in-main-tabs");
+  }
 
   await loadGuildSettings();
   await window.loadGuildMembersData();
@@ -275,11 +290,9 @@ async function initApp() {
   }
 
   updateProfileUI(myCurrentNick);
-  if (typeof window.loadMainTabRoomsList === 'function') {
-    window.loadMainTabRoomsList();
-  }
-  if (typeof window.loadMainTabFriendsList === 'function') {
-    window.loadMainTabFriendsList();
+  if (!isPopupMode) {
+    if (typeof window.loadMainTabRoomsList === 'function') window.loadMainTabRoomsList();
+    if (typeof window.loadMainTabFriendsList === 'function') window.loadMainTabFriendsList();
   }
   if (myCurrentPin === "000000" || myCurrentPin === "0000") {
     setTimeout(() => {
@@ -558,7 +571,7 @@ async function loadDrawerPageTimer() {
       const sc = document.createElement("script");
       sc.className = "drawer-dynamic-script";
       if (s.src) sc.src = s.src; else sc.textContent = s.textContent;
-      document.body.appendChild(newScript = sc);
+      document.body.appendChild(sc);
     });
   } catch (e) {
     area.innerHTML = `<div class="text-danger small text-center py-4">로드 실패: ${e.message}</div>`;
@@ -770,7 +783,7 @@ window.updateProfileUI = function(nick) {
 };
 
 // --------------------------------------------------------
-// 5. ⭐️ [실시간 대화 스트림 & 포커스 연동 엔진]
+// 5. ⭐️ [실시간 대화 스트림 & OS 알림 동기화 엔진]
 // --------------------------------------------------------
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
@@ -796,7 +809,7 @@ function listenRealtimeChatMessages() {
       const normalizedMsgRoom = (rawMsgRoom === "public" || rawMsgRoom === "default_public") ? "default_public" : rawMsgRoom;
       const normalizedActiveRoom = (!window.currentActiveRoomId || window.currentActiveRoomId === "public" || window.currentActiveRoomId === "default_public") ? "default_public" : window.currentActiveRoomId;
 
-      // ⭐️ 알림음 & 윈도우 트레이 알림 (내가 직접 창을 보고 있는 상태가 아니면 무조건 실행)
+      // ⭐️ 알림음 & 윈도우 OS 트레이 알림 (내가 창을 직접 보고 있는 상태가 아니면 100% 실행)
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         window.triggerChatAlarmSound(normalizedMsgRoom);
         notifyWebDesktopMessage(newMsg.sender_name, (newMsg.msg_type === "image" ? "📷 사진을 보냈습니다." : (newMsg.message || "새 메시지")), normalizedMsgRoom);
@@ -819,7 +832,7 @@ function listenRealtimeChatMessages() {
       const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
       if (!isInChatView || normalizedMsgRoom !== normalizedActiveRoom) return;
 
-      // ⭐️ [버그 원천 차단] 내가 실제로 창을 띄워두고 포커스를 두고 보고 있을 때만 서버에 '읽음'을 전송하여 숫자 1을 지움!
+      // ⭐️ 창을 활성화해서 직접 보고 있을 때만 서버에 '읽음'을 전송하여 숫자 1을 지움!
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         if (isUserActivelyFocusedOnRoom(normalizedMsgRoom)) {
           syncMyReadStatusToServer([newMsg]);
@@ -930,7 +943,6 @@ async function loadPastChatMessages() {
       }
       renderMessageHistoryList(finalSorted);
 
-      // ⭐️ 대화방 화면에 들어왔고 창이 포커스 상태일 때만 서버 읽음 동기화 실행
       if (isUserActivelyFocusedOnRoom(activeRoom)) {
         syncMyReadStatusToServer(finalSorted);
       }
@@ -941,7 +953,6 @@ async function loadPastChatMessages() {
 }
 window.loadPastChatMessages = loadPastChatMessages;
 
-// 사용자가 창으로 복귀했을 때 현재 대화방의 안 읽은 글들을 일괄 읽음 처리
 async function syncCurrentRoomAllUnreadToServer() {
   const activeRoom = window.currentActiveRoomId || "default_public";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -1153,7 +1164,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   }
   if (isMe) senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
 
-  // 📷 1. 사진/스크린샷 메시지 렌더링
   if (msg.msg_type === "image" || msg.media_url) {
     const imgContent = msg.media_url 
       ? `<img src="${msg.media_url}" style="max-width: 230px; max-height: 280px; border-radius: 10px; cursor: pointer; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onclick="openImagePreviewModal('${msg.media_url}')" title="클릭하여 확대">`
@@ -1194,7 +1204,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       `;
     }
   }
-  // ⏰ 2. 보스알리미 브리핑 카드
   else if (msg.msg_type === "boss_briefing") {
     html = `
       <div class="chat-item-row other" id="${msgKey}">
@@ -1212,7 +1221,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 💬 3. 내가 보낸 텍스트 메시지
   else if (isMe) {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
@@ -1229,7 +1237,6 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  // 💬 4. 상대방이 보낸 일반 텍스트 메시지
   else {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
