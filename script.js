@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 카카오톡 인터페이스 / 실시간 채팅 스트림 / 스마트 로그인 / 모듈 로더 / 알림음 엔진
+// 카카오톡 인터페이스 / 실시간 채팅 스트림 / 사진 첨부 및 3일 자동 만료 / 스마트 로그인 / 알림 엔진
 // ========================================================
 
 var supabaseClient = null;
@@ -13,9 +13,10 @@ var deferredPrompt = null;
 var kakaoToastTimer = null;
 var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
+var activeRealtimeChatChannel = null;
 
 // --------------------------------------------------------
-// 1. 공통 토스트 및 시간 유틸리티
+// 1. 공통 토스트 및 시간 포맷 유틸리티
 // --------------------------------------------------------
 function showKakaoToast(msg, icon = "💬") {
   const box = document.getElementById("kakaoToastBox");
@@ -24,13 +25,14 @@ function showKakaoToast(msg, icon = "💬") {
   if (!box) return;
 
   box.style.zIndex = "10000010";
-  m.innerText = msg;
-  ic.innerText = icon;
+  if (m) m.innerText = msg;
+  if (ic) ic.innerText = icon;
   box.classList.add("show");
 
   if (kakaoToastTimer) clearTimeout(kakaoToastTimer);
   kakaoToastTimer = setTimeout(() => box.classList.remove("show"), 2600);
 }
+window.showKakaoToast = showKakaoToast;
 
 function formatTime24Hour(dateInput) {
   if (!dateInput) return "";
@@ -84,7 +86,7 @@ window.formatTime24HourWithDate = formatTime24HourWithDate;
 window.formatKSTChatTime = formatKSTChatTime;
 
 // --------------------------------------------------------
-// 1-B. 채팅 알림음(MP3) 및 시스템 푸시 엔진
+// 1-B. 채팅 알림음(MP3) 및 시스템 알림
 // --------------------------------------------------------
 window.triggerChatAlarmSound = function() {
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
@@ -135,7 +137,7 @@ function notifyWebDesktopMessage(sender, msgText) {
 }
 
 // --------------------------------------------------------
-// 2. 테마 설정 및 폰트 스케일 초기화
+// 2. 테마 설정 및 앱 초기화 진입점
 // --------------------------------------------------------
 window.applyAppTheme = function(mode) {
   const theme = mode || localStorage.getItem("guild_theme_mode") || "light";
@@ -179,10 +181,8 @@ async function initApp() {
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
-  // 시스템 공지 및 FAQ 데이터 백그라운드 사전 로드
   loadSaasGlobalNoticeAndFaq();
 
-  // 로그인 상태 분기 처리 (배경 비침 방지: 로그인 전에는 웰컴 화면만 표시)
   const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
   const chatView = document.getElementById("chatRoomView");
@@ -198,7 +198,6 @@ async function initApp() {
     return;
   }
 
-  // 로그인된 경우: 웰컴 뷰 숨김, 대기방 화면 활성화
   if (welcomeView) welcomeView.style.display = "none";
   if (mainTabs) mainTabs.style.display = "flex";
   document.body.classList.add("in-main-tabs");
@@ -210,13 +209,15 @@ async function initApp() {
   if (typeof window.loadBossTimersList === 'function') await window.loadBossTimersList();
   if (typeof window.startLocalBossWatchTimer === 'function') window.startLocalBossWatchTimer();
 
+  // 실시간 채널 구독 시작
   listenRealtimeChatMessages();
   listenRealtimeRoleUpdates();
   if (typeof window.listenRealtimeBossTimers === 'function') window.listenRealtimeBossTimers();
 
   setupPwaInstallation();
   bindMentionInputEvents();
-  cleanupOldChatsBackground();
+  bindClipboardImagePaste();
+  cleanupOldImagesAndChatsBackground();
 
   if ("Notification" in window && Notification.permission === "default") {
     Notification.requestPermission();
@@ -236,7 +237,9 @@ async function initApp() {
   }
 }
 
-// ⚡ [공지 및 FAQ 동적 로더: home.html 기능 흡수]
+// --------------------------------------------------------
+// 2-A. 시스템 공지 및 직책 동기화
+// --------------------------------------------------------
 async function loadSaasGlobalNoticeAndFaq() {
   if (typeof apiRequest !== "function") return;
 
@@ -273,7 +276,6 @@ async function loadSaasGlobalNoticeAndFaq() {
   } catch (e) {}
 }
 
-// ⚡ [실시간 직책 & 세션 동기화: 슈퍼관리자 vs 일반관리자 엄격 분리]
 async function refreshMyRoleFromServer() {
   const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
@@ -317,13 +319,11 @@ async function refreshMyRoleFromServer() {
 }
 window.refreshMyRoleFromServer = refreshMyRoleFromServer;
 
-// ⚡ [Supabase Realtime: 직책 변경 및 권한 설정 스위치 실시간 감지 + 오버레이 강제 갱신]
 function listenRealtimeRoleUpdates() {
   if (!supabaseClient) return;
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   const nick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
 
-  // 1. guild_members 테이블: 직책(role) 실시간 감지
   supabaseClient
     .channel("public:guild_members_roles")
     .on("postgres_changes", { event: "UPDATE", schema: "public", table: "guild_members" }, (payload) => {
@@ -335,51 +335,9 @@ function listenRealtimeRoleUpdates() {
         refreshMyRoleFromServer().then(() => {
           showKakaoToast(`내 직책이 [${payload.new.role || '일반'}] (으)로 실시간 반영되었습니다.`, "🛡️");
           if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
-          if (typeof window.updateRoleBadge === "function") window.updateRoleBadge();
         });
       } else {
         if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
-      }
-    })
-    .subscribe();
-
-  // 2. guild_settings 테이블: 권한 스위치(perm_xxx) 실시간 감지
-  supabaseClient
-    .channel("public:guild_settings_perms")
-    .on("postgres_changes", { event: "*", schema: "public", table: "guild_settings" }, (payload) => {
-      const targetGid = payload.new?.guild_id || payload.old?.guild_id;
-      if (targetGid && targetGid !== currentGid) return;
-
-      const key = payload.new?.key;
-      const val = String(payload.new?.value);
-
-      if (window.currentSettingsMap && key) {
-        window.currentSettingsMap[key] = val;
-      }
-      if (typeof window.loadCurrentSettingsToForm === "function") {
-        window.loadCurrentSettingsToForm();
-      }
-
-      const myRole = (localStorage.getItem("guild_my_role") || "").trim();
-      const adminRole = sessionStorage.getItem("admin_role") || "";
-      const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "길마") || (myRole === "슈퍼관리자");
-      const isNormalAdmin = !isSuper && ((myRole === "부길드장") || (myRole === "부길마") || (myRole === "정예") || (adminRole === "admin") || (adminRole === "elite"));
-
-      if (isNormalAdmin && val === "false") {
-        const overlay = document.getElementById("moduleOverlay");
-        const currentTitle = document.getElementById("overlayNavTitle")?.innerText || "";
-
-        const permToTitleMap = {
-          "perm_finance_input": "길드비용현황",
-          "perm_boss_register": "보스참여등록",
-          "perm_wish_distribute": "분배희망신청",
-          "perm_settle_fund_dist": "정산내역"
-        };
-
-        if (overlay && overlay.style.display === "flex" && permToTitleMap[key] === currentTitle) {
-          window.closeModuleOverlay();
-          showKakaoToast(`[${currentTitle}] 접근 권한이 관리자에 의해 회수되었습니다.`, "⚠️");
-        }
       }
     })
     .subscribe();
@@ -422,20 +380,6 @@ async function loadGuildSettings() {
     if (t2) t2.innerText = dynamicTitle;
     if (t3) t3.innerText = `${dynamicTitle} 로그인`;
     if (t4) t4.innerText = dynamicTitle;
-
-    const res = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
-    if (Array.isArray(res) && res.length > 0) {
-      res.forEach(item => {
-        if (item.key === 'guild_name' && item.value) {
-          const customName = item.value;
-          const fullTitle = gGame ? `[${gGame}] ${customName}` : customName;
-          if (t1 && !window.currentActiveRoomId) t1.innerText = fullTitle;
-          if (t2) t2.innerText = fullTitle;
-          if (t3 && !currentGuild) t3.innerText = `${fullTitle} 로그인`;
-          if (t4 && !currentGuild) t4.innerText = fullTitle;
-        }
-      });
-    }
   } catch (e) {
     console.warn("loadGuildSettings error:", e);
   }
@@ -445,7 +389,6 @@ window.loadGuildMembersData = async function() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
     let members = [];
-
     try {
       members = await apiRequest("guild_members?guild_id=eq." + encodeURIComponent(currentGid) + "&select=*");
     } catch (err) {
@@ -480,95 +423,7 @@ function getRolePriority(role) {
 }
 
 // --------------------------------------------------------
-// 2-B. ⭐️ [친구 탭 길드원 목록 렌더링 - 나 제외 & 직업 아바타 연동]
-// --------------------------------------------------------
-function getJobAvatarClass(jobClass) {
-  const text = String(jobClass || "");
-  if (text.includes("전사") || text.includes("⚔️")) return "avatar-warrior";
-  if (text.includes("궁수") || text.includes("🏹")) return "avatar-archer";
-  if (text.includes("마법사") || text.includes("🪄")) return "avatar-mage";
-  if (text.includes("탱커") || text.includes("🛡️")) return "avatar-tanker";
-  if (text.includes("힐러") || text.includes("🌿")) return "avatar-healer";
-  if (text.includes("암살자") || text.includes("🥷")) return "avatar-assassin";
-  if (text.includes("길드장") || text.includes("👑")) return "avatar-master";
-  return "avatar-default";
-}
-
-window.loadMainTabFriendsList = async function() {
-  const container = document.getElementById("mainTabFriendsList");
-  const countBadge = document.getElementById("mainTabMemberCount");
-  if (!container) return;
-
-  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
-
-  try {
-    if (!cachedMemberList || cachedMemberList.length === 0) {
-      await window.loadGuildMembersData();
-    }
-
-    // ⭐️ [핵심] 최상단에 내 프로필이 있으므로 친구 목록에서는 본인(myNick)을 완벽히 제외
-    const friendsOnly = (cachedMemberList || []).filter(m => {
-      const name = m.nickname || m.name || "";
-      return name && name !== myNick;
-    });
-
-    if (countBadge) {
-      countBadge.innerText = String(friendsOnly.length);
-    }
-
-    if (friendsOnly.length === 0) {
-      container.innerHTML = `
-        <div class="text-center py-5 text-secondary" style="font-size: 0.8rem;">
-          <i class="fa-solid fa-user-group mb-2 d-block" style="font-size: 1.8rem; color: #cbd5e1;"></i>
-          아직 다른 길드원이 없습니다.<br>초대 코드로 길드원을 초대해 보세요!
-        </div>
-      `;
-      return;
-    }
-
-    container.innerHTML = friendsOnly.map(m => {
-      const name = m.nickname || m.name || "길드원";
-      const role = (m.role || "일반").trim();
-      const jobClass = m.job_class || m.class_name || "직업 미설정";
-      const avatarIcon = m.avatar || (jobClass.split(" ")[0]) || "👤";
-      const avatarBgClass = getJobAvatarClass(jobClass);
-
-      let roleBadgeHtml = '';
-      if (role === "길드장" || role === "길마" || role === "슈퍼관리자") {
-        roleBadgeHtml = '<span class="badge-master-pill">길마</span>';
-      } else if (role === "부길드장" || role === "부길마") {
-        roleBadgeHtml = '<span class="badge-submaster-pill">부길마</span>';
-      } else if (role === "정예") {
-        roleBadgeHtml = '<span class="badge-elite-pill">정예</span>';
-      }
-
-      return `
-        <div class="friend-item-card" onclick="openMemberProfileCard('${escapeHtmlText(name)}', '${avatarIcon}', '${escapeHtmlText(jobClass)}', '${escapeHtmlText(role)}')">
-          <div class="friend-avatar ${avatarBgClass}">
-            <span>${avatarIcon}</span>
-          </div>
-          <div class="room-content-box">
-            <div class="d-flex align-items-center gap-1">
-              ${roleBadgeHtml}
-              <span class="room-name-text">${escapeHtmlText(name)}</span>
-            </div>
-            <p class="class-desc-text m-0">${escapeHtmlText(jobClass)}</p>
-          </div>
-          <button type="button" class="btn-direct-chat-pill" onclick="event.stopPropagation(); startDirectChatWith('${escapeHtmlText(name)}');">
-            <i class="fa-solid fa-comment-dots"></i> 1:1 대화
-          </button>
-        </div>
-      `;
-    }).join("");
-
-  } catch (err) {
-    container.innerHTML = `<div class="text-danger small text-center py-4">길드원 목록 로드 실패: ${err.message}</div>`;
-  }
-};
-
-// --------------------------------------------------------
-// 3. 서랍(드로어) 및 프로필 편집 모달 제어
+// 3. 서랍 및 직업 모달 제어
 // --------------------------------------------------------
 function toggleMenuDrawer(isOpen) {
   const drawer = document.getElementById("menuSidebarDrawer");
@@ -634,9 +489,6 @@ async function toggleBossDrawer(isOpen) {
   } else {
     if (drawer) drawer.classList.remove("open");
     checkBackdropState();
-    if (typeof window.__currentModuleCleanup === "function") {
-      window.__currentModuleCleanup();
-    }
   }
 }
 
@@ -692,107 +544,9 @@ function checkBackdropState() {
   if (!isOpen && backdrop) backdrop.classList.remove("show");
 }
 
-window.openProfileEditModal = function openProfileEditModal() {
-  const m = document.getElementById("modalProfileEdit");
-  if (m) m.style.display = "flex";
-};
-window.closeProfileEditModal = function closeProfileEditModal() {
-  const m = document.getElementById("modalProfileEdit");
-  if (m) m.style.display = "none";
-};
-
-// ⭐️ [직업 선택 즉시 동기화 보강] 상단 프로필 및 친구 탭 실시간 동시 반영
-async function selectClassProfile(icon, className) {
-  myCurrentAvatar = icon;
-  myCurrentClass = `${icon} ${className}`;
-  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  const myNick = localStorage.getItem("guild_my_nickname") || myCurrentNick || "";
-  
-  localStorage.setItem("guild_my_avatar", icon);
-  localStorage.setItem("guild_my_class", myCurrentClass);
-
-  // 로컬 화면 최상단 프로필 즉시 갱신
-  updateProfileUI(myNick);
-
-  // 캐시된 목록 내 본인 데이터도 즉시 동기화
-  if (cachedMemberList && Array.isArray(cachedMemberList)) {
-    const me = cachedMemberList.find(m => (m.name === myNick || m.nickname === myNick));
-    if (me) {
-      me.job_class = myCurrentClass;
-      me.avatar = icon;
-    }
-  }
-
-  // 친구 목록 다시 그려주기
-  if (typeof window.loadMainTabFriendsList === "function") {
-    window.loadMainTabFriendsList();
-  }
-
-  if (myNick) {
-    try {
-      await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&name=eq.${encodeURIComponent(myNick)}`, "PATCH", {
-        job_class: myCurrentClass,
-        avatar: icon
-      });
-    } catch (e) {
-      try {
-        await apiRequest(`guild_members?guild_id=eq.${encodeURIComponent(currentGid)}&nickname=eq.${encodeURIComponent(myNick)}`, "PATCH", {
-          job_class: myCurrentClass,
-          avatar: icon
-        });
-      } catch (e2) {}
-    }
-  }
-
-  closeProfileEditModal();
-  showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
-}
-window.selectClassProfile = selectClassProfile;
-
 // --------------------------------------------------------
-// 4. 스마트 길드 로그인 / 로그아웃 / 초기 비밀번호 필수 변경
+// 4. 로그인 / 비밀번호 변경
 // --------------------------------------------------------
-function ensureForceChangePinModalExists() {
-  let modal = document.getElementById("modalForceChangePin");
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "modalForceChangePin";
-    modal.className = "kakao-modal-backdrop";
-    modal.style.display = "none";
-    modal.style.zIndex = "10000005";
-    document.body.appendChild(modal);
-  }
-
-  modal.innerHTML = `
-    <div class="kakao-modal-card" style="max-width: 320px;">
-      <div class="mb-2" style="font-size: 2rem;">🔐</div>
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">비밀번호를 변경하세요</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.74rem; line-height: 1.45;">
-        현재 초기 비밀번호(<strong>000000</strong>)를 사용 중입니다.<br>보안을 위해 본인만의 새로운 6자리 비밀번호로 변경해야 메신저를 이용할 수 있습니다.
-      </p>
-      <input type="password" id="forceNewPinInput" class="text-center" placeholder="새 비밀번호 6자리 숫자" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 8px;" onkeypress="if(event.keyCode===13){ document.getElementById('forceNewPinConfirmInput').focus(); }">
-      <input type="password" id="forceNewPinConfirmInput" class="text-center" placeholder="새 비밀번호 6자리 다시 입력" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;" onkeypress="if(event.keyCode===13){ executeForceChangePin(); }">
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeForceChangePin()">
-        비밀번호 변경 완료
-      </button>
-    </div>
-  `;
-  return modal;
-}
-
-window.openForceChangePinModal = function() {
-  const modal = ensureForceChangePinModalExists();
-  const in1 = document.getElementById("forceNewPinInput");
-  const in2 = document.getElementById("forceNewPinConfirmInput");
-  if (in1) in1.value = "";
-  if (in2) in2.value = "";
-  modal.style.display = "flex";
-  setTimeout(() => {
-    if (in1) in1.focus();
-  }, 100);
-};
-var openForceChangePinModal = window.openForceChangePinModal;
-
 window.executeForceChangePin = async function() {
   const in1 = document.getElementById("forceNewPinInput");
   const in2 = document.getElementById("forceNewPinConfirmInput");
@@ -805,7 +559,7 @@ window.executeForceChangePin = async function() {
     return showKakaoToast("새 비밀번호는 6자리 숫자로 입력해주세요.", "⚠️");
   }
   if (newPin === "000000" || newPin === "0000") {
-    return showKakaoToast("초기 비밀번호(000000) 외의 다른 숫자로 입력해주세요.", "⚠️");
+    return showKakaoToast("초기 비밀번호(000000) 외의 숫자로 설정하세요.", "⚠️");
   }
   if (newPin !== confirmPin) {
     return showKakaoToast("입력하신 두 비밀번호가 일치하지 않습니다.", "❌");
@@ -824,11 +578,6 @@ window.executeForceChangePin = async function() {
     myCurrentPin = newPin;
     localStorage.setItem("guild_my_pin", newPin);
 
-    if (cachedMemberList && Array.isArray(cachedMemberList)) {
-      const target = cachedMemberList.find(m => (m.nickname === myNick || m.name === myNick));
-      if (target) target.pin = newPin;
-    }
-
     const modal = document.getElementById("modalForceChangePin");
     if (modal) modal.style.display = "none";
     showKakaoToast("비밀번호가 성공적으로 변경되었습니다!", "🎉");
@@ -836,134 +585,49 @@ window.executeForceChangePin = async function() {
     showKakaoToast("비밀번호 변경 실패: " + err.message, "❌");
   }
 };
-var executeForceChangePin = window.executeForceChangePin;
 
 async function executeGuildLogin(forcedGuildId = null) {
   const searchInput = document.getElementById("loginNickSearchInput");
   const selectedName = (searchInput && searchInput.value.trim()) || "";
   const inputPin = (document.getElementById("loginPinInput")?.value || "").trim();
 
-  if (!selectedName) return showKakaoToast("본인 캐릭터 닉네임을 입력해주세요!", "⚠️");
+  if (!selectedName) return showKakaoToast("캐릭터 닉네임을 입력해주세요!", "⚠️");
   if (!inputPin) return showKakaoToast("비밀번호(PIN)를 입력해주세요!", "⚠️");
 
-  // 자동 로그인 & 상태 유지 체크 저장
   const chkAuto = document.getElementById("chkAutoLogin");
   const chkKeep = document.getElementById("chkKeepLogin");
-  const isAuto = chkAuto ? chkAuto.checked : false;
-  const isKeep = chkKeep ? chkKeep.checked : true;
-
-  localStorage.setItem("raidon_auto_login", isAuto ? "true" : "false");
-  localStorage.setItem("raidon_keep_login", isKeep ? "true" : "false");
-
-  const isSuperId = (selectedName.toLowerCase() === "admin" || selectedName === "슈퍼관리자");
-  if (isSuperId && (inputPin === "123456" || inputPin === "master7777")) {
-    myCurrentNick = "슈퍼관리자";
-    myCurrentPin = inputPin;
-    localStorage.setItem("guild_my_nickname", "슈퍼관리자");
-    localStorage.setItem("guild_my_pin", inputPin);
-    localStorage.setItem("guild_my_role", "슈퍼관리자");
-    sessionStorage.setItem("admin_auth", "true");
-    sessionStorage.setItem("admin_role", "super");
-
-    myCurrentClass = "👑 슈퍼관리자";
-    myCurrentAvatar = "👑";
-    localStorage.setItem("guild_my_class", myCurrentClass);
-    localStorage.setItem("guild_my_avatar", myCurrentAvatar);
-
-    updateProfileUI("슈퍼관리자");
-    document.querySelectorAll(".kakao-modal-backdrop").forEach(m => { m.style.display = "none"; });
-    
-    // 웰컴 뷰 숨김 및 메인 대기방 뷰 활성화
-    const welcomeView = document.getElementById("welcomeGatewayView");
-    const mainTabs = document.getElementById("kakaoMainTabsView");
-    if (welcomeView) welcomeView.style.display = "none";
-    if (mainTabs) mainTabs.style.display = "flex";
-    document.body.classList.add("in-main-tabs");
-
-    resetAndReloadChatAfterAuth();
-    return showKakaoToast("👑 슈퍼관리자(Master)로 로그인되었습니다.", "🎉");
-  }
+  localStorage.setItem("raidon_auto_login", (chkAuto && chkAuto.checked) ? "true" : "false");
+  localStorage.setItem("raidon_keep_login", (chkKeep && chkKeep.checked) ? "true" : "false");
 
   let candidates = [];
-  const currentGid = forcedGuildId || localStorage.getItem("current_guild_id") || "";
-
   try {
-    let byNick = [];
-    let byName = [];
-    try {
-      byNick = await apiRequest(`guild_members?nickname=ilike.${encodeURIComponent(selectedName)}&select=*`);
-    } catch (e1) {}
-    try {
-      byName = await apiRequest(`guild_members?name=ilike.${encodeURIComponent(selectedName)}&select=*`);
-    } catch (e2) {}
-
+    let byNick = await apiRequest(`guild_members?nickname=ilike.${encodeURIComponent(selectedName)}&select=*`);
+    let byName = await apiRequest(`guild_members?name=ilike.${encodeURIComponent(selectedName)}&select=*`);
     const map = new Map();
     (byNick || []).forEach(m => { if (m && m.id) map.set(m.id, m); });
     (byName || []).forEach(m => { if (m && m.id) map.set(m.id, m); });
-    candidates = Array.from(map.values()).filter(m => {
-      const n = (m.name || m.nickname || "").trim();
-      return n.toLowerCase() === selectedName.toLowerCase();
-    });
-  } catch (err) {
-    console.warn("Smart login query failed:", err);
-  }
+    candidates = Array.from(map.values()).filter(m => (m.name || m.nickname || "").trim().toLowerCase() === selectedName.toLowerCase());
+  } catch (err) {}
 
   if (candidates.length === 0) {
-    return showKakaoToast("등록된 길드원을 찾을 수 없습니다. 닉네임을 확인하세요.", "⚠️");
+    return showKakaoToast("등록된 길드원을 찾을 수 없습니다.", "⚠️");
   }
 
   const pinMatchedList = candidates.filter(m => {
-    const expectedPin = m.pin ? String(m.pin).trim() : "000000";
-    return (inputPin === expectedPin) ||
-           (expectedPin === "0000" && inputPin === "000000") ||
-           (expectedPin === "000000" && inputPin === "0000");
+    const expected = m.pin ? String(m.pin).trim() : "000000";
+    return (inputPin === expected) || (expected === "0000" && inputPin === "000000") || (expected === "000000" && inputPin === "0000");
   });
 
   if (pinMatchedList.length === 0) {
-    const pinInput = document.getElementById("loginPinInput");
-    if (pinInput) {
-      pinInput.value = "";
-      pinInput.focus();
-    }
     return showKakaoToast("비밀번호(PIN)가 올바르지 않습니다!", "❌");
   }
 
-  let targetMember = null;
-  if (forcedGuildId) {
-    targetMember = pinMatchedList.find(m => (m.guild_id || "default") === forcedGuildId) || pinMatchedList[0];
-  } else if (pinMatchedList.length === 1) {
-    targetMember = pinMatchedList[0];
-  } else {
-    const multiBox = document.getElementById("loginMultiGuildSelectBox");
-    const multiBtns = document.getElementById("loginMultiGuildButtons");
-    if (multiBox && multiBtns) {
-      let guildInfoMap = {};
-      try {
-        const allGuilds = await apiRequest("guilds?select=id,guild_name,name,game_name");
-        if (Array.isArray(allGuilds)) {
-          allGuilds.forEach(g => { guildInfoMap[g.id] = g; });
-        }
-      } catch (e) {}
-
-      multiBtns.innerHTML = pinMatchedList.map(m => {
-        const gid = m.guild_id || "default";
-        const gObj = guildInfoMap[gid];
-        const gLabel = gObj ? `[${gObj.game_name || '게임'}] ${gObj.guild_name || gObj.name || '길드'}` : `길드 (${gid})`;
-        return `<button type="button" class="btn btn-outline-info btn-sm text-start fw-bold py-2 px-3" style="font-size:0.78rem; border-radius:8px;" onclick="executeGuildLogin('${gid}')">
-          <i class="fa-solid fa-shield-halved me-1"></i>${escapeAdminHtml(gLabel)} <span class="badge bg-secondary float-end">${escapeAdminHtml(m.role || '일반')}</span>
-        </button>`;
-      }).join("");
-      multiBox.style.display = "block";
-      return showKakaoToast("입장하실 길드를 아래에서 선택해주세요!", "🛡️");
-    } else {
-      targetMember = pinMatchedList.find(m => m.guild_id === currentGid) || pinMatchedList[0];
-    }
-  }
+  let targetMember = forcedGuildId ? pinMatchedList.find(m => (m.guild_id || "default") === forcedGuildId) : pinMatchedList[0];
+  if (!targetMember) targetMember = pinMatchedList[0];
 
   const resolvedGid = targetMember.guild_id || "default";
   const memberName = targetMember.name || targetMember.nickname;
   const userRole = (targetMember.role || "일반").trim();
-  const expectedPin = targetMember.pin ? String(targetMember.pin).trim() : "000000";
 
   localStorage.setItem("current_guild_id", resolvedGid);
   localStorage.setItem("guild_my_nickname", memberName);
@@ -972,64 +636,12 @@ async function executeGuildLogin(forcedGuildId = null) {
   myCurrentNick = memberName;
   myCurrentPin = inputPin;
 
-  if (targetMember.job_class || targetMember.class_name) {
-    myCurrentClass = targetMember.job_class || targetMember.class_name;
-    localStorage.setItem("guild_my_class", myCurrentClass);
-  }
-  if (targetMember.avatar) {
-    myCurrentAvatar = targetMember.avatar;
-    localStorage.setItem("guild_my_avatar", myCurrentAvatar);
-  }
-
-  try {
-    let guildTitle = "길드";
-    let gameTitle = "게임";
-    const gRows = await apiRequest(`guilds?id=eq.${encodeURIComponent(resolvedGid)}&select=id,guild_name,name,game_name`);
-    if (Array.isArray(gRows) && gRows.length > 0) {
-      guildTitle = gRows[0].guild_name || gRows[0].name || "길드";
-      gameTitle = gRows[0].game_name || "게임";
-    }
-    let joined = [];
-    try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-    joined = joined.filter(g => g.guild_id !== resolvedGid);
-    joined.unshift({
-      guild_id: resolvedGid,
-      guild_name: guildTitle,
-      game_name: gameTitle,
-      nickname: memberName,
-      my_nick: memberName,
-      role: userRole
-    });
-    localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
-  } catch (e) {}
-
-  if (userRole === "길드장" || userRole === "길마" || userRole === "슈퍼관리자") {
-    sessionStorage.setItem("admin_auth", "true");
-    sessionStorage.setItem("admin_role", "super");
-  } else if (userRole === "부길드장" || userRole === "부길마") {
-    sessionStorage.setItem("admin_auth", "true");
-    sessionStorage.setItem("admin_role", "admin");
-  } else if (userRole === "정예") {
-    sessionStorage.setItem("admin_auth", "true");
-    sessionStorage.setItem("admin_role", "elite");
-  } else {
-    sessionStorage.removeItem("admin_auth");
-    sessionStorage.removeItem("admin_role");
-  }
-
-  await loadGuildSettings();
-  await window.loadGuildMembersData();
-  if (typeof window.loadBossTimersList === "function") await window.loadBossTimersList();
+  if (targetMember.job_class) localStorage.setItem("guild_my_class", targetMember.job_class);
+  if (targetMember.avatar) localStorage.setItem("guild_my_avatar", targetMember.avatar);
 
   updateProfileUI(memberName);
+  document.querySelectorAll(".kakao-modal-backdrop").forEach(m => { m.style.display = "none"; });
 
-  const multiBox = document.getElementById("loginMultiGuildSelectBox");
-  if (multiBox) multiBox.style.display = "none";
-  document.querySelectorAll(".kakao-modal-backdrop").forEach(m => {
-    m.style.display = "none";
-  });
-
-  // 웰컴 뷰 숨김 & 메인 대기방 뷰 활성화
   const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
   if (welcomeView) welcomeView.style.display = "none";
@@ -1037,51 +649,20 @@ async function executeGuildLogin(forcedGuildId = null) {
   document.body.classList.add("in-main-tabs");
 
   resetAndReloadChatAfterAuth();
-
-  const isDefaultPin = (inputPin === "000000" || inputPin === "0000" || expectedPin === "000000" || expectedPin === "0000");
-  if (isDefaultPin) {
-    showKakaoToast("비밀번호를 변경하세요. (초기 비밀번호 사용 중)", "🔐");
-    setTimeout(() => {
-      openForceChangePinModal();
-    }, 150);
-  } else {
-    showKakaoToast(`[${memberName}] 님 반갑습니다!`, "🎉");
-  }
+  showKakaoToast(`[${memberName}] 님 환영합니다!`, "🎉");
 }
 window.executeGuildLogin = executeGuildLogin;
 
 function handleUserLogout() {
-  if (typeof openConfirmLogoutModal === "function") {
-    openConfirmLogoutModal();
-    return;
-  }
-  executeLogoutProcess();
-}
-window.handleUserLogout = handleUserLogout;
-
-// ⚡ [로그아웃 처리] 대기방/대화방 완전 숨김 & 독립 웰컴 뷰 안전 복구
-window.executeLogoutProcess = async function() {
   localStorage.removeItem("guild_my_nickname");
   localStorage.removeItem("guild_my_pin");
   localStorage.removeItem("guild_my_role");
   localStorage.removeItem("raidon_auto_login");
-  sessionStorage.removeItem("admin_auth");
-  sessionStorage.removeItem("admin_role");
-  sessionStorage.setItem("logout_toast_msg", "로그아웃 되었습니다.");
+  sessionStorage.clear();
   myCurrentNick = "";
   myCurrentPin = "";
 
   toggleMenuDrawer(false);
-  if (typeof window.closeModuleOverlay === "function") window.closeModuleOverlay();
-  const tabMore = document.getElementById("tabMoreContent");
-  if (tabMore) tabMore.style.display = "none";
-  if (typeof window.switchMainBottomTab === "function") {
-    window.switchMainBottomTab("chats");
-  }
-
-  showKakaoToast("로그아웃 되었습니다.", "👋");
-
-  // 대기방/대화방 뷰를 숨기고 웰컴 전용 뷰 렌더링
   const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
   const chatView = document.getElementById("chatRoomView");
@@ -1094,27 +675,11 @@ window.executeLogoutProcess = async function() {
   if (typeof window.renderWelcomeJoinedGuilds === "function") {
     window.renderWelcomeJoinedGuilds();
   }
-};
-
-window.switchActiveGuild = function(guildId) {
-  let joined = [];
-  try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-  const target = joined.find(g => g.guild_id === guildId);
-  if (!target) return;
-
-  localStorage.setItem("current_guild_id", target.guild_id);
-  localStorage.setItem("guild_my_nickname", target.my_nick || target.nickname || "");
-  localStorage.setItem("guild_my_role", target.role || "일반");
-  location.reload();
-};
+  showKakaoToast("로그아웃 되었습니다.", "👋");
+}
+window.handleUserLogout = handleUserLogout;
 
 function resetAndReloadChatAfterAuth() {
-  document.querySelectorAll(".kakao-modal-backdrop").forEach(m => {
-    if (m.id !== "modalForceChangePin") {
-      m.style.display = "none";
-    }
-  });
-
   const chatContainer = document.getElementById("chatMessagesView");
   if (chatContainer) {
     chatContainer.innerHTML = `
@@ -1125,17 +690,10 @@ function resetAndReloadChatAfterAuth() {
   }
   lastRenderedSender = null;
   loadPastChatMessages();
+  listenRealtimeChatMessages();
 
   if (typeof window.loadMainTabFriendsList === "function") window.loadMainTabFriendsList();
   if (typeof window.loadMainTabRoomsList === "function") window.loadMainTabRoomsList();
-
-  const mainTabs = document.getElementById("kakaoMainTabsView");
-  if (mainTabs) mainTabs.style.display = "flex";
-  document.body.classList.add("in-main-tabs");
-
-  if (typeof window.switchMainBottomTab === "function") {
-    window.switchMainBottomTab("chats");
-  }
 }
 
 window.updateProfileUI = function(nick) {
@@ -1156,205 +714,48 @@ window.updateProfileUI = function(nick) {
   const tabClass = document.getElementById("mainTabMyClass");
 
   if (tabNick) tabNick.innerText = myCurrentNick || "내 프로필";
-  if (tabAvatar) {
-    tabAvatar.innerText = myCurrentAvatar;
-    // 아바타 배경 클래스도 최신 직업에 맞춰 실시간 갱신
-    tabAvatar.className = "room-avatar-large " + getJobAvatarClass(myCurrentClass);
-  }
+  if (tabAvatar) tabAvatar.innerText = myCurrentAvatar;
   if (tabClass) tabClass.innerText = myCurrentClass;
 };
-function updateProfileUI(nick) { window.updateProfileUI(nick); }
 
 // --------------------------------------------------------
-// 5. 과거 대화 로드 & 실시간 대화 수신
+// 5. ⭐️ [실시간 대화 스트림 완벽 동기화 엔진]
 // --------------------------------------------------------
-async function loadPastChatMessages() {
-  const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
-  const activeRoom = window.currentActiveRoomId;
-  const chatContainer = document.getElementById("chatMessagesView");
-  if (!chatContainer) return;
-
-  if (!isInChatView || !activeRoom) return;
-
-  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  const cacheKey = `chat_history_cache_${currentGid}_${activeRoom}`;
-  let cachedMessages = [];
-  try {
-    cachedMessages = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
-  } catch(e) {}
-
-  if ((!cachedMessages || cachedMessages.length === 0) && window.roomMsgMapCache && window.roomMsgMapCache.has(activeRoom)) {
-    cachedMessages = window.roomMsgMapCache.get(activeRoom).slice().reverse();
-  }
-
-  if (cachedMessages && cachedMessages.length > 0) {
-    renderMessageHistoryList(cachedMessages);
-  } else {
-    chatContainer.innerHTML = `
-      <div class="text-center my-1">
-        <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
-      </div>
-    `;
-  }
-
-  try {
-    let list = [];
-    try {
-      list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
-    } catch (e) {
-      list = [];
-    }
-
-    let filtered = (list || []).filter(c => {
-      if (c.guild_id && c.guild_id !== currentGid) return false;
-      let rId = (!c.room_id || c.room_id === "default_public" || c.room_id === "public") ? "default_public" : c.room_id;
-      if (rId && rId.startsWith("direct_") && typeof window.generateDeterministicUUID === "function") {
-        const clean = rId.replace("direct_", "").replace("direct__", "");
-        const parts = clean.split("__");
-        if (parts.length === 2) {
-          const sorted = [parts[0], parts[1]].sort();
-          rId = window.generateDeterministicUUID(`direct__${currentGid}__${sorted[0]}__${sorted[1]}`);
-        }
-      }
-      return rId === activeRoom;
-    });
-
-    const mergedMap = new Map();
-    (cachedMessages || []).forEach(m => {
-      if (m && m.id && (!m.guild_id || m.guild_id === currentGid)) {
-        mergedMap.set(String(m.id), m);
-      }
-    });
-    filtered.forEach(m => { if (m && m.id) mergedMap.set(String(m.id), m); });
-
-    const finalSorted = Array.from(mergedMap.values()).sort((a, b) => {
-      const tA = new Date(a.created_at || 0).getTime() || 0;
-      const tB = new Date(b.created_at || 0).getTime() || 0;
-      if (tA !== tB) return tA - tB;
-      return (Number(a.id) || 0) - (Number(b.id) || 0);
-    });
-
-    if (finalSorted.length > 0) {
-      try {
-        localStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
-        sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
-      } catch(e) {}
-
-      if (typeof window.markRoomAsReadNow === "function") {
-        window.markRoomAsReadNow(activeRoom, finalSorted);
-      } else {
-        const numericIds = finalSorted.map(m => parseInt(m.id, 10)).filter(n => !isNaN(n) && n > 0);
-        if (numericIds.length > 0) {
-          localStorage.setItem("last_read_chat_id_" + activeRoom, String(Math.max(...numericIds)));
-        }
-      }
-
-      renderMessageHistoryList(finalSorted);
-      syncMyReadStatusToServer(finalSorted);
-    } else {
-      renderMessageHistoryList([]);
-    }
-  } catch (e) {
-    console.warn("loadPastChatMessages error:", e);
-  }
-}
-window.loadPastChatMessages = loadPastChatMessages;
-window.loadInitialChatMessages = loadPastChatMessages;
-
-async function syncMyReadStatusToServer(msgList) {
-  if (!myCurrentNick || !Array.isArray(msgList) || msgList.length === 0) return;
-  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-
-  const toUpdate = msgList.filter(m => {
-    if (!m || !m.id || String(m.id).startsWith("tmp_")) return false;
-    const readers = Array.isArray(m.read_members) ? m.read_members : [];
-    return !readers.includes(myCurrentNick);
-  }).slice(-30);
-
-  for (const m of toUpdate) {
-    const readers = new Set(Array.isArray(m.read_members) ? m.read_members : []);
-    if (m.sender_name) readers.add(m.sender_name);
-    readers.add(myCurrentNick);
-    const updatedArr = Array.from(readers);
-    m.read_members = updatedArr;
-
-    try {
-      await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${encodeURIComponent(m.id)}`, "PATCH", {
-        read_members: updatedArr
-      });
-    } catch (e) {
-      break;
-    }
-  }
-}
-
-function renderMessageHistoryList(msgList) {
-  const chatContainer = document.getElementById("chatMessagesView");
-  if (!chatContainer) return;
-
-  chatContainer.innerHTML = `
-    <div class="text-center my-1">
-      <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
-    </div>
-  `;
-
-  const subsequentSenders = new Set();
-  for (let i = msgList.length - 1; i >= 0; i--) {
-    const msg = msgList[i];
-    if (!msg) continue;
-    const baseReaders = new Set(Array.isArray(msg.read_members) ? msg.read_members : []);
-    if (msg.sender_name) baseReaders.add(msg.sender_name);
-    if (myCurrentNick) baseReaders.add(myCurrentNick);
-    subsequentSenders.forEach(s => baseReaders.add(s));
-    msg._computedReaders = Array.from(baseReaders);
-    if (msg.sender_name) subsequentSenders.add(msg.sender_name);
-  }
-
-  let prevSender = null;
-  msgList.forEach(c => {
-    const isConsecutive = (c.sender_name === prevSender && c.msg_type === "chat");
-    renderKakaoChatBubble(c, false, isConsecutive);
-    prevSender = (c.msg_type === "chat") ? c.sender_name : null;
-  });
-  lastRenderedSender = prevSender;
-  scrollChatBottom();
-  if (typeof window.syncAllChatCutButtons === "function") window.syncAllChatCutButtons();
-}
-
-async function cleanupOldChatsBackground() {
-  try {
-    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&created_at=lt.${sevenDaysAgo}`, "DELETE");
-  } catch (e) {}
-}
-window.cleanOldChatMessages = cleanupOldChatsBackground;
-
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
 
-  supabaseClient
-    .channel("public:guild_chats")
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const activeRoom = window.currentActiveRoomId || "default_public";
+  const channelKey = `realtime_chat_${currentGid}_${activeRoom}`;
+
+  if (activeRealtimeChatChannel) {
+    supabaseClient.removeChannel(activeRealtimeChatChannel);
+    activeRealtimeChatChannel = null;
+  }
+
+  activeRealtimeChatChannel = supabaseClient
+    .channel(channelKey)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "guild_chats" }, (payload) => {
       if (!payload.new) return;
-      const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-      if (payload.new.guild_id && payload.new.guild_id !== currentGid) return;
-
       const newMsg = payload.new;
-      const activeRoom = window.currentActiveRoomId;
-      const msgRoom = (!newMsg.room_id || newMsg.room_id === "public" || newMsg.room_id === "default_public") ? "default_public" : newMsg.room_id;
+
+      if (newMsg.guild_id && newMsg.guild_id !== currentGid) return;
+
+      const rawMsgRoom = newMsg.room_id || "default_public";
+      const normalizedMsgRoom = (rawMsgRoom === "public" || rawMsgRoom === "default_public") ? "default_public" : rawMsgRoom;
+      const normalizedActiveRoom = (!window.currentActiveRoomId || window.currentActiveRoomId === "public" || window.currentActiveRoomId === "default_public") ? "default_public" : window.currentActiveRoomId;
 
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         window.triggerChatAlarmSound();
-        notifyWebDesktopMessage(newMsg.sender_name, newMsg.message || "새 메시지");
+        notifyWebDesktopMessage(newMsg.sender_name, (newMsg.msg_type === "image" ? "📷 사진을 보냈습니다." : (newMsg.message || "새 메시지")));
       }
 
       if (typeof window.updateRoomCardRealtime === "function") {
-        window.updateRoomCardRealtime(msgRoom, newMsg);
+        window.updateRoomCardRealtime(normalizedMsgRoom, newMsg);
       }
 
       try {
-        const cacheKey = `chat_history_cache_${currentGid}_${msgRoom}`;
+        const cacheKey = `chat_history_cache_${currentGid}_${normalizedMsgRoom}`;
         let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
         if (!localMsgs.find(m => String(m.id) === String(newMsg.id))) {
           localMsgs.push(newMsg);
@@ -1364,40 +765,24 @@ function listenRealtimeChatMessages() {
       } catch(e) {}
 
       const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
-      if (!isInChatView || !activeRoom) return;
-
-      if (activeRoom === "default_public") {
-        if (newMsg.room_id && newMsg.room_id !== "default_public" && newMsg.room_id !== "public") {
-          return;
-        }
-      } else {
-        if (newMsg.room_id !== activeRoom) {
-          return;
-        }
-      }
+      if (!isInChatView || normalizedMsgRoom !== normalizedActiveRoom) return;
 
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
-        const isDirect = (window.currentActiveRoomType === "direct") || (activeRoom && activeRoom !== "default_public" && activeRoom.includes("-"));
-        if (isDirect) {
-          document.querySelectorAll("#chatMessagesView .chat-unread-count").forEach(el => {
-            el.innerText = "";
-            el.style.display = "none";
-          });
-        }
         syncMyReadStatusToServer([newMsg]);
       }
 
       const optimisticIdx = pendingOptimisticMessages.findIndex(m => 
-        m.sender_name === newMsg.sender_name && (m.message === newMsg.message || m.message === newMsg.message_text)
+        m.sender_name === newMsg.sender_name && (m.message === newMsg.message || m.id === newMsg.id)
       );
       if (optimisticIdx !== -1) {
         pendingOptimisticMessages.splice(optimisticIdx, 1);
-        return;
+        const rowElem = document.getElementById("msg_" + newMsg.id);
+        if (rowElem) return;
       }
 
-      const isConsecutive = (newMsg.sender_name === lastRenderedSender && newMsg.msg_type === "chat");
+      const isConsecutive = (newMsg.sender_name === lastRenderedSender && (newMsg.msg_type === "chat" || newMsg.msg_type === "image"));
       renderKakaoChatBubble(newMsg, true, isConsecutive);
-      lastRenderedSender = (newMsg.msg_type === "chat") ? newMsg.sender_name : null;
+      lastRenderedSender = (newMsg.msg_type === "chat" || newMsg.msg_type === "image") ? newMsg.sender_name : null;
       scrollChatBottom();
       if (typeof window.syncAllChatCutButtons === "function") window.syncAllChatCutButtons();
     })
@@ -1433,9 +818,239 @@ function listenRealtimeChatMessages() {
     })
     .subscribe();
 }
+window.listenRealtimeChatMessages = listenRealtimeChatMessages;
 
 // --------------------------------------------------------
-// 6. 카카오톡 말풍선 렌더링 (내가 쓴 글 시간 위치: 말풍선 앞/왼쪽 배치 완료)
+// 6. 과거 대화 로드
+// --------------------------------------------------------
+async function loadPastChatMessages() {
+  const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
+  const rawActiveRoom = window.currentActiveRoomId || "default_public";
+  const activeRoom = (rawActiveRoom === "public") ? "default_public" : rawActiveRoom;
+  const chatContainer = document.getElementById("chatMessagesView");
+  if (!chatContainer) return;
+
+  listenRealtimeChatMessages();
+
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+  const cacheKey = `chat_history_cache_${currentGid}_${activeRoom}`;
+  let cachedMessages = [];
+  try {
+    cachedMessages = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
+  } catch(e) {}
+
+  if (cachedMessages && cachedMessages.length > 0) {
+    renderMessageHistoryList(cachedMessages);
+  } else {
+    chatContainer.innerHTML = `
+      <div class="text-center my-1">
+        <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
+      </div>
+    `;
+  }
+
+  try {
+    let list = await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&room_id=eq.${encodeURIComponent(activeRoom)}&select=*&order=id.desc&limit=150`);
+    if (!list) list = [];
+
+    const mergedMap = new Map();
+    (cachedMessages || []).forEach(m => { if (m && m.id) mergedMap.set(String(m.id), m); });
+    list.forEach(m => { if (m && m.id) mergedMap.set(String(m.id), m); });
+
+    const finalSorted = Array.from(mergedMap.values()).sort((a, b) => {
+      const tA = new Date(a.created_at || 0).getTime() || 0;
+      const tB = new Date(b.created_at || 0).getTime() || 0;
+      if (tA !== tB) return tA - tB;
+      return (Number(a.id) || 0) - (Number(b.id) || 0);
+    });
+
+    if (finalSorted.length > 0) {
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
+        sessionStorage.setItem(cacheKey, JSON.stringify(finalSorted.slice(-100)));
+      } catch(e) {}
+
+      if (typeof window.markRoomAsReadNow === "function") {
+        window.markRoomAsReadNow(activeRoom, finalSorted);
+      }
+      renderMessageHistoryList(finalSorted);
+      syncMyReadStatusToServer(finalSorted);
+    }
+  } catch (e) {
+    console.warn("loadPastChatMessages error:", e);
+  }
+}
+window.loadPastChatMessages = loadPastChatMessages;
+
+async function syncMyReadStatusToServer(msgList) {
+  if (!myCurrentNick || !Array.isArray(msgList) || msgList.length === 0) return;
+  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+
+  const toUpdate = msgList.filter(m => {
+    if (!m || !m.id || String(m.id).startsWith("tmp_")) return false;
+    const readers = Array.isArray(m.read_members) ? m.read_members : [];
+    return !readers.includes(myCurrentNick);
+  }).slice(-30);
+
+  for (const m of toUpdate) {
+    const readers = new Set(Array.isArray(m.read_members) ? m.read_members : []);
+    if (m.sender_name) readers.add(m.sender_name);
+    readers.add(myCurrentNick);
+    const updatedArr = Array.from(readers);
+    m.read_members = updatedArr;
+
+    try {
+      await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&id=eq.${encodeURIComponent(m.id)}`, "PATCH", {
+        read_members: updatedArr
+      });
+    } catch (e) { break; }
+  }
+}
+
+function renderMessageHistoryList(msgList) {
+  const chatContainer = document.getElementById("chatMessagesView");
+  if (!chatContainer) return;
+
+  chatContainer.innerHTML = `
+    <div class="text-center my-1">
+      <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
+    </div>
+  `;
+
+  let prevSender = null;
+  msgList.forEach(c => {
+    const isConsecutive = (c.sender_name === prevSender && (c.msg_type === "chat" || c.msg_type === "image"));
+    renderKakaoChatBubble(c, false, isConsecutive);
+    prevSender = (c.msg_type === "chat" || c.msg_type === "image") ? c.sender_name : null;
+  });
+  lastRenderedSender = prevSender;
+  scrollChatBottom();
+}
+
+// --------------------------------------------------------
+// 7. 📸 [사진 첨부 / 클립보드 붙여넣기 / 3일 자동 만료 압축 엔진]
+// --------------------------------------------------------
+function bindClipboardImagePaste() {
+  const inputElem = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+  if (!inputElem) return;
+
+  inputElem.addEventListener("paste", async (e) => {
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (const item of items) {
+      if (item.type.indexOf("image") !== -1) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        if (file) {
+          await processAndSendImage(file);
+        }
+        break;
+      }
+    }
+  });
+}
+
+async function compressImageToWebp(file, maxWidth = 1280, quality = 0.75) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL("image/webp", quality);
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      img.src = readerEvent.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function processAndSendImage(file) {
+  if (!myCurrentNick) {
+    showKakaoToast("로그인이 필요합니다.", "⚠️");
+    return;
+  }
+
+  showKakaoToast("사진 압축 및 전송 중...", "⏳");
+  try {
+    const compressedBase64 = await compressImageToWebp(file);
+    const activeRoomKey = window.currentActiveRoomId || "default_public";
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+    const tempId = "tmp_" + Date.now();
+
+    const imagePayload = {
+      id: tempId,
+      guild_id: currentGid,
+      room_id: activeRoomKey,
+      sender_name: myCurrentNick,
+      message: "[사진]",
+      media_url: compressedBase64,
+      msg_type: "image",
+      read_members: [myCurrentNick],
+      expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // ⭐️ 3일 후 자동 만료
+      created_at: new Date().toISOString()
+    };
+
+    pendingOptimisticMessages.push(imagePayload);
+    renderKakaoChatBubble(imagePayload, true, false);
+    scrollChatBottom();
+
+    const dbInsertData = {
+      guild_id: currentGid,
+      room_id: activeRoomKey,
+      sender_name: myCurrentNick,
+      message: "[사진]",
+      media_url: compressedBase64,
+      msg_type: "image",
+      read_members: [myCurrentNick],
+      created_at: new Date().toISOString()
+    };
+
+    const res = await apiRequest("guild_chats", "POST", [dbInsertData]);
+    if (res && res[0] && res[0].id) {
+      const realId = res[0].id;
+      const rowElem = document.getElementById("msg_" + tempId);
+      if (rowElem) rowElem.id = "msg_" + realId;
+    }
+    showKakaoToast("사진이 전송되었습니다! (3일 후 자동 만료)", "📷");
+  } catch (err) {
+    showKakaoToast("사진 전송 실패: " + err.message, "❌");
+  }
+}
+window.processAndSendImage = processAndSendImage;
+
+// 3일 지난 만료 데이터 백그라운드 자동 청소
+async function cleanupOldImagesAndChatsBackground() {
+  try {
+    const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    
+    // 1. 3일 경과한 사진 데이터 삭제 (용량 무제한 방지)
+    await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&msg_type=eq.image&created_at=lt.${threeDaysAgo}`, "DELETE");
+    
+    // 2. 14일 경과한 일반 텍스트 채팅 정리
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+    await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&created_at=lt.${fourteenDaysAgo}`, "DELETE");
+  } catch (e) {}
+}
+
+// --------------------------------------------------------
+// 8. 카카오톡 말풍선 렌더링 (사진/스크린샷 규격 탑재)
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1447,27 +1062,14 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const timeStr = formatKSTChatTime(msg.created_at);
 
   const activeRoom = window.currentActiveRoomId || "default_public";
-  const isDirect = (window.currentActiveRoomType === "direct") || 
-                   (activeRoom && (activeRoom.startsWith("direct_") || (activeRoom.includes("-") && activeRoom !== "default_public"))) ||
-                   (msg.room_id && (msg.room_id.startsWith("direct_") || (msg.room_id.includes("-") && msg.room_id !== "default_public")));
+  const isDirect = (window.currentActiveRoomType === "direct") || (activeRoom && activeRoom !== "default_public" && activeRoom.includes("-"));
   const totalMembers = isDirect ? 2 : ((cachedMemberList && cachedMemberList.length > 0) ? cachedMemberList.length : 2);
 
-  const readerSet = new Set();
-  if (Array.isArray(msg._computedReaders)) {
-    msg._computedReaders.forEach(r => { if (r) readerSet.add(r); });
-  }
-  if (Array.isArray(msg.read_members)) {
-    msg.read_members.forEach(r => { if (r) readerSet.add(r); });
-  }
+  const readerSet = new Set(Array.isArray(msg.read_members) ? msg.read_members : []);
   if (msg.sender_name) readerSet.add(msg.sender_name);
   if (myCurrentNick) readerSet.add(myCurrentNick);
 
-  let unreadCount = 0;
-  if (isDirect) {
-    unreadCount = !isMe ? 0 : ((readerSet.size >= 2) ? 0 : 1);
-  } else {
-    unreadCount = Math.max(0, totalMembers - readerSet.size);
-  }
+  let unreadCount = isDirect ? (!isMe ? 0 : (readerSet.size >= 2 ? 0 : 1)) : Math.max(0, totalMembers - readerSet.size);
 
   const unreadSpanHtml = (unreadCount > 0) 
     ? `<span class="chat-unread-count" style="text-align: ${isMe ? 'right' : 'left'} !important;">${unreadCount}</span>` 
@@ -1477,33 +1079,54 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const cleanMessageText = (msg.message || msg.message_text || msg.content || '').trim();
 
   let senderAvatarIcon = (msg.sender_name || '?').charAt(0);
-  const matchedSender = cachedMemberList.find(m => (m.name === msg.sender_name || m.nickname === msg.sender_name));
+  const matchedSender = (cachedMemberList || []).find(m => (m.name === msg.sender_name || m.nickname === msg.sender_name));
   if (matchedSender && matchedSender.job_class) {
     senderAvatarIcon = matchedSender.job_class.split(' ')[0] || senderAvatarIcon;
   }
-  if (isMe) {
-    senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
-  }
+  if (isMe) senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
 
-  if (msg.msg_type === "system_notice" || msg.sender_name === "시스템마스터") {
-    html = `
-      <div class="chat-item-row other" id="${msgKey}">
-        <div class="chat-sender-avatar" style="background:#ef4444; color:#fff;">📢</div>
-        <div class="chat-msg-body">
-          <div class="chat-sender-name"><span class="text-danger fw-bold">시스템마스터 (긴급공지)</span></div>
-          <div class="chat-bubble-flex">
-            <div class="p-3 rounded-3" style="background:rgba(239, 68, 68, 0.12); border:1.5px solid #ef4444; color:#fff; font-size:0.85rem; line-height:1.45; word-break:break-word;">
-              ${cleanMessageText.replace(/\n/g, '<br>')}
-            </div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
-              ${unreadSpanHtml}
-              <span class="chat-timestamp">${timeStr}</span>
+  // 📷 1. 사진/스크린샷 메시지 렌더링
+  if (msg.msg_type === "image" || msg.media_url) {
+    const imgContent = msg.media_url 
+      ? `<img src="${msg.media_url}" style="max-width: 230px; max-height: 280px; border-radius: 10px; cursor: pointer; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onclick="openImagePreviewModal('${msg.media_url}')" title="클릭하여 확대">`
+      : `<div class="p-2 text-secondary small bg-light rounded">[만료된 이미지입니다]</div>`;
+
+    if (isMe) {
+      html = `
+        <div class="chat-item-row me" id="${msgKey}">
+          <div class="chat-msg-body">
+            <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: 4px;">
+              <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-end !important; text-align: right !important;">
+                ${unreadSpanHtml}
+                <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
+              </div>
+              <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important;">${imgContent}</div>
             </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
+    } else {
+      const consecutiveClass = isConsecutive ? "consecutive" : "";
+      const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
+      const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
+      html = `
+        <div class="chat-item-row other ${consecutiveClass}" id="${msgKey}">
+          <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
+          <div class="chat-msg-body">
+            ${nameBlock}
+            <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-start; gap: 4px;">
+              <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important;">${imgContent}</div>
+              <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-start !important; text-align: left !important;">
+                ${unreadSpanHtml}
+                <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
   }
+  // ⏰ 2. 보스알리미 브리핑 카드
   else if (msg.msg_type === "boss_briefing") {
     html = `
       <div class="chat-item-row other" id="${msgKey}">
@@ -1521,69 +1144,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
-  else if (msg.msg_type === "raid_report") {
-    const raidId = msg.meta_data?.raid_id || Date.now();
-    const bossName = msg.meta_data?.boss_name || "보스";
-    const raidScore = msg.meta_data?.score || 1;
-    const createdAtIso = msg.created_at || new Date().toISOString();
-
-    html = `
-      <div class="chat-item-row other" id="${msgKey}">
-        <div class="chat-sender-avatar">⚔️</div>
-        <div class="chat-msg-body">
-          <div class="chat-sender-name"><span>토벌알리미</span></div>
-          <div class="chat-bubble-flex">
-            <div class="raid-report-card">
-              <div class="raid-hero-box">
-                <span class="raid-hero-badge"><i class="fa-solid fa-crown me-1"></i>토벌 성공</span>
-                <span class="raid-hero-title">${bossName}</span>
-                <span class="raid-hero-score">+${raidScore}점</span>
-              </div>
-              <div class="raid-report-body">${cleanMessageText}</div>
-              <div class="raid-report-footer-row">
-                <span class="raid-countdown-timer" id="raid_timer_${raidId}" data-raid-id="${raidId}" data-created-at="${createdAtIso}">
-                  <i class="fa-regular fa-clock me-1"></i>3:00
-                </span>
-                <button type="button" class="btn btn-warning btn-sm fw-bold px-3 py-1" id="btn_raid_join_${raidId}" onclick="handleQuickRaidSelfAdd('${raidId}', '${bossName}')">
-                  <i class="fa-solid fa-user-plus me-1"></i>나도 참여
-                </button>
-              </div>
-            </div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
-              ${unreadSpanHtml}
-              <span class="chat-timestamp">${timeStr}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  else if (msg.msg_type === "boss_alert") {
-    const bossNameInMsg = (typeof extractBossNameFromMessage === "function") ? extractBossNameFromMessage(cleanMessageText) : "";
-    const subCutBtn = bossNameInMsg ? `
-      <button type="button" class="btn-chat-cut" id="btn_cut_${msgKey}" data-boss="${bossNameInMsg}" onclick="triggerQuickCutAction('${bossNameInMsg}', 'btn_cut_${msgKey}')">
-        <i class="fa-solid fa-crosshairs"></i> 즉시컷
-      </button>` : '';
-
-    html = `
-      <div class="chat-item-row other" id="${msgKey}">
-        <div class="chat-sender-avatar">🚨</div>
-        <div class="chat-msg-body">
-          <div class="chat-sender-name"><span>보스알리미</span></div>
-          <div class="chat-bubble-flex">
-            <div>
-              <div class="boss-alert-mini-card spawn-alert">${cleanMessageText}</div>
-              ${subCutBtn}
-            </div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
-              ${unreadSpanHtml}
-              <span class="chat-timestamp">${timeStr}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
+  // 💬 3. 내가 보낸 텍스트 메시지
   else if (isMe) {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
@@ -1600,6 +1161,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       </div>
     `;
   }
+  // 💬 4. 상대방이 보낸 일반 텍스트 메시지
   else {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
@@ -1625,10 +1187,25 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   tempWrapper.innerHTML = html.trim();
   container.appendChild(tempWrapper.firstElementChild);
 
-  if (doScroll) {
-    scrollChatBottom();
-  }
+  if (doScroll) scrollChatBottom();
 }
+
+function openImagePreviewModal(url) {
+  let modal = document.getElementById("modalImagePreview");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "modalImagePreview";
+    modal.className = "kakao-modal-backdrop";
+    modal.style.cssText = "display:none; z-index:99999999; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; cursor:pointer;";
+    modal.onclick = () => { modal.style.display = "none"; };
+    modal.innerHTML = `<img id="previewModalImg" style="max-width:92vw; max-height:90vh; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`;
+    document.body.appendChild(modal);
+  }
+  const img = document.getElementById("previewModalImg");
+  if (img) img.src = url;
+  modal.style.display = "flex";
+}
+window.openImagePreviewModal = openImagePreviewModal;
 
 function formatMessageWithMentions(text) {
   if (!text) return "";
@@ -1636,7 +1213,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 7. 메시지 입력 및 전송 제어 (guild_id 필수 포함)
+// 9. 메시지 입력 및 전송
 // --------------------------------------------------------
 function handleInputState(textarea) {
   if (!textarea) return;
@@ -1646,11 +1223,8 @@ function handleInputState(textarea) {
 
   const btn = document.getElementById("btnKakaoSend") || document.getElementById("btnSendChatMessage");
   if (btn) {
-    if (textarea.value.trim().length > 0) {
-      btn.classList.add("active");
-    } else {
-      btn.classList.remove("active");
-    }
+    if (textarea.value.trim().length > 0) btn.classList.add("active");
+    else btn.classList.remove("active");
   }
 }
 
@@ -1669,7 +1243,7 @@ async function handleSendMessage() {
   if (!text) return;
 
   if (!myCurrentNick) {
-    myCurrentNick = localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "";
+    myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   }
   if (!myCurrentNick) {
     showKakaoToast("로그인이 필요합니다.", "⚠️");
@@ -1678,15 +1252,12 @@ async function handleSendMessage() {
   }
 
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  const mentionMatches = text.match(/@([a-zA-Z0-9가-힣_-]+)/g);
-  const detectedMentions = mentionMatches ? mentionMatches.map(m => m.slice(1)) : [];
+  const rawActiveRoom = window.currentActiveRoomId || "default_public";
+  const targetRoomId = (rawActiveRoom === "public") ? "default_public" : rawActiveRoom;
 
   inputElem.value = "";
   handleInputState(inputElem);
 
-  const activeRoomKey = window.currentActiveRoomId || "default_public";
-  const isPublicRoom = (activeRoomKey === "default_public" || activeRoomKey === "public");
-  const targetRoomId = isPublicRoom ? "default_public" : activeRoomKey;
   const tempId = "tmp_" + Date.now();
   const optimisticMsg = {
     id: tempId,
@@ -1695,7 +1266,6 @@ async function handleSendMessage() {
     sender_name: myCurrentNick,
     message: text,
     msg_type: "chat",
-    mentions: detectedMentions,
     read_members: [myCurrentNick],
     created_at: new Date().toISOString()
   };
@@ -1707,69 +1277,29 @@ async function handleSendMessage() {
   lastRenderedSender = myCurrentNick;
 
   try {
-    const cacheKey = `chat_history_cache_${currentGid}_${activeRoomKey}`;
-    let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
-    localMsgs.push(optimisticMsg);
-    sessionStorage.setItem(cacheKey, JSON.stringify(localMsgs.slice(-100)));
-    localStorage.setItem(cacheKey, JSON.stringify(localMsgs.slice(-100)));
-  } catch(e) {}
-
-  try {
-    if (!isPublicRoom && targetRoomId) {
-      try {
-        const existRoom = await apiRequest(`chat_rooms?id=eq.${encodeURIComponent(targetRoomId)}&select=id`);
-        if (!existRoom || existRoom.length === 0) {
-          const roomPayload = {
-            id: targetRoomId,
-            guild_id: currentGid,
-            room_name: window.currentActiveRoomTitle || "1:1 대화방",
-            room_type: window.currentActiveRoomType || "direct",
-            created_by: myCurrentNick
-          };
-          await apiRequest("chat_rooms", "POST", [roomPayload]);
-        }
-      } catch (roomCheckErr) {}
-    }
-
     const chatPayload = {
       guild_id: currentGid,
       room_id: targetRoomId,
       sender_name: myCurrentNick,
       message: text,
       msg_type: "chat",
-      mentions: detectedMentions,
       read_members: [myCurrentNick]
     };
 
     const insertRes = await apiRequest("guild_chats", "POST", [chatPayload]);
-
     if (insertRes && insertRes[0] && insertRes[0].id) {
       const realId = insertRes[0].id;
       const rowElem = document.getElementById("msg_" + tempId);
-      if (rowElem) {
-        rowElem.id = "msg_" + realId;
-        rowElem.setAttribute("data-msg-id", realId);
-      }
-      try {
-        const cacheKey = `chat_history_cache_${currentGid}_${activeRoomKey}`;
-        let localMsgs = JSON.parse(sessionStorage.getItem(cacheKey) || localStorage.getItem(cacheKey) || "[]");
-        const target = localMsgs.find(m => m.id === tempId);
-        if (target) target.id = realId;
-        sessionStorage.setItem(cacheKey, JSON.stringify(localMsgs));
-        localStorage.setItem(cacheKey, JSON.stringify(localMsgs));
-        if (typeof window.markRoomAsReadNow === "function") {
-          window.markRoomAsReadNow(activeRoomKey, localMsgs);
-        }
-      } catch(e) {}
+      if (rowElem) rowElem.id = "msg_" + realId;
     }
   } catch (err) {
     showKakaoToast("전송 실패: " + err.message, "❌");
   }
 }
-window.handleSendMessage = window.executeSendMessage = handleSendMessage;
+window.handleSendMessage = handleSendMessage;
 
 // --------------------------------------------------------
-// 8. 멘션 팝업 자동완성
+// 10. 멘션 팝업 및 서브 모듈 오버레이
 // --------------------------------------------------------
 function bindMentionInputEvents() {
   const input = document.getElementById("inputChatMessage");
@@ -1784,15 +1314,12 @@ function bindMentionInputEvents() {
 
     if (atIdx !== -1 && !/\s/.test(beforeText.slice(atIdx + 1))) {
       const query = beforeText.slice(atIdx + 1).toLowerCase();
-      const filtered = cachedMemberList.filter(m => {
-        const n = m.name || m.nickname || "";
-        return n.toLowerCase().startsWith(query);
-      });
+      const filtered = (cachedMemberList || []).filter(m => (m.name || m.nickname || "").toLowerCase().startsWith(query));
 
       if (filtered.length > 0) {
         popup.innerHTML = filtered.slice(0, 5).map(m => {
           const n = m.name || m.nickname;
-          return `<div class="mention-item" onclick="applyMentionNick('${n}')">@${n}</div>`;
+          return `<div class="mention-item-row" onclick="applyMentionNick('${n}')">@${n}</div>`;
         }).join("");
         popup.style.display = "block";
       } else {
@@ -1820,9 +1347,6 @@ function closeMentionPopup() {
   if (popup) popup.style.display = "none";
 }
 
-// --------------------------------------------------------
-// 9. 서브 모듈 화면 오버레이 로더 (일반관리자 권한 스위치 엄격 검증)
-// --------------------------------------------------------
 window.openModulePage = async function(pageName) {
   if (pageName === "PageMembers") {
     closeAllDrawers();
@@ -1832,45 +1356,6 @@ window.openModulePage = async function(pageName) {
   }
 
   closeAllDrawers();
-
-  await refreshMyRoleFromServer();
-
-  const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  const myRole = (localStorage.getItem("guild_my_role") || "일반").trim();
-  const adminRole = sessionStorage.getItem("admin_role") || "";
-
-  const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "길마") || (myRole === "슈퍼관리자");
-  const isNormalAdmin = !isSuper && ((myRole === "부길드장") || (myRole === "부길마") || (myRole === "정예") || (adminRole === "admin") || (adminRole === "elite"));
-
-  let currentPerms = window.currentSettingsMap || {};
-  try {
-    const sRows = await apiRequest(`guild_settings?guild_id=eq.${encodeURIComponent(currentGid)}&select=key,value`);
-    if (Array.isArray(sRows)) {
-      sRows.forEach(r => { if (r && r.key) currentPerms[r.key] = String(r.value); });
-    }
-  } catch(e) {}
-
-  if (pageName === 'PageFinance' && !isSuper) {
-    if (!isNormalAdmin || String(currentPerms['perm_finance_input']) !== 'true') {
-      return showKakaoToast("길드비용현황은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
-    }
-  }
-  if (pageName === 'PageRegister' && !isSuper) {
-    if (!isNormalAdmin || String(currentPerms['perm_boss_register']) !== 'true') {
-      return showKakaoToast("보스참여등록은 권한이 부여된 관리자만 접근할 수 있습니다.", "⚠️");
-    }
-  }
-  if (pageName === 'PageWish' && !isSuper) {
-    if (!isNormalAdmin || String(currentPerms['perm_wish_distribute']) !== 'true') {
-      return showKakaoToast("분배희망신청 권한이 비활성화되어 있습니다.", "⚠️");
-    }
-  }
-  if (pageName === 'PageSettle' && !isSuper) {
-    if (!isNormalAdmin || String(currentPerms['perm_settle_fund_dist']) !== 'true') {
-      return showKakaoToast("정산내역 권한이 비활성화되어 있습니다.", "⚠️");
-    }
-  }
-
   const overlay = document.getElementById("moduleOverlay");
   const body = document.getElementById("overlayBodyContent");
   const navTitle = document.getElementById("overlayNavTitle");
@@ -1900,15 +1385,13 @@ window.openModulePage = async function(pageName) {
     body.querySelectorAll("script").forEach(s => {
       const newScript = document.createElement("script");
       newScript.className = "module-dynamic-script";
-      if (s.src) newScript.src = s.src;
-      else newScript.textContent = s.textContent;
+      if (s.src) newScript.src = s.src; else newScript.textContent = s.textContent;
       document.body.appendChild(newScript);
     });
   } catch (err) {
     if (body) body.innerHTML = `<div class="text-danger small text-center py-5">화면 로드 실패: ${err.message}</div>`;
   }
 };
-window.openSubPageModal = window.openModulePage;
 
 window.closeModuleOverlay = function() {
   const overlay = document.getElementById("moduleOverlay");
@@ -1916,7 +1399,7 @@ window.closeModuleOverlay = function() {
 };
 
 // --------------------------------------------------------
-// 10. 대화 검색 및 기타 유틸
+// 11. 스크롤 및 보조 유틸
 // --------------------------------------------------------
 function scrollChatBottom(smooth = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1939,49 +1422,6 @@ function escapeHtmlText(t) {
   if (!t) return "";
   return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
-
-window.toggleChatSearchBar = function(forceState) {
-  const area = document.getElementById("chatSearchBarArea");
-  if (!area) return;
-  const isShow = (forceState !== undefined) ? forceState : (area.style.display === "none");
-  area.style.display = isShow ? "block" : "none";
-  if (isShow) {
-    const input = document.getElementById("chatSearchKeywordInput");
-    if (input) {
-      input.value = "";
-      setTimeout(() => input.focus(), 100);
-    }
-  } else {
-    window.clearChatSearch();
-  }
-};
-
-window.handleSearchChatMessages = function(rawKeyword) {
-  const keyword = (rawKeyword || "").trim().toLowerCase();
-  const rows = document.querySelectorAll("#chatMessagesView .chat-item-row");
-  let matchCount = 0;
-
-  rows.forEach(r => {
-    const text = (r.innerText || "").toLowerCase();
-    if (!keyword) {
-      r.style.display = "";
-    } else if (text.includes(keyword)) {
-      r.style.display = "";
-      matchCount++;
-    } else {
-      r.style.display = "none";
-    }
-  });
-
-  const countElem = document.getElementById("chatSearchMatchCount");
-  if (countElem) countElem.innerText = keyword ? `${matchCount}건 일치` : "";
-};
-
-window.clearChatSearch = function() {
-  const input = document.getElementById("chatSearchKeywordInput");
-  if (input) input.value = "";
-  window.handleSearchChatMessages("");
-};
 
 function setupPwaInstallation() {
   window.addEventListener("beforeinstallprompt", (e) => {
