@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 카카오톡 스타일 메인 3탭 & 다중 톡방 관리 모듈 (rooms.js)
-// 친구 목록 / 대화방 목록 / 개인설정 탭 제어 및 방 개설(운영진방, 1:1 개인톡)
+// 친구 목록 / 대화방 목록 / 개인설정 탭 제어 및 카카오톡형 독립 새 창 팝업
 // ========================================================
 
 function generateDeterministicUUID(str) {
@@ -194,9 +194,6 @@ window.switchMainBottomTab = function(tabName) {
   }
 };
 
-// --------------------------------------------------------
-// 헬퍼: 직업명에 따른 아바타 스타일 클래스 자동 부여 (소프트 톤)
-// --------------------------------------------------------
 function getClassAvatarStyle(className) {
   const c = className || "";
   if (c.includes("전사") || c.includes("무투") || c.includes("👊") || c.includes("⚔️") || c.includes("버서커")) return { cls: "avatar-warrior", icon: c.includes("👊") ? "👊" : "⚔️" };
@@ -211,7 +208,7 @@ function getClassAvatarStyle(className) {
 window.getClassAvatarStyle = getClassAvatarStyle;
 
 // --------------------------------------------------------
-// 2. [친구 탭] 길드원 리스트 렌더링 (본인 중복 완전 제거 & 소프트 아바타)
+// 2. [친구 탭] 길드원 리스트 렌더링
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
@@ -504,13 +501,12 @@ window.loadMainTabRoomsList = async function() {
         ? `<span class="kakao-room-unread-badge" id="room_badge_${r.id}" data-count="${unreadCount}">${unreadCount > 99 ? '99+' : unreadCount}</span>`
         : `<span class="kakao-room-unread-badge d-none" id="room_badge_${r.id}" data-count="0" style="display: none !important;"></span>`;
 
-      // ⭐️ 1:1 대화방이나 보조방일 때만 목록 카드 우측에 작은 나가기(✕) 버튼 노출
       const cardLeaveBtn = !isMainPublic
         ? `<button type="button" class="btn btn-sm text-secondary p-0 ms-1" title="방 나가기" style="font-size: 0.75rem; border: none; background: transparent; line-height: 1;" onclick="event.stopPropagation(); handleLeaveChatRoom('${r.id}', '${safeRoomName}')">✕</button>`
         : '';
 
       return `
-        <div class="chat-room-card" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">
+        <div class="chat-room-card" onclick="handleChatRoomCardClick('${r.id}', '${safeRoomName}', '${r.room_type}')">
           <div class="room-avatar-large ${typeClass}" style="background:#181d24; border:1px solid #28303c; display:flex; align-items:center; justify-content:center;">
             ${iconHtml}
           </div>
@@ -601,7 +597,7 @@ window.updateRoomCardRealtime = function(roomId, newMsg) {
 };
 
 // --------------------------------------------------------
-// 5. 방 나가기 실행 로직 (메인 단톡방 나감 방지 + 1:1/서브방 정리)
+// 5. 방 나가기 실행 로직
 // --------------------------------------------------------
 window.handleLeaveChatRoom = async function(roomId, roomTitle) {
   if (!roomId || roomId === "default_public" || roomId === "public") {
@@ -647,8 +643,20 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
 };
 
 // --------------------------------------------------------
-// 6. 개별 대화방 열기 (헤더 나가기 버튼 상태 정밀 제어)
+// 6. ⭐️ [카카오톡 순정 스타일 새 창 분리 팝업 핸들러]
 // --------------------------------------------------------
+window.handleChatRoomCardClick = function(roomId, roomTitle, roomType) {
+  // 데스크톱 앱(Electron) 환경인 경우: 카카오톡처럼 독립된 '새 창'으로 분리 팝업!
+  if (window.electronAPI && typeof window.electronAPI.openChatWindow === 'function') {
+    window.markRoomAsReadNow(roomId);
+    window.electronAPI.openChatWindow(roomId, roomTitle, roomType);
+    return;
+  }
+
+  // 모바일 웹 / 브라우저 환경인 경우: 기존 인앱 뷰 전환 유지
+  openChatRoom(roomId, roomTitle, roomType);
+};
+
 window.openChatRoom = function(roomId, roomTitle, roomType) {
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   let joined = [];
@@ -705,7 +713,6 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
     countElem.innerText = (window.currentActiveRoomType === "direct") ? "2" : ((window.cachedMemberList && window.cachedMemberList.length > 0) ? window.cachedMemberList.length : 0);
   }
 
-  // ⭐️ [핵심] 전체 길드 단톡방은 절대 못 나가도록 숨기고, 1:1 방 및 서브 단톡방에만 확실하게 나가기 버튼 노출!
   const btnLeave = document.getElementById("btnLeaveCurrentRoom");
   if (btnLeave) {
     btnLeave.style.display = (!isMainGuildPublic) ? "inline-flex" : "none";
@@ -719,6 +726,15 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
 window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
   if (window.currentActiveRoomId && typeof window.markRoomAsReadNow === "function") {
     window.markRoomAsReadNow(window.currentActiveRoomId);
+  }
+
+  // 데스크톱 새 창 모드라면 뒤로가기 대신 창 닫기
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('open_room_id')) {
+    if (window.electronAPI && typeof window.electronAPI.closeWindow === 'function') {
+      window.electronAPI.closeWindow();
+      return;
+    }
   }
 
   const mainView = document.getElementById("kakaoMainTabsView");
@@ -795,7 +811,9 @@ window.startDirectChatWith = async function(targetNick) {
     if (typeof showKakaoToast === "function") {
       showKakaoToast(`[${targetNick}] 님과의 대화방에 입장했습니다.`, "💬");
     }
-    openChatRoom(targetRoomId, roomTitle, "direct");
+
+    // ⭐️ 1:1 대화도 데스크톱 환경이면 새 창으로 분리 팝업!
+    handleChatRoomCardClick(targetRoomId, roomTitle, "direct");
   } catch (err) {
     console.error("Direct chat error:", err);
     if (typeof showKakaoToast === "function") showKakaoToast("1:1 대화방 연결 실패: " + err.message, "⚠️");
@@ -1028,7 +1046,7 @@ window.executeCreateNewRoom = async function() {
 
     closeCreateRoomModal();
     loadMainTabRoomsList();
-    openChatRoom(newRoom.id, title, newRoom.room_type);
+    handleChatRoomCardClick(newRoom.id, title, newRoom.room_type);
   } catch (err) {
     alert("방 개설 실패: " + err.message);
   }
@@ -1048,8 +1066,29 @@ window.initRoomsRealtime = function() {
   } catch (e) {}
 };
 
+// ⭐️ [신규] 데스크톱 앱에서 새 창으로 열렸는지 URL 파라미터 감지 및 대화방 즉시 진입
+function checkStandaloneChatPopupMode() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const popupRoomId = urlParams.get('open_room_id');
+    const popupRoomTitle = urlParams.get('open_room_title');
+    const popupRoomType = urlParams.get('open_room_type');
+
+    if (popupRoomId) {
+      // 대기방과 웰컴 뷰를 숨기고 대화방 화면만 단독 실행
+      const welcome = document.getElementById("welcomeGatewayView");
+      const mainTabs = document.getElementById("kakaoMainTabsView");
+      if (welcome) welcome.style.display = "none";
+      if (mainTabs) mainTabs.style.display = "none";
+
+      openChatRoom(popupRoomId, popupRoomTitle, popupRoomType);
+    }
+  } catch (e) {}
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   initRoomsRealtime();
+  checkStandaloneChatPopupMode();
   if (typeof window.loadMainTabRoomsList === "function") {
     window.loadMainTabRoomsList();
   }
@@ -1057,6 +1096,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 if (document.readyState === "complete" || document.readyState === "interactive") {
   setTimeout(() => {
+    checkStandaloneChatPopupMode();
     if (typeof window.loadMainTabRoomsList === "function") {
       window.loadMainTabRoomsList();
     }
