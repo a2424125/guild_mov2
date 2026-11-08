@@ -17,6 +17,14 @@
   <script src="supabase.js"></script>
   <script>
     (function(){
+      // ⭐️ 0.1초 로그인 창 깜빡임 원천 차단: 팝업창 모드일 경우 즉시 클래스 부여
+      try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.has('open_room_id')) {
+          document.documentElement.classList.add('is-popup-chat-mode');
+        }
+      } catch(e){}
+
       try{
         if(localStorage.getItem("guild_theme_mode")==="dark"&&!localStorage.getItem("user_explicit_dark")){
           localStorage.setItem("guild_theme_mode","light");
@@ -42,6 +50,16 @@
     html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden!important;display:flex;flex-direction:column;background:var(--kakao-bg,#e5e7eb);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;box-sizing:border-box}
     *,*:before,*:after{box-sizing:border-box}
     .app-main-layout{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;position:relative;overflow-x:hidden!important}
+    
+    /* ⭐️ 팝업창 모드일 때 로그인 화면/대기방 깜빡임 0.001초 컷 숨김 */
+    html.is-popup-chat-mode #welcomeGatewayView,
+    html.is-popup-chat-mode #kakaoMainTabsView {
+      display: none !important;
+    }
+    html.is-popup-chat-mode #chatRoomView {
+      display: flex !important;
+    }
+
     #welcomeGatewayView{width:100%;height:100%;position:relative;overflow-y:auto;overflow-x:hidden!important;display:flex;flex-direction:column;background:linear-gradient(180deg,#f4f5f7 0%,#e5e8ed 50%,#d8dce3 100%)!important}
     body.is-login-gateway .btn-win-max{opacity:0.3!important;cursor:not-allowed!important;pointer-events:none!important}
     .hero-curved-dark-header{width:100%;padding:12px 16px 4px 16px;background:transparent!important;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:10;border-radius:0!important;box-shadow:none!important;border-bottom:none!important;flex-shrink:0}
@@ -81,7 +99,7 @@
     #kakaoMainTabsView .main-tabs-header{background-color:var(--main-header-bg,#ffffff)!important;border-bottom:1px solid var(--main-header-border,#e2e8f0)!important;padding:0 14px 8px 14px!important;color:var(--main-header-text,#111827)!important}
     #tabChatRoomsContent,#tabFriendsContent,#tabMoreContent{background-color:var(--main-view-bg,#f5f7fa)!important;overflow-x:hidden!important}
     
-    /* ⭐️ 대화방 가로 스크롤 완벽 차단 & 유연한 반응형 레이아웃 */
+    /* 대화방 가로 스크롤 완벽 차단 & 유연한 반응형 레이아웃 */
     #chatRoomView{background-color:var(--kakao-bg,#bacee0)!important;overflow-x:hidden!important;width:100%!important;max-width:100%!important}
     #chatRoomView .kakao-chat-header{background-color:var(--kakao-bg,#bacee0)!important;padding:0 10px 10px 10px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;-webkit-app-region:no-drag;user-select:none;flex-shrink:0;width:100%!important;overflow:hidden!important}
     .room-header-two-tier{display:flex;flex-direction:column;justify-content:center;min-width:0!important;flex:1 1 auto;overflow:hidden;line-height:1.25}
@@ -92,8 +110,10 @@
     .kakao-notice-banner{width:100%!important;max-width:100%!important;overflow:hidden!important;box-sizing:border-box}
     .chat-messages-container{width:100%!important;max-width:100%!important;overflow-x:hidden!important;overflow-y:auto;box-sizing:border-box}
     .chat-item-row{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important}
-    .kakao-input-area{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important}
-    .input-textarea-custom{width:100%!important;max-width:100%!important;box-sizing:border-box}
+    
+    /* ⭐️ 채팅 입력 영역: 드래그 차단 해제 및 타이핑 100% 보장 */
+    .kakao-input-area{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important;-webkit-app-region:no-drag!important;pointer-events:auto!important;z-index:50!important}
+    .input-textarea-custom{width:100%!important;max-width:100%!important;box-sizing:border-box;-webkit-app-region:no-drag!important;pointer-events:auto!important;user-select:text!important;cursor:text!important}
 
     .kakao-bottom-tabbar{height:52px;min-height:52px;background:var(--main-bottom-bg,#181d24);border-top:1px solid var(--main-bottom-border,#282f3a);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;z-index:20}
     .kakao-tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--main-tab-inactive,#64748b);cursor:pointer;padding:4px 0;transition:color .15s ease;user-select:none}
@@ -338,12 +358,12 @@
     </nav>
   </div>
 
-  <!-- [VIEW 2] 대화방 화면 (가로 스크롤 완전 차단 및 알림 토글 장착) -->
+  <!-- [VIEW 2] 대화방 화면 -->
   <div id="chatRoomView" class="app-main-layout" style="display:none;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
         <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()"><i class="fa-solid fa-minus"></i></button>
-        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()"><i class="fa-regular fa-square"></i></button>
+        <button type="button" class="btn-win-ctl btn-win-max" title="최대화" onclick="handleWinMaximize()"><i class="fa-regular fa-square"></i></button>
         <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
@@ -362,7 +382,6 @@
         </div>
       </div>
       <div class="header-right-tools">
-        <!-- ⭐️ 채팅 알림 켜기/끄기 원클릭 토글 버튼 -->
         <button type="button" class="btn-kakao-head" id="btnToggleChatNoti" title="알림 끄기" onclick="toggleChatNotificationMode()"><i class="fa-solid fa-bell"></i></button>
         <button type="button" class="btn-kakao-head text-danger" id="btnLeaveCurrentRoom" style="display:none;" title="방 나오기" onclick="handleLeaveCurrentRoomFromHeader()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display:none;" title="앱으로 설치"><i class="fa-solid fa-download"></i></button>
@@ -383,10 +402,12 @@
       <div class="text-center my-1"><span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span></div>
     </div>
     <div id="mentionPopupBox" class="mention-popup-container"></div>
-    <footer class="kakao-input-area">
-      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
+    
+    <!-- ⭐️ [핵심] 입력창 포커스 및 마우스 클릭 100% 보장 인라인 스타일 추가 -->
+    <footer class="kakao-input-area" style="-webkit-app-region: no-drag !important; pointer-events: auto !important; position: relative; z-index: 9999;">
+      <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)" style="-webkit-app-region: no-drag !important; pointer-events: auto !important; user-select: text !important; cursor: text !important;"></textarea>
       <div class="input-bottom-tools" style="justify-content:flex-end;">
-        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">전송</button>
+        <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()" style="-webkit-app-region: no-drag !important; pointer-events: auto !important; cursor: pointer !important;">전송</button>
       </div>
     </footer>
     <div id="moduleOverlay" class="module-display-overlay" style="display:none;">
@@ -657,6 +678,12 @@
     function closeLicenseSuccessModal(){var m=document.getElementById("modalLicenseSuccess");if(m)m.style.display="none";location.reload();}
 
     function applyWindowMode(isLogged){
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('open_room_id')) {
+        document.body.classList.remove("is-login-gateway");
+        if(window.electronAPI&&typeof window.electronAPI.setWindowResizable==='function')window.electronAPI.setWindowResizable(true);
+        return;
+      }
       if(isLogged){
         document.body.classList.remove("is-login-gateway");
         if(window.electronAPI&&typeof window.electronAPI.setWindowResizable==='function')window.electronAPI.setWindowResizable(true);
@@ -669,6 +696,9 @@
     window.applyWindowMode=applyWindowMode;
 
     function ensureWelcomeGatewayVisible(){
+      var urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('open_room_id')) return;
+
       var l=!!localStorage.getItem("guild_my_nickname");
       applyWindowMode(l);
       if(!l){
@@ -770,7 +800,14 @@
     function closeMemberProfileCard(){var m=document.getElementById("modalMemberProfileCard");if(m)m.style.display="none";}
     window.closeMemberProfileCard=closeMemberProfileCard;
 
-    function focusChatInput(){var i=document.getElementById("inputChatMessage")||document.getElementById("chatMessageInput");if(i)i.focus();}
+    function focusChatInput(){
+      var i=document.getElementById("inputChatMessage")||document.getElementById("chatMessageInput");
+      if(i){
+        i.focus();
+        i.removeAttribute("disabled");
+        i.removeAttribute("readonly");
+      }
+    }
     window.focusChatInput=focusChatInput;
 
     function handleLeaveCurrentRoomFromHeader(){
