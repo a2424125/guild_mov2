@@ -1,7 +1,7 @@
 <!-- ==========================================
      [길드톡 메신저] 개인 환경설정 전용 화면 모듈
      경로: pages/PageProfileSettings.html
-     내 프로필(원클릭 직업변경 연동), 상단 길드캡슐, 글자크기(가로형), 슬림테마스위치,
+     내 프로필(원클릭 직업변경 즉각 동기화 연동), 상단 길드캡슐, 글자크기(가로형), 슬림테마스위치,
      컴팩트 알림음(원형 재생), 비밀번호 변경 모달 팝업, 앱 버전 자동 감지 표기
      ========================================== -->
 <style>
@@ -458,7 +458,7 @@
     return (stored && stored !== 'null' && stored !== 'undefined') ? stored : 'default';
   }
 
-  // 1. 프로필 UI 렌더링 및 직업 선택 시 실시간 동기화
+  // 1. 프로필 UI 렌더링 함수
   window.refreshPsProfileCardUI = function() {
     const myNick = localStorage.getItem("guild_my_nickname") || "로그인 필요";
     const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
@@ -477,7 +477,6 @@
 
     if (avatarElem) {
       avatarElem.innerText = myAvatar;
-      // style.css의 직업별 그라데이션 클래스 자동 부여
       let jobCls = "avatar-default";
       if (myClass.includes("전사") || myClass.includes("⚔️")) jobCls = "avatar-warrior";
       else if (myClass.includes("궁수") || myClass.includes("🏹")) jobCls = "avatar-archer";
@@ -507,15 +506,31 @@
   };
   window.refreshPsProfileCardUI();
 
-  // 상단 길드 캡슐명 동기화
+  // ⭐️ [핵심 해결] 직업 선택(selectClassProfile)이 호출되면 본 화면의 UI도 0초 만에 강제 새로고침하는 훅
+  const originalSelectClass = window.selectClassProfile;
+  window.selectClassProfile = async function(icon, className) {
+    if (typeof originalSelectClass === 'function') {
+      try {
+        await originalSelectClass(icon, className);
+      } catch (e) {
+        console.warn("originalSelectClass call err:", e);
+      }
+    }
+    // 직업 선택 즉시 설정창 프로필 카드 즉각 갱신
+    if (typeof window.refreshPsProfileCardUI === 'function') {
+      window.refreshPsProfileCardUI();
+    }
+  };
+
+  // 상단 길드 캡슐명 동기화 (범용 게임/길드명 동적 바인딩)
   function syncPsGuildCapsule() {
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
     const curGid = getSafeCurrentGid();
     const curGuild = joined.find(g => g.guild_id === curGid);
     const labelElem = document.getElementById("psCurrentGuildNameLabel");
-    if (labelElem) {
-      labelElem.innerText = curGuild ? `[${curGuild.guild_name}] 길드` : "길드 관리";
+    if (labelElem && curGuild) {
+      labelElem.innerText = `[${curGuild.guild_name}] 길드`;
     }
   }
   syncPsGuildCapsule();
@@ -701,14 +716,12 @@
     }
   };
 
-  // 6. ⭐️ [앱 버전 자동 감지 시스템]
+  // 6. 앱 버전 자동 감지 시스템
   function detectAndRenderAppVersion() {
     const verElem = document.getElementById("psAutoAppVersionText");
     if (!verElem) return;
 
     let detectedVer = "";
-
-    // 1순위: Electron API가 버전 정보를 제공하는 경우
     if (window.electronAPI && typeof window.electronAPI.getAppVersion === 'function') {
       try {
         const v = window.electronAPI.getAppVersion();
@@ -716,7 +729,6 @@
       } catch(e) {}
     }
 
-    // 2순위: User-Agent 문자열에 심긴 버전(RaidOn/X.X.X) 추출
     if (!detectedVer && navigator && navigator.userAgent) {
       const match = navigator.userAgent.match(/RaidOn\/([0-9\.]+)/i);
       if (match && match[1]) {
@@ -724,7 +736,6 @@
       }
     }
 
-    // 3순위: fallback 기본 버전
     if (!detectedVer) {
       detectedVer = "v1.2.1";
     }
