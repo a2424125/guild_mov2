@@ -222,7 +222,6 @@ window.loadMainTabFriendsList = async function() {
   const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
-  // 1. 최상단 내 프로필 카드 정보 동기화 (길마 뱃지 없이 깔끔하게 표기)
   const myNickElem = document.getElementById("mainTabMyNick");
   const myAvatarElem = document.getElementById("mainTabMyAvatar");
   const myClassElem = document.getElementById("mainTabMyClass");
@@ -258,7 +257,6 @@ window.loadMainTabFriendsList = async function() {
 
     window.cachedMemberList = members;
 
-    // 상단에 내 프로필 카드가 이미 있으므로, 친구 목록에서는 본인(myNick)을 완벽히 제외
     const friendsOnly = members.filter(m => {
       const mName = m.nickname || m.name || "";
       return mName && mName !== myNick;
@@ -442,6 +440,7 @@ window.loadMainTabRoomsList = async function() {
       let typeClass = "";
       let typeBadge = "";
       let displayTitle = r.room_name || "대화방";
+      const isMainPublic = (r.id === "default_public" || r.room_type === "public");
 
       if (r.room_type === "private") {
         iconHtml = `<i class="fa-solid fa-shield-halved text-danger"></i>`;
@@ -476,7 +475,7 @@ window.loadMainTabRoomsList = async function() {
       const safeRoomName = displayTitle.replace(/'/g, "\\'");
 
       let msgs = roomMsgMap.get(r.id) || [];
-      if (msgs.length === 0 && (r.room_type === "public" || r.id === "default_public")) {
+      if (msgs.length === 0 && isMainPublic) {
         msgs = roomMsgMap.get("default_public") || roomMsgMap.get("public") || [];
       }
       const lastMsg = msgs.length > 0 ? msgs[0] : null;
@@ -505,6 +504,11 @@ window.loadMainTabRoomsList = async function() {
         ? `<span class="kakao-room-unread-badge" id="room_badge_${r.id}" data-count="${unreadCount}">${unreadCount > 99 ? '99+' : unreadCount}</span>`
         : `<span class="kakao-room-unread-badge d-none" id="room_badge_${r.id}" data-count="0" style="display: none !important;"></span>`;
 
+      // ⭐️ 1:1 대화방이나 보조방일 때만 목록 카드 우측에 작은 나가기(✕) 버튼 노출
+      const cardLeaveBtn = !isMainPublic
+        ? `<button type="button" class="btn btn-sm text-secondary p-0 ms-1" title="방 나가기" style="font-size: 0.75rem; border: none; background: transparent; line-height: 1;" onclick="event.stopPropagation(); handleLeaveChatRoom('${r.id}', '${safeRoomName}')">✕</button>`
+        : '';
+
       return `
         <div class="chat-room-card" onclick="openChatRoom('${r.id}', '${safeRoomName}', '${r.room_type}')">
           <div class="room-avatar-large ${typeClass}" style="background:#181d24; border:1px solid #28303c; display:flex; align-items:center; justify-content:center;">
@@ -518,7 +522,10 @@ window.loadMainTabRoomsList = async function() {
             <p class="room-msg-preview" id="room_preview_${r.id}">${lastText}</p>
           </div>
           <div class="chat-room-meta">
-            <span class="chat-room-time" id="room_time_${r.id}">${lastTimeStr}</span>
+            <div class="d-flex align-items-center gap-1">
+              <span class="chat-room-time" id="room_time_${r.id}">${lastTimeStr}</span>
+              ${cardLeaveBtn}
+            </div>
             <div class="chat-room-badge-row">
               ${unreadBadgeHtml}
             </div>
@@ -593,9 +600,12 @@ window.updateRoomCardRealtime = function(roomId, newMsg) {
   }
 };
 
+// --------------------------------------------------------
+// 5. 방 나가기 실행 로직 (메인 단톡방 나감 방지 + 1:1/서브방 정리)
+// --------------------------------------------------------
 window.handleLeaveChatRoom = async function(roomId, roomTitle) {
-  if (!roomId || roomId === "default_public") {
-    alert("기본 전체 대화방은 나갈 수 없습니다.");
+  if (!roomId || roomId === "default_public" || roomId === "public") {
+    alert("기본 전체 길드 대화방은 나갈 수 없습니다.");
     return;
   }
 
@@ -636,6 +646,9 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
   }
 };
 
+// --------------------------------------------------------
+// 6. 개별 대화방 열기 (헤더 나가기 버튼 상태 정밀 제어)
+// --------------------------------------------------------
 window.openChatRoom = function(roomId, roomTitle, roomType) {
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   let joined = [];
@@ -645,12 +658,14 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   const gGame = curGuild?.game_name || "";
   const dynamicGuildHeader = gGame ? `[${gGame}] ${gName}` : gName;
 
-  const targetRoomId = roomId || "default_public";
+  const targetRoomId = (!roomId || roomId === "public" || roomId === "default_public") ? "default_public" : roomId;
+  const isMainGuildPublic = (targetRoomId === "default_public" || roomType === "public");
+
   window.currentActiveRoomId = targetRoomId;
-  window.currentActiveRoomType = roomType || ((targetRoomId && targetRoomId.includes('-')) ? 'direct' : 'public');
+  window.currentActiveRoomType = roomType || (isMainGuildPublic ? 'public' : 'direct');
 
   let finalHeaderTitle = roomTitle || dynamicGuildHeader;
-  if (targetRoomId === "default_public" || roomType === "public") {
+  if (isMainGuildPublic) {
     finalHeaderTitle = dynamicGuildHeader;
   }
   window.currentActiveRoomTitle = finalHeaderTitle;
@@ -663,6 +678,7 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   if (mainView) mainView.style.display = "none";
   if (chatView) chatView.style.display = "flex";
   document.body.classList.remove("in-main-tabs");
+  document.body.classList.add("in-chat-room");
 
   const titleElem = document.getElementById("chatRoomTitle");
   const avatarElem = document.getElementById("chatRoomAvatar");
@@ -673,7 +689,7 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
       avatarElem.innerHTML = `<i class="fa-solid fa-shield-halved text-danger"></i>`;
       avatarElem.style.background = "rgba(239, 68, 68, 0.15)";
       avatarElem.style.border = "1px solid rgba(239, 68, 68, 0.4)";
-    } else if (roomType === "direct") {
+    } else if (roomType === "direct" || !isMainGuildPublic) {
       avatarElem.innerHTML = `<i class="fa-solid fa-user text-info"></i>`;
       avatarElem.style.background = "rgba(2, 132, 199, 0.15)";
       avatarElem.style.border = "1px solid rgba(2, 132, 199, 0.4)";
@@ -689,9 +705,10 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
     countElem.innerText = (window.currentActiveRoomType === "direct") ? "2" : ((window.cachedMemberList && window.cachedMemberList.length > 0) ? window.cachedMemberList.length : 0);
   }
 
+  // ⭐️ [핵심] 전체 길드 단톡방은 절대 못 나가도록 숨기고, 1:1 방 및 서브 단톡방에만 확실하게 나가기 버튼 노출!
   const btnLeave = document.getElementById("btnLeaveCurrentRoom");
   if (btnLeave) {
-    btnLeave.style.display = (targetRoomId !== "default_public" && roomType !== "public") ? "inline-flex" : "none";
+    btnLeave.style.display = (!isMainGuildPublic) ? "inline-flex" : "none";
   }
 
   if (typeof loadPastChatMessages === "function") {
@@ -709,6 +726,7 @@ window.exitChatRoomToMain = window.leaveChatRoomToMainTabs = function() {
 
   if (chatView) chatView.style.display = "none";
   if (mainView) mainView.style.display = "flex";
+  document.body.classList.remove("in-chat-room");
   document.body.classList.add("in-main-tabs");
 
   window.currentActiveRoomId = null;
@@ -866,7 +884,6 @@ window.closeMemberProfileCard = function() {
   if (modal) modal.style.display = "none";
 };
 
-// ⭐️ [직업 선택 동기화] 직업 선택 시 상단 내 프로필 카드 및 설정창 즉각 갱신
 window.selectClassProfile = async function(icon, className) {
   let myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   let myCurrentClass = `${icon} ${className}`;
@@ -909,11 +926,9 @@ window.selectClassProfile = async function(icon, className) {
     showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
   }
 
-  // 친구 목록 다시 그리기
   if (typeof loadMainTabFriendsList === "function") {
     loadMainTabFriendsList();
   }
-  // 설정창이 열려있다면 설정창 프로필 카드도 즉시 새로고침
   if (typeof window.refreshPsProfileCardUI === "function") {
     window.refreshPsProfileCardUI();
   }
