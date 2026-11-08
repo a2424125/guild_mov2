@@ -1,8 +1,8 @@
 <!-- ==========================================
      [길드톡 메신저] 개인 환경설정 전용 화면 모듈
      경로: pages/PageProfileSettings.html
-     내 프로필(원클릭 직업변경 즉각 동기화 연동), 상단 길드캡슐, 글자크기(가로형), 슬림테마스위치,
-     컴팩트 알림음(원형 재생), 비밀번호 변경 모달 팝업, 앱 버전 자동 감지 표기
+     내 프로필(소프트톤 아바타 연동, 직책 뱃지 제거), 상단 길드캡슐, 글자크기(가로형),
+     슬림테마스위치, 컴팩트 알림음, 비밀번호 변경 모달, 앱 버전 자동 감지
      ========================================== -->
 <style>
   /* 🔠 글자 크기 스케일 클래스 */
@@ -79,7 +79,7 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
   }
 
-  /* 폰트 조절 가로형 슬림 세그먼트 (줄바꿈 원천 차단) */
+  /* 폰트 조절 가로형 슬림 세그먼트 */
   .ps-font-scale-group {
     display: flex;
     background: rgba(0, 0, 0, 0.05);
@@ -114,7 +114,7 @@
     box-shadow: 0 2px 5px rgba(2, 132, 199, 0.3);
   }
 
-  /* 🎚️ 초슬림 모던 테마 토글 스위치 (가로 44px, 세로 24px) */
+  /* 🎚️ 초슬림 모던 테마 토글 스위치 */
   .ps-theme-switch-wrap {
     position: relative;
     display: inline-block;
@@ -250,7 +250,7 @@
     <span class="text-secondary small" style="font-size: 0.68rem;">개인 설정</span>
   </div>
 
-  <!-- 1. 상단 내 계정 프로필 카드 (원클릭 직업 변경 연동) -->
+  <!-- 1. 상단 내 계정 프로필 카드 (직책 뱃지 제거 & 직업 아이콘 선명화) -->
   <div class="ps-card ps-profile-card" onclick="openProfileEditModal()" title="클릭하여 직업 변경">
     <div class="d-flex align-items-center justify-content-between">
       <div class="d-flex align-items-center gap-3 min-width-0">
@@ -258,11 +258,8 @@
           👤
         </div>
         <div class="min-width-0">
-          <div class="d-flex align-items-center gap-1">
-            <h6 class="fw-bold mb-0 text-truncate" id="psMyNick" style="font-size: 0.95rem; color: var(--main-header-text);">닉네임</h6>
-            <span class="badge bg-warning text-dark px-1 py-0 ms-1" id="psMyRoleBadge" style="font-size: 0.64rem; font-weight: 700;">일반</span>
-          </div>
-          <p class="small mb-0 mt-1 text-truncate" id="psMyClassText" style="font-size: 0.75rem; color: #0284c7; font-weight: 600;">직업 설정하기</p>
+          <h6 class="fw-bold mb-0 text-truncate" id="psMyNick" style="font-size: 0.96rem; color: var(--main-header-text);">닉네임</h6>
+          <p class="small mb-0 mt-1 text-truncate" id="psMyClassText" style="font-size: 0.76rem; color: #0284c7; font-weight: 600;">직업 설정하기</p>
         </div>
       </div>
       <div class="d-flex align-items-center gap-1 text-secondary" style="font-size: 0.74rem;">
@@ -415,7 +412,6 @@
     <button type="button" class="btn btn-outline-danger btn-sm px-4 py-2 fw-bold mb-2" style="font-size: 0.78rem; border-radius: 8px;" onclick="handleUserLogout()">
       <i class="fa-solid fa-right-from-bracket me-1"></i>로그아웃
     </button>
-    <!-- 버전 번호는 Electron / UserAgent를 통해 자동 감지되어 주입됩니다 -->
     <div class="text-secondary small" id="psAutoAppVersionText" style="font-size: 0.68rem; opacity: 0.75;">
       레이드온 PC v1.2.1
     </div>
@@ -458,19 +454,15 @@
     return (stored && stored !== 'null' && stored !== 'undefined') ? stored : 'default';
   }
 
-  // 1. 프로필 UI 렌더링 함수
+  // 1. 프로필 UI 렌더링 함수 (무투사 포함 완벽 매핑 & 길마 뱃지 미노출)
   window.refreshPsProfileCardUI = function() {
     const myNick = localStorage.getItem("guild_my_nickname") || "로그인 필요";
     const myAvatar = localStorage.getItem("guild_my_avatar") || "👤";
     const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
-    const myRole = localStorage.getItem("guild_my_role") || "일반";
-    const adminRole = sessionStorage.getItem("admin_role") || "";
-    const isSuper = (adminRole === "super") || (myRole === "길드장") || (myRole === "슈퍼관리자");
 
     const nickElem = document.getElementById("psMyNick");
     const avatarElem = document.getElementById("psMyAvatar");
     const classElem = document.getElementById("psMyClassText");
-    const roleBadge = document.getElementById("psMyRoleBadge");
 
     if (nickElem) nickElem.innerText = myNick;
     if (classElem) classElem.innerText = myClass;
@@ -478,7 +470,7 @@
     if (avatarElem) {
       avatarElem.innerText = myAvatar;
       let jobCls = "avatar-default";
-      if (myClass.includes("전사") || myClass.includes("⚔️")) jobCls = "avatar-warrior";
+      if (myClass.includes("전사") || myClass.includes("무투") || myClass.includes("👊") || myClass.includes("⚔️")) jobCls = "avatar-warrior";
       else if (myClass.includes("궁수") || myClass.includes("🏹")) jobCls = "avatar-archer";
       else if (myClass.includes("마법사") || myClass.includes("🪄")) jobCls = "avatar-mage";
       else if (myClass.includes("탱커") || myClass.includes("🛡️")) jobCls = "avatar-tanker";
@@ -487,26 +479,10 @@
       else if (myClass.includes("길드장") || myClass.includes("👑")) jobCls = "avatar-master";
       avatarElem.className = `room-avatar-large ${jobCls}`;
     }
-
-    if (roleBadge) {
-      if (isSuper) {
-        roleBadge.innerText = (myRole === "길드장") ? "👑 길마" : "👑 슈퍼관리자";
-        roleBadge.className = "badge bg-warning text-dark px-1 py-0";
-      } else if (myRole === "부길드장" || myRole === "부길마") {
-        roleBadge.innerText = "부길마";
-        roleBadge.className = "badge bg-primary text-white px-1 py-0";
-      } else if (myRole === "정예") {
-        roleBadge.innerText = "정예";
-        roleBadge.className = "badge bg-info text-dark px-1 py-0";
-      } else {
-        roleBadge.innerText = myRole;
-        roleBadge.className = "badge bg-secondary bg-opacity-25 text-secondary px-1 py-0";
-      }
-    }
   };
   window.refreshPsProfileCardUI();
 
-  // ⭐️ [핵심 해결] 직업 선택(selectClassProfile)이 호출되면 본 화면의 UI도 0초 만에 강제 새로고침하는 훅
+  // 직업 선택(selectClassProfile) 실행 즉시 설정창 프로필 카드 실시간 갱신 훅
   const originalSelectClass = window.selectClassProfile;
   window.selectClassProfile = async function(icon, className) {
     if (typeof originalSelectClass === 'function') {
@@ -516,13 +492,12 @@
         console.warn("originalSelectClass call err:", e);
       }
     }
-    // 직업 선택 즉시 설정창 프로필 카드 즉각 갱신
     if (typeof window.refreshPsProfileCardUI === 'function') {
       window.refreshPsProfileCardUI();
     }
   };
 
-  // 상단 길드 캡슐명 동기화 (범용 게임/길드명 동적 바인딩)
+  // 상단 길드 캡슐명 동기화
   function syncPsGuildCapsule() {
     let joined = [];
     try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
