@@ -15,7 +15,6 @@ var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
 var activeRealtimeChatChannel = null;
 
-// 창 활성화 상태 정밀 추적 변수
 var isWindowCurrentlyFocused = true;
 
 window.addEventListener("focus", function() {
@@ -232,25 +231,36 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
+  // ⭐️ 1. URL 파라미터에서 방 ID 및 길드 ID 최우선 복원
+  const urlParams = new URLSearchParams(window.location.search);
+  const isPopupMode = urlParams.has('open_room_id');
+  const rawRoomParam = urlParams.get('open_room_id') || "";
+  const popupRoomTitle = urlParams.get('open_room_title');
+  const popupRoomType = urlParams.get('open_room_type');
+  const urlGid = urlParams.get('current_guild_id');
+
+  if (urlGid) {
+    localStorage.setItem("current_guild_id", urlGid);
+  }
+
+  let finalRoomId = rawRoomParam;
+  if (rawRoomParam.includes('&current_guild_id=')) {
+    finalRoomId = rawRoomParam.split('&current_guild_id=')[0];
+  }
+
+  if (isPopupMode && finalRoomId) {
+    window.currentActiveRoomId = (finalRoomId === "public" || finalRoomId === "default_public") ? "default_public" : finalRoomId;
+    window.currentActiveRoomType = popupRoomType || (window.currentActiveRoomId.includes("-") ? "direct" : "public");
+    window.currentActiveRoomTitle = popupRoomTitle || "대화방";
+  }
+
+  // ⭐️ 2. 내 로그인 정보 확실히 복구
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
   myCurrentAvatar = localStorage.getItem("guild_my_avatar") || "👤";
 
   loadSaasGlobalNoticeAndFaq();
-
-  // ⭐️ [핵심] URL 파라미터(open_room_id) 즉시 파싱 및 팝업 모드 확정
-  const urlParams = new URLSearchParams(window.location.search);
-  const isPopupMode = urlParams.has('open_room_id');
-  const popupRoomId = urlParams.get('open_room_id');
-  const popupRoomTitle = urlParams.get('open_room_title');
-  const popupRoomType = urlParams.get('open_room_type');
-
-  if (isPopupMode && popupRoomId) {
-    window.currentActiveRoomId = (popupRoomId === "public" || popupRoomId === "default_public") ? "default_public" : popupRoomId;
-    window.currentActiveRoomType = popupRoomType || (window.currentActiveRoomId.includes("-") ? "direct" : "public");
-    window.currentActiveRoomTitle = popupRoomTitle || "대화방";
-  }
 
   const welcomeView = document.getElementById("welcomeGatewayView");
   const mainTabs = document.getElementById("kakaoMainTabsView");
@@ -304,9 +314,9 @@ async function initApp() {
 
   updateProfileUI(myCurrentNick);
 
-  // ⭐️ 팝업 모드일 때는 즉시 해당 방의 과거 대화 로드 실행
+  // ⭐️ 3. 팝업 모드일 때 대화 내역 즉시 로드 & 입력창 활성화
   if (isPopupMode) {
-    await loadPastChatMessages();
+    await loadPastChatMessages(window.currentActiveRoomId);
     const unlockChatInput = () => {
       const input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
       if (input) {
@@ -920,12 +930,14 @@ function listenRealtimeChatMessages() {
 window.listenRealtimeChatMessages = listenRealtimeChatMessages;
 
 // --------------------------------------------------------
-// 6. 과거 대화 로드 & 창 활성화 시 일괄 읽음 처리
+// 6. 과거 대화 로드 (파라미터 안전 바인딩)
 // --------------------------------------------------------
-async function loadPastChatMessages() {
+async function loadPastChatMessages(targetRoomIdParam = null) {
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
-  const rawActiveRoom = window.currentActiveRoomId || "default_public";
+  const rawActiveRoom = targetRoomIdParam || window.currentActiveRoomId || "default_public";
   const activeRoom = (rawActiveRoom === "public") ? "default_public" : rawActiveRoom;
+  window.currentActiveRoomId = activeRoom;
+
   const chatContainer = document.getElementById("chatMessagesView");
   if (!chatContainer) return;
 
@@ -1322,7 +1334,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
 }
 
 // --------------------------------------------------------
-// 8-B. [카카오톡 스타일 사진 휠 줌 & 드래그 뷰어 엔진]
+// 8-B. [사진 휠 줌 & 드래그 뷰어 엔진]
 // --------------------------------------------------------
 let currentViewerScale = 1.0;
 let currentViewerTranslateX = 0;
@@ -1446,7 +1458,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 9. ⭐️ [메시지 입력 및 전송 엔진 - 전송/저장 실패 원천 차단]
+// 9. ⭐️ [메시지 전송 - DB 저장 및 화면 표출 100% 직결 엔진]
 // --------------------------------------------------------
 function handleInputState(textarea) {
   if (!textarea) return;
@@ -1475,7 +1487,6 @@ async function handleSendMessage() {
   const text = inputElem.value.trim();
   if (!text) return;
 
-  // 1. 닉네임 유효성 엄격 검증
   if (!myCurrentNick) {
     myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   }
@@ -1485,12 +1496,14 @@ async function handleSendMessage() {
     return;
   }
 
-  // 2. 방 ID 유효성 확보 (URL 파라미터 백업 검사)
+  // ⭐️ 방 ID가 비어있지 않도록 3중 방어
   let activeRoom = window.currentActiveRoomId;
   if (!activeRoom) {
     try {
       const p = new URLSearchParams(window.location.search);
-      activeRoom = p.get('open_room_id');
+      let r = p.get('open_room_id');
+      if (r && r.includes('&current_guild_id=')) r = r.split('&current_guild_id=')[0];
+      activeRoom = r;
       if (activeRoom) window.currentActiveRoomId = activeRoom;
     } catch(e) {}
   }
@@ -1499,9 +1512,9 @@ async function handleSendMessage() {
     window.currentActiveRoomId = activeRoom;
   }
 
+  // ⭐️ 유효한 길드 ID 확보
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
-  // 3. 입력창 비우기 및 높이 초기화
   inputElem.value = "";
   handleInputState(inputElem);
 
@@ -1517,7 +1530,7 @@ async function handleSendMessage() {
     created_at: new Date().toISOString()
   };
 
-  // 4. 화면에 먼저 표시 (렌더링 에러가 나도 통신이 끊기지 않도록 방어)
+  // 1. 화면에 먼저 표시
   try {
     pendingOptimisticMessages.push(optimisticMsg);
     const isConsecutive = (myCurrentNick === lastRenderedSender);
@@ -1528,7 +1541,7 @@ async function handleSendMessage() {
     console.warn("Optimistic bubble render error:", renderErr);
   }
 
-  // 5. DB 테이블 실제 삽입 (POST 전송 및 에러 가시화)
+  // 2. DB 테이블 실제 삽입
   try {
     const chatPayload = {
       guild_id: currentGid,
