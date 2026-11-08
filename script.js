@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 카카오톡 인터페이스 / OS 네이티브 트레이 알림 / 1 숫자 보존 / 3일 사진 만료 / 실시간 스트림
+// 마우스 휠 줌/드래그 사진 뷰어 / OS 트레이 알림 / 1 숫자 보존 / 실시간 스트림
 // ========================================================
 
 var supabaseClient = null;
@@ -104,7 +104,7 @@ window.formatTime24HourWithDate = formatTime24HourWithDate;
 window.formatKSTChatTime = formatKSTChatTime;
 
 // --------------------------------------------------------
-// 1-B. ⭐️ [윈도우 OS 순정 트레이 알림 & 알림음 엔진]
+// 1-B. [윈도우 OS 순정 트레이 알림 & 알림음 엔진]
 // --------------------------------------------------------
 function isUserActivelyFocusedOnRoom(msgRoomId) {
   if (!isWindowCurrentlyFocused || document.hidden || document.visibilityState === 'hidden') {
@@ -156,21 +156,17 @@ function playFallbackChatBeep() {
   } catch (e) {}
 }
 
-// ⭐️ [핵심] Electron 네이티브 윈도우 알림 IPC 호출 (100% 확실한 트레이 팝업)
 function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
 
-  // 내가 직접 창을 열어보고 있는 상태면 알림 스킵
   if (isUserActivelyFocusedOnRoom(msgRoomId)) return;
 
-  // 1. Electron 데스크톱 앱 환경인 경우: 윈도우 OS 순정 트레이 알림 100% 발송
   if (window.electronAPI && typeof window.electronAPI.showNativeNotification === 'function') {
     window.electronAPI.showNativeNotification(`[${sender}]`, msgText || "새 메시지가 도착했습니다.", msgRoomId);
     return;
   }
 
-  // 2. 일반 웹 브라우저 환경인 경우: Web Notification API 백업 호출
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") {
     try {
@@ -226,6 +222,12 @@ async function initApp() {
   if (typeof window.applyAppTheme === 'function') window.applyAppTheme();
   if (typeof window.applyFontScale === 'function') window.applyFontScale();
 
+  // 대화방 가로 스크롤 방지 가드 스타일 적용
+  const chatRoom = document.getElementById("chatRoomView");
+  if (chatRoom) chatRoom.style.overflowX = "hidden";
+  const chatMessages = document.getElementById("chatMessagesView");
+  if (chatMessages) chatMessages.style.overflowX = "hidden";
+
   if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
     supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
     window.supabaseClient = supabaseClient;
@@ -238,7 +240,6 @@ async function initApp() {
 
   loadSaasGlobalNoticeAndFaq();
 
-  // URL 파라미터로 개별 대화방 팝업으로 뜬 경우 검사
   const urlParams = new URLSearchParams(window.location.search);
   const isPopupMode = urlParams.has('open_room_id');
 
@@ -783,7 +784,7 @@ window.updateProfileUI = function(nick) {
 };
 
 // --------------------------------------------------------
-// 5. ⭐️ [실시간 대화 스트림 & OS 알림 동기화 엔진]
+// 5. [실시간 대화 스트림 & OS 알림 동기화 엔진]
 // --------------------------------------------------------
 function listenRealtimeChatMessages() {
   if (!supabaseClient) return;
@@ -809,7 +810,6 @@ function listenRealtimeChatMessages() {
       const normalizedMsgRoom = (rawMsgRoom === "public" || rawMsgRoom === "default_public") ? "default_public" : rawMsgRoom;
       const normalizedActiveRoom = (!window.currentActiveRoomId || window.currentActiveRoomId === "public" || window.currentActiveRoomId === "default_public") ? "default_public" : window.currentActiveRoomId;
 
-      // ⭐️ 알림음 & 윈도우 OS 트레이 알림 (내가 창을 직접 보고 있는 상태가 아니면 100% 실행)
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         window.triggerChatAlarmSound(normalizedMsgRoom);
         notifyWebDesktopMessage(newMsg.sender_name, (newMsg.msg_type === "image" ? "📷 사진을 보냈습니다." : (newMsg.message || "새 메시지")), normalizedMsgRoom);
@@ -832,7 +832,6 @@ function listenRealtimeChatMessages() {
       const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
       if (!isInChatView || normalizedMsgRoom !== normalizedActiveRoom) return;
 
-      // ⭐️ 창을 활성화해서 직접 보고 있을 때만 서버에 '읽음'을 전송하여 숫자 1을 지움!
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
         if (isUserActivelyFocusedOnRoom(normalizedMsgRoom)) {
           syncMyReadStatusToServer([newMsg]);
@@ -1011,7 +1010,7 @@ function renderMessageHistoryList(msgList) {
 }
 
 // --------------------------------------------------------
-// 7. 📸 [사진 첨부 / 클립보드 붙여넣기 / 3일 만료 엔진]
+// 7. 📸 [사진 첨부 / 클립보드 붙여넣기 / 안전 전송 엔진]
 // --------------------------------------------------------
 function bindClipboardImagePaste() {
   const inputElem = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
@@ -1069,7 +1068,7 @@ async function processAndSendImage(file) {
     return;
   }
 
-  showKakaoToast("사진 압축 및 전송 중...", "⏳");
+  showKakaoToast("사진 전송 중...", "⏳");
   try {
     const compressedBase64 = await compressImageToWebp(file);
     const activeRoomKey = window.currentActiveRoomId || "default_public";
@@ -1085,7 +1084,6 @@ async function processAndSendImage(file) {
       media_url: compressedBase64,
       msg_type: "image",
       read_members: [myCurrentNick],
-      expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
       created_at: new Date().toISOString()
     };
 
@@ -1093,24 +1091,50 @@ async function processAndSendImage(file) {
     renderKakaoChatBubble(imagePayload, true, false);
     scrollChatBottom();
 
-    const dbInsertData = {
-      guild_id: currentGid,
-      room_id: activeRoomKey,
-      sender_name: myCurrentNick,
-      message: "[사진]",
-      media_url: compressedBase64,
-      msg_type: "image",
-      read_members: [myCurrentNick],
-      created_at: new Date().toISOString()
-    };
+    let isDbSaved = false;
+    try {
+      const dbInsertData = {
+        guild_id: currentGid,
+        room_id: activeRoomKey,
+        sender_name: myCurrentNick,
+        message: "[사진]",
+        media_url: compressedBase64,
+        msg_type: "image",
+        read_members: [myCurrentNick],
+        created_at: new Date().toISOString()
+      };
 
-    const res = await apiRequest("guild_chats", "POST", [dbInsertData]);
-    if (res && res[0] && res[0].id) {
-      const realId = res[0].id;
-      const rowElem = document.getElementById("msg_" + tempId);
-      if (rowElem) rowElem.id = "msg_" + realId;
+      const res = await apiRequest("guild_chats", "POST", [dbInsertData]);
+      if (res && res[0] && res[0].id) {
+        const realId = res[0].id;
+        const rowElem = document.getElementById("msg_" + tempId);
+        if (rowElem) rowElem.id = "msg_" + realId;
+        isDbSaved = true;
+      }
+    } catch (dbErr) {
+      try {
+        const fallbackInsertData = {
+          guild_id: currentGid,
+          room_id: activeRoomKey,
+          sender_name: myCurrentNick,
+          message: compressedBase64,
+          msg_type: "image",
+          read_members: [myCurrentNick],
+          created_at: new Date().toISOString()
+        };
+        const res2 = await apiRequest("guild_chats", "POST", [fallbackInsertData]);
+        if (res2 && res2[0] && res2[0].id) {
+          const realId2 = res2[0].id;
+          const rowElem = document.getElementById("msg_" + tempId);
+          if (rowElem) rowElem.id = "msg_" + realId2;
+          isDbSaved = true;
+        }
+      } catch (err2) {
+        console.warn("Fallback image insert error:", err2);
+      }
     }
-    showKakaoToast("사진이 전송되었습니다! (3일 후 자동 만료)", "📷");
+
+    showKakaoToast("사진이 전송되었습니다!", "📷");
   } catch (err) {
     showKakaoToast("사진 전송 실패: " + err.message, "❌");
   }
@@ -1120,9 +1144,6 @@ window.processAndSendImage = processAndSendImage;
 async function cleanupOldImagesAndChatsBackground() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&msg_type=eq.image&created_at=lt.${threeDaysAgo}`, "DELETE");
-    
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&created_at=lt.${fourteenDaysAgo}`, "DELETE");
   } catch (e) {}
@@ -1164,9 +1185,12 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   }
   if (isMe) senderAvatarIcon = myCurrentAvatar || senderAvatarIcon;
 
-  if (msg.msg_type === "image" || msg.media_url) {
-    const imgContent = msg.media_url 
-      ? `<img src="${msg.media_url}" style="max-width: 230px; max-height: 280px; border-radius: 10px; cursor: pointer; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onclick="openImagePreviewModal('${msg.media_url}')" title="클릭하여 확대">`
+  const isBase64Img = cleanMessageText.startsWith("data:image/");
+  const actualImgSrc = msg.media_url || (isBase64Img ? cleanMessageText : null);
+
+  if (msg.msg_type === "image" || actualImgSrc) {
+    const imgContent = actualImgSrc 
+      ? `<img src="${actualImgSrc}" style="max-width: 220px; max-height: 260px; border-radius: 10px; cursor: zoom-in; object-fit: cover; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" onclick="openImagePreviewModal('${actualImgSrc}')" title="클릭하여 확대 뷰어 열기">`
       : `<div class="p-2 text-secondary small bg-light rounded">[만료된 이미지입니다]</div>`;
 
     if (isMe) {
@@ -1265,22 +1289,134 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   if (doScroll) scrollChatBottom();
 }
 
+// --------------------------------------------------------
+// 8-B. ⭐️ [카카오톡 스타일 사진 휠 줌 & 드래그 뷰어 엔진]
+// --------------------------------------------------------
+let currentViewerScale = 1.0;
+let currentViewerTranslateX = 0;
+let currentViewerTranslateY = 0;
+let isViewerDragging = false;
+let viewerStartX = 0;
+let viewerStartY = 0;
+
 function openImagePreviewModal(url) {
   let modal = document.getElementById("modalImagePreview");
   if (!modal) {
     modal = document.createElement("div");
     modal.id = "modalImagePreview";
     modal.className = "kakao-modal-backdrop";
-    modal.style.cssText = "display:none; z-index:99999999; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; cursor:pointer;";
-    modal.onclick = () => { modal.style.display = "none"; };
-    modal.innerHTML = `<img id="previewModalImg" style="max-width:92vw; max-height:90vh; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">`;
+    modal.style.cssText = `
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      z-index: 99999999;
+      background: rgba(10, 14, 20, 0.94);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      touch-action: none;
+    `;
+
+    modal.innerHTML = `
+      <!-- 상단 컨트롤 툴바 -->
+      <div id="viewerToolbar" style="position: absolute; top: 14px; display: flex; align-items: center; gap: 10px; background: rgba(24, 32, 44, 0.88); border: 1px solid #2d3b4e; padding: 6px 14px; border-radius: 999px; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+        <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:13px;" onclick="zoomViewerImage(0.2)" title="확대 (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+        <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:13px;" onclick="zoomViewerImage(-0.2)" title="축소 (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+        <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:12px; font-weight:600;" onclick="resetViewerImage(1.0)" title="1:1 원래 크기">100%</button>
+        <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:12px; font-weight:600;" onclick="resetViewerImage('fit')" title="화면에 맞춤">맞춤</button>
+        <span style="color:#475569;">|</span>
+        <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:14px;" onclick="closeImagePreviewModal()" title="닫기 (ESC)"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- 이미지 표시 컨테이너 -->
+      <div id="viewerViewport" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: grab;">
+        <img id="previewModalImg" style="max-width: 90vw; max-height: 85vh; object-fit: contain; transform-origin: center center; transition: transform 0.05s ease-out; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6);" draggable="false">
+      </div>
+    `;
+
     document.body.appendChild(modal);
+
+    const viewport = document.getElementById("viewerViewport");
+    const img = document.getElementById("previewModalImg");
+
+    // 1. 마우스 휠 줌인/줌아웃
+    viewport.addEventListener("wheel", (e) => {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.15 : 0.15;
+      zoomViewerImage(delta);
+    }, { passive: false });
+
+    // 2. 마우스 드래그 이동 (Pan)
+    viewport.addEventListener("mousedown", (e) => {
+      if (e.target.closest("#viewerToolbar")) return;
+      isViewerDragging = true;
+      viewerStartX = e.clientX - currentViewerTranslateX;
+      viewerStartY = e.clientY - currentViewerTranslateY;
+      viewport.style.cursor = "grabbing";
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isViewerDragging) return;
+      currentViewerTranslateX = e.clientX - viewerStartX;
+      currentViewerTranslateY = e.clientY - viewerStartY;
+      updateViewerTransform();
+    });
+
+    window.addEventListener("mouseup", () => {
+      if (isViewerDragging) {
+        isViewerDragging = false;
+        if (viewport) viewport.style.cursor = "grab";
+      }
+    });
+
+    // ESC 키 누르면 닫기
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.style.display === "flex") {
+        closeImagePreviewModal();
+      }
+    });
   }
+
   const img = document.getElementById("previewModalImg");
-  if (img) img.src = url;
+  if (img) {
+    img.src = url;
+    resetViewerImage('fit');
+  }
   modal.style.display = "flex";
 }
 window.openImagePreviewModal = openImagePreviewModal;
+
+function closeImagePreviewModal() {
+  const modal = document.getElementById("modalImagePreview");
+  if (modal) modal.style.display = "none";
+}
+window.closeImagePreviewModal = closeImagePreviewModal;
+
+function updateViewerTransform() {
+  const img = document.getElementById("previewModalImg");
+  if (img) {
+    img.style.transform = `translate(${currentViewerTranslateX}px, ${currentViewerTranslateY}px) scale(${currentViewerScale})`;
+  }
+}
+
+function zoomViewerImage(delta) {
+  currentViewerScale = Math.min(Math.max(0.3, currentViewerScale + delta), 4.5);
+  updateViewerTransform();
+}
+window.zoomViewerImage = zoomViewerImage;
+
+function resetViewerImage(mode) {
+  currentViewerTranslateX = 0;
+  currentViewerTranslateY = 0;
+  if (mode === 1.0) {
+    currentViewerScale = 1.0;
+  } else {
+    currentViewerScale = 1.0;
+  }
+  updateViewerTransform();
+}
+window.resetViewerImage = resetViewerImage;
 
 function formatMessageWithMentions(text) {
   if (!text) return "";
