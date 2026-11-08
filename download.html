@@ -357,7 +357,7 @@
         </div>
       </div>
 
-      <!-- Windows 다운로드 카드 (순정 a 링크로 100% 정상 작동) -->
+      <!-- Windows 다운로드 카드 (새 탭 없이 현재 창에서 즉시 다운로드 실행) -->
       <div class="download-card">
         <div class="card-header-tag tag-windows">
           <span>💻</span> Windows PC 데스크톱 전용
@@ -380,12 +380,12 @@
         <div class="card-title">PC 프로그램</div>
         <div class="card-desc">게임 플레이 중 보스 젠 시간 확인 및 금고 정산, 카톡형 실시간 채팅을 진행합니다.</div>
         <div class="card-footer-box">
-          <!-- ⭐️ 기본값으로 GitHub 최신 릴리즈 페이지 연결 (504 에러 원천 방지) -->
-          <a id="btnLinkWindows" href="https://github.com/a2424125/guild_mov2/releases/latest" target="_blank" rel="noopener noreferrer" class="btn-download btn-windows">
+          <!-- ⭐️ target="_blank" 제거: 새 탭 열림 차단 -->
+          <a id="btnLinkWindows" href="https://github.com/a2424125/guild_mov2/releases/download/V1.2.1/raidon_setup_v1.2.1.exe" class="btn-download btn-windows" onclick="handleWindowsDownloadClick(event, this)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Windows 다운로드
           </a>
-          <div id="metaWindowsVersion" class="version-meta">최신버전 Windows 64-bit 설치형</div>
+          <div id="metaWindowsVersion" class="version-meta">최신버전 v1.2.1 · Windows 64-bit 설치형</div>
         </div>
       </div>
     </div>
@@ -426,13 +426,28 @@
   </div>
 
   <script>
+    // ⭐️ 새 탭 없이 현재 창에서 바로 다운로드 스트림 시작
+    function handleWindowsDownloadClick(event, elem) {
+      const url = elem.getAttribute('href');
+      if (!url) return;
+      
+      // 새 탭을 띄우지 않고 현재 창 상태를 유지한 채 파일 다운로드 트리거
+      event.preventDefault();
+      const tempLink = document.createElement('a');
+      tempLink.href = url;
+      tempLink.setAttribute('download', '');
+      document.body.appendChild(tempLink);
+      tempLink.click();
+      document.body.removeChild(tempLink);
+    }
+
     (async function syncVersionConfig() {
       const winBtn = document.getElementById('btnLinkWindows');
       const winMeta = document.getElementById('metaWindowsVersion');
       const apkBtn = document.getElementById('btnLinkAndroid');
       const apkMeta = document.getElementById('metaAndroidVersion');
 
-      // 1. version.json 동기화 시도
+      // 1. version.json 동기화
       try {
         const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
@@ -443,7 +458,8 @@
           if (customWinUrl && winBtn) {
             winBtn.href = customWinUrl;
           } else if (ver && winBtn) {
-            winBtn.href = `https://github.com/a2424125/guild_mov2/releases/download/v${ver}/RaidOn_Setup_v${ver}.exe`;
+            // 태그가 대문자 V1.2.1이든 소문자 v1.2.1이든 config에 지정된 파일명 매핑
+            winBtn.href = `https://github.com/a2424125/guild_mov2/releases/download/V${ver}/raidon_setup_v${ver}.exe`;
           }
 
           if (ver && winMeta) {
@@ -458,11 +474,9 @@
           }
           return;
         }
-      } catch (e) {
-        console.warn('version.json 로드 건너뜀:', e);
-      }
+      } catch (e) {}
 
-      // 2. 만약 version.json이 없을 경우 GitHub Releases API로 최신 버전 태그와 설치 링크 동기화
+      // 2. GitHub 최신 릴리즈 API로 안전 백업 매핑
       try {
         const ghRes = await fetch('https://api.github.com/repos/a2424125/guild_mov2/releases/latest');
         if (ghRes.ok) {
@@ -472,10 +486,7 @@
 
           if (exeAsset && winBtn) {
             winBtn.href = exeAsset.browser_download_url;
-          } else if (winBtn) {
-            winBtn.href = release.html_url || 'https://github.com/a2424125/guild_mov2/releases/latest';
           }
-
           if (tag && winMeta) {
             winMeta.innerText = `최신버전 v${tag} · Windows 64-bit 설치형`;
           }
