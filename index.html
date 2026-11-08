@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>레이드온</title>
-
-  <!-- PWA 앱 설정 & 앱 아이콘 -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="icon.png">
   <meta name="theme-color" content="#e5e7eb">
@@ -14,617 +12,109 @@
   <meta name="apple-mobile-web-app-title" content="레이드온">
   <link rel="apple-touch-icon" href="icon.png">
 
-  <!-- 부트스트랩 & 폰트어썸 아이콘 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-  <!-- Supabase SDK 및 설정 -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase.js"></script>
 
-  <!-- 테마 깜빡임 방지 및 앱 시작 즉시 창 크기 고정/트레이 동기화 스크립트 -->
   <script>
-    (function() {
-      try {
-        if (localStorage.getItem("guild_theme_mode") === "dark" && !localStorage.getItem("user_explicit_dark")) {
-          localStorage.setItem("guild_theme_mode", "light");
+    (function(){
+      try{
+        if(localStorage.getItem("guild_theme_mode")==="dark"&&!localStorage.getItem("user_explicit_dark")){
+          localStorage.setItem("guild_theme_mode","light");
         }
-        var theme = localStorage.getItem("guild_theme_mode") || "light";
-        if (theme === "dark") {
-          document.documentElement.classList.add("theme-dark");
-          document.documentElement.classList.remove("theme-light");
-        } else {
-          document.documentElement.classList.add("theme-light");
-          document.documentElement.classList.remove("theme-dark");
+        var t=localStorage.getItem("guild_theme_mode")||"light";
+        document.documentElement.classList.add(t==="dark"?"theme-dark":"theme-light");
+        document.documentElement.classList.remove(t==="dark"?"theme-light":"theme-dark");
+      }catch(e){}
+      try{
+        var l=!!localStorage.getItem("guild_my_nickname");
+        if(window.electronAPI){
+          if(typeof window.electronAPI.setLoginState==='function')window.electronAPI.setLoginState(l);
+          if(typeof window.electronAPI.setWindowResizable==='function')window.electronAPI.setWindowResizable(l,440,780);
         }
-      } catch (e) {}
-
-      // 화면이 렌더링되기도 전 0.001초 시점에 Electron 창 크기 및 트레이 상태 1차 동기화
-      try {
-        var isLogged = !!localStorage.getItem("guild_my_nickname");
-        if (window.electronAPI) {
-          if (typeof window.electronAPI.setLoginState === 'function') {
-            window.electronAPI.setLoginState(isLogged);
-          }
-          if (typeof window.electronAPI.setWindowResizable === 'function') {
-            if (isLogged) {
-              window.electronAPI.setWindowResizable(true);
-            } else {
-              window.electronAPI.setWindowResizable(false, 440, 780);
-            }
-          }
-        }
-      } catch (e) {}
+      }catch(e){}
     })();
   </script>
 
-  <!-- 외부 분리 스타일시트 연결 -->
   <link rel="stylesheet" href="style.css">
 
   <style>
-    html, body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      background: #e5e7eb;
-      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
+    html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;display:flex;flex-direction:column;background:var(--kakao-bg,#e5e7eb);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+    .app-main-layout{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;position:relative}
+    #welcomeGatewayView{width:100%;height:100%;position:relative;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;background:linear-gradient(180deg,#f4f5f7 0%,#e5e8ed 50%,#d8dce3 100%)!important}
+    body.is-login-gateway .btn-win-max{opacity:0.3!important;cursor:not-allowed!important;pointer-events:none!important}
+    .hero-curved-dark-header{width:100%;padding:12px 16px 4px 16px;background:transparent!important;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:10;flex-shrink:0}
+    .hero-brand-row{display:flex;align-items:center;justify-content:center;gap:0;margin-top:4px}
+    .hero-emblem-img{width:175px;height:auto;max-height:135px;object-fit:contain;background:transparent!important;margin-right:-12px;filter:drop-shadow(0 4px 10px rgba(0,0,0,0.12))}
+    .hero-typo-logo-img{height:100px;width:auto;max-width:300px;object-fit:contain;background:transparent!important;filter:drop-shadow(0 3px 6px rgba(0,0,0,0.1))}
+    .welcome-center-container{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 16px;position:relative;z-index:10}
+    .raidon-hero-dark-card{width:100%;max-width:338px;background:rgba(255,255,255,0.94)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1.5px solid #fff!important;border-radius:26px!important;padding:44px 20px 24px 20px!important;text-align:center;box-shadow:0 12px 30px rgba(100,116,139,0.09),0 2px 6px rgba(0,0,0,0.03)!important;position:relative;color:#1e293b;margin-top:36px}
+    .card-top-anchor-emblem{position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:180px;height:130px;display:flex;align-items:center;justify-content:center;background:transparent!important;z-index:20}
+    .card-top-anchor-emblem img{width:100%;height:100%;object-fit:contain;background:transparent!important;filter:drop-shadow(0 6px 14px rgba(0,0,0,0.18))}
+    .hero-info-bar-bottom{width:100%;max-width:338px;display:flex;align-items:center;justify-content:space-between;margin-top:16px;z-index:10}
+    .capsule-btn-dark{background:rgba(255,255,255,0.9);border:1.2px solid rgba(203,213,225,0.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:20px;padding:6px 14px;color:#334155;font-size:0.74rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s ease;text-decoration:none;box-shadow:0 3px 10px rgba(0,0,0,0.04)}
+    .capsule-btn-dark:hover{background:#fff;border-color:#f59e0b;color:#0f172a;transform:translateY(-1.5px);box-shadow:0 4px 12px rgba(245,158,11,0.15)}
+    .btn-action-hero{width:100%;height:48px;border-radius:14px;border:none;font-weight:750;font-size:0.9rem;display:flex;align-items:center;justify-content:space-between;padding:0 16px;cursor:pointer;transition:all 0.2s cubic-bezier(0.16,1,0.3,1);user-select:none;outline:none}
+    .btn-action-hero:active{transform:scale(0.98)!important}
+    .btn-hero-yellow{background:linear-gradient(180deg,#fee500 0%,#fad000 100%);color:#191919;box-shadow:0 2px 6px rgba(234,179,8,0.25)}
+    .btn-hero-yellow:hover{transform:translateY(-1.5px);box-shadow:0 5px 14px rgba(234,179,8,0.32);background:linear-gradient(180deg,#fff04d 0%,#fee500 100%)}
+    .btn-hero-blue{background:linear-gradient(180deg,#38bdf8 0%,#0ea5e9 100%);color:#fff;box-shadow:0 2px 6px rgba(14,165,233,0.22)}
+    .btn-hero-blue:hover{transform:translateY(-1.5px);box-shadow:0 5px 14px rgba(14,165,233,0.3);background:linear-gradient(180deg,#60a5fa 0%,#38bdf8 100%)}
+    .btn-hero-dark-outline{background:linear-gradient(180deg,#fed7aa 0%,#fdba74 100%);color:#431407;box-shadow:0 2px 6px rgba(251,146,60,0.16)}
+    .btn-hero-dark-outline:hover{transform:translateY(-1.5px);box-shadow:0 5px 14px rgba(249,115,22,0.22);background:linear-gradient(180deg,#ffedd5 0%,#fed7aa 100%)}
+    .btn-hero-text-link{background:transparent;border:none;color:#64748b;font-size:0.78rem;font-weight:700;padding:10px 0 2px 0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:color 0.15s,transform 0.15s}
+    .btn-hero-text-link:hover{color:#0284c7;transform:translateY(-1px)}
 
-    .app-main-layout {
-      flex: 1;
-      min-height: 0;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
+    /* 대기방, 대화방 & 다크모드 일체화 상단바/헤더 */
+    #kakaoMainTabsView{background-color:var(--main-view-bg,#f2f3f5)!important}
+    #tabChatRoomsContent,#tabFriendsContent,#tabMoreContent{background-color:var(--main-view-bg,#f2f3f5)!important}
+    .chat-room-card{background:var(--main-card-bg,#fff)!important;border:1px solid var(--main-card-border,#e5e7eb)!important;border-radius:12px!important;margin:8px 12px!important;box-shadow:0 1px 3px rgba(0,0,0,0.04)!important}
+    #chatRoomView{background-color:var(--kakao-bg,#bacee0)!important}
 
-    /* ========================================================
-       [웰컴 게이트웨이 디자인] B안: 소프트 세미 라이트 웜그레이 (100% 보존)
-       ======================================================== */
-    #welcomeGatewayView {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      background: linear-gradient(180deg, #f4f5f7 0%, #e5e8ed 50%, #d8dce3 100%) !important;
-    }
+    .view-custom-titlebar{width:100%;height:26px!important;min-height:26px!important;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;box-sizing:border-box;z-index:1000;-webkit-app-region:drag;user-select:none;flex-shrink:0}
+    #welcomeGatewayView .view-custom-titlebar{background-color:transparent!important}
+    #kakaoMainTabsView .view-custom-titlebar{background-color:var(--main-header-bg,#f2f3f5)!important;border-bottom:1px solid var(--main-header-border,transparent)}
+    #chatRoomView .view-custom-titlebar{background-color:var(--kakao-header-bg,#bacee0)!important}
 
-    /* 로그인 창 상태일 때 최대화 버튼 비활성화 시각화 */
-    body.is-login-gateway .btn-win-max {
-      opacity: 0.3 !important;
-      cursor: not-allowed !important;
-      pointer-events: none !important;
-    }
+    .custom-window-controls{display:flex;align-items:center;height:100%;-webkit-app-region:no-drag;gap:1px}
+    .btn-win-ctl{width:24px!important;height:22px!important;border:none!important;background:transparent!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;color:var(--main-header-subtext,#475569)!important;font-size:0.65rem!important;cursor:pointer;padding:0!important;border-radius:4px;transition:background 0.15s,color 0.15s}
+    .btn-win-ctl:hover{background:rgba(0,0,0,0.08)!important;color:var(--main-header-text,#0f172a)!important}
+    body.theme-dark .btn-win-ctl:hover{background:rgba(255,255,255,0.12)!important;color:#fff!important}
+    .btn-win-ctl.btn-win-close:hover{background:#e11d48!important;color:#fff!important}
 
-    /* 상단 헤더: 커튼선 없이 자연스럽고 플랫하게 배치 */
-    .hero-curved-dark-header {
-      width: 100%;
-      padding: 12px 16px 4px 16px;
-      background: transparent !important;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      z-index: 10;
-      border-radius: 0 !important;
-      box-shadow: none !important;
-      border-bottom: none !important;
-      flex-shrink: 0;
-    }
+    #kakaoMainTabsView .main-tabs-header{background-color:var(--main-header-bg,#f2f3f5)!important;border-bottom:1px solid var(--main-header-border,#e2e8f0)!important;padding:0 14px 8px 14px!important}
+    #chatRoomView .kakao-chat-header{background-color:var(--kakao-header-bg,#bacee0)!important;padding:0 14px 10px 14px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;-webkit-app-region:no-drag;user-select:none;flex-shrink:0}
+    .room-header-two-tier{display:flex;flex-direction:column;justify-content:center;min-width:0;flex:1;overflow:hidden;line-height:1.25}
+    .room-server-subtitle{font-size:0.72rem;color:var(--main-header-subtext,#64748b);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+    .room-main-title{font-size:0.94rem;font-weight:600;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--kakao-header-text,#191919)}
+    .header-right-tools{display:flex!important;align-items:center!important;gap:6px!important;flex-shrink:0!important}
 
-    /* 엠블럼과 텍스트 로고가 바짝 붙도록 gap 0 및 음수 마진 적용 (100% 보존) */
-    .hero-brand-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0px;
-      margin-top: 4px;
-    }
-
-    /* 상단 엠블럼: 대표님이 조절하신 크기 보존 */
-    .hero-emblem-img {
-      width: 175px;
-      height: auto;
-      max-height: 135px;
-      object-fit: contain;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      margin-right: -12px;
-      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
-    }
-
-    /* 상단 RAID ON 텍스트 로고 */
-    .hero-typo-logo-img {
-      height: 100px;
-      width: auto;
-      max-width: 300px;
-      object-fit: contain;
-      background: transparent !important;
-      border: none !important;
-      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.1));
-    }
-
-    /* 중앙 카드 배치 컨테이너 */
-    .welcome-center-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 20px 16px 20px 16px;
-      position: relative;
-      z-index: 10;
-    }
-
-    /* 화이트 글래스모피즘 카드: 탁한 번짐을 없애고 맑고 단정한 섀도우 적용 */
-    .raidon-hero-dark-card {
-      width: 100%;
-      max-width: 338px;
-      background: rgba(255, 255, 255, 0.94) !important;
-      backdrop-filter: blur(14px) !important;
-      -webkit-backdrop-filter: blur(14px) !important;
-      border: 1.5px solid #ffffff !important;
-      border-radius: 26px !important;
-      padding: 44px 20px 24px 20px !important;
-      text-align: center;
-      box-shadow: 0 12px 30px rgba(100, 116, 139, 0.09), 0 2px 6px rgba(0, 0, 0, 0.03) !important;
-      position: relative;
-      color: #1e293b;
-      margin-top: 36px;
-    }
-
-    /* 카드 상단 대형 3D 엠블럼: 대표님이 조절하신 크기 보존 */
-    .card-top-anchor-emblem {
-      position: absolute;
-      top: -70px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 180px;
-      height: 130px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent !important;
-      z-index: 20;
-    }
-    .card-top-anchor-emblem img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
-    }
-
-    /* 카드 하단 공지사항 & FAQ/문의 캡슐 바 */
-    .hero-info-bar-bottom {
-      width: 100%;
-      max-width: 338px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 16px;
-      z-index: 10;
-    }
-    .capsule-btn-dark {
-      background: rgba(255, 255, 255, 0.9);
-      border: 1.2px solid rgba(203, 213, 225, 0.85);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 6px 14px;
-      color: #334155;
-      font-size: 0.74rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
-    }
-    .capsule-btn-dark:hover {
-      background: #ffffff;
-      border-color: #f59e0b;
-      color: #0f172a;
-      transform: translateY(-1.5px);
-      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
-    }
-
-    /* 마우스 오버 3D 액션 버튼: 과한 가우시안 블러를 걷어내고 맑고 세련된 소프트 섀도우 적용 */
-    .btn-action-hero {
-      width: 100%;
-      height: 48px;
-      border-radius: 14px;
-      border: none;
-      font-weight: 750;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 16px;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      user-select: none;
-      outline: none;
-    }
-    .btn-action-hero:active {
-      transform: scale(0.98) !important;
-    }
-
-    /* 1. 노란색 로그인 버튼 */
-    .btn-hero-yellow {
-      background: linear-gradient(180deg, #fee500 0%, #fad000 100%);
-      color: #191919;
-      box-shadow: 0 2px 6px rgba(234, 179, 8, 0.25);
-    }
-    .btn-hero-yellow:hover {
-      transform: translateY(-1.5px);
-      box-shadow: 0 5px 14px rgba(234, 179, 8, 0.32);
-      background: linear-gradient(180deg, #fff04d 0%, #fee500 100%);
-    }
-
-    /* 2. 파란색 초대코드 가입 버튼 */
-    .btn-hero-blue {
-      background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
-      color: #ffffff;
-      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.22);
-    }
-    .btn-hero-blue:hover {
-      transform: translateY(-1.5px);
-      box-shadow: 0 5px 14px rgba(14, 165, 233, 0.3);
-      background: linear-gradient(180deg, #60a5fa 0%, #38bdf8 100%);
-    }
-
-    /* 3. 살구색 라이선스 개설 버튼: 과도한 주황색 멍 블러 완전 제거 */
-    .btn-hero-dark-outline {
-      background: linear-gradient(180deg, #fed7aa 0%, #fdba74 100%);
-      color: #431407;
-      box-shadow: 0 2px 6px rgba(251, 146, 60, 0.16);
-    }
-    .btn-hero-dark-outline:hover {
-      transform: translateY(-1.5px);
-      box-shadow: 0 5px 14px rgba(249, 115, 22, 0.22);
-      background: linear-gradient(180deg, #ffedd5 0%, #fed7aa 100%);
-    }
-
-    /* 4. 하단 텍스트 링크 */
-    .btn-hero-text-link {
-      background: transparent;
-      border: none;
-      color: #64748b;
-      font-size: 0.78rem;
-      font-weight: 700;
-      padding: 10px 0 2px 0;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: color 0.15s ease, transform 0.15s ease;
-      text-decoration: none;
-    }
-    .btn-hero-text-link:hover {
-      color: #0284c7;
-      transform: translateY(-1px);
-    }
-
-    /* 대기방, 대화방 및 윈도우 컨트롤 */
-    #kakaoMainTabsView { background-color: #f2f3f5 !important; }
-    #tabChatRoomsContent, #tabFriendsContent, #tabMoreContent { background-color: #f2f3f5 !important; }
-    .chat-room-card {
-      background: #ffffff !important;
-      border: 1px solid #e5e7eb !important;
-      border-radius: 12px !important;
-      margin: 8px 12px !important;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
-    }
-    #chatRoomView { background-color: var(--kakao-bg, #bacee0) !important; }
-
-    .view-custom-titlebar {
-      width: 100%;
-      height: 26px !important;
-      min-height: 26px !important;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      -webkit-app-region: drag;
-      user-select: none;
-      flex-shrink: 0;
-      padding-right: 4px;
-      box-sizing: border-box;
-      z-index: 1000;
-    }
-    #welcomeGatewayView .view-custom-titlebar { background-color: transparent !important; }
-    #kakaoMainTabsView .view-custom-titlebar { background-color: #f2f3f5 !important; }
-    #chatRoomView .view-custom-titlebar { background-color: var(--kakao-bg, #bacee0) !important; }
-
-    .custom-window-controls {
-      display: flex;
-      align-items: center;
-      height: 100%;
-      -webkit-app-region: no-drag;
-      gap: 1px;
-    }
-    .btn-win-ctl {
-      width: 24px !important;
-      height: 22px !important;
-      border: none !important;
-      background: transparent !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      color: #475569 !important;
-      font-size: 0.65rem !important;
-      cursor: pointer;
-      padding: 0 !important;
-      border-radius: 4px;
-      transition: background 0.15s ease, color 0.15s ease;
-    }
-    .btn-win-ctl:hover {
-      background: rgba(0, 0, 0, 0.08) !important;
-      color: #0f172a !important;
-    }
-    .btn-win-ctl.btn-win-close:hover {
-      background: #e11d48 !important;
-      color: #ffffff !important;
-    }
-
-    #kakaoMainTabsView .main-tabs-header {
-      background-color: #f2f3f5 !important;
-      padding: 0 14px 8px 14px !important;
-    }
-    #chatRoomView .kakao-chat-header {
-      background-color: var(--kakao-bg, #bacee0) !important;
-      padding: 0 14px 10px 14px !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      -webkit-app-region: no-drag;
-      user-select: none;
-      flex-shrink: 0;
-    }
-
-    .room-header-two-tier {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-width: 0;
-      flex: 1;
-      overflow: hidden;
-      line-height: 1.25;
-    }
-    .room-server-subtitle {
-      font-size: 0.72rem;
-      color: #64748b;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 1px;
-    }
-    .room-main-title {
-      font-size: 0.94rem;
-      font-weight: 600;
-      letter-spacing: -0.2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: var(--kakao-header-text, #191919);
-    }
-    .header-right-tools {
-      display: flex !important;
-      align-items: center !important;
-      gap: 6px !important;
-      flex-shrink: 0 !important;
-    }
-
-    .kakao-bottom-tabbar {
-      height: 52px;
-      min-height: 52px;
-      background: var(--main-bottom-bg, #181d24);
-      border-top: 1px solid var(--main-bottom-border, #282f3a);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      flex-shrink: 0;
-      z-index: 20;
-    }
-    .kakao-tab-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--main-tab-inactive, #64748b);
-      cursor: pointer;
-      padding: 4px 0;
-      transition: color 0.15s ease;
-      user-select: none;
-    }
-    .kakao-tab-item.active {
-      color: var(--main-tab-active, #fee500);
-    }
-    .kakao-tab-item i {
-      font-size: 1.15rem;
-      margin-bottom: 2px;
-    }
-    .kakao-tab-item span {
-      font-size: 0.65rem;
-      font-weight: 700;
-    }
-    .more-menu-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      padding: 20px 16px;
-    }
-    .more-menu-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      text-align: center;
-    }
-    .more-menu-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      background: var(--main-card-bg, #1c222b);
-      border: 1px solid var(--main-card-border, #28303c);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.3rem;
-      margin-bottom: 6px;
-      transition: transform 0.15s ease, background 0.15s;
-    }
-    .more-menu-item:active .more-menu-icon { transform: scale(0.92); }
-    .more-menu-label {
-      font-size: 0.72rem;
-      color: var(--main-header-text, #f3f4f6);
-      font-weight: 600;
-    }
-
-    .kakao-checkbox-wrap {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      cursor: pointer;
-      user-select: none;
-      font-size: 0.72rem;
-      color: #64748b;
-      margin-bottom: 0;
-    }
-    .kakao-checkbox-wrap input[type="checkbox"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 15px;
-      height: 15px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 4px;
-      outline: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #ffffff;
-      transition: all 0.15s ease;
-      margin: 0;
-    }
-    .kakao-checkbox-wrap input[type="checkbox"]:checked {
-      background-color: #fee500;
-      border-color: #f59e0b;
-    }
-    .kakao-checkbox-wrap input[type="checkbox"]:checked::after {
-      content: '✔';
-      font-size: 0.65rem;
-      color: #191919;
-      font-weight: 800;
-    }
-
-    .faq-q {
-      font-size: 0.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 4px;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-      color: #1e293b;
-    }
-    .faq-a {
-      font-size: 0.74rem;
-      color: #64748b;
-      padding: 8px 6px;
-      line-height: 1.45;
-      display: none;
-      white-space: pre-wrap;
-      background: #f8fafc;
-      border-radius: 6px;
-    }
-
-    .auto-update-modal-backdrop {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(11, 15, 20, 0.88);
-      backdrop-filter: blur(8px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2147483647 !important;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .auto-update-card {
-      width: 100%;
-      max-width: 330px;
-      background: #181d24;
-      border: 1.5px solid #28303c;
-      border-radius: 20px;
-      padding: 22px 20px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
-      color: #f3f4f6;
-    }
-    .auto-update-icon-box {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: #fee500;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      margin-bottom: 12px;
-      box-shadow: 0 4px 14px rgba(254, 229, 0, 0.3);
-    }
-    .update-feature-showcase {
-      background: #11151a;
-      border: 1px solid #222933;
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin: 12px 0;
-      text-align: left;
-      min-height: 52px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .feature-showcase-icon { font-size: 1.3rem; flex-shrink: 0; }
-    .feature-showcase-title { font-size: 0.75rem; font-weight: 700; color: #f3f4f6; line-height: 1.2; }
-    .feature-showcase-desc { font-size: 0.67rem; color: #94a3b8; line-height: 1.3; margin-top: 2px; }
-    .auto-progress-bar-wrap {
-      width: 100%;
-      height: 7px;
-      background: #11151a;
-      border-radius: 8px;
-      overflow: hidden;
-      margin: 12px 0 6px 0;
-      border: 1px solid #202732;
-    }
-    .auto-progress-bar-fill {
-      width: 0%;
-      height: 100%;
-      background: #fee500;
-      border-radius: 8px;
-      transition: width 0.2s ease;
-    }
+    .kakao-bottom-tabbar{height:52px;min-height:52px;background:var(--main-bottom-bg,#181d24);border-top:1px solid var(--main-bottom-border,#282f3a);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;z-index:20}
+    .kakao-tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--main-tab-inactive,#64748b);cursor:pointer;padding:4px 0;transition:color 0.15s;user-select:none}
+    .kakao-tab-item.active{color:var(--main-tab-active,#fee500)}
+    .kakao-tab-item i{font-size:1.15rem;margin-bottom:2px}
+    .kakao-tab-item span{font-size:0.65rem;font-weight:700}
+    .more-menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:20px 16px}
+    .more-menu-item{display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;text-align:center}
+    .more-menu-icon{width:48px;height:48px;border-radius:16px;background:var(--main-card-bg,#1c222b);border:1px solid var(--main-card-border,#28303c);display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:6px;transition:transform 0.15s,background 0.15s}
+    .more-menu-item:active .more-menu-icon{transform:scale(0.92)}
+    .more-menu-label{font-size:0.72rem;color:var(--main-header-text,#f3f4f6);font-weight:600}
+    .kakao-checkbox-wrap{display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;font-size:0.72rem;color:#64748b;margin-bottom:0}
+    .kakao-checkbox-wrap input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:15px;height:15px;border:1.5px solid #cbd5e1;border-radius:4px;outline:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background-color:#fff;transition:all 0.15s;margin:0}
+    .kakao-checkbox-wrap input[type="checkbox"]:checked{background-color:#fee500;border-color:#f59e0b}
+    .kakao-checkbox-wrap input[type="checkbox"]:checked::after{content:'✔';font-size:0.65rem;color:#191919;font-weight:800}
+    .faq-q{font-size:0.8rem;font-weight:700;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid rgba(148,163,184,0.15);color:#1e293b}
+    .faq-a{font-size:0.74rem;color:#64748b;padding:8px 6px;line-height:1.45;display:none;white-space:pre-wrap;background:#f8fafc;border-radius:6px}
+    .auto-update-modal-backdrop{position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(11,15,20,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:2147483647!important;padding:20px;box-sizing:border-box}
+    .auto-update-card{width:100%;max-width:330px;background:#181d24;border:1.5px solid #28303c;border-radius:20px;padding:22px 20px;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,0.7);color:#f3f4f6}
+    .auto-update-icon-box{width:48px;height:48px;border-radius:14px;background:#fee500;display:inline-flex;align-items:center;justify-content:center;font-size:1.6rem;margin-bottom:12px;box-shadow:0 4px 14px rgba(254,229,0,0.3)}
+    .update-feature-showcase{background:#11151a;border:1px solid #222933;border-radius:12px;padding:10px 12px;margin:12px 0;text-align:left;min-height:52px;display:flex;align-items:center;gap:10px}
+    .feature-showcase-icon{font-size:1.3rem;flex-shrink:0}
+    .feature-showcase-title{font-size:0.75rem;font-weight:700;color:#f3f4f6;line-height:1.2}
+    .feature-showcase-desc{font-size:0.67rem;color:#94a3b8;line-height:1.3;margin-top:2px}
+    .auto-progress-bar-wrap{width:100%;height:7px;background:#11151a;border-radius:8px;overflow:hidden;margin:12px 0 6px 0;border:1px solid #202732}
+    .auto-progress-bar-fill{width:0%;height:100%;background:#fee500;border-radius:8px;transition:width 0.2s}
   </style>
 </head>
 <body class="is-login-gateway">
@@ -643,37 +133,17 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-
     <ul class="sidebar-menu-list">
-      <li class="sidebar-menu-item" onclick="openModulePage('PageNotice')">
-        <i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleMembersDrawer(true);">
-        <i class="fa-solid fa-users text-primary"></i><span>길드원목록</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageRegister')">
-        <i class="fa-solid fa-crosshairs text-danger"></i><span>보스참여등록</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageRecords')">
-        <i class="fa-solid fa-scroll text-warning"></i><span>보스참여자</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageWish')">
-        <i class="fa-solid fa-gift" style="color: #f472b6;"></i><span>분배희망신청</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageSettle')">
-        <i class="fa-solid fa-coins text-success"></i><span>정산내역</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')">
-        <i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);">
-        <i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span>
-      </li>
-      <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')">
-        <i class="fa-solid fa-gear text-secondary"></i><span>설정</span>
-      </li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageNotice')"><i class="fa-solid fa-bullhorn text-info"></i><span>공지사항</span></li>
+      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleMembersDrawer(true);"><i class="fa-solid fa-users text-primary"></i><span>길드원목록</span></li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageRegister')"><i class="fa-solid fa-crosshairs text-danger"></i><span>보스참여등록</span></li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageRecords')"><i class="fa-solid fa-scroll text-warning"></i><span>보스참여자</span></li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageWish')"><i class="fa-solid fa-gift" style="color:#f472b6;"></i><span>분배희망신청</span></li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageSettle')"><i class="fa-solid fa-coins text-success"></i><span>정산내역</span></li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageFinance')"><i class="fa-solid fa-landmark text-secondary"></i><span>길드비용현황</span></li>
+      <li class="sidebar-menu-item" onclick="toggleMenuDrawer(false); toggleBossDrawer(true);"><i class="fa-solid fa-hourglass-half text-warning"></i><span>보스타임</span></li>
+      <li class="sidebar-menu-item" onclick="openModulePage('PageSettings')"><i class="fa-solid fa-gear text-secondary"></i><span>설정</span></li>
     </ul>
-
     <div class="sidebar-footer">
       <div class="user-profile-badge" onclick="openProfileEditModal()">
         <div class="user-avatar" id="sidebarAvatarIcon">👤</div>
@@ -682,15 +152,13 @@
           <div class="user-sub-class" id="sidebarUserClassText">직업 설정하기</div>
         </div>
       </div>
-      <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size: 0.7rem;" onclick="handleUserLogout()">
-        로그아웃
-      </button>
+      <button type="button" class="btn btn-outline-danger btn-xs py-1 px-2" style="font-size:0.7rem;" onclick="handleUserLogout()">로그아웃</button>
     </div>
   </aside>
 
   <!-- 2. 길드원 목록 서랍 -->
   <aside id="membersSidebarDrawer" class="app-members-drawer">
-    <div id="drawerMembersContainer" style="height: 100%; display: flex; flex-direction: column;">
+    <div id="drawerMembersContainer" style="height:100%; display:flex; flex-direction:column;">
       <div class="text-secondary small text-center py-5">길드원을 불러오는 중...</div>
     </div>
   </aside>
@@ -698,361 +166,230 @@
   <!-- 3. 보스타임 전용 서랍 -->
   <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header-bar">
-      <div class="boss-drawer-title-box">
-        <i class="fa-regular fa-clock"></i>
-        <span>보스타임 현황</span>
-      </div>
+      <div class="boss-drawer-title-box"><i class="fa-regular fa-clock"></i><span>보스타임 현황</span></div>
       <div class="boss-header-tools-box">
-        <button type="button" class="btn-tool-icon" id="btnRefreshBossDrawer" title="새로고침" onclick="handleBossDrawerRefresh()">
-          <i class="fa-solid fa-arrows-rotate"></i>
-        </button>
-        <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleBossDrawer(false)">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button type="button" class="btn-tool-icon" id="btnRefreshBossDrawer" title="새로고침" onclick="handleBossDrawerRefresh()"><i class="fa-solid fa-arrows-rotate"></i></button>
+        <button type="button" class="btn-tool-icon" title="닫기" onclick="toggleBossDrawer(false)"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-    <div id="drawerBossListArea" style="flex: 1; overflow-y: auto;">
+    <div id="drawerBossListArea" style="flex:1; overflow-y:auto;">
       <div class="text-secondary small text-center py-4">보스타임을 불러오는 중...</div>
     </div>
   </aside>
 
-  <!-- ========================================================
-       [VIEW 0] 로그인 전 웰컴 화면 (B안: 웜그레이 모던 게이밍 - 크기 고정)
-       ======================================================== -->
-  <div id="welcomeGatewayView" class="app-main-layout" style="display: flex;">
-
-    <!-- 윈도우 조절 타이틀바 -->
+  <!-- [VIEW 0] 로그인 전 웰컴 화면 -->
+  <div id="welcomeGatewayView" class="app-main-layout" style="display:flex;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
-        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
-          <i class="fa-solid fa-minus"></i>
-        </button>
-        <!-- 로그인 창에서는 최대화 비활성화 -->
-        <button type="button" class="btn-win-ctl btn-win-max" title="최대화" onclick="handleWinMaximize()">
-          <i class="fa-regular fa-square"></i>
-        </button>
-        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()"><i class="fa-solid fa-minus"></i></button>
+        <button type="button" class="btn-win-ctl btn-win-max" title="최대화" onclick="handleWinMaximize()"><i class="fa-regular fa-square"></i></button>
+        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-
-    <!-- 1. 상단 플랫 브랜드 헤더 바 -->
     <div class="hero-curved-dark-header">
       <div class="hero-brand-row">
-        <!-- 상단 엠블럼: 대표님이 조절하신 크기 보존 -->
         <img src="assets/raidon_shield.png" alt="RaidOn Emblem" class="hero-emblem-img" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
-
-        <!-- 상단 RAID ON 텍스트 로고 -->
         <img src="assets/raidon_logo_text.png" alt="RAID ON" class="hero-typo-logo-img" onerror="this.onerror=null; this.src='./assets/raidon_logo_text.png';">
       </div>
     </div>
-
-    <!-- 2. 중앙 컨텐츠 영역 -->
     <div class="welcome-center-container">
-      
-      <!-- 3. 프리미엄 화이트 글래스모피즘 카드 -->
       <div class="raidon-hero-dark-card">
-        <!-- 카드 상단 대형 3D 엠블럼: 대표님이 조절하신 크기 보존 -->
         <div class="card-top-anchor-emblem">
           <img src="assets/raidon_shield.png" alt="RaidOn Emblem" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
         </div>
-
-        <h5 class="fw-bold mb-1" style="font-size: 1.25rem; letter-spacing: -0.4px; color: #1e293b; margin-top: 6px;">레이드온</h5>
-        <p class="small mb-3" style="font-size: 0.76rem; color: #64748b;">원하시는 시작 방식을 선택하세요.</p>
-
-        <!-- 최근 참여 길드 목록 -->
-        <div id="gatewayJoinedGuildsBox" style="display: none; margin-bottom: 12px; text-align: left;">
+        <h5 class="fw-bold mb-1" style="font-size:1.25rem; letter-spacing:-0.4px; color:#1e293b; margin-top:6px;">레이드온</h5>
+        <p class="small mb-3" style="font-size:0.76rem; color:#64748b;">원하시는 시작 방식을 선택하세요.</p>
+        <div id="gatewayJoinedGuildsBox" style="display:none; margin-bottom:12px; text-align:left;">
           <div class="d-flex align-items-center justify-content-between mb-1">
-            <label class="small mb-0 fw-bold" style="font-size: 0.68rem; color: #64748b;">최근 참여한 길드</label>
-            <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none" style="font-size: 0.65rem;" onclick="clearAllGuildCache()">기록 비우기</button>
+            <label class="small mb-0 fw-bold" style="font-size:0.68rem; color:#64748b;">최근 참여한 길드</label>
+            <button type="button" class="btn btn-link p-0 text-secondary text-decoration-none" style="font-size:0.65rem;" onclick="clearAllGuildCache()">기록 비우기</button>
           </div>
           <div id="gatewayJoinedGuildsList"></div>
         </div>
-
-        <!-- 액션 버튼 4종 -->
         <div class="d-flex flex-column gap-2">
-          <!-- 1. 기존 길드원 로그인 -->
           <button type="button" class="btn-action-hero btn-hero-yellow" onclick="showGuildLoginModal();">
-            <span></span>
-            <span class="ps-3">기존 길드원 로그인</span>
-            <i class="fa-solid fa-arrow-right-to-bracket" style="font-size: 1rem;"></i>
+            <span></span><span class="ps-3">기존 길드원 로그인</span><i class="fa-solid fa-arrow-right-to-bracket" style="font-size:1rem;"></i>
           </button>
-          <!-- 2. 초대 코드로 길드 입장하기 -->
           <button type="button" class="btn-action-hero btn-hero-blue" onclick="openJoinGuildModal()">
-            <span></span>
-            <span class="ps-3">초대 코드로 길드 입장하기</span>
-            <i class="fa-solid fa-user-plus" style="font-size: 0.95rem;"></i>
+            <span></span><span class="ps-3">초대 코드로 길드 입장하기</span><i class="fa-solid fa-user-plus" style="font-size:0.95rem;"></i>
           </button>
-          <!-- 3. 라이선스 키로 길드 신규 개설 -->
           <button type="button" class="btn-action-hero btn-hero-dark-outline" onclick="openActivateGuildModal()">
-            <span></span>
-            <span class="ps-3">라이선스 키로 길드 신규 개설</span>
-            <i class="fa-solid fa-key" style="font-size: 0.95rem;"></i>
+            <span></span><span class="ps-3">라이선스 키로 길드 신규 개설</span><i class="fa-solid fa-key" style="font-size:0.95rem;"></i>
           </button>
-          <!-- 4. 신규 라이선스 발급 신청 -->
           <button type="button" class="btn-hero-text-link" onclick="openLicenseRequestModal()">
-            <span>신규 길드 라이선스 발급 신청</span>
-            <i class="fa-solid fa-paper-plane" style="font-size: 0.8rem;"></i>
+            <span>신규 길드 라이선스 발급 신청</span><i class="fa-solid fa-paper-plane" style="font-size:0.8rem;"></i>
           </button>
         </div>
       </div>
-
-      <!-- 4. 하단 공지사항 & FAQ/문의 바 -->
       <div class="hero-info-bar-bottom">
         <a href="javascript:void(0)" class="capsule-btn-dark" onclick="openSaasNoticeModal()">
-          <span style="color: #f59e0b;">📢</span>
-          <span id="gatewayNoticeTitle" class="text-truncate" style="max-width: 175px;">[공지] 레이드온 정식 오픈 안내</span>
+          <span style="color:#f59e0b;">📢</span><span id="gatewayNoticeTitle" class="text-truncate" style="max-width:175px;">[공지] 레이드온 정식 오픈 안내</span>
         </a>
         <a href="javascript:void(0)" class="capsule-btn-dark" onclick="openSupportCenterModal()">
-          <span style="color: #0284c7;">🎧</span>
-          <span>FAQ/문의</span>
+          <span style="color:#0284c7;">🎧</span><span>FAQ/문의</span>
         </a>
       </div>
-
     </div>
   </div>
 
-  <!-- ========================================================
-       [VIEW 1] 메인 대기방 화면 (로그인 완료 시 활성화 - 리사이즈 가능)
-       ======================================================== -->
-  <div id="kakaoMainTabsView" class="app-main-layout" style="display: none;">
+  <!-- [VIEW 1] 메인 대기방 화면 -->
+  <div id="kakaoMainTabsView" class="app-main-layout" style="display:none;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
-        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
-          <i class="fa-solid fa-minus"></i>
-        </button>
-        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()">
-          <i class="fa-regular fa-square"></i>
-        </button>
-        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()"><i class="fa-solid fa-minus"></i></button>
+        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()"><i class="fa-regular fa-square"></i></button>
+        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-
     <header class="kakao-chat-header main-tabs-header">
-      <div class="header-left-area" style="display: flex; align-items: center; gap: 8px;">
-        <div class="room-title-text" id="mainTabHeaderTitle" style="font-size: 1.15rem; font-weight: 700; letter-spacing: -0.3px;">대화방</div>
-        <span class="badge bg-secondary bg-opacity-25 text-secondary" id="mainTabGameBadge" style="display: none; font-size: 0.7rem; padding: 2px 6px;"></span>
+      <div class="header-left-area" style="display:flex; align-items:center; gap:8px;">
+        <div class="room-title-text" id="mainTabHeaderTitle" style="font-size:1.15rem; font-weight:700; letter-spacing:-0.3px; color:var(--main-header-text,#111827);">대화방</div>
+        <span class="badge bg-secondary bg-opacity-25 text-secondary" id="mainTabGameBadge" style="display:none; font-size:0.7rem; padding:2px 6px;"></span>
         <span id="mainTabHeaderSubtitle" style="display:none;"></span>
       </div>
       <div class="header-right-tools"></div>
     </header>
 
     <!-- [탭 1] 친구 -->
-    <div id="tabFriendsContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
+    <div id="tabFriendsContent" class="kakao-tab-body" style="display:none; flex:1; overflow-y:auto;">
       <div class="chat-room-card my-profile-card" onclick="openProfileEditModal()">
         <div class="room-avatar-large" id="mainTabMyAvatar">👤</div>
         <div class="room-content-box">
           <div class="room-name-text" id="mainTabMyNick">내 프로필</div>
-          <p class="room-msg-preview" id="mainTabMyClass" style="color: #0284c7;">직업 설정하기</p>
+          <p class="room-msg-preview" id="mainTabMyClass" style="color:#0284c7;">직업 설정하기</p>
         </div>
-        <i class="fa-solid fa-pen text-secondary" style="font-size: 0.8rem;"></i>
+        <i class="fa-solid fa-pen text-secondary" style="font-size:0.8rem;"></i>
       </div>
-
-      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
-        <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">길드원 (<span id="mainTabMemberCount">0</span>)</span>
-        <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary" style="font-size: 0.7rem;" onclick="loadMainTabFriendsList()">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="border-color:var(--main-header-border,#e2e8f0)!important;">
+        <span class="text-secondary small fw-bold" style="font-size:0.72rem;">길드원 (<span id="mainTabMemberCount">0</span>)</span>
+        <button type="button" class="btn btn-link p-0 text-decoration-none text-secondary" style="font-size:0.7rem;" onclick="loadMainTabFriendsList()">
           <i class="fa-solid fa-arrows-rotate me-1"></i>새로고침
         </button>
       </div>
-
       <div id="mainTabFriendsList">
         <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>길드원을 불러오는 중...</div>
       </div>
     </div>
 
     <!-- [탭 2] 대화방 목록 -->
-    <div id="tabChatRoomsContent" class="kakao-tab-body" style="display: block; flex: 1; overflow-y: auto;">
-      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
-        <span class="text-secondary small fw-bold" style="font-size: 0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
-        <button type="button" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size: 0.74rem;" onclick="openCreateRoomModal()">
+    <div id="tabChatRoomsContent" class="kakao-tab-body" style="display:block; flex:1; overflow-y:auto;">
+      <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="border-color:var(--main-header-border,#e2e8f0)!important;">
+        <span class="text-secondary small fw-bold" style="font-size:0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
+        <button type="button" class="btn btn-link p-0 text-decoration-none text-primary fw-bold" style="font-size:0.74rem;" onclick="openCreateRoomModal()">
           <i class="fa-solid fa-plus me-1"></i>방 만들기
         </button>
       </div>
-
       <div id="mainTabRoomsList">
         <div class="text-center py-4 text-secondary small"><i class="fa-solid fa-spinner fa-spin me-2"></i>대화방 목록을 불러오는 중...</div>
       </div>
     </div>
 
     <!-- [탭 3] 더보기 -->
-    <div id="tabMoreContent" class="kakao-tab-body" style="display: none; flex: 1; overflow-y: auto;">
+    <div id="tabMoreContent" class="kakao-tab-body" style="display:none; flex:1; overflow-y:auto;">
       <div class="more-menu-grid">
-        <div class="more-menu-item" onclick="openModulePage('PageNotice')">
-          <div class="more-menu-icon text-info"><i class="fa-solid fa-bullhorn"></i></div>
-          <span class="more-menu-label">공지사항</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageRegister')">
-          <div class="more-menu-icon text-danger"><i class="fa-solid fa-crosshairs"></i></div>
-          <span class="more-menu-label">보스등록</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageRecords')">
-          <div class="more-menu-icon text-warning"><i class="fa-solid fa-scroll"></i></div>
-          <span class="more-menu-label">보스참여자</span>
-        </div>
-        <div class="more-menu-item" onclick="toggleBossDrawer(true)">
-          <div class="more-menu-icon text-warning"><i class="fa-solid fa-hourglass-half"></i></div>
-          <span class="more-menu-label">보스타임</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageWish')">
-          <div class="more-menu-icon" style="color:#f472b6;"><i class="fa-solid fa-gift"></i></div>
-          <span class="more-menu-label">분배희망</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageSettle')">
-          <div class="more-menu-icon text-success"><i class="fa-solid fa-coins"></i></div>
-          <span class="more-menu-label">정산내역</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageFinance')">
-          <div class="more-menu-icon text-secondary"><i class="fa-solid fa-landmark"></i></div>
-          <span class="more-menu-label">길드비용</span>
-        </div>
-        <div class="more-menu-item" onclick="openModulePage('PageSettings')">
-          <div class="more-menu-icon text-secondary"><i class="fa-solid fa-gear"></i></div>
-          <span class="more-menu-label">설정</span>
-        </div>
+        <div class="more-menu-item" onclick="openModulePage('PageNotice')"><div class="more-menu-icon text-info"><i class="fa-solid fa-bullhorn"></i></div><span class="more-menu-label">공지사항</span></div>
+        <div class="more-menu-item" onclick="openModulePage('PageRegister')"><div class="more-menu-icon text-danger"><i class="fa-solid fa-crosshairs"></i></div><span class="more-menu-label">보스등록</span></div>
+        <div class="more-menu-item" onclick="openModulePage('PageRecords')"><div class="more-menu-icon text-warning"><i class="fa-solid fa-scroll"></i></div><span class="more-menu-label">보스참여자</span></div>
+        <div class="more-menu-item" onclick="toggleBossDrawer(true)"><div class="more-menu-icon text-warning"><i class="fa-solid fa-hourglass-half"></i></div><span class="more-menu-label">보스타임</span></div>
+        <div class="more-menu-item" onclick="openModulePage('PageWish')"><div class="more-menu-icon" style="color:#f472b6;"><i class="fa-solid fa-gift"></i></div><span class="more-menu-label">분배희망</span></div>
+        <div class="more-menu-item" onclick="openModulePage('PageSettle')"><div class="more-menu-icon text-success"><i class="fa-solid fa-coins"></i></div><span class="more-menu-label">정산내역</span></div>
+        <div class="more-menu-item" onclick="openModulePage('PageFinance')"><div class="more-menu-icon text-secondary"><i class="fa-solid fa-landmark"></i></div><span class="more-menu-label">길드비용</span></div>
+        <div class="more-menu-item" onclick="openModulePage('PageSettings')"><div class="more-menu-icon text-secondary"><i class="fa-solid fa-gear"></i></div><span class="more-menu-label">설정</span></div>
       </div>
     </div>
 
     <!-- 하단 3탭 바 -->
     <nav class="kakao-bottom-tabbar">
-      <div class="kakao-tab-item" id="tabItemFriends" onclick="switchMainBottomTab('friends')">
-        <i class="fa-solid fa-user"></i>
-        <span>친구</span>
-      </div>
-      <div class="kakao-tab-item active" id="tabItemChats" onclick="switchMainBottomTab('chats')">
-        <i class="fa-solid fa-comment"></i>
-        <span>채팅</span>
-      </div>
-      <div class="kakao-tab-item" id="tabItemMore" onclick="switchMainBottomTab('settings')">
-        <i class="fa-solid fa-gear"></i>
-        <span>설정</span>
-      </div>
+      <div class="kakao-tab-item" id="tabItemFriends" onclick="switchMainBottomTab('friends')"><i class="fa-solid fa-user"></i><span>친구</span></div>
+      <div class="kakao-tab-item active" id="tabItemChats" onclick="switchMainBottomTab('chats')"><i class="fa-solid fa-comment"></i><span>채팅</span></div>
+      <div class="kakao-tab-item" id="tabItemMore" onclick="switchMainBottomTab('settings')"><i class="fa-solid fa-gear"></i><span>설정</span></div>
     </nav>
   </div>
 
-  <!-- ========================================================
-       [VIEW 2] 개별 대화방 화면 (리사이즈 가능)
-       ======================================================== -->
-  <div id="chatRoomView" class="app-main-layout" style="display: none;">
+  <!-- [VIEW 2] 개별 대화방 화면 -->
+  <div id="chatRoomView" class="app-main-layout" style="display:none;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
-        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()">
-          <i class="fa-solid fa-minus"></i>
-        </button>
-        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()">
-          <i class="fa-regular fa-square"></i>
-        </button>
-        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
+        <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()"><i class="fa-solid fa-minus"></i></button>
+        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()"><i class="fa-regular fa-square"></i></button>
+        <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
-
     <header class="kakao-chat-header">
-      <div class="header-left-area" style="display: flex !important; align-items: center !important; gap: 8px !important; flex-wrap: nowrap !important; min-width: 0 !important; flex: 1 !important; overflow: hidden !important;">
-        <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: none; background: transparent; font-size: 1.1rem; flex-shrink: 0; cursor: pointer; color: var(--kakao-header-text, #191919);">
+      <div class="header-left-area" style="display:flex!important; align-items:center!important; gap:8px!important; flex-wrap:nowrap!important; min-width:0!important; flex:1!important; overflow:hidden!important;">
+        <button type="button" class="btn-kakao-menu" title="대화방 나가기" onclick="exitChatRoomToMain()" style="width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; padding:0; border:none; background:transparent; font-size:1.1rem; flex-shrink:0; cursor:pointer; color:var(--kakao-header-text,#191919);">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
-        <div class="room-avatar-circle" id="chatRoomAvatar" style="width: 34px; height: 34px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #181d24; border: 1.5px solid #fee500;">
-          <span style="font-weight: 800; color: #fee500; font-size: 1.05rem; line-height: 1;">G</span>
+        <div class="room-avatar-circle" id="chatRoomAvatar" style="width:34px; height:34px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:#181d24; border:1.5px solid #fee500;">
+          <span style="font-weight:800; color:#fee500; font-size:1.05rem; line-height:1;">G</span>
         </div>
-        
         <div class="room-header-two-tier">
-          <div class="room-server-subtitle" id="chatRoomServerSub" style="display: none;"></div>
+          <div class="room-server-subtitle" id="chatRoomServerSub" style="display:none;"></div>
           <div class="room-main-title" id="chatRoomTitle">대화방</div>
-          <span id="roomMemberCountText" style="display: none;">0</span>
+          <span id="roomMemberCountText" style="display:none;">0</span>
         </div>
       </div>
-
       <div class="header-right-tools">
-        <button type="button" class="btn-kakao-head text-danger" id="btnLeaveCurrentRoom" style="display: none;" title="방 나오기" onclick="handleLeaveCurrentRoomFromHeader()">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display: none;" title="앱으로 설치">
-          <i class="fa-solid fa-download"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="대화 내용 검색" onclick="focusChatInput()">
-          <i class="fa-solid fa-magnifying-glass"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()">
-          <i class="fa-regular fa-clock"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)">
-          <i class="fa-solid fa-user-group"></i>
-        </button>
-        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleMenuDrawer(true)">
-          <i class="fa-solid fa-bars"></i>
-        </button>
+        <button type="button" class="btn-kakao-head text-danger" id="btnLeaveCurrentRoom" style="display:none;" title="방 나오기" onclick="handleLeaveCurrentRoomFromHeader()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+        <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display:none;" title="앱으로 설치"><i class="fa-solid fa-download"></i></button>
+        <button type="button" class="btn-kakao-head" title="대화 내용 검색" onclick="focusChatInput()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button type="button" class="btn-kakao-head" title="보스타임 채팅 브리핑" onclick="postBossBriefingToChat()"><i class="fa-regular fa-clock"></i></button>
+        <button type="button" class="btn-kakao-head" title="길드원 목록" onclick="toggleMembersDrawer(true)"><i class="fa-solid fa-user-group"></i></button>
+        <button type="button" class="btn-kakao-head" title="메뉴 열기" onclick="toggleMenuDrawer(true)"><i class="fa-solid fa-bars"></i></button>
       </div>
     </header>
-
     <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
-      <div class="d-flex align-items-center" style="min-width: 0 !important; flex: 1;">
+      <div class="d-flex align-items-center" style="min-width:0!important; flex:1;">
         <i class="fa-solid fa-bullhorn notice-icon-part"></i>
         <div class="notice-text-content" id="kakaoTopNoticeText">공지사항을 불러오는 중...</div>
       </div>
-      <i class="fa-solid fa-chevron-right text-secondary" style="font-size: 0.72rem;"></i>
+      <i class="fa-solid fa-chevron-right text-secondary" style="font-size:0.72rem;"></i>
     </div>
-
     <div class="chat-messages-container" id="chatMessagesView">
       <div class="text-center my-1">
         <span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span>
       </div>
     </div>
-
     <div id="mentionPopupBox" class="mention-popup-container"></div>
-
     <footer class="kakao-input-area">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)"></textarea>
-      <div class="input-bottom-tools" style="justify-content: flex-end;">
+      <div class="input-bottom-tools" style="justify-content:flex-end;">
         <button type="button" class="btn-kakao-send" id="btnKakaoSend" onclick="handleSendMessage()">전송</button>
       </div>
     </footer>
-
-    <div id="moduleOverlay" class="module-display-overlay" style="display: none;">
+    <div id="moduleOverlay" class="module-display-overlay" style="display:none;">
       <div class="module-nav-header">
         <button type="button" class="btn-kakao-overlay-back" onclick="closeModuleOverlay()" title="대화방으로 복귀">
-          <i class="fa-solid fa-chevron-left" style="font-size: 0.95rem;"></i>
-          <span>대화방</span>
+          <i class="fa-solid fa-chevron-left" style="font-size:0.95rem;"></i><span>대화방</span>
         </button>
         <span class="overlay-nav-title-text" id="overlayNavTitle">기능 화면</span>
-        <div style="width: 65px;"></div>
+        <div style="width:65px;"></div>
       </div>
       <div class="module-scroll-body" id="overlayBodyContent"></div>
     </div>
   </div>
 
   <!-- 공통 알림 토스트 박스 -->
-  <div id="kakaoToastBox" class="kakao-toast-box" style="z-index: 10000010 !important;">
+  <div id="kakaoToastBox" class="kakao-toast-box" style="z-index:10000010!important;">
     <span id="kakaoToastIcon">💬</span>
     <span id="kakaoToastMsg">알림 메시지</span>
   </div>
 
   <!-- 모달 1: 길드 메신저 로그인 모달 -->
-  <div id="guildLoginModal" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px; background:#ffffff; border:1px solid #cbd5e1; color:#1e293b;">
-      <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width: 60px; height: auto; margin-bottom: 8px; background: transparent !important;" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
-      <h6 class="fw-bold mb-1" style="font-size: 1.05rem;" id="loginGuildTitle">레이드온 로그인</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
-      
-      <div style="position: relative; margin-bottom: 8px; text-align: left;">
-        <i class="fa-solid fa-user" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
-        <input type="text" id="loginNickSearchInput" placeholder="본인 캐릭터 닉네임 입력" autocomplete="off"
-               style="padding-left: 34px; height: 40px; margin-bottom: 0; font-weight: 600;"
-               onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
+  <div id="guildLoginModal" class="kakao-modal-backdrop" style="display:none; z-index:100000;">
+    <div class="kakao-modal-card" style="max-width:320px; background:#fff; border:1px solid #cbd5e1; color:#1e293b;">
+      <img src="assets/raidon_shield.png" alt="RaidOn Logo" style="width:60px; height:auto; margin-bottom:8px; background:transparent!important;" onerror="this.onerror=null; this.src='./assets/raidon_shield.png';">
+      <h6 class="fw-bold mb-1" style="font-size:1.05rem;" id="loginGuildTitle">레이드온 로그인</h6>
+      <p class="small mb-3" style="font-size:0.72rem; color:#64748b;">본인 캐릭터 닉네임과 개인 비밀번호(PIN)를 입력하세요.</p>
+      <div style="position:relative; margin-bottom:8px; text-align:left;">
+        <i class="fa-solid fa-user" style="position:absolute; left:12px; top:11px; color:#94a3b8; font-size:0.82rem;"></i>
+        <input type="text" id="loginNickSearchInput" placeholder="본인 캐릭터 닉네임 입력" autocomplete="off" style="padding-left:34px; height:40px; margin-bottom:0; font-weight:600;" onkeypress="if(event.keyCode===13){ document.getElementById('loginPinInput').focus(); }">
       </div>
-
-      <div style="position: relative; margin-bottom: 10px; text-align: left;">
-        <i class="fa-solid fa-lock" style="position: absolute; left: 12px; top: 11px; color: #94a3b8; font-size: 0.82rem;"></i>
-        <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 6자리 입력" maxlength="20"
-               style="padding-left: 24px; height: 40px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 0;"
-               onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
+      <div style="position:relative; margin-bottom:10px; text-align:left;">
+        <i class="fa-solid fa-lock" style="position:absolute; left:12px; top:11px; color:#94a3b8; font-size:0.82rem;"></i>
+        <input type="password" id="loginPinInput" class="text-center" placeholder="비밀번호(PIN) 6자리 입력" maxlength="20" style="padding-left:24px; height:40px; font-size:0.95rem; letter-spacing:2px; margin-bottom:0;" onkeypress="if(event.keyCode===13){ executeGuildLogin(); }">
       </div>
-
-      <!-- 자동 로그인 & 상태 유지 체크박스 -->
-      <div class="d-flex align-items-center justify-content-between px-1 mb-3" style="margin-top: 2px;">
+      <div class="d-flex align-items-center justify-content-between px-1 mb-3" style="margin-top:2px;">
         <label class="kakao-checkbox-wrap">
           <input type="checkbox" id="chkAutoLogin" onchange="handleAutoLoginCheckChange(this)">
           <span>자동 로그인</span>
@@ -1062,170 +399,140 @@
           <span>로그인 상태 유지</span>
         </label>
       </div>
-
-      <div id="loginMultiGuildSelectBox" style="display: none; text-align: left; margin-bottom: 10px; padding: 10px; border-radius: 10px; background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.3);">
-        <div class="small fw-bold text-info mb-2" style="font-size: 0.73rem;">
+      <div id="loginMultiGuildSelectBox" style="display:none; text-align:left; margin-bottom:10px; padding:10px; border-radius:10px; background:rgba(2,132,199,0.08); border:1px solid rgba(2,132,199,0.3);">
+        <div class="small fw-bold text-info mb-2" style="font-size:0.73rem;">
           <i class="fa-solid fa-circle-check me-1"></i>동일한 닉네임이 여러 길드에 있습니다. 입장할 길드를 선택하세요:
         </div>
         <div id="loginMultiGuildButtons" class="d-flex flex-column gap-1"></div>
       </div>
-
       <div class="d-flex gap-2 mb-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.82rem; border-radius: 8px;" onclick="closeGuildLoginModal()">
-          취소
-        </button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeGuildLogin()">
-          로그인
-        </button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size:0.82rem; border-radius:8px;" onclick="closeGuildLoginModal()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.85rem; border-radius:8px;" onclick="executeGuildLogin()">로그인</button>
       </div>
-
-      <div class="d-flex align-items-center justify-content-between mt-1 pt-2 border-top" style="border-color: rgba(148,163,184,0.2) !important;">
-        <span style="font-size: 0.68rem; color: #64748b;">아직 길드에 가입하지 않으셨나요?</span>
-        <button type="button" class="btn btn-link p-0 fw-bold text-decoration-none" style="font-size: 0.7rem; color: #2563eb;" onclick="closeGuildLoginModal(); openJoinGuildModal();">
-          초대코드로 가입 &gt;
-        </button>
+      <div class="d-flex align-items-center justify-content-between mt-1 pt-2 border-top" style="border-color:rgba(148,163,184,0.2)!important;">
+        <span style="font-size:0.68rem; color:#64748b;">아직 길드에 가입하지 않으셨나요?</span>
+        <button type="button" class="btn btn-link p-0 fw-bold text-decoration-none" style="font-size:0.7rem; color:#2563eb;" onclick="closeGuildLoginModal(); openJoinGuildModal();">초대코드로 가입 &gt;</button>
       </div>
     </div>
   </div>
 
   <!-- 모달 2: 라이선스 키 개설 모달 -->
-  <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-key text-warning me-1"></i>라이선스 키로 길드 시작</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">발급받으신 라이선스 키를 입력하세요.</p>
-      <input type="text" id="actLicenseKeyInput" class="text-center font-monospace text-uppercase" placeholder="ECL-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px;">
-      <input type="text" id="actMasterNickInput" placeholder="길드장 닉네임 (본인 캐릭터명)" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px;">
-      <input type="password" id="actPinInput" class="text-center" placeholder="길드장 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;">
+  <div id="modalActivateGuild" class="kakao-modal-backdrop" style="display:none; z-index:100000;">
+    <div class="kakao-modal-card" style="max-width:320px;">
+      <h6 class="fw-bold mb-1" style="font-size:0.98rem;"><i class="fa-solid fa-key text-warning me-1"></i>라이선스 키로 길드 시작</h6>
+      <p class="small mb-3" style="font-size:0.72rem; color:#64748b;">발급받으신 라이선스 키를 입력하세요.</p>
+      <input type="text" id="actLicenseKeyInput" class="text-center font-monospace text-uppercase" placeholder="ECL-XXXX-XXXX" style="height:38px; font-size:0.9rem; margin-bottom:8px;">
+      <input type="text" id="actMasterNickInput" placeholder="길드장 닉네임 (본인 캐릭터명)" style="height:38px; font-size:0.85rem; margin-bottom:8px;">
+      <input type="password" id="actPinInput" class="text-center" placeholder="길드장 6자리 비밀번호(PIN)" maxlength="6" style="height:38px; font-size:0.95rem; letter-spacing:2px; margin-bottom:12px;">
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeActivateGuildModal()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="executeActivateGuild()">길드 개설 완료</button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size:0.8rem; border-radius:8px;" onclick="closeActivateGuildModal()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.8rem; border-radius:8px;" onclick="executeActivateGuild()">길드 개설 완료</button>
       </div>
     </div>
   </div>
 
   <!-- 모달 3: 초대 코드 가입 모달 -->
-  <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">길드장에게 전달받은 초대 코드를 입력하세요.</p>
-      <input type="text" id="joinInviteCodeInput" class="text-center font-monospace text-uppercase" placeholder="INV-XXXX-XXXX" style="height: 38px; font-size: 0.9rem; margin-bottom: 8px;">
-      <input type="text" id="joinMemberNickInput" placeholder="본인 캐릭터 닉네임" style="height: 38px; font-size: 0.85rem; margin-bottom: 8px;">
-      <input type="password" id="joinMemberPinInput" class="text-center" placeholder="개인 6자리 비밀번호(PIN)" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;">
+  <div id="modalJoinGuild" class="kakao-modal-backdrop" style="display:none; z-index:100000;">
+    <div class="kakao-modal-card" style="max-width:320px;">
+      <h6 class="fw-bold mb-1" style="font-size:0.98rem;"><i class="fa-solid fa-user-plus text-primary me-1"></i>초대 코드로 길드 가입</h6>
+      <p class="small mb-3" style="font-size:0.72rem; color:#64748b;">길드장에게 전달받은 초대 코드를 입력하세요.</p>
+      <input type="text" id="joinInviteCodeInput" class="text-center font-monospace text-uppercase" placeholder="INV-XXXX-XXXX" style="height:38px; font-size:0.9rem; margin-bottom:8px;">
+      <input type="text" id="joinMemberNickInput" placeholder="본인 캐릭터 닉네임" style="height:38px; font-size:0.85rem; margin-bottom:8px;">
+      <input type="password" id="joinMemberPinInput" class="text-center" placeholder="개인 6자리 비밀번호(PIN)" maxlength="6" style="height:38px; font-size:0.95rem; letter-spacing:2px; margin-bottom:12px;">
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeJoinGuildModal()">취소</button>
-        <button type="button" class="btn btn-success btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeJoinGuildWithCode()">입장하기</button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size:0.8rem; border-radius:8px;" onclick="closeJoinGuildModal()">취소</button>
+        <button type="button" class="btn btn-success btn-sm flex-fill fw-bold py-2" style="font-size:0.8rem; border-radius:8px;" onclick="executeJoinGuildWithCode()">입장하기</button>
       </div>
     </div>
   </div>
 
   <!-- 모달 4: 라이선스 신청 모달 -->
-  <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;"><i class="fa-solid fa-paper-plane text-primary me-1"></i>신규 길드 라이선스 신청</h6>
-      <p class="small mb-3" style="font-size: 0.72rem; color: #64748b;">MMORPG 길드 전용 라이선스를 신청하세요.</p>
-      <input type="text" id="reqGameNameInput" placeholder="게임명 (예: 리니지M, 로아, 오딘)" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
-      <input type="text" id="reqGuildNameInput" placeholder="길드명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
-      <input type="text" id="reqMasterNickInput" placeholder="신청자(길드장) 캐릭터명" style="height: 36px; font-size: 0.82rem; margin-bottom: 6px;">
-      <input type="text" id="reqContactInput" placeholder="연락처 (이메일 또는 카톡/디스코드)" style="height: 36px; font-size: 0.82rem; margin-bottom: 12px;">
+  <div id="modalLicenseRequest" class="kakao-modal-backdrop" style="display:none; z-index:100000;">
+    <div class="kakao-modal-card" style="max-width:320px;">
+      <h6 class="fw-bold mb-1" style="font-size:0.98rem;"><i class="fa-solid fa-paper-plane text-primary me-1"></i>신규 길드 라이선스 신청</h6>
+      <p class="small mb-3" style="font-size:0.72rem; color:#64748b;">MMORPG 길드 전용 라이선스를 신청하세요.</p>
+      <input type="text" id="reqGameNameInput" placeholder="게임명 (예: 리니지M, 로아, 오딘)" style="height:36px; font-size:0.82rem; margin-bottom:6px;">
+      <input type="text" id="reqGuildNameInput" placeholder="길드명" style="height:36px; font-size:0.82rem; margin-bottom:6px;">
+      <input type="text" id="reqMasterNickInput" placeholder="신청자(길드장) 캐릭터명" style="height:36px; font-size:0.82rem; margin-bottom:6px;">
+      <input type="text" id="reqContactInput" placeholder="연락처 (이메일 또는 카톡/디스코드)" style="height:36px; font-size:0.82rem; margin-bottom:12px;">
       <div class="d-flex gap-2">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeLicenseRequestModal()">취소</button>
-        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="submitLicenseRequestForm()">신청 완료</button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size:0.8rem; border-radius:8px;" onclick="closeLicenseRequestModal()">취소</button>
+        <button type="button" class="btn btn-warning btn-sm flex-fill fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.8rem; border-radius:8px;" onclick="submitLicenseRequestForm()">신청 완료</button>
       </div>
     </div>
   </div>
 
   <!-- 모달 5: 고객센터 & FAQ 아코디언 통합 모달 -->
-  <div id="modalSupportCenter" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
-    <div class="kakao-modal-card" style="max-width: 340px; max-height: 85vh; display: flex; flex-direction: column;">
+  <div id="modalSupportCenter" class="kakao-modal-backdrop" style="display:none; z-index:100002;">
+    <div class="kakao-modal-card" style="max-width:340px; max-height:85vh; display:flex; flex-direction:column;">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <h6 class="fw-bold mb-0" style="font-size: 0.95rem;">
-          <i class="fa-solid fa-headset text-primary me-1"></i>고객센터 & FAQ
-        </h6>
+        <h6 class="fw-bold mb-0" style="font-size:0.95rem;"><i class="fa-solid fa-headset text-primary me-1"></i>고객센터 & FAQ</h6>
         <button type="button" class="btn btn-sm btn-link text-secondary text-decoration-none p-0" onclick="closeSupportCenterModal()">✕</button>
       </div>
-
       <div class="d-flex gap-1 mb-2 border-bottom pb-2">
-        <button type="button" class="btn btn-sm btn-warning flex-fill fw-bold py-1" id="tabBtnFaq" style="font-size: 0.74rem;" onclick="switchSupportTab('faq')">자주 묻는 질문</button>
-        <button type="button" class="btn btn-sm btn-light flex-fill fw-bold py-1" id="tabBtnInquiry" style="font-size: 0.74rem;" onclick="switchSupportTab('inquiry')">1:1 문의하기</button>
+        <button type="button" class="btn btn-sm btn-warning flex-fill fw-bold py-1" id="tabBtnFaq" style="font-size:0.74rem;" onclick="switchSupportTab('faq')">자주 묻는 질문</button>
+        <button type="button" class="btn btn-sm btn-light flex-fill fw-bold py-1" id="tabBtnInquiry" style="font-size:0.74rem;" onclick="switchSupportTab('inquiry')">1:1 문의하기</button>
       </div>
-
-      <div id="supportTabFaqContent" style="flex: 1; overflow-y: auto; text-align: left; padding-right: 4px;">
+      <div id="supportTabFaqContent" style="flex:1; overflow-y:auto; text-align:left; padding-right:4px;">
         <div id="inAppFaqListContainer">
           <div class="faq-item">
-            <div class="faq-q" onclick="toggleInAppFaq(this)">
-              <span>Q. 초기 비밀번호는 무엇인가요?</span>
-              <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.65rem;"></i>
-            </div>
+            <div class="faq-q" onclick="toggleInAppFaq(this)"><span>Q. 초기 비밀번호는 무엇인가요?</span><i class="fa-solid fa-chevron-down text-secondary" style="font-size:0.65rem;"></i></div>
             <div class="faq-a">최초 등록 시 기본 비밀번호는 <strong>000000</strong>이며, 첫 로그인 시 보안을 위해 본인만의 6자리 숫자 비밀번호로 즉시 변경해야 합니다.</div>
           </div>
           <div class="faq-item">
-            <div class="faq-q" onclick="toggleInAppFaq(this)">
-              <span>Q. 길드원 초대는 어떻게 하나요?</span>
-              <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.65rem;"></i>
-            </div>
+            <div class="faq-q" onclick="toggleInAppFaq(this)"><span>Q. 길드원 초대는 어떻게 하나요?</span><i class="fa-solid fa-chevron-down text-secondary" style="font-size:0.65rem;"></i></div>
             <div class="faq-a">길드장이 전달한 초대 코드(INV-XXXX)로 가입하거나, 길드 관리자가 설정에서 직접 닉네임을 등록해 주면 즉시 로그인할 수 있습니다.</div>
           </div>
           <div class="faq-item">
-            <div class="faq-q" onclick="toggleInAppFaq(this)">
-              <span>Q. 라이선스 발급 및 연장 문의는?</span>
-              <i class="fa-solid fa-chevron-down text-secondary" style="font-size: 0.65rem;"></i>
-            </div>
+            <div class="faq-q" onclick="toggleInAppFaq(this)"><span>Q. 라이선스 발급 및 연장 문의는?</span><i class="fa-solid fa-chevron-down text-secondary" style="font-size:0.65rem;"></i></div>
             <div class="faq-a">[1:1 문의하기] 탭이나 [신규 길드 라이선스 발급 신청] 메뉴를 통해 접수해 주시면 관리자가 확인 후 친절히 안내해 드립니다.</div>
           </div>
         </div>
       </div>
-
-      <div id="supportTabInquiryContent" style="display: none; text-align: left;">
-        <select id="supCategoryInput" class="form-select form-select-sm mb-2" style="font-size: 0.78rem;">
+      <div id="supportTabInquiryContent" style="display:none; text-align:left;">
+        <select id="supCategoryInput" class="form-select form-select-sm mb-2" style="font-size:0.78rem;">
           <option value="라이선스/결제 문의">라이선스 발급 / 연장 문의</option>
           <option value="비밀번호/계정 문의">비밀번호 초기화 / 계정 문의</option>
           <option value="버그/오류 제보">버그 및 오류 제보</option>
           <option value="기타 문의">기타 서비스 문의</option>
         </select>
-        <input type="text" id="supWriterInput" placeholder="길드명 및 본인 캐릭터명" style="height: 36px; font-size: 0.8rem; margin-bottom: 6px;">
-        <input type="text" id="supContactInput" placeholder="답변 받을 연락처 (카톡/전화/이메일)" style="height: 36px; font-size: 0.8rem; margin-bottom: 6px;">
-        <textarea id="supContentInput" class="form-control form-control-sm mb-2" rows="3" placeholder="문의 내용을 작성해 주세요." style="font-size: 0.78rem; border-radius: 8px;"></textarea>
-        <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.82rem; border-radius: 8px;" onclick="submitSupportInquiry()">
-          문의 접수하기
-        </button>
+        <input type="text" id="supWriterInput" placeholder="길드명 및 본인 캐릭터명" style="height:36px; font-size:0.8rem; margin-bottom:6px;">
+        <input type="text" id="supContactInput" placeholder="답변 받을 연락처 (카톡/전화/이메일)" style="height:36px; font-size:0.8rem; margin-bottom:6px;">
+        <textarea id="supContentInput" class="form-control form-control-sm mb-2" rows="3" placeholder="문의 내용을 작성해 주세요." style="font-size:0.78rem; border-radius:8px;"></textarea>
+        <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.82rem; border-radius:8px;" onclick="submitSupportInquiry()">문의 접수하기</button>
       </div>
-
-      <button type="button" class="btn btn-light btn-sm w-100 mt-2 py-1" style="font-size: 0.78rem;" onclick="closeSupportCenterModal()">닫기</button>
+      <button type="button" class="btn btn-light btn-sm w-100 mt-2 py-1" style="font-size:0.78rem;" onclick="closeSupportCenterModal()">닫기</button>
     </div>
   </div>
 
   <!-- 모달 6: 시스템 전체 공지 모달 -->
-  <div id="modalSaasGlobalNotice" class="kakao-modal-backdrop" style="display: none; z-index: 100002;">
-    <div class="kakao-modal-card" style="max-width: 320px; text-align: left;">
+  <div id="modalSaasGlobalNotice" class="kakao-modal-backdrop" style="display:none; z-index:100002;">
+    <div class="kakao-modal-card" style="max-width:320px; text-align:left;">
       <div class="d-flex align-items-center justify-content-between mb-2">
-        <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.7rem;"><i class="fa-solid fa-bullhorn me-1"></i>공지사항</span>
+        <span class="badge bg-warning text-dark fw-bold" style="font-size:0.7rem;"><i class="fa-solid fa-bullhorn me-1"></i>공지사항</span>
         <button type="button" class="btn-close-modal" style="background:transparent; border:none; color:#94a3b8; font-size:1.1rem;" onclick="closeSaasNoticeModal()">✕</button>
       </div>
-      <h6 class="fw-bold mb-2" id="saasNoticeModalTitle" style="font-size: 0.94rem;">레이드온 서비스 안내</h6>
-      <div id="saasNoticeModalBody" class="p-2 rounded mb-3" style="font-size: 0.78rem; line-height: 1.5; max-height: 200px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; color:#334155; white-space: pre-wrap;">
-        환영합니다! 레이드온을 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.
-      </div>
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.8rem; border-radius: 8px;" onclick="closeSaasNoticeModal()">
-        확인
-      </button>
+      <h6 class="fw-bold mb-2" id="saasNoticeModalTitle" style="font-size:0.94rem;">레이드온 서비스 안내</h6>
+      <div id="saasNoticeModalBody" class="p-2 rounded mb-3" style="font-size:0.78rem; line-height:1.5; max-height:200px; overflow-y:auto; background:#f8fafc; border:1px solid #e2e8f0; color:#334155; white-space:pre-wrap;">환영합니다! 레이드온을 통해 보스 타이머, 정산, 길드원 실시간 대화를 편리하게 이용해 보세요.</div>
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.8rem; border-radius:8px;" onclick="closeSaasNoticeModal()">확인</button>
     </div>
   </div>
 
   <!-- 모달 7: 라이선스 성공 모달 -->
-  <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display: none; z-index: 100001;">
-    <div class="kakao-modal-card" style="max-width: 300px;">
-      <div class="mb-2"><i class="fa-circle-check fa-solid text-success" style="font-size: 2.2rem;"></i></div>
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">라이선스 등록 성공</h6>
-      <p class="small mb-3" style="font-size: 0.75rem; color:#64748b;">길드가 활성화되었습니다.<br>길드장으로 자동 로그인되었습니다.</p>
+  <div id="modalLicenseSuccess" class="kakao-modal-backdrop" style="display:none; z-index:100001;">
+    <div class="kakao-modal-card" style="max-width:300px;">
+      <div class="mb-2"><i class="fa-circle-check fa-solid text-success" style="font-size:2.2rem;"></i></div>
+      <h6 class="fw-bold mb-1" style="font-size:0.98rem;">라이선스 등록 성공</h6>
+      <p class="small mb-3" style="font-size:0.75rem; color:#64748b;">길드가 활성화되었습니다.<br>길드장으로 자동 로그인되었습니다.</p>
       <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.85rem; border-radius:8px;" onclick="closeLicenseSuccessModal()">대화방 시작하기</button>
     </div>
   </div>
 
   <!-- 모달 8: 새 방 만들기 모달 -->
-  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display: none; z-index: 100000;">
-    <div class="kakao-modal-card" style="max-width: 320px;">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">새 대화방 만들기</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">개설할 대화방 종류를 선택하세요.</p>
+  <div id="modalCreateRoom" class="kakao-modal-backdrop" style="display:none; z-index:100000;">
+    <div class="kakao-modal-card" style="max-width:320px;">
+      <h6 class="fw-bold mb-1" style="font-size:0.95rem;">새 대화방 만들기</h6>
+      <p class="text-secondary small mb-3" style="font-size:0.72rem;">개설할 대화방 종류를 선택하세요.</p>
       <select id="newRoomTypeSelect" class="form-select form-select-sm mb-2" onchange="onRoomTypeChange(this.value)">
         <option value="group">공개 그룹 대화방</option>
         <option value="secret">비밀 운영진방</option>
@@ -1234,72 +541,68 @@
       <div id="roomTitleInputGroup" class="mb-2">
         <input type="text" id="newRoomTitleInput" class="form-control form-control-sm" placeholder="대화방 이름 입력">
       </div>
-      <div id="oneOnOneTargetGroup" class="mb-2" style="display: none;">
+      <div id="oneOnOneTargetGroup" class="mb-2" style="display:none;">
         <select id="oneOnOneTargetSelect" class="form-select form-select-sm"></select>
       </div>
       <div class="d-flex gap-2 mt-3">
-        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="closeCreateRoomModal()">취소</button>
-        <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold py-2" style="font-size: 0.8rem; border-radius: 8px;" onclick="executeCreateNewRoom()">개설하기</button>
+        <button type="button" class="btn btn-secondary btn-sm flex-fill py-2" style="font-size:0.8rem; border-radius:8px;" onclick="closeCreateRoomModal()">취소</button>
+        <button type="button" class="btn btn-primary btn-sm flex-fill fw-bold py-2" style="font-size:0.8rem; border-radius:8px;" onclick="executeCreateNewRoom()">개설하기</button>
       </div>
     </div>
   </div>
 
   <!-- 모달 9: 초기 비밀번호 변경 모달 -->
-  <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display: none; z-index: 10000005 !important;">
-    <div class="kakao-modal-card" style="max-width: 320px;">
-      <div class="mb-2" style="font-size: 2rem;">🔐</div>
-      <h6 class="fw-bold mb-1" style="font-size: 0.98rem;">비밀번호를 변경하세요</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.74rem; line-height: 1.45;">
-        현재 초기 비밀번호(<strong>000000</strong>)를 사용 중입니다.<br>안전한 계정 보호를 위해 새로운 6자리 비밀번호로 변경해 주세요.
-      </p>
-      <input type="password" id="forceNewPinInput" class="text-center" placeholder="새 비밀번호 6자리 숫자" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 8px;" onkeypress="if(event.keyCode===13){ document.getElementById('forceNewPinConfirmInput').focus(); }">
-      <input type="password" id="forceNewPinConfirmInput" class="text-center" placeholder="새 비밀번호 6자리 다시 입력" maxlength="6" style="height: 38px; font-size: 0.95rem; letter-spacing: 2px; margin-bottom: 12px;" onkeypress="if(event.keyCode===13){ executeForceChangePin(); }">
-      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size: 0.85rem; border-radius: 8px;" onclick="executeForceChangePin()">비밀번호 변경 완료</button>
+  <div id="modalForceChangePin" class="kakao-modal-backdrop" style="display:none; z-index:10000005!important;">
+    <div class="kakao-modal-card" style="max-width:320px;">
+      <div class="mb-2" style="font-size:2rem;">🔐</div>
+      <h6 class="fw-bold mb-1" style="font-size:0.98rem;">비밀번호를 변경하세요</h6>
+      <p class="text-secondary small mb-3" style="font-size:0.74rem; line-height:1.45;">현재 초기 비밀번호(<strong>000000</strong>)를 사용 중입니다.<br>안전한 계정 보호를 위해 새로운 6자리 비밀번호로 변경해 주세요.</p>
+      <input type="password" id="forceNewPinInput" class="text-center" placeholder="새 비밀번호 6자리 숫자" maxlength="6" style="height:38px; font-size:0.95rem; letter-spacing:2px; margin-bottom:8px;" onkeypress="if(event.keyCode===13){ document.getElementById('forceNewPinConfirmInput').focus(); }">
+      <input type="password" id="forceNewPinConfirmInput" class="text-center" placeholder="새 비밀번호 6자리 다시 입력" maxlength="6" style="height:38px; font-size:0.95rem; letter-spacing:2px; margin-bottom:12px;" onkeypress="if(event.keyCode===13){ executeForceChangePin(); }">
+      <button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; font-size:0.85rem; border-radius:8px;" onclick="executeForceChangePin()">비밀번호 변경 완료</button>
     </div>
   </div>
 
   <!-- 모달 10: 길드원 미니 프로필 카드 모달 -->
-  <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeMemberProfileCard()">
-    <div class="kakao-modal-card" style="max-width: 290px; padding: 22px 18px 16px 18px;">
-      <div id="profCardAvatar" style="width: 60px; height: 60px; border-radius: 20px; background: rgba(0, 0, 0, 0.05); display: inline-flex; align-items: center; justify-content: center; font-size: 1.85rem; margin-bottom: 10px; border: 1px solid var(--main-card-border); box-shadow: 0 4px 12px rgba(0,0,0,0.08);">👤</div>
+  <div id="modalMemberProfileCard" class="kakao-modal-backdrop" style="display:none; z-index:9999999!important;" onclick="if(event.target===this) closeMemberProfileCard()">
+    <div class="kakao-modal-card" style="max-width:290px; padding:22px 18px 16px 18px;">
+      <div id="profCardAvatar" style="width:60px; height:60px; border-radius:20px; background:rgba(0,0,0,0.05); display:inline-flex; align-items:center; justify-content:center; font-size:1.85rem; margin-bottom:10px; border:1px solid var(--main-card-border); box-shadow:0 4px 12px rgba(0,0,0,0.08);">👤</div>
       <div class="d-flex align-items-center justify-content-center gap-1 mb-1">
         <span id="profCardBadge"></span>
-        <h6 class="fw-bold mb-0" id="profCardNick" style="font-size: 1rem; color: var(--modal-text);">닉네임</h6>
+        <h6 class="fw-bold mb-0" id="profCardNick" style="font-size:1rem; color:var(--modal-text);">닉네임</h6>
       </div>
-      <div class="text-secondary small mb-3" id="profCardClass" style="font-size: 0.78rem; color: #0284c7;">클래스 미지정</div>
+      <div class="text-secondary small mb-3" id="profCardClass" style="font-size:0.78rem; color:#0284c7;">클래스 미지정</div>
       <div id="profCardActionArea" class="d-flex flex-column gap-2 mb-2"></div>
-      <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0" style="font-size: 0.75rem;" onclick="closeMemberProfileCard()">닫기</button>
+      <button type="button" class="btn btn-link btn-sm text-secondary text-decoration-none p-0" style="font-size:0.75rem;" onclick="closeMemberProfileCard()">닫기</button>
     </div>
   </div>
 
   <!-- 모달 11: 프로필 직업 설정 모달 -->
-  <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display: none; z-index: 9999999 !important;" onclick="if(event.target === this) closeProfileEditModal()">
+  <div id="modalProfileEdit" class="kakao-modal-backdrop" style="display:none; z-index:9999999!important;" onclick="if(event.target===this) closeProfileEditModal()">
     <div class="kakao-modal-card">
-      <h6 class="fw-bold mb-1" style="font-size: 0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
-      <p class="text-secondary small mb-3" style="font-size: 0.72rem;">프로필과 대화창에 표기될 직업을 선택하세요.</p>
+      <h6 class="fw-bold mb-1" style="font-size:0.95rem;"><i class="fa-solid fa-wand-magic-sparkles text-primary me-1"></i>내 게임 직업 선택</h6>
+      <p class="text-secondary small mb-3" style="font-size:0.72rem;">프로필과 대화창에 표기될 직업을 선택하세요.</p>
       <div class="class-preset-grid">
-        <div class="class-preset-cell" onclick="selectClassProfile('🏹', '궁수')"><span class="class-icon-big">🏹</span><span class="class-title-small">궁수</span></div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🌿', '힐러')"><span class="class-icon-big">🌿</span><span class="class-title-small">힐러</span></div>
-        <div class="class-preset-cell" onclick="selectClassProfile('⚔️', '전사')"><span class="class-icon-big">⚔️</span><span class="class-title-small">전사</span></div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🛡️', '탱커')"><span class="class-icon-big">🛡️</span><span class="class-title-small">탱커</span></div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🪄', '마법사')"><span class="class-icon-big">🪄</span><span class="class-title-small">마법사</span></div>
-        <div class="class-preset-cell" onclick="selectClassProfile('👊', '무투사')"><span class="class-icon-big">👊</span><span class="class-title-small">무투사</span></div>
-        <div class="class-preset-cell" onclick="selectClassProfile('🥷', '암살자')"><span class="class-icon-big">🥷</span><span class="class-title-small">암살자</span></div>
-        <div class="class-preset-cell" onclick="selectClassProfile('👑', '길드장')"><span class="class-icon-big">👑</span><span class="class-title-small">길드장</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🏹','궁수')"><span class="class-icon-big">🏹</span><span class="class-title-small">궁수</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🌿','힐러')"><span class="class-icon-big">🌿</span><span class="class-title-small">힐러</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('⚔️','전사')"><span class="class-icon-big">⚔️</span><span class="class-title-small">전사</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🛡️','탱커')"><span class="class-icon-big">🛡️</span><span class="class-title-small">탱커</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🪄','마법사')"><span class="class-icon-big">🪄</span><span class="class-title-small">마법사</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👊','무투사')"><span class="class-icon-big">👊</span><span class="class-title-small">무투사</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('🥷','암살자')"><span class="class-icon-big">🥷</span><span class="class-title-small">암살자</span></div>
+        <div class="class-preset-cell" onclick="selectClassProfile('👑','길드장')"><span class="class-icon-big">👑</span><span class="class-title-small">길드장</span></div>
       </div>
       <button type="button" class="btn btn-light btn-sm w-100 py-1" style="font-size:0.78rem;" onclick="closeProfileEditModal()">닫기</button>
     </div>
   </div>
 
   <!-- 모달 12: 자동 업데이트 인앱 모달 -->
-  <div id="modalAutoUpdateContainer" class="auto-update-modal-backdrop" style="display: none;">
+  <div id="modalAutoUpdateContainer" class="auto-update-modal-backdrop" style="display:none;">
     <div class="auto-update-card">
       <div class="auto-update-icon-box">🚀</div>
-      
       <div id="autoUpdateDownloadingView">
-        <h5 class="fw-bold mb-1" style="font-size: 1.05rem; color: #ffffff;">새로운 레이드온 준비 중</h5>
-        <p class="text-secondary small mb-1" id="autoUpdateStatusText" style="font-size: 0.74rem;">최신 패치를 다운로드하고 있습니다.</p>
-
+        <h5 class="fw-bold mb-1" style="font-size:1.05rem; color:#fff;">새로운 레이드온 준비 중</h5>
+        <p class="text-secondary small mb-1" id="autoUpdateStatusText" style="font-size:0.74rem;">최신 패치를 다운로드하고 있습니다.</p>
         <div class="update-feature-showcase">
           <div class="feature-showcase-icon" id="featureShowcaseIcon">⚔️</div>
           <div>
@@ -1307,767 +610,383 @@
             <div class="feature-showcase-desc" id="featureShowcaseDesc">젠 타이머 카운트다운과 채팅방 알림 연동</div>
           </div>
         </div>
-
         <div class="auto-progress-bar-wrap">
           <div class="auto-progress-bar-fill" id="autoUpdateProgressFill"></div>
         </div>
-        <div class="d-flex justify-content-between text-secondary" style="font-size: 0.7rem;">
+        <div class="d-flex justify-content-between text-secondary" style="font-size:0.7rem;">
           <span id="autoUpdatePhaseLabel">패치 다운로드 및 압축 준비</span>
-          <span id="autoUpdatePercentText" style="color: #fee500; font-weight: 700;">0%</span>
+          <span id="autoUpdatePercentText" style="color:#fee500; font-weight:700;">0%</span>
         </div>
       </div>
-
-      <div id="autoUpdateReadyView" style="display: none;">
-        <h5 class="fw-bold mb-2" style="font-size: 1.1rem; color: #ffffff;">최신 버전 업데이트 완료</h5>
-        <p class="text-secondary small mb-3" style="font-size: 0.78rem; line-height: 1.5; word-break: keep-all;">
-          새로운 레이드온이 준비되었습니다.<br>지금 다시 시작하여 최신 기능을 적용할까요?
-        </p>
-        <button type="button" id="btnExecuteRestartNow" class="btn btn-warning w-100 fw-bold py-2" style="background: #fee500; border: none; color: #191919; border-radius: 10px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(254, 229, 0, 0.25);" onclick="executeRestartAppNow()">
-          지금 바로 시작하기
-        </button>
+      <div id="autoUpdateReadyView" style="display:none;">
+        <h5 class="fw-bold mb-2" style="font-size:1.1rem; color:#fff;">최신 버전 업데이트 완료</h5>
+        <p class="text-secondary small mb-3" style="font-size:0.78rem; line-height:1.5; word-break:keep-all;">새로운 레이드온이 준비되었습니다.<br>지금 다시 시작하여 최신 기능을 적용할까요?</p>
+        <button type="button" id="btnExecuteRestartNow" class="btn btn-warning w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:10px; font-size:0.88rem; box-shadow:0 4px 14px rgba(254,229,0,0.25);" onclick="executeRestartAppNow()">지금 바로 시작하기</button>
       </div>
     </div>
   </div>
 
   <script>
-    function handleWinMinimize() {
-      if (window.electronAPI && typeof window.electronAPI.minimizeWindow === 'function') {
-        window.electronAPI.minimizeWindow();
-      }
-    }
-    function handleWinMaximize() {
-      // 로그인 화면일 때는 창 최대화 차단
-      if (document.body.classList.contains("is-login-gateway")) return;
-      if (window.electronAPI && typeof window.electronAPI.maximizeWindow === 'function') {
-        window.electronAPI.maximizeWindow();
-      }
-    }
-    function handleWinClose() {
-      if (window.electronAPI && typeof window.electronAPI.closeWindow === 'function') {
-        window.electronAPI.closeWindow();
-      }
-    }
+    function handleWinMinimize(){if(window.electronAPI&&typeof window.electronAPI.minimizeWindow==='function')window.electronAPI.minimizeWindow();}
+    function handleWinMaximize(){if(document.body.classList.contains("is-login-gateway"))return;if(window.electronAPI&&typeof window.electronAPI.maximizeWindow==='function')window.electronAPI.maximizeWindow();}
+    function handleWinClose(){if(window.electronAPI&&typeof window.electronAPI.closeWindow==='function')window.electronAPI.closeWindow();}
 
-    function handleAutoLoginCheckChange(elem) {
-      var keepCheck = document.getElementById("chkKeepLogin");
-      if (elem && elem.checked && keepCheck) {
-        keepCheck.checked = true;
-      }
-    }
-    window.handleAutoLoginCheckChange = handleAutoLoginCheckChange;
+    function handleAutoLoginCheckChange(elem){var k=document.getElementById("chkKeepLogin");if(elem&&elem.checked&&k)k.checked=true;}
+    window.handleAutoLoginCheckChange=handleAutoLoginCheckChange;
 
-    function showGuildLoginModal() {
-      var modal = document.getElementById("guildLoginModal");
-      if (modal) modal.style.display = "flex";
-      var searchInput = document.getElementById("loginNickSearchInput");
-      var pinInput = document.getElementById("loginPinInput");
-      if (searchInput && !searchInput.value) {
-        searchInput.value = localStorage.getItem("guild_my_nickname") || "";
-      }
-      if (pinInput) pinInput.value = "";
+    function showGuildLoginModal(){
+      var m=document.getElementById("guildLoginModal");if(m)m.style.display="flex";
+      var s=document.getElementById("loginNickSearchInput"),p=document.getElementById("loginPinInput");
+      if(s&&!s.value)s.value=localStorage.getItem("guild_my_nickname")||"";
+      if(p)p.value="";
     }
-    window.showGuildLoginModal = showGuildLoginModal;
+    window.showGuildLoginModal=showGuildLoginModal;
 
-    function closeGuildLoginModal() {
-      var modal = document.getElementById("guildLoginModal");
-      if (modal) modal.style.display = "none";
-      ensureWelcomeGatewayVisible();
-    }
-    window.closeGuildLoginModal = closeGuildLoginModal;
+    function closeGuildLoginModal(){var m=document.getElementById("guildLoginModal");if(m)m.style.display="none";ensureWelcomeGatewayVisible();}
+    window.closeGuildLoginModal=closeGuildLoginModal;
 
-    function openActivateGuildModal() {
-      var m = document.getElementById("modalActivateGuild");
-      if (m) m.style.display = "flex";
-    }
-    function closeActivateGuildModal() {
-      var m = document.getElementById("modalActivateGuild");
-      if (m) m.style.display = "none";
-      ensureWelcomeGatewayVisible();
-    }
+    function openActivateGuildModal(){var m=document.getElementById("modalActivateGuild");if(m)m.style.display="flex";}
+    function closeActivateGuildModal(){var m=document.getElementById("modalActivateGuild");if(m)m.style.display="none";ensureWelcomeGatewayVisible();}
+    function openJoinGuildModal(){var m=document.getElementById("modalJoinGuild");if(m)m.style.display="flex";}
+    function closeJoinGuildModal(){var m=document.getElementById("modalJoinGuild");if(m)m.style.display="none";ensureWelcomeGatewayVisible();}
+    function openLicenseRequestModal(){var m=document.getElementById("modalLicenseRequest");if(m)m.style.display="flex";}
+    function closeLicenseRequestModal(){var m=document.getElementById("modalLicenseRequest");if(m)m.style.display="none";ensureWelcomeGatewayVisible();}
+    function closeLicenseSuccessModal(){var m=document.getElementById("modalLicenseSuccess");if(m)m.style.display="none";location.reload();}
 
-    function openJoinGuildModal() {
-      var m = document.getElementById("modalJoinGuild");
-      if (m) m.style.display = "flex";
-    }
-    function closeJoinGuildModal() {
-      var m = document.getElementById("modalJoinGuild");
-      if (m) m.style.display = "none";
-      ensureWelcomeGatewayVisible();
-    }
-
-    function openLicenseRequestModal() {
-      var m = document.getElementById("modalLicenseRequest");
-      if (m) m.style.display = "flex";
-    }
-    function closeLicenseRequestModal() {
-      var m = document.getElementById("modalLicenseRequest");
-      if (m) m.style.display = "none";
-      ensureWelcomeGatewayVisible();
-    }
-
-    function closeLicenseSuccessModal() {
-      var m = document.getElementById("modalLicenseSuccess");
-      if (m) m.style.display = "none";
-      location.reload();
-    }
-
-    // 로그인/비로그인 전환 시 창 크기 고정 및 트레이 상태 동기화 함수
-    function applyWindowMode(isLogged) {
-      if (isLogged) {
+    function applyWindowMode(isLogged){
+      if(isLogged){
         document.body.classList.remove("is-login-gateway");
-        // 로그인 상태: 마우스 드래그로 자유롭게 창 크기 조절 허용
-        if (window.electronAPI && typeof window.electronAPI.setWindowResizable === 'function') {
-          window.electronAPI.setWindowResizable(true);
-        }
-      } else {
+        if(window.electronAPI&&typeof window.electronAPI.setWindowResizable==='function')window.electronAPI.setWindowResizable(true);
+      }else{
         document.body.classList.add("is-login-gateway");
-        // 로그인 창: 440x780 규격으로 마우스 크기 변경 차단 (고정값)
-        if (window.electronAPI && typeof window.electronAPI.setWindowResizable === 'function') {
-          window.electronAPI.setWindowResizable(false, 440, 780);
-        }
+        if(window.electronAPI&&typeof window.electronAPI.setWindowResizable==='function')window.electronAPI.setWindowResizable(false,440,780);
       }
-
-      // 트레이 메뉴 [로그인] / [로그아웃] 실시간 동기화
-      if (window.electronAPI && typeof window.electronAPI.setLoginState === 'function') {
-        window.electronAPI.setLoginState(!!isLogged);
-      }
+      if(window.electronAPI&&typeof window.electronAPI.setLoginState==='function')window.electronAPI.setLoginState(!!isLogged);
     }
-    window.applyWindowMode = applyWindowMode;
+    window.applyWindowMode=applyWindowMode;
 
-    function ensureWelcomeGatewayVisible() {
-      var isLogged = !!localStorage.getItem("guild_my_nickname");
+    function ensureWelcomeGatewayVisible(){
+      var isLogged=!!localStorage.getItem("guild_my_nickname");
       applyWindowMode(isLogged);
-
-      if (!isLogged) {
-        var gw = document.getElementById("welcomeGatewayView");
-        var tabs = document.getElementById("kakaoMainTabsView");
-        var chat = document.getElementById("chatRoomView");
-        if (gw) gw.style.display = "flex";
-        if (tabs) tabs.style.display = "none";
-        if (chat) chat.style.display = "none";
-        document.body.classList.remove("in-main-tabs", "in-chat-room");
+      if(!isLogged){
+        var gw=document.getElementById("welcomeGatewayView"),tabs=document.getElementById("kakaoMainTabsView"),chat=document.getElementById("chatRoomView");
+        if(gw)gw.style.display="flex";if(tabs)tabs.style.display="none";if(chat)chat.style.display="none";
+        document.body.classList.remove("in-main-tabs","in-chat-room");
         renderWelcomeJoinedGuilds();
       }
     }
-    window.ensureWelcomeGatewayVisible = ensureWelcomeGatewayVisible;
-    window.openWelcomeGatewayModal = ensureWelcomeGatewayVisible;
+    window.ensureWelcomeGatewayVisible=ensureWelcomeGatewayVisible;
+    window.openWelcomeGatewayModal=ensureWelcomeGatewayVisible;
 
-    async function renderWelcomeJoinedGuilds() {
-      var joined = [];
-      try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-      var box = document.getElementById("gatewayJoinedGuildsBox");
-      var list = document.getElementById("gatewayJoinedGuildsList");
-      if (!box || !list) return;
-
-      if (joined.length > 0) {
-        box.style.display = "block";
-        list.innerHTML = joined.map(function(g) {
-          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:#ffffff; border-color:#e2e8f0 !important;">' +
-            '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">' +
-              '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">' + (g.game_name || "게임") + '</span>' +
-              '<span class="fw-bold text-dark text-truncate" style="font-size: 0.82rem;">' + g.guild_name + '</span>' +
-            '</div>' +
-            '<div class="d-flex align-items-center gap-1 ms-2">' +
-              '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem; cursor:pointer;" onclick="loginToJoinedGuild(\'' + g.guild_id + '\')">로그인</span>' +
-              '<button type="button" class="btn btn-sm text-secondary p-0 px-1" title="목록에서 삭제" style="font-size:0.75rem; border:none; background:transparent; line-height:1;" onclick="removeJoinedGuildRecord(\'' + g.guild_id + '\', event)">✕</button>' +
-            '</div>' +
+    async function renderWelcomeJoinedGuilds(){
+      var joined=[];try{joined=JSON.parse(localStorage.getItem("my_joined_guilds")||"[]");}catch(e){}
+      var box=document.getElementById("gatewayJoinedGuildsBox"),list=document.getElementById("gatewayJoinedGuildsList");
+      if(!box||!list)return;
+      if(joined.length>0){
+        box.style.display="block";
+        list.innerHTML=joined.map(function(g){
+          return '<div class="d-flex align-items-center justify-content-between p-2 mb-1 rounded border" style="background:#fff; border-color:#e2e8f0!important;">'+
+            '<div class="d-flex align-items-center gap-2 min-width-0 flex-grow-1" style="cursor:pointer;" onclick="loginToJoinedGuild(''+g.guild_id+'')">'+
+              '<span class="badge bg-secondary bg-opacity-25 text-secondary" style="font-size:0.6rem; padding:1px 4px;">'+(g.game_name||"게임")+'</span>'+
+              '<span class="fw-bold text-dark text-truncate" style="font-size:0.82rem;">'+g.guild_name+'</span>'+
+            '</div>'+
+            '<div class="d-flex align-items-center gap-1 ms-2">'+
+              '<span class="badge bg-warning text-dark fw-bold" style="font-size:0.65rem; cursor:pointer;" onclick="loginToJoinedGuild(''+g.guild_id+'')">로그인</span>'+
+              '<button type="button" class="btn btn-sm text-secondary p-0 px-1" title="목록에서 삭제" style="font-size:0.75rem; border:none; background:transparent; line-height:1;" onclick="removeJoinedGuildRecord(''+g.guild_id+'', event)">✕</button>'+
+            '</div>'+
           '</div>';
         }).join("");
-      } else {
-        box.style.display = "none";
+      }else{
+        box.style.display="none";
       }
     }
 
-    function removeJoinedGuildRecord(guildId, evt) {
-      if (evt) evt.stopPropagation();
-      var joined = [];
-      try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-      joined = joined.filter(function(g) { return g.guild_id !== guildId; });
-      localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
+    function removeJoinedGuildRecord(guildId,evt){
+      if(evt)evt.stopPropagation();
+      var joined=[];try{joined=JSON.parse(localStorage.getItem("my_joined_guilds")||"[]");}catch(e){}
+      joined=joined.filter(function(g){return g.guild_id!==guildId;});
+      localStorage.setItem("my_joined_guilds",JSON.stringify(joined));
       renderWelcomeJoinedGuilds();
     }
 
-    function clearAllGuildCache() {
+    function clearAllGuildCache(){
       localStorage.removeItem("my_joined_guilds");
       localStorage.removeItem("current_guild_id");
       renderWelcomeJoinedGuilds();
     }
 
-    function loginToJoinedGuild(guildId) {
-      var joined = [];
-      try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-      var g = joined.find(function(item) { return item.guild_id === guildId; });
-      if (g) {
-        localStorage.setItem("current_guild_id", g.guild_id);
-        var titleElem = document.getElementById("loginGuildTitle");
-        if (titleElem) titleElem.innerText = "[" + (g.game_name || "게임") + "] " + g.guild_name + " 로그인";
-        var nickIn = document.getElementById("loginNickSearchInput");
-        if (nickIn && (g.my_nick || g.nickname)) {
-          nickIn.value = g.my_nick || g.nickname;
-        }
+    function loginToJoinedGuild(guildId){
+      var joined=[];try{joined=JSON.parse(localStorage.getItem("my_joined_guilds")||"[]");}catch(e){}
+      var g=joined.find(function(item){return item.guild_id===guildId;});
+      if(g){
+        localStorage.setItem("current_guild_id",g.guild_id);
+        var t=document.getElementById("loginGuildTitle");if(t)t.innerText="["+(g.game_name||"게임")+"] "+g.guild_name+" 로그인";
+        var n=document.getElementById("loginNickSearchInput");if(n&&(g.my_nick||g.nickname))n.value=g.my_nick||g.nickname;
       }
       showGuildLoginModal();
     }
 
-    function openSupportCenterModal() {
-      var modal = document.getElementById("modalSupportCenter");
-      if (modal) modal.style.display = "flex";
-      switchSupportTab('faq');
-    }
-    function closeSupportCenterModal() {
-      var modal = document.getElementById("modalSupportCenter");
-      if (modal) modal.style.display = "none";
-    }
-
-    function switchSupportTab(tab) {
-      var btnFaq = document.getElementById("tabBtnFaq");
-      var btnInq = document.getElementById("tabBtnInquiry");
-      var cFaq = document.getElementById("supportTabFaqContent");
-      var cInq = document.getElementById("supportTabInquiryContent");
-      if (tab === 'faq') {
-        if (btnFaq) { btnFaq.className = "btn btn-sm btn-warning flex-fill fw-bold py-1"; }
-        if (btnInq) { btnInq.className = "btn btn-sm btn-light flex-fill fw-bold py-1"; }
-        if (cFaq) cFaq.style.display = "block";
-        if (cInq) cInq.style.display = "none";
-      } else {
-        if (btnFaq) { btnFaq.className = "btn btn-sm btn-light flex-fill fw-bold py-1"; }
-        if (btnInq) { btnInq.className = "btn btn-sm btn-warning flex-fill fw-bold py-1"; }
-        if (cFaq) cFaq.style.display = "none";
-        if (cInq) cInq.style.display = "block";
+    function openSupportCenterModal(){var m=document.getElementById("modalSupportCenter");if(m)m.style.display="flex";switchSupportTab('faq');}
+    function closeSupportCenterModal(){var m=document.getElementById("modalSupportCenter");if(m)m.style.display="none";}
+    function switchSupportTab(tab){
+      var btnFaq=document.getElementById("tabBtnFaq"),btnInq=document.getElementById("tabBtnInquiry"),cFaq=document.getElementById("supportTabFaqContent"),cInq=document.getElementById("supportTabInquiryContent");
+      if(tab==='faq'){
+        if(btnFaq)btnFaq.className="btn btn-sm btn-warning flex-fill fw-bold py-1";if(btnInq)btnInq.className="btn btn-sm btn-light flex-fill fw-bold py-1";
+        if(cFaq)cFaq.style.display="block";if(cInq)cInq.style.display="none";
+      }else{
+        if(btnFaq)btnFaq.className="btn btn-sm btn-light flex-fill fw-bold py-1";if(btnInq)btnInq.className="btn btn-sm btn-warning flex-fill fw-bold py-1";
+        if(cFaq)cFaq.style.display="none";if(cInq)cInq.style.display="block";
       }
     }
+    function toggleInAppFaq(qElem){var a=qElem.nextElementSibling;if(a)a.style.display=(a.style.display==="none"||!a.style.display)?"block":"none";}
+    function openSaasNoticeModal(){var m=document.getElementById("modalSaasGlobalNotice");if(m)m.style.display="flex";}
+    function closeSaasNoticeModal(){var m=document.getElementById("modalSaasGlobalNotice");if(m)m.style.display="none";}
 
-    function toggleInAppFaq(qElem) {
-      var aElem = qElem.nextElementSibling;
-      if (!aElem) return;
-      var isHidden = (aElem.style.display === "none" || !aElem.style.display);
-      aElem.style.display = isHidden ? "block" : "none";
+    async function submitSupportInquiry(){
+      var cat=(document.getElementById("supCategoryInput")?.value||"").trim()||"일반 문의";
+      var writer=(document.getElementById("supWriterInput")?.value||"").trim(),contact=(document.getElementById("supContactInput")?.value||"").trim(),content=(document.getElementById("supContentInput")?.value||"").trim();
+      if(!writer||!contact||!content)return (typeof showKakaoToast==="function")?showKakaoToast("모든 항목을 입력해 주세요.","⚠️"):alert("모든 항목 입력");
+      try{
+        if(typeof apiRequest==="function")await apiRequest("saas_inquiries","POST",[{category:cat,writer:writer,contact:contact,content:content,status:"pending"}]);
+        closeSupportCenterModal();document.getElementById("supContentInput").value="";
+        if(typeof showKakaoToast==="function")showKakaoToast("고객센터 문의가 접수되었습니다!","🎉");
+      }catch(err){if(typeof showKakaoToast==="function")showKakaoToast("문의 접수 실패: "+err.message,"❌");}
     }
 
-    function openSaasNoticeModal() {
-      var m = document.getElementById("modalSaasGlobalNotice");
-      if (m) m.style.display = "flex";
-    }
-    function closeSaasNoticeModal() {
-      var m = document.getElementById("modalSaasGlobalNotice");
-      if (m) m.style.display = "none";
-    }
+    function openProfileEditModal(){var m=document.getElementById("modalProfileEdit");if(m)m.style.display="flex";}
+    window.openProfileEditModal=openProfileEditModal;
+    function closeProfileEditModal(){var m=document.getElementById("modalProfileEdit");if(m)m.style.display="none";}
+    window.closeProfileEditModal=closeProfileEditModal;
 
-    async function submitSupportInquiry() {
-      var cat = (document.getElementById("supCategoryInput")?.value || "").trim() || "일반 문의";
-      var writer = (document.getElementById("supWriterInput")?.value || "").trim();
-      var contact = (document.getElementById("supContactInput")?.value || "").trim();
-      var content = (document.getElementById("supContentInput")?.value || "").trim();
-
-      if (!writer || !contact || !content) {
-        return (typeof showKakaoToast === "function") ? showKakaoToast("모든 항목을 입력해 주세요.", "⚠️") : alert("모든 항목 입력");
+    function openMemberProfileCard(nick,avatar,className,role){
+      var m=document.getElementById("modalMemberProfileCard");if(!m)return;
+      var myNick=(localStorage.getItem("guild_my_nickname")||localStorage.getItem("guild_my_nick")||""),isMe=(nick===myNick);
+      var avElem=document.getElementById("profCardAvatar"),nickElem=document.getElementById("profCardNick"),classElem=document.getElementById("profCardClass"),badgeElem=document.getElementById("profCardBadge"),actElem=document.getElementById("profCardActionArea");
+      if(avElem)avElem.innerText=avatar||"👤";if(nickElem)nickElem.innerText=nick||"길드원";if(classElem)classElem.innerText=className||"클래스 미지정";
+      if(badgeElem){
+        if(role==="길드장"||role==="길마")badgeElem.innerHTML='<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.65rem;">길마</span>';
+        else if(role==="부길드장"||role==="부길마")badgeElem.innerHTML='<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.65rem;">부길마</span>';
+        else if(role==="정예")badgeElem.innerHTML='<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.65rem;">정예</span>';
+        else badgeElem.innerHTML='<span class="badge bg-secondary bg-opacity-25 text-secondary px-1 py-0 me-1" style="font-size:0.65rem;">길드원</span>';
       }
-
-      try {
-        if (typeof apiRequest === "function") {
-          await apiRequest("saas_inquiries", "POST", [{
-            category: cat,
-            writer: writer,
-            contact: contact,
-            content: content,
-            status: "pending"
-          }]);
-        }
-        closeSupportCenterModal();
-        document.getElementById("supContentInput").value = "";
-        if (typeof showKakaoToast === "function") showKakaoToast("고객센터 문의가 접수되었습니다!", "🎉");
-      } catch (err) {
-        if (typeof showKakaoToast === "function") showKakaoToast("문의 접수 실패: " + err.message, "❌");
+      if(actElem){
+        if(isMe)actElem.innerHTML='<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); openProfileEditModal();"><i class="fa-solid fa-pen me-1"></i>내 프로필 변경하기</button>';
+        else actElem.innerHTML='<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); startDirectChatWith(''+nick+'');"><i class="fa-solid fa-comment me-1"></i>1:1 대화하기</button>';
       }
+      m.style.display="flex";
     }
+    window.openMemberProfileCard=openMemberProfileCard;
+    function closeMemberProfileCard(){var m=document.getElementById("modalMemberProfileCard");if(m)m.style.display="none";}
+    window.closeMemberProfileCard=closeMemberProfileCard;
 
-    function openProfileEditModal() {
-      var modal = document.getElementById("modalProfileEdit");
-      if (modal) modal.style.display = "flex";
-    }
-    window.openProfileEditModal = openProfileEditModal;
+    function focusChatInput(){var input=document.getElementById("inputChatMessage")||document.getElementById("chatMessageInput");if(input)input.focus();}
+    window.focusChatInput=focusChatInput;
 
-    function closeProfileEditModal() {
-      var modal = document.getElementById("modalProfileEdit");
-      if (modal) modal.style.display = "none";
-    }
-    window.closeProfileEditModal = closeProfileEditModal;
-
-    function openMemberProfileCard(nick, avatar, className, role) {
-      var modal = document.getElementById("modalMemberProfileCard");
-      if (!modal) return;
-      var myNick = (localStorage.getItem("guild_my_nickname") || localStorage.getItem("guild_my_nick") || "");
-      var isMe = (nick === myNick);
-
-      var avElem = document.getElementById("profCardAvatar");
-      var nickElem = document.getElementById("profCardNick");
-      var classElem = document.getElementById("profCardClass");
-      var badgeElem = document.getElementById("profCardBadge");
-      var actElem = document.getElementById("profCardActionArea");
-
-      if (avElem) avElem.innerText = avatar || "👤";
-      if (nickElem) nickElem.innerText = nick || "길드원";
-      if (classElem) classElem.innerText = className || "클래스 미지정";
-
-      if (badgeElem) {
-        if (role === "길드장" || role === "길마") {
-          badgeElem.innerHTML = '<span class="badge bg-warning text-dark px-1 py-0 me-1" style="font-size:0.65rem;">길마</span>';
-        } else if (role === "부길드장" || role === "부길마") {
-          badgeElem.innerHTML = '<span class="badge bg-primary text-white px-1 py-0 me-1" style="font-size:0.65rem;">부길마</span>';
-        } else if (role === "정예") {
-          badgeElem.innerHTML = '<span class="badge bg-info text-dark px-1 py-0 me-1" style="font-size:0.65rem;">정예</span>';
-        } else {
-          badgeElem.innerHTML = '<span class="badge bg-secondary bg-opacity-25 text-secondary px-1 py-0 me-1" style="font-size:0.65rem;">길드원</span>';
-        }
-      }
-
-      if (actElem) {
-        if (isMe) {
-          actElem.innerHTML = '<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); openProfileEditModal();"><i class="fa-solid fa-pen me-1"></i>내 프로필 변경하기</button>';
-        } else {
-          actElem.innerHTML = '<button type="button" class="btn btn-warning btn-sm w-100 fw-bold py-2" style="background:#fee500; border:none; color:#191919; border-radius:8px; font-size:0.82rem;" onclick="closeMemberProfileCard(); startDirectChatWith(\'' + nick + '\');"><i class="fa-solid fa-comment me-1"></i>1:1 대화하기</button>';
-        }
-      }
-
-      modal.style.display = "flex";
-    }
-    window.openMemberProfileCard = openMemberProfileCard;
-
-    function closeMemberProfileCard() {
-      var modal = document.getElementById("modalMemberProfileCard");
-      if (modal) modal.style.display = "none";
-    }
-    window.closeMemberProfileCard = closeMemberProfileCard;
-
-    function focusChatInput() {
-      var input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
-      if (input) input.focus();
-    }
-    window.focusChatInput = focusChatInput;
-
-    function handleLeaveCurrentRoomFromHeader() {
-      if (window.currentActiveRoomId && typeof window.handleLeaveChatRoom === "function") {
-        var title = (document.getElementById("chatRoomTitle")?.innerText || "대화방");
-        window.handleLeaveChatRoom(window.currentActiveRoomId, title);
+    function handleLeaveCurrentRoomFromHeader(){
+      if(window.currentActiveRoomId&&typeof window.handleLeaveChatRoom==="function"){
+        var t=(document.getElementById("chatRoomTitle")?.innerText||"대화방");
+        window.handleLeaveChatRoom(window.currentActiveRoomId,t);
       }
     }
-    window.handleLeaveCurrentRoomFromHeader = handleLeaveCurrentRoomFromHeader;
+    window.handleLeaveCurrentRoomFromHeader=handleLeaveCurrentRoomFromHeader;
 
-    function exitChatRoomToMain() {
-      var mainTabs = document.getElementById("kakaoMainTabsView");
-      var chatView = document.getElementById("chatRoomView");
-
-      if (mainTabs && chatView) {
-        if (window.currentActiveRoomId && typeof window.markRoomAsReadNow === "function") {
-          window.markRoomAsReadNow(window.currentActiveRoomId);
-        }
-        chatView.style.display = "none";
-        mainTabs.style.display = "flex";
-        
-        document.body.classList.remove("in-chat-room");
-        document.body.classList.add("in-main-tabs");
-
-        window.currentActiveRoomId = null;
-        window.currentActiveRoomType = null;
-        window.currentActiveRoomTitle = "";
-        applyWindowMode(true); // 대기방에서는 창 리사이즈 허용
-        if (typeof switchMainBottomTab === "function") switchMainBottomTab("chats");
+    function exitChatRoomToMain(){
+      var mainTabs=document.getElementById("kakaoMainTabsView"),chatView=document.getElementById("chatRoomView");
+      if(mainTabs&&chatView){
+        if(window.currentActiveRoomId&&typeof window.markRoomAsReadNow==="function")window.markRoomAsReadNow(window.currentActiveRoomId);
+        chatView.style.display="none";mainTabs.style.display="flex";
+        document.body.classList.remove("in-chat-room");document.body.classList.add("in-main-tabs");
+        window.currentActiveRoomId=null;window.currentActiveRoomType=null;window.currentActiveRoomTitle="";
+        applyWindowMode(true);
+        if(typeof switchMainBottomTab==="function")switchMainBottomTab("chats");
         return;
       }
       ensureWelcomeGatewayVisible();
     }
-    window.exitChatRoomToMain = exitChatRoomToMain;
+    window.exitChatRoomToMain=exitChatRoomToMain;
 
-    async function executeActivateGuild() {
-      var keyInput = (document.getElementById("actLicenseKeyInput")?.value || "").trim().toUpperCase();
-      var masterNick = (document.getElementById("actMasterNickInput")?.value || "").trim();
-      var pinInput = (document.getElementById("actPinInput")?.value || "").trim();
+    async function executeActivateGuild(){
+      var keyInput=(document.getElementById("actLicenseKeyInput")?.value||"").trim().toUpperCase();
+      var masterNick=(document.getElementById("actMasterNickInput")?.value||"").trim(),pinInput=(document.getElementById("actPinInput")?.value||"").trim();
+      if(!keyInput)return (typeof showKakaoToast==="function")?showKakaoToast("라이선스 키를 입력해 주세요.","⚠️"):alert("라이선스 키 입력");
+      if(!masterNick)return (typeof showKakaoToast==="function")?showKakaoToast("길드장 닉네임을 입력해 주세요.","⚠️"):alert("길드장 닉네임 입력");
+      if(!pinInput||pinInput.length<6)return (typeof showKakaoToast==="function")?showKakaoToast("길드장 6자리 비밀번호(PIN)를 입력해 주세요.","⚠️"):alert("6자리 비밀번호 입력");
+      if(pinInput==="000000"||pinInput==="0000")return (typeof showKakaoToast==="function")?showKakaoToast("000000 외의 6자리 비밀번호를 설정하세요.","⚠️"):alert("000000 외의 비밀번호");
 
-      if (!keyInput) return (typeof showKakaoToast === "function") ? showKakaoToast("라이선스 키를 입력해 주세요.", "⚠️") : alert("라이선스 키를 입력해 주세요.");
-      if (!masterNick) return (typeof showKakaoToast === "function") ? showKakaoToast("길드장 닉네임을 입력해 주세요.", "⚠️") : alert("길드장 닉네임을 입력해 주세요.");
-      if (!pinInput || pinInput.length < 6) return (typeof showKakaoToast === "function") ? showKakaoToast("길드장 6자리 비밀번호(PIN)를 입력해 주세요.", "⚠️") : alert("길드장 6자리 비밀번호(PIN)를 입력해 주세요.");
-      if (pinInput === "000000" || pinInput === "0000") return (typeof showKakaoToast === "function") ? showKakaoToast("보안을 위해 000000 외의 6자리 비밀번호를 설정하세요.", "⚠️") : alert("000000 외의 비밀번호를 설정하세요.");
+      try{
+        var licenses=await apiRequest("app_licenses?license_key=eq."+encodeURIComponent(keyInput));
+        if(!licenses||licenses.length===0)return (typeof showKakaoToast==="function")?showKakaoToast("유효하지 않은 라이선스 키입니다.","⚠️"):alert("유효하지 않은 키");
+        var lic=licenses[0],guildId=lic.guild_id||("guild_"+Date.now()),guildTitle=lic.guild_name||"길드",inviteCode=lic.invite_code||("INV-"+(keyInput.split("-")[2]||Math.floor(1000+Math.random()*9000)));
 
-      try {
-        var licenses = await apiRequest("app_licenses?license_key=eq." + encodeURIComponent(keyInput));
-        if (!licenses || licenses.length === 0) {
-          return (typeof showKakaoToast === "function") ? showKakaoToast("유효하지 않은 라이선스 키입니다.", "⚠️") : alert("유효하지 않은 라이선스 키입니다.");
+        var existing=await apiRequest("guilds?id=eq."+encodeURIComponent(guildId));
+        if(!existing||existing.length===0){
+          await apiRequest("guilds","POST",[{id:guildId,guild_name:guildTitle,name:guildTitle,game_name:lic.game_name||"게임",license_key:keyInput,invite_code:inviteCode,is_active:true,status:"active"}]);
         }
-        var lic = licenses[0];
-        var guildId = lic.guild_id || ("guild_" + Date.now());
-        var guildTitle = lic.guild_name || "길드";
-        var inviteCode = lic.invite_code || ("INV-" + (keyInput.split("-")[2] || Math.floor(1000 + Math.random() * 9000)));
+        if(typeof upsertGuildSetting==="function"){try{await upsertGuildSetting("guild_name",guildTitle,guildId);}catch(s){}}
+        try{await apiRequest("guild_members","POST",[{guild_id:guildId,nickname:masterNick,name:masterNick,role:"길드장",pin:pinInput}]);}catch(e){try{await apiRequest("guild_members","POST",[{guild_id:guildId,name:masterNick,role:"길드장",pin:pinInput}]);}catch(e2){}}
 
-        var existingGuilds = await apiRequest("guilds?id=eq." + encodeURIComponent(guildId));
-        if (!existingGuilds || existingGuilds.length === 0) {
-          await apiRequest("guilds", "POST", [{
-            id: guildId,
-            guild_name: guildTitle,
-            name: guildTitle,
-            game_name: lic.game_name || "게임",
-            license_key: keyInput,
-            invite_code: inviteCode,
-            is_active: true,
-            status: "active"
-          }]);
-        }
+        await apiRequest("app_licenses?id=eq."+encodeURIComponent(lic.id),"PATCH",{guild_id:guildId,invite_code:inviteCode,is_used:true,status:"active",activated_at:new Date().toISOString()});
+        localStorage.setItem("current_guild_id",guildId);localStorage.setItem("guild_my_nickname",masterNick);localStorage.setItem("guild_my_pin",pinInput);localStorage.setItem("guild_my_role","길드장");
+        sessionStorage.setItem("admin_auth","true");sessionStorage.setItem("admin_role","admin");
 
-        if (typeof upsertGuildSetting === "function") {
-          try {
-            await upsertGuildSetting("guild_name", guildTitle, guildId);
-          } catch (sErr) {}
-        }
+        var joined=[];try{joined=JSON.parse(localStorage.getItem("my_joined_guilds")||"[]");}catch(e){}
+        joined=joined.filter(function(g){return g.guild_id!==guildId;});
+        joined.push({guild_id:guildId,guild_name:guildTitle,game_name:lic.game_name||"게임",nickname:masterNick,my_nick:masterNick,role:"길드장",invite_code:inviteCode});
+        localStorage.setItem("my_joined_guilds",JSON.stringify(joined));
+        applyWindowMode(true);closeActivateGuildModal();
 
-        try {
-          await apiRequest("guild_members", "POST", [{
-            guild_id: guildId,
-            nickname: masterNick,
-            name: masterNick,
-            role: "길드장",
-            pin: pinInput
-          }]);
-        } catch(e) {
-          try {
-            await apiRequest("guild_members", "POST", [{
-              guild_id: guildId,
-              name: masterNick,
-              role: "길드장",
-              pin: pinInput
-            }]);
-          } catch(e2) {}
-        }
-
-        await apiRequest("app_licenses?id=eq." + encodeURIComponent(lic.id), "PATCH", {
-          guild_id: guildId,
-          invite_code: inviteCode,
-          is_used: true,
-          status: "active",
-          activated_at: new Date().toISOString()
-        });
-
-        localStorage.setItem("current_guild_id", guildId);
-        localStorage.setItem("guild_my_nickname", masterNick);
-        localStorage.setItem("guild_my_pin", pinInput);
-        localStorage.setItem("guild_my_role", "길드장");
-        sessionStorage.setItem("admin_auth", "true");
-        sessionStorage.setItem("admin_role", "admin");
-
-        var joined = [];
-        try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-        joined = joined.filter(function(g) { return g.guild_id !== guildId; });
-        joined.push({
-          guild_id: guildId,
-          guild_name: guildTitle,
-          game_name: lic.game_name || "게임",
-          nickname: masterNick,
-          my_nick: masterNick,
-          role: "길드장",
-          invite_code: inviteCode
-        });
-        localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
-
-        applyWindowMode(true); // 로그인 완료 -> 크기 조절 허용 및 트레이 로그아웃 전환
-        closeActivateGuildModal();
-
-        var successModal = document.getElementById("modalLicenseSuccess");
-        if (successModal) {
-          var h6 = successModal.querySelector("h6");
-          var p = successModal.querySelector("p");
-          if (h6) h6.innerText = `[${guildTitle}] 길드 개설 완료!`;
-          if (p) p.innerHTML = `길드가 활성화되었습니다.<br><strong>${masterNick}</strong>님으로 자동 로그인되었습니다.`;
-          successModal.style.display = "flex";
-        } else {
-          location.reload();
-        }
-      } catch(err) {
-        if (typeof showKakaoToast === "function") showKakaoToast("길드 개설 실패: " + err.message, "⚠️");
-        else alert("길드 개설 실패: " + err.message);
-      }
+        var successModal=document.getElementById("modalLicenseSuccess");
+        if(successModal){
+          var h6=successModal.querySelector("h6"),p=successModal.querySelector("p");
+          if(h6)h6.innerText="["+guildTitle+"] 길드 개설 완료!";
+          if(p)p.innerHTML="길드가 활성화되었습니다.<br><strong>"+masterNick+"</strong>님으로 자동 로그인되었습니다.";
+          successModal.style.display="flex";
+        }else location.reload();
+      }catch(err){if(typeof showKakaoToast==="function")showKakaoToast("길드 개설 실패: "+err.message,"⚠️");else alert("개설 실패: "+err.message);}
     }
 
-    async function executeJoinGuildWithCode() {
-      var code = (document.getElementById("joinInviteCodeInput")?.value || "").trim().toUpperCase();
-      var nick = (document.getElementById("joinMemberNickInput")?.value || "").trim();
-      var pin = (document.getElementById("joinMemberPinInput")?.value || "").trim();
+    async function executeJoinGuildWithCode(){
+      var code=(document.getElementById("joinInviteCodeInput")?.value||"").trim().toUpperCase();
+      var nick=(document.getElementById("joinMemberNickInput")?.value||"").trim(),pin=(document.getElementById("joinMemberPinInput")?.value||"").trim();
+      if(!code||!nick||!pin||pin.length<6)return (typeof showKakaoToast==="function")?showKakaoToast("모든 정보를 6자리 이상 정확히 입력하세요.","⚠️"):alert("입력 확인");
+      if(pin==="000000"||pin==="0000")return (typeof showKakaoToast==="function")?showKakaoToast("000000 외의 비밀번호를 설정하세요.","⚠️"):alert("000000 외의 비밀번호");
 
-      if (!code) return (typeof showKakaoToast === "function") ? showKakaoToast("초대 코드를 입력하세요.", "⚠️") : alert("초대 코드 입력");
-      if (!nick) return (typeof showKakaoToast === "function") ? showKakaoToast("닉네임을 입력하세요.", "⚠️") : alert("닉네임 입력");
-      if (!pin || pin.length < 6) return (typeof showKakaoToast === "function") ? showKakaoToast("6자리 비밀번호(PIN)를 입력하세요.", "⚠️") : alert("6자리 비밀번호 입력");
-      if (pin === "000000" || pin === "0000") return (typeof showKakaoToast === "function") ? showKakaoToast("보안을 위해 000000 외의 6자리 비밀번호를 설정하세요.", "⚠️") : alert("000000 외의 비밀번호 입력");
+      try{
+        var guilds=await apiRequest("guilds?invite_code=eq."+encodeURIComponent(code));
+        if(!guilds||guilds.length===0)guilds=await apiRequest("guilds?license_key=eq."+encodeURIComponent(code));
+        if(!guilds||guilds.length===0)return (typeof showKakaoToast==="function")?showKakaoToast("초대 코드에 해당하는 길드를 찾을 수 없습니다.","⚠️"):alert("길드 미발견");
+        var targetGuild=guilds[0],gTitle=targetGuild.guild_name||targetGuild.name||"길드";
 
-      try {
-        var guilds = await apiRequest("guilds?invite_code=eq." + encodeURIComponent(code));
-        if (!guilds || guilds.length === 0) {
-          guilds = await apiRequest("guilds?license_key=eq." + encodeURIComponent(code));
-        }
-        if (!guilds || guilds.length === 0) {
-          return (typeof showKakaoToast === "function") ? showKakaoToast("초대 코드에 해당하는 길드를 찾을 수 없습니다.", "⚠️") : alert("길드 미발견");
-        }
-        var targetGuild = guilds[0];
-        var gTitle = targetGuild.guild_name || targetGuild.name || "길드";
+        try{await apiRequest("guild_members","POST",[{guild_id:targetGuild.id,nickname:nick,name:nick,role:"일반",pin:pin}]);}catch(e){await apiRequest("guild_members","POST",[{guild_id:targetGuild.id,name:nick,role:"일반",pin:pin}]);}
+        localStorage.setItem("current_guild_id",targetGuild.id);localStorage.setItem("guild_my_nickname",nick);localStorage.setItem("guild_my_pin",pin);localStorage.setItem("guild_my_role","일반");
 
-        try {
-          await apiRequest("guild_members", "POST", [{
-            guild_id: targetGuild.id,
-            nickname: nick,
-            name: nick,
-            role: "일반",
-            pin: pin
-          }]);
-        } catch(e) {
-          await apiRequest("guild_members", "POST", [{
-            guild_id: targetGuild.id,
-            name: nick,
-            role: "일반",
-            pin: pin
-          }]);
-        }
-
-        localStorage.setItem("current_guild_id", targetGuild.id);
-        localStorage.setItem("guild_my_nickname", nick);
-        localStorage.setItem("guild_my_pin", pin);
-        localStorage.setItem("guild_my_role", "일반");
-
-        var joined = [];
-        try { joined = JSON.parse(localStorage.getItem("my_joined_guilds") || "[]"); } catch(e) {}
-        joined = joined.filter(function(g) { return g.guild_id !== targetGuild.id; });
-        joined.push({
-          guild_id: targetGuild.id,
-          guild_name: gTitle,
-          game_name: targetGuild.game_name || "게임",
-          nickname: nick,
-          my_nick: nick,
-          role: "일반"
-        });
-        localStorage.setItem("my_joined_guilds", JSON.stringify(joined));
-
-        applyWindowMode(true); // 로그인 완료 -> 크기 조절 허용 및 트레이 로그아웃 전환
-        closeJoinGuildModal();
-        if (typeof showKakaoToast === "function") showKakaoToast(`[${gTitle}] 길드에 입장했습니다!`, "🎉");
-        setTimeout(function() { location.reload(); }, 600);
-      } catch(err) {
-        if (typeof showKakaoToast === "function") showKakaoToast("가입 실패: " + err.message, "⚠️");
-        else alert("가입 실패: " + err.message);
-      }
+        var joined=[];try{joined=JSON.parse(localStorage.getItem("my_joined_guilds")||"[]");}catch(e){}
+        joined=joined.filter(function(g){return g.guild_id!==targetGuild.id;});
+        joined.push({guild_id:targetGuild.id,guild_name:gTitle,game_name:targetGuild.game_name||"게임",nickname:nick,my_nick:nick,role:"일반"});
+        localStorage.setItem("my_joined_guilds",JSON.stringify(joined));
+        applyWindowMode(true);closeJoinGuildModal();
+        if(typeof showKakaoToast==="function")showKakaoToast("["+gTitle+"] 길드에 입장했습니다!","🎉");
+        setTimeout(function(){location.reload();},600);
+      }catch(err){if(typeof showKakaoToast==="function")showKakaoToast("가입 실패: "+err.message,"⚠️");else alert("가입 실패: "+err.message);}
     }
 
-    async function submitLicenseRequestForm() {
-      var game = (document.getElementById("reqGameNameInput")?.value || "").trim();
-      var guild = (document.getElementById("reqGuildNameInput")?.value || "").trim();
-      var nick = (document.getElementById("reqMasterNickInput")?.value || "").trim();
-      var contact = (document.getElementById("reqContactInput")?.value || "").trim();
-
-      if (!game || !guild || !nick || !contact) {
-        return (typeof showKakaoToast === "function") ? showKakaoToast("모든 항목을 입력하세요.", "⚠️") : alert("모든 항목 입력");
-      }
-
-      try {
-        await apiRequest("app_license_requests", "POST", [{
-          game_name: game,
-          guild_name: guild,
-          applicant_nickname: nick,
-          applicant_nick: nick,
-          contact_info: contact,
-          status: "pending"
-        }]);
-        closeLicenseRequestModal();
-        if (typeof showKakaoToast === "function") showKakaoToast("라이선스 신청이 접수되었습니다!", "🎉");
-      } catch(err) {
-        if (typeof showKakaoToast === "function") showKakaoToast("신청 실패: " + err.message, "⚠️");
-        else alert("신청 실패: " + err.message);
-      }
+    async function submitLicenseRequestForm(){
+      var game=(document.getElementById("reqGameNameInput")?.value||"").trim(),guild=(document.getElementById("reqGuildNameInput")?.value||"").trim(),nick=(document.getElementById("reqMasterNickInput")?.value||"").trim(),contact=(document.getElementById("reqContactInput")?.value||"").trim();
+      if(!game||!guild||!nick||!contact)return (typeof showKakaoToast==="function")?showKakaoToast("모든 항목을 입력하세요.","⚠️"):alert("모든 항목 입력");
+      try{
+        await apiRequest("app_license_requests","POST",[{game_name:game,guild_name:guild,applicant_nickname:nick,applicant_nick:nick,contact_info:contact,status:"pending"}]);
+        closeLicenseRequestModal();if(typeof showKakaoToast==="function")showKakaoToast("라이선스 신청이 접수되었습니다!","🎉");
+      }catch(err){if(typeof showKakaoToast==="function")showKakaoToast("신청 실패: "+err.message,"⚠️");else alert("신청 실패: "+err.message);}
     }
 
-    function toggleThemeMode() {
-      var current = localStorage.getItem("guild_theme_mode") || "light";
-      var next = (current === "dark") ? "light" : "dark";
-      if (typeof window.applyAppTheme === "function") window.applyAppTheme(next);
+    function toggleThemeMode(){
+      var current=localStorage.getItem("guild_theme_mode")||"light";
+      var next=(current==="dark")?"light":"dark";
+      if(typeof window.applyAppTheme==="function")window.applyAppTheme(next);
     }
   </script>
 
-  <!-- 외부 분리 스크립트 연결 -->
   <script src="boss.js"></script>
   <script src="script.js"></script>
   <script src="rooms.js"></script>
 
-  <!-- Electron 연동 스크립트 -->
   <script>
-    const RAIDON_FEATURES = [
-      {
-        icon: "⚔️",
-        title: "실시간 보스타임 브리핑",
-        desc: "젠 타이머 카운트다운과 채팅방 원클릭 브리핑"
-      },
-      {
-        icon: "💰",
-        title: "투명한 분배 및 정산",
-        desc: "보스 토벌 참여자 기록 및 길드 금고 자동화"
-      },
-      {
-        icon: "💬",
-        title: "길드 전용 고성능 메신저",
-        desc: "카카오톡 스타일 다크 모드와 1:1 비밀 소통"
-      }
+    const RAIDON_FEATURES=[
+      {icon:"⚔️",title:"실시간 보스타임 브리핑",desc:"젠 타이머 카운트다운과 채팅방 원클릭 브리핑"},
+      {icon:"💰",title:"투명한 분배 및 정산",desc:"보스 토벌 참여자 기록 및 길드 금고 자동화"},
+      {icon:"💬",title:"길드 전용 고성능 메신저",desc:"카카오톡 스타일 다크 모드와 1:1 비밀 소통"}
     ];
+    let featureRollingTimer=null,currentFeatureIndex=0;
 
-    let featureRollingTimer = null;
-    let currentFeatureIndex = 0;
-
-    function startFeatureShowcase() {
-      if (featureRollingTimer) return;
-      featureRollingTimer = setInterval(() => {
-        currentFeatureIndex = (currentFeatureIndex + 1) % RAIDON_FEATURES.length;
-        const item = RAIDON_FEATURES[currentFeatureIndex];
-        const iconElem = document.getElementById("featureShowcaseIcon");
-        const titleElem = document.getElementById("featureShowcaseTitle");
-        const descElem = document.getElementById("featureShowcaseDesc");
-        if (iconElem) iconElem.innerText = item.icon;
-        if (titleElem) titleElem.innerText = item.title;
-        if (descElem) descElem.innerText = item.desc;
-      }, 2500);
+    function startFeatureShowcase(){
+      if(featureRollingTimer)return;
+      featureRollingTimer=setInterval(()=>{
+        currentFeatureIndex=(currentFeatureIndex+1)%RAIDON_FEATURES.length;
+        const item=RAIDON_FEATURES[currentFeatureIndex];
+        const iconElem=document.getElementById("featureShowcaseIcon"),titleElem=document.getElementById("featureShowcaseTitle"),descElem=document.getElementById("featureShowcaseDesc");
+        if(iconElem)iconElem.innerText=item.icon;if(titleElem)titleElem.innerText=item.title;if(descElem)descElem.innerText=item.desc;
+      },2500);
     }
 
-    function stopFeatureShowcase() {
-      if (featureRollingTimer) {
-        clearInterval(featureRollingTimer);
-        featureRollingTimer = null;
-      }
+    function stopFeatureShowcase(){if(featureRollingTimer){clearInterval(featureRollingTimer);featureRollingTimer=null;}}
+
+    function executeRestartAppNow(){
+      const btn=document.getElementById("btnExecuteRestartNow");
+      if(btn){btn.disabled=true;btn.innerHTML='<i class="fa-solid fa-spinner fa-spin me-2"></i>최신 버전으로 즉시 교체 구동 중...';}
+      setTimeout(function(){
+        if(window.electronAPI&&typeof window.electronAPI.restartAndInstall==='function')window.electronAPI.restartAndInstall();
+        else location.reload();
+      },400);
     }
 
-    function executeRestartAppNow() {
-      const btn = document.getElementById("btnExecuteRestartNow");
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>최신 버전으로 즉시 교체 구동 중...';
-      }
-
-      setTimeout(function() {
-        if (window.electronAPI && typeof window.electronAPI.restartAndInstall === 'function') {
-          window.electronAPI.restartAndInstall();
-        } else {
-          location.reload();
-        }
-      }, 400);
-    }
-
-    function updateChatRoomHeaderTitle(fullTitle, memberCount) {
-      document.body.classList.remove("in-main-tabs", "is-login-gateway");
+    function updateChatRoomHeaderTitle(fullTitle,memberCount){
+      document.body.classList.remove("in-main-tabs","is-login-gateway");
       document.body.classList.add("in-chat-room");
-      applyWindowMode(true); // 대화방 진입 시 창 리사이즈 가능하도록 전환
-
-      const subElem = document.getElementById("chatRoomServerSub");
-      const titleElem = document.getElementById("chatRoomTitle");
-      const countElem = document.getElementById("roomMemberCountText");
-
-      if (countElem && memberCount !== undefined) {
-        countElem.innerText = memberCount;
-      }
-
-      if (!fullTitle) return;
-
-      const tagMatch = fullTitle.match(/^(\[[^\]]+\])\s*(.*)$/);
-      if (tagMatch) {
-        if (subElem) {
-          subElem.innerText = tagMatch[1];
-          subElem.style.display = "block";
-        }
-        if (titleElem) {
-          titleElem.innerText = tagMatch[2] || fullTitle;
-        }
-      } else {
-        if (subElem) {
-          subElem.style.display = "none";
-        }
-        if (titleElem) {
-          titleElem.innerText = fullTitle;
-        }
+      applyWindowMode(true);
+      const subElem=document.getElementById("chatRoomServerSub"),titleElem=document.getElementById("chatRoomTitle"),countElem=document.getElementById("roomMemberCountText");
+      if(countElem&&memberCount!==undefined)countElem.innerText=memberCount;
+      if(!fullTitle)return;
+      const tagMatch=fullTitle.match(/^(\[[^\]]+\])\s*(.*)$/);
+      if(tagMatch){
+        if(subElem){subElem.innerText=tagMatch[1];subElem.style.display="block";}
+        if(titleElem)titleElem.innerText=tagMatch[2]||fullTitle;
+      }else{
+        if(subElem)subElem.style.display="none";
+        if(titleElem)titleElem.innerText=fullTitle;
       }
     }
-    window.updateChatRoomHeaderTitle = updateChatRoomHeaderTitle;
+    window.updateChatRoomHeaderTitle=updateChatRoomHeaderTitle;
 
-    (function observeChatRoomTitle() {
-      const titleElem = document.getElementById("chatRoomTitle");
-      if (!titleElem) return;
-
-      let isSelfUpdating = false;
-      const observer = new MutationObserver(() => {
-        if (isSelfUpdating) return;
-        const currentText = titleElem.innerText.trim();
-        if (currentText.startsWith("[")) {
-          isSelfUpdating = true;
-          updateChatRoomHeaderTitle(currentText);
-          isSelfUpdating = false;
+    (function observeChatRoomTitle(){
+      const titleElem=document.getElementById("chatRoomTitle");if(!titleElem)return;
+      let isSelfUpdating=false;
+      const observer=new MutationObserver(()=>{
+        if(isSelfUpdating)return;
+        const currentText=titleElem.innerText.trim();
+        if(currentText.startsWith("[")){
+          isSelfUpdating=true;updateChatRoomHeaderTitle(currentText);isSelfUpdating=false;
         }
       });
-
-      observer.observe(titleElem, { childList: true, characterData: true, subtree: true });
+      observer.observe(titleElem,{childList:true,characterData:true,subtree:true});
     })();
 
-    (function setupDesktopListeners() {
-      if (!window.electronAPI) return;
-
-      // 앱 최초 구동 시 현재 로그인 여부 확인 및 창 모드(고정/자유) 세팅
-      const isLogged = !!localStorage.getItem("guild_my_nickname");
+    (function setupDesktopListeners(){
+      if(!window.electronAPI)return;
+      const isLogged=!!localStorage.getItem("guild_my_nickname");
       applyWindowMode(isLogged);
 
-      const modal = document.getElementById("modalAutoUpdateContainer");
-      const downloadingView = document.getElementById("autoUpdateDownloadingView");
-      const readyView = document.getElementById("autoUpdateReadyView");
-      const fillBar = document.getElementById("autoUpdateProgressFill");
-      const percentText = document.getElementById("autoUpdatePercentText");
-      const statusText = document.getElementById("autoUpdateStatusText");
-      const phaseLabel = document.getElementById("autoUpdatePhaseLabel");
+      const modal=document.getElementById("modalAutoUpdateContainer"),downloadingView=document.getElementById("autoUpdateDownloadingView"),readyView=document.getElementById("autoUpdateReadyView"),fillBar=document.getElementById("autoUpdateProgressFill"),percentText=document.getElementById("autoUpdatePercentText"),statusText=document.getElementById("autoUpdateStatusText"),phaseLabel=document.getElementById("autoUpdatePhaseLabel");
 
-      if (typeof window.electronAPI.onUpdateProgress === 'function') {
-        window.electronAPI.onUpdateProgress((percent) => {
-          if (modal) modal.style.display = "flex";
-          if (downloadingView) downloadingView.style.display = "block";
-          if (readyView) readyView.style.display = "none";
-          if (fillBar) fillBar.style.width = percent + "%";
-          if (percentText) percentText.innerText = percent + "%";
-
+      if(typeof window.electronAPI.onUpdateProgress==='function'){
+        window.electronAPI.onUpdateProgress((percent)=>{
+          if(modal)modal.style.display="flex";if(downloadingView)downloadingView.style.display="block";if(readyView)readyView.style.display="none";
+          if(fillBar)fillBar.style.width=percent+"%";if(percentText)percentText.innerText=percent+"%";
           startFeatureShowcase();
-
-          if (percent >= 90) {
-            if (statusText) statusText.innerText = "새 버전 압축 해제 및 무인 교체 준비 완료 중...";
-            if (phaseLabel) phaseLabel.innerText = "사전 교체 준비 완료 중";
-          } else {
-            if (statusText) statusText.innerText = "최신 패치를 다운로드하고 있습니다.";
-            if (phaseLabel) phaseLabel.innerText = "패치 다운로드 및 압축 준비";
+          if(percent>=90){
+            if(statusText)statusText.innerText="새 버전 압축 해제 및 무인 교체 준비 완료 중...";
+            if(phaseLabel)phaseLabel.innerText="사전 교체 준비 완료 중";
+          }else{
+            if(statusText)statusText.innerText="최신 패치를 다운로드하고 있습니다.";
+            if(phaseLabel)phaseLabel.innerText="패치 다운로드 및 압축 준비";
           }
         });
       }
 
-      if (typeof window.electronAPI.onUpdateDownloaded === 'function') {
-        window.electronAPI.onUpdateDownloaded(() => {
-          stopFeatureShowcase();
-          if (modal) modal.style.display = "flex";
-          if (downloadingView) downloadingView.style.display = "none";
-          if (readyView) readyView.style.display = "block";
+      if(typeof window.electronAPI.onUpdateDownloaded==='function'){
+        window.electronAPI.onUpdateDownloaded(()=>{
+          stopFeatureShowcase();if(modal)modal.style.display="flex";if(downloadingView)downloadingView.style.display="none";if(readyView)readyView.style.display="block";
         });
       }
 
-      // 트레이에서 [로그인] 클릭 시
-      if (typeof window.electronAPI.onTrayLogin === 'function') {
-        window.electronAPI.onTrayLogin(() => {
-          ensureWelcomeGatewayVisible();
-          showGuildLoginModal();
-        });
+      if(typeof window.electronAPI.onTrayLogin==='function'){
+        window.electronAPI.onTrayLogin(()=>{ensureWelcomeGatewayVisible();showGuildLoginModal();});
       }
-
-      // 트레이에서 [로그아웃] 클릭 시
-      if (typeof window.electronAPI.onTrayLogout === 'function') {
-        window.electronAPI.onTrayLogout(() => {
-          if (typeof window.handleUserLogout === 'function') {
-            window.handleUserLogout();
-          } else {
-            localStorage.removeItem("guild_my_nickname");
-            localStorage.removeItem("guild_my_role");
-            localStorage.removeItem("guild_my_pin");
-            localStorage.removeItem("raidon_auto_login");
-            localStorage.removeItem("raidon_keep_login");
-            sessionStorage.clear();
-            ensureWelcomeGatewayVisible();
+      if(typeof window.electronAPI.onTrayLogout==='function'){
+        window.electronAPI.onTrayLogout(()=>{
+          if(typeof window.handleUserLogout==='function')window.handleUserLogout();
+          else{
+            localStorage.removeItem("guild_my_nickname");localStorage.removeItem("guild_my_role");localStorage.removeItem("guild_my_pin");localStorage.removeItem("raidon_auto_login");localStorage.removeItem("raidon_keep_login");
+            sessionStorage.clear();ensureWelcomeGatewayVisible();
           }
         });
       }
