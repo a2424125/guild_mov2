@@ -39,9 +39,10 @@
   </script>
   <link rel="stylesheet" href="style.css">
   <style>
-    html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden;display:flex;flex-direction:column;background:var(--kakao-bg,#e5e7eb);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
-    .app-main-layout{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;position:relative}
-    #welcomeGatewayView{width:100%;height:100%;position:relative;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;background:linear-gradient(180deg,#f4f5f7 0%,#e5e8ed 50%,#d8dce3 100%)!important}
+    html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden!important;display:flex;flex-direction:column;background:var(--kakao-bg,#e5e7eb);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;box-sizing:border-box}
+    *,*:before,*:after{box-sizing:border-box}
+    .app-main-layout{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;position:relative;overflow-x:hidden!important}
+    #welcomeGatewayView{width:100%;height:100%;position:relative;overflow-y:auto;overflow-x:hidden!important;display:flex;flex-direction:column;background:linear-gradient(180deg,#f4f5f7 0%,#e5e8ed 50%,#d8dce3 100%)!important}
     body.is-login-gateway .btn-win-max{opacity:0.3!important;cursor:not-allowed!important;pointer-events:none!important}
     .hero-curved-dark-header{width:100%;padding:12px 16px 4px 16px;background:transparent!important;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;z-index:10;border-radius:0!important;box-shadow:none!important;border-bottom:none!important;flex-shrink:0}
     .hero-brand-row{display:flex;align-items:center;justify-content:center;gap:0;margin-top:4px}
@@ -65,7 +66,7 @@
     .btn-hero-text-link{background:transparent;border:none;color:#64748b;font-size:0.78rem;font-weight:700;padding:10px 0 2px 0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:color .15s ease,transform .15s ease;text-decoration:none}
     .btn-hero-text-link:hover{color:#0284c7;transform:translateY(-1px)}
     
-    /* 🌟 상단 타이틀바 및 테마 일체화 */
+    /* 상단 타이틀바 및 테마 일체화 */
     .view-custom-titlebar{width:100%;height:26px!important;min-height:26px!important;display:flex;align-items:center;justify-content:flex-end;-webkit-app-region:drag;user-select:none;flex-shrink:0;padding-right:4px;box-sizing:border-box;z-index:1000}
     #welcomeGatewayView .view-custom-titlebar{background-color:transparent!important}
     #kakaoMainTabsView .view-custom-titlebar{background-color:var(--main-header-bg,#ffffff)!important;border-bottom:none!important}
@@ -76,15 +77,24 @@
     body.theme-dark .btn-win-ctl:hover{background:rgba(255,255,255,0.1)!important}
     .btn-win-ctl.btn-win-close:hover{background:#e11d48!important;color:#fff!important}
     
-    #kakaoMainTabsView{background-color:var(--main-view-bg,#f5f7fa)!important}
+    #kakaoMainTabsView{background-color:var(--main-view-bg,#f5f7fa)!important;overflow-x:hidden!important}
     #kakaoMainTabsView .main-tabs-header{background-color:var(--main-header-bg,#ffffff)!important;border-bottom:1px solid var(--main-header-border,#e2e8f0)!important;padding:0 14px 8px 14px!important;color:var(--main-header-text,#111827)!important}
-    #tabChatRoomsContent,#tabFriendsContent,#tabMoreContent{background-color:var(--main-view-bg,#f5f7fa)!important}
-    #chatRoomView{background-color:var(--kakao-bg,#bacee0)!important}
-    #chatRoomView .kakao-chat-header{background-color:var(--kakao-bg,#bacee0)!important;padding:0 14px 10px 14px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;-webkit-app-region:no-drag;user-select:none;flex-shrink:0}
-    .room-header-two-tier{display:flex;flex-direction:column;justify-content:center;min-width:0;flex:1;overflow:hidden;line-height:1.25}
+    #tabChatRoomsContent,#tabFriendsContent,#tabMoreContent{background-color:var(--main-view-bg,#f5f7fa)!important;overflow-x:hidden!important}
+    
+    /* ⭐️ 대화방 가로 스크롤 완벽 차단 & 유연한 반응형 레이아웃 */
+    #chatRoomView{background-color:var(--kakao-bg,#bacee0)!important;overflow-x:hidden!important;width:100%!important;max-width:100%!important}
+    #chatRoomView .kakao-chat-header{background-color:var(--kakao-bg,#bacee0)!important;padding:0 10px 10px 10px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;-webkit-app-region:no-drag;user-select:none;flex-shrink:0;width:100%!important;overflow:hidden!important}
+    .room-header-two-tier{display:flex;flex-direction:column;justify-content:center;min-width:0!important;flex:1 1 auto;overflow:hidden;line-height:1.25}
     .room-server-subtitle{font-size:0.72rem;color:var(--kakao-header-subtext,#64748b);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
-    .room-main-title{font-size:0.94rem;font-weight:600;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--kakao-header-text,#191919)}
-    .header-right-tools{display:flex!important;align-items:center!important;gap:6px!important;flex-shrink:0!important}
+    .room-main-title{font-size:0.94rem;font-weight:600;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--kakao-header-text,#191919);min-width:0!important}
+    .header-right-tools{display:flex!important;align-items:center!important;gap:4px!important;flex-shrink:0!important}
+    
+    .kakao-notice-banner{width:100%!important;max-width:100%!important;overflow:hidden!important;box-sizing:border-box}
+    .chat-messages-container{width:100%!important;max-width:100%!important;overflow-x:hidden!important;overflow-y:auto;box-sizing:border-box}
+    .chat-item-row{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important}
+    .kakao-input-area{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important}
+    .input-textarea-custom{width:100%!important;max-width:100%!important;box-sizing:border-box}
+
     .kakao-bottom-tabbar{height:52px;min-height:52px;background:var(--main-bottom-bg,#181d24);border-top:1px solid var(--main-bottom-border,#282f3a);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;z-index:20}
     .kakao-tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--main-tab-inactive,#64748b);cursor:pointer;padding:4px 0;transition:color .15s ease;user-select:none}
     .kakao-tab-item.active{color:var(--main-tab-active,#fee500)}
@@ -229,7 +239,7 @@
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
         <button type="button" class="btn-win-ctl" title="최소화" onclick="handleWinMinimize()"><i class="fa-solid fa-minus"></i></button>
-        <button type="button" class="btn-win-ctl" title="최대화" onclick="handleWinMaximize()"><i class="fa-regular fa-square"></i></button>
+        <button type="button" class="btn-win-ctl btn-win-max" title="최대화" onclick="handleWinMaximize()"><i class="fa-regular fa-square"></i></button>
         <button type="button" class="btn-win-ctl btn-win-close" title="닫기" onclick="handleWinClose()"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </div>
@@ -328,7 +338,7 @@
     </nav>
   </div>
 
-  <!-- [VIEW 2] 대화방 화면 -->
+  <!-- [VIEW 2] 대화방 화면 (가로 스크롤 완전 차단 및 알림 토글 장착) -->
   <div id="chatRoomView" class="app-main-layout" style="display:none;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
@@ -338,8 +348,8 @@
       </div>
     </div>
     <header class="kakao-chat-header">
-      <div class="header-left-area d-flex align-items-center gap-2 overflow-hidden flex-nowrap flex-grow-1">
-        <button type="button" class="btn-kakao-menu" title="나가기" onclick="exitChatRoomToMain()" style="width:30px;height:30px;background:transparent;border:none;font-size:1.1rem;color:var(--kakao-header-text,#191919);cursor:pointer;">
+      <div class="header-left-area d-flex align-items-center gap-2 overflow-hidden flex-nowrap flex-grow-1" style="min-width:0;">
+        <button type="button" class="btn-kakao-menu" title="나가기" onclick="exitChatRoomToMain()" style="width:30px;height:30px;background:transparent;border:none;font-size:1.1rem;color:var(--kakao-header-text,#191919);cursor:pointer;flex-shrink:0;">
           <i class="fa-solid fa-chevron-left"></i>
         </button>
         <div class="room-avatar-circle" id="chatRoomAvatar" style="width:34px;height:34px;border-radius:12px;background:#181d24;border:1.5px solid #fee500;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
@@ -352,6 +362,8 @@
         </div>
       </div>
       <div class="header-right-tools">
+        <!-- ⭐️ 채팅 알림 켜기/끄기 원클릭 토글 버튼 -->
+        <button type="button" class="btn-kakao-head" id="btnToggleChatNoti" title="알림 끄기" onclick="toggleChatNotificationMode()"><i class="fa-solid fa-bell"></i></button>
         <button type="button" class="btn-kakao-head text-danger" id="btnLeaveCurrentRoom" style="display:none;" title="방 나오기" onclick="handleLeaveCurrentRoomFromHeader()"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
         <button type="button" class="btn-kakao-head" id="btnPwaInstall" style="display:none;" title="앱으로 설치"><i class="fa-solid fa-download"></i></button>
         <button type="button" class="btn-kakao-head" title="대화 내용 검색" onclick="focusChatInput()"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -361,11 +373,11 @@
       </div>
     </header>
     <div class="kakao-notice-banner" onclick="openModulePage('PageNotice')">
-      <div class="d-flex align-items-center flex-grow-1 min-width-0">
+      <div class="d-flex align-items-center flex-grow-1 min-width-0" style="overflow:hidden;">
         <i class="fa-solid fa-bullhorn notice-icon-part"></i>
-        <div class="notice-text-content" id="kakaoTopNoticeText">공지사항을 불러오는 중...</div>
+        <div class="notice-text-content text-truncate" id="kakaoTopNoticeText">공지사항을 불러오는 중...</div>
       </div>
-      <i class="fa-solid fa-chevron-right text-secondary" style="font-size:0.72rem;"></i>
+      <i class="fa-solid fa-chevron-right text-secondary ms-1" style="font-size:0.72rem;flex-shrink:0;"></i>
     </div>
     <div class="chat-messages-container" id="chatMessagesView">
       <div class="text-center my-1"><span class="badge bg-secondary bg-opacity-25 text-secondary px-2 py-1" style="font-size:0.65rem;">대화가 안전하게 연결되었습니다.</span></div>
@@ -769,6 +781,13 @@
     window.handleLeaveCurrentRoomFromHeader=handleLeaveCurrentRoomFromHeader;
 
     function exitChatRoomToMain(){
+      var urlParams=new URLSearchParams(window.location.search);
+      if(urlParams.has('open_room_id')){
+        if(window.electronAPI&&typeof window.electronAPI.closeWindow==='function'){
+          window.electronAPI.closeWindow();
+          return;
+        }
+      }
       var mainTabs=document.getElementById("kakaoMainTabsView"),chatView=document.getElementById("chatRoomView");
       if(mainTabs&&chatView){
         if(window.currentActiveRoomId&&typeof window.markRoomAsReadNow==="function")window.markRoomAsReadNow(window.currentActiveRoomId);
