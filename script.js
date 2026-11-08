@@ -222,7 +222,6 @@ async function initApp() {
   if (typeof window.applyAppTheme === 'function') window.applyAppTheme();
   if (typeof window.applyFontScale === 'function') window.applyFontScale();
 
-  // 대화방 가로 스크롤 방지 가드 스타일 적용
   const chatRoom = document.getElementById("chatRoomView");
   if (chatRoom) chatRoom.style.overflowX = "hidden";
   const chatMessages = document.getElementById("chatMessagesView");
@@ -299,6 +298,25 @@ async function initApp() {
     setTimeout(() => {
       openForceChangePinModal();
     }, 300);
+  }
+
+  // ⭐️ 독립 대화방 팝업 진입 시 입력창 잠금 강제 해제 및 즉시 포커스
+  if (isPopupMode) {
+    const unlockChatInput = () => {
+      const input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
+      if (input) {
+        input.disabled = false;
+        input.readOnly = false;
+        input.removeAttribute("disabled");
+        input.removeAttribute("readonly");
+        input.style.pointerEvents = "auto";
+        input.style.userSelect = "text";
+        input.focus();
+      }
+    };
+    setTimeout(unlockChatInput, 50);
+    setTimeout(unlockChatInput, 200);
+    setTimeout(unlockChatInput, 500);
   }
 }
 
@@ -1290,7 +1308,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
 }
 
 // --------------------------------------------------------
-// 8-B. ⭐️ [카카오톡 스타일 사진 휠 줌 & 드래그 뷰어 엔진]
+// 8-B. [카카오톡 스타일 사진 휠 줌 & 드래그 뷰어 엔진]
 // --------------------------------------------------------
 let currentViewerScale = 1.0;
 let currentViewerTranslateX = 0;
@@ -1319,7 +1337,6 @@ function openImagePreviewModal(url) {
     `;
 
     modal.innerHTML = `
-      <!-- 상단 컨트롤 툴바 -->
       <div id="viewerToolbar" style="position: absolute; top: 14px; display: flex; align-items: center; gap: 10px; background: rgba(24, 32, 44, 0.88); border: 1px solid #2d3b4e; padding: 6px 14px; border-radius: 999px; z-index: 10; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
         <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:13px;" onclick="zoomViewerImage(0.2)" title="확대 (+)"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
         <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:13px;" onclick="zoomViewerImage(-0.2)" title="축소 (-)"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
@@ -1329,7 +1346,6 @@ function openImagePreviewModal(url) {
         <button type="button" class="btn btn-sm text-light p-1" style="background:none; border:none; font-size:14px;" onclick="closeImagePreviewModal()" title="닫기 (ESC)"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <!-- 이미지 표시 컨테이너 -->
       <div id="viewerViewport" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: grab;">
         <img id="previewModalImg" style="max-width: 90vw; max-height: 85vh; object-fit: contain; transform-origin: center center; transition: transform 0.05s ease-out; border-radius: 8px; box-shadow: 0 8px 30px rgba(0,0,0,0.6);" draggable="false">
       </div>
@@ -1338,16 +1354,13 @@ function openImagePreviewModal(url) {
     document.body.appendChild(modal);
 
     const viewport = document.getElementById("viewerViewport");
-    const img = document.getElementById("previewModalImg");
 
-    // 1. 마우스 휠 줌인/줌아웃
     viewport.addEventListener("wheel", (e) => {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -0.15 : 0.15;
       zoomViewerImage(delta);
     }, { passive: false });
 
-    // 2. 마우스 드래그 이동 (Pan)
     viewport.addEventListener("mousedown", (e) => {
       if (e.target.closest("#viewerToolbar")) return;
       isViewerDragging = true;
@@ -1370,7 +1383,6 @@ function openImagePreviewModal(url) {
       }
     });
 
-    // ESC 키 누르면 닫기
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modal.style.display === "flex") {
         closeImagePreviewModal();
@@ -1409,11 +1421,7 @@ window.zoomViewerImage = zoomViewerImage;
 function resetViewerImage(mode) {
   currentViewerTranslateX = 0;
   currentViewerTranslateY = 0;
-  if (mode === 1.0) {
-    currentViewerScale = 1.0;
-  } else {
-    currentViewerScale = 1.0;
-  }
+  currentViewerScale = 1.0;
   updateViewerTransform();
 }
 window.resetViewerImage = resetViewerImage;
@@ -1513,7 +1521,7 @@ window.handleSendMessage = handleSendMessage;
 // 10. 멘션 팝업 및 서브 모듈 오버레이
 // --------------------------------------------------------
 function bindMentionInputEvents() {
-  const input = document.getElementById("inputChatMessage");
+  const input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
   const popup = document.getElementById("mentionPopupBox");
   if (!input || !popup) return;
 
@@ -1543,7 +1551,7 @@ function bindMentionInputEvents() {
 }
 
 function applyMentionNick(name) {
-  const input = document.getElementById("inputChatMessage");
+  const input = document.getElementById("inputChatMessage") || document.getElementById("chatMessageInput");
   if (!input) return;
   const val = input.value;
   const cursorPos = input.selectionStart;
