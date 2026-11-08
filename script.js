@@ -1,6 +1,6 @@
 // ========================================================
 // [길드톡 메신저] 메인 클라이언트 스크립트 (script.js)
-// 카카오톡 인터페이스 / 실시간 채팅 스트림 / 사진 첨부 및 3일 자동 만료 / 스마트 로그인 / 알림 엔진
+// 카카오톡 인터페이스 / 스마트 포커스 감지 알림 / 사진 첨부 및 3일 만료 / 실시간 스트림
 // ========================================================
 
 var supabaseClient = null;
@@ -86,11 +86,32 @@ window.formatTime24HourWithDate = formatTime24HourWithDate;
 window.formatKSTChatTime = formatKSTChatTime;
 
 // --------------------------------------------------------
-// 1-B. 채팅 알림음(MP3) 및 시스템 알림
+// 1-B. ⭐️ [스마트 포커스 감지 알림음 및 윈도우 토스트 엔진]
 // --------------------------------------------------------
-window.triggerChatAlarmSound = function() {
+// 현재 사용자가 메신저 창을 직접 보고 있는지 확인하는 함수
+function isUserActivelyViewingChat(msgRoomId) {
+  // 1. 창이 숨겨져 있거나(최소화 등) 브라우저 포커스를 잃은 상태면 안 보고 있는 것으로 판별
+  if (document.hidden || document.visibilityState === 'hidden') return false;
+  if (typeof document.hasFocus === 'function' && !document.hasFocus()) return false;
+
+  // 2. 대화방 뷰가 활성화되어 있지 않으면 안 보고 있는 상태
+  const chatView = document.getElementById("chatRoomView");
+  if (!chatView || chatView.style.display === 'none') return false;
+
+  // 3. 현재 열려있는 대화방과 메시지가 온 방이 일치하는지 검사
+  const activeRoom = window.currentActiveRoomId || "default_public";
+  const targetRoom = (!msgRoomId || msgRoomId === "public" || msgRoomId === "default_public") ? "default_public" : msgRoomId;
+
+  return (activeRoom === targetRoom);
+}
+
+window.triggerChatAlarmSound = function(msgRoomId) {
+  // 알림 꺼짐 설정 검사
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
+
+  // 사용자가 이미 해당 대화방을 직접 보고 활성화 중이면 알림음을 울리지 않음
+  if (isUserActivelyViewingChat(msgRoomId)) return;
 
   const soundFile = localStorage.getItem("guild_chat_alarm_sound") || "alarm3.mp3";
   const audioPath = soundFile.startsWith("http") ? soundFile : `/assets/sounds/${soundFile}`;
@@ -122,19 +143,47 @@ function playFallbackChatBeep() {
   } catch (e) {}
 }
 
-function notifyWebDesktopMessage(sender, msgText) {
+function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
+  // 알림 꺼짐 설정 검사
+  const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
+  if (!isEnabled) return;
+
+  // ⭐️ [핵심] 사용자가 대화방 창을 직접 켜놓고 보고 있을 때는 윈도우 트레이 알림을 발생시키지 않음!
+  if (isUserActivelyViewingChat(msgRoomId)) return;
+
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") {
     try {
-      new Notification(`💬 [${sender}]`, {
+      const noti = new Notification(`💬 [${sender}]`, {
         body: msgText || "새 메시지가 도착했습니다.",
-        icon: "/favicon.ico"
+        icon: "/favicon.ico",
+        silent: true // 소리는 Audio 태그로 일원화
       });
+      noti.onclick = function() {
+        window.focus();
+        if (msgRoomId && typeof window.openChatRoom === 'function') {
+          window.openChatRoom(msgRoomId);
+        }
+      };
     } catch (e) {}
   } else if (Notification.permission !== "denied") {
     Notification.requestPermission();
   }
 }
+
+// 🔔 알림 켜기/끄기 토글 제어 함수
+window.toggleChatNotificationMode = function() {
+  const current = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
+  const next = !current;
+  localStorage.setItem("guild_chat_alarm_enabled", next ? "true" : "false");
+
+  const btn = document.getElementById("btnToggleChatNoti");
+  if (btn) {
+    btn.innerHTML = next ? '<i class="fa-solid fa-bell"></i>' : '<i class="fa-solid fa-bell-slash text-secondary"></i>';
+    btn.title = next ? "알림 끄기" : "알림 켜기";
+  }
+  showKakaoToast(next ? "채팅 알림이 켜졌습니다." : "채팅 알림이 꺼졌습니다.", next ? "🔔" : "🔕");
+};
 
 // --------------------------------------------------------
 // 2. 테마 설정 및 앱 초기화 진입점
@@ -209,7 +258,6 @@ async function initApp() {
   if (typeof window.loadBossTimersList === 'function') await window.loadBossTimersList();
   if (typeof window.startLocalBossWatchTimer === 'function') window.startLocalBossWatchTimer();
 
-  // 실시간 채널 구독 시작
   listenRealtimeChatMessages();
   listenRealtimeRoleUpdates();
   if (typeof window.listenRealtimeBossTimers === 'function') window.listenRealtimeBossTimers();
@@ -745,9 +793,10 @@ function listenRealtimeChatMessages() {
       const normalizedMsgRoom = (rawMsgRoom === "public" || rawMsgRoom === "default_public") ? "default_public" : rawMsgRoom;
       const normalizedActiveRoom = (!window.currentActiveRoomId || window.currentActiveRoomId === "public" || window.currentActiveRoomId === "default_public") ? "default_public" : window.currentActiveRoomId;
 
+      // ⭐️ 상대방 메시지 수신 시 알림 트리거 (방 ID 함께 전달하여 포커스 여부 검사)
       if (newMsg.sender_name && newMsg.sender_name !== myCurrentNick) {
-        window.triggerChatAlarmSound();
-        notifyWebDesktopMessage(newMsg.sender_name, (newMsg.msg_type === "image" ? "📷 사진을 보냈습니다." : (newMsg.message || "새 메시지")));
+        window.triggerChatAlarmSound(normalizedMsgRoom);
+        notifyWebDesktopMessage(newMsg.sender_name, (newMsg.msg_type === "image" ? "📷 사진을 보냈습니다." : (newMsg.message || "새 메시지")), normalizedMsgRoom);
       }
 
       if (typeof window.updateRoomCardRealtime === "function") {
@@ -1002,7 +1051,7 @@ async function processAndSendImage(file) {
       media_url: compressedBase64,
       msg_type: "image",
       read_members: [myCurrentNick],
-      expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // ⭐️ 3일 후 자동 만료
+      expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
       created_at: new Date().toISOString()
     };
 
@@ -1034,23 +1083,19 @@ async function processAndSendImage(file) {
 }
 window.processAndSendImage = processAndSendImage;
 
-// 3일 지난 만료 데이터 백그라운드 자동 청소
 async function cleanupOldImagesAndChatsBackground() {
   try {
     const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
     const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
-    
-    // 1. 3일 경과한 사진 데이터 삭제 (용량 무제한 방지)
     await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&msg_type=eq.image&created_at=lt.${threeDaysAgo}`, "DELETE");
     
-    // 2. 14일 경과한 일반 텍스트 채팅 정리
     const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
     await apiRequest(`guild_chats?guild_id=eq.${encodeURIComponent(currentGid)}&created_at=lt.${fourteenDaysAgo}`, "DELETE");
   } catch (e) {}
 }
 
 // --------------------------------------------------------
-// 8. 카카오톡 말풍선 렌더링 (사진/스크린샷 규격 탑재)
+// 8. 카카오톡 말풍선 렌더링
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
