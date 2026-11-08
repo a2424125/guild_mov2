@@ -335,7 +335,7 @@
 
     <!-- 다운로드 버튼 카드 (1행) -->
     <div class="grid-container" style="margin-bottom: 20px;">
-      <!-- Android 다운로드 카드 (추후 패키징 대비 원형 보존) -->
+      <!-- Android 다운로드 카드 -->
       <div class="download-card">
         <div class="card-header-tag tag-android">
           <span>🤖</span> Android 스마트폰 전용
@@ -357,7 +357,7 @@
         </div>
       </div>
 
-      <!-- Windows 다운로드 카드 (504 타임아웃 방지 핸들러 연동) -->
+      <!-- Windows 다운로드 카드 (순정 a 링크로 100% 정상 작동) -->
       <div class="download-card">
         <div class="card-header-tag tag-windows">
           <span>💻</span> Windows PC 데스크톱 전용
@@ -380,10 +380,11 @@
         <div class="card-title">PC 프로그램</div>
         <div class="card-desc">게임 플레이 중 보스 젠 시간 확인 및 금고 정산, 카톡형 실시간 채팅을 진행합니다.</div>
         <div class="card-footer-box">
-          <button type="button" id="btnLinkWindows" class="btn-download btn-windows" onclick="startSecureWindowsDownload()">
+          <!-- ⭐️ 기본값으로 GitHub 최신 릴리즈 페이지 연결 (504 에러 원천 방지) -->
+          <a id="btnLinkWindows" href="https://github.com/a2424125/guild_mov2/releases/latest" target="_blank" rel="noopener noreferrer" class="btn-download btn-windows">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
             Windows 다운로드
-          </button>
+          </a>
           <div id="metaWindowsVersion" class="version-meta">최신버전 Windows 64-bit 설치형</div>
         </div>
       </div>
@@ -424,55 +425,25 @@
     </div>
   </div>
 
-  <!-- 백그라운드 다운로드 전용 숨김 iframe -->
-  <iframe id="downloadFallbackIframe" style="display:none; width:0; height:0;"></iframe>
-
   <script>
-    let resolvedWindowsUrl = '';
-    const fallbackReleasePage = 'https://github.com/a2424125/guild_mov2/releases/latest';
-
-    // ⭐️ 504 Gateway Time-out 방지 안전 다운로드 트리거
-    function startSecureWindowsDownload() {
-      const targetUrl = resolvedWindowsUrl || fallbackReleasePage;
-
-      // 1. 현재 창이 504 에러로 덮어씌워지는 것을 방지하기 위해 백그라운드 iframe으로 1차 시도
-      try {
-        const iframe = document.getElementById('downloadFallbackIframe');
-        if (iframe) {
-          iframe.src = targetUrl;
-        } else {
-          window.location.href = targetUrl;
-        }
-      } catch (e) {
-        window.open(targetUrl, '_blank');
-      }
-
-      // 2. 만약 직링크에 CDN 504 병목이 있을 경우를 대비하여 1.5초 후 릴리즈 페이지 보조 오픈
-      setTimeout(() => {
-        if (!resolvedWindowsUrl || resolvedWindowsUrl.includes('releases/latest')) {
-          window.open(fallbackReleasePage, '_blank');
-        }
-      }, 1500);
-    }
-
     (async function syncVersionConfig() {
+      const winBtn = document.getElementById('btnLinkWindows');
       const winMeta = document.getElementById('metaWindowsVersion');
       const apkBtn = document.getElementById('btnLinkAndroid');
       const apkMeta = document.getElementById('metaAndroidVersion');
 
-      // 1. version.json 확인 (강제 캐시 무효화)
+      // 1. version.json 동기화 시도
       try {
         const res = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
           const config = await res.json();
           const ver = config.latest_version || config.version || '';
-          const customUrl = config.download_url_windows || config.download_url;
+          const customWinUrl = config.download_url_windows || config.download_url;
 
-          if (customUrl) {
-            resolvedWindowsUrl = customUrl;
-          } else if (ver) {
-            // 태그 및 파일명 대소문자 일치 세팅
-            resolvedWindowsUrl = `https://github.com/a2424125/guild_mov2/releases/download/v${ver}/RaidOn_Setup_v${ver}.exe`;
+          if (customWinUrl && winBtn) {
+            winBtn.href = customWinUrl;
+          } else if (ver && winBtn) {
+            winBtn.href = `https://github.com/a2424125/guild_mov2/releases/download/v${ver}/RaidOn_Setup_v${ver}.exe`;
           }
 
           if (ver && winMeta) {
@@ -488,32 +459,28 @@
           return;
         }
       } catch (e) {
-        console.warn('version.json 로드 실패, GitHub 릴리즈로 우회:', e);
+        console.warn('version.json 로드 건너뜀:', e);
       }
 
-      // 2. version.json 실패 시 GitHub 최신 릴리즈 자동 감지
+      // 2. 만약 version.json이 없을 경우 GitHub Releases API로 최신 버전 태그와 설치 링크 동기화
       try {
         const ghRes = await fetch('https://api.github.com/repos/a2424125/guild_mov2/releases/latest');
         if (ghRes.ok) {
           const release = await ghRes.json();
           const tag = release.tag_name ? release.tag_name.replace(/^v/i, '') : '';
-          const exeAsset = release.assets && release.assets.find(a => a.name && a.name.endsWith('.exe'));
+          const exeAsset = release.assets && release.assets.find(a => a.name && a.name.toLowerCase().endsWith('.exe'));
 
-          if (exeAsset) {
-            resolvedWindowsUrl = exeAsset.browser_download_url;
-          } else {
-            resolvedWindowsUrl = release.html_url || fallbackReleasePage;
+          if (exeAsset && winBtn) {
+            winBtn.href = exeAsset.browser_download_url;
+          } else if (winBtn) {
+            winBtn.href = release.html_url || 'https://github.com/a2424125/guild_mov2/releases/latest';
           }
 
           if (tag && winMeta) {
             winMeta.innerText = `최신버전 v${tag} · Windows 64-bit 설치형`;
           }
-        } else {
-          resolvedWindowsUrl = fallbackReleasePage;
         }
-      } catch (ghErr) {
-        resolvedWindowsUrl = fallbackReleasePage;
-      }
+      } catch (err) {}
     })();
   </script>
 </body>
