@@ -210,7 +210,7 @@ function getClassAvatarStyle(className) {
 }
 
 // --------------------------------------------------------
-// 2. [친구 탭] 길드원 리스트 렌더링 & 클릭 제어
+// 2. ⭐️ [친구 탭] 길드원 리스트 렌더링 (본인 중복 완전 제거 & 순수 친구만 표기)
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
@@ -221,6 +221,7 @@ window.loadMainTabFriendsList = async function() {
   const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
+  // 1. 최상단 내 프로필 카드 정보 즉시 동기화
   const myNickElem = document.getElementById("mainTabMyNick");
   const myAvatarElem = document.getElementById("mainTabMyAvatar");
   const myClassElem = document.getElementById("mainTabMyClass");
@@ -256,17 +257,23 @@ window.loadMainTabFriendsList = async function() {
 
     window.cachedMemberList = members;
 
-    const countElem = document.getElementById("mainTabMemberCount");
-    if (countElem) countElem.innerText = members.length;
+    // ⭐️ [핵심 해결] 상단에 내 프로필 카드가 이미 있으므로, 아래 친구 목록에서는 본인(myNick)을 완벽히 제외
+    const friendsOnly = members.filter(m => {
+      const mName = m.nickname || m.name || "";
+      return mName && mName !== myNick;
+    });
 
-    if (members.length === 0) {
-      container.innerHTML = `<div class="text-secondary small text-center py-4">등록된 길드원이 없습니다.</div>`;
+    // 친구 목록 인원수 표기 (본인 제외 인원)
+    const countElem = document.getElementById("mainTabMemberCount");
+    if (countElem) countElem.innerText = friendsOnly.length;
+
+    if (friendsOnly.length === 0) {
+      container.innerHTML = `<div class="text-secondary small text-center py-4">등록된 다른 길드원이 없습니다.</div>`;
       return;
     }
 
-    container.innerHTML = members.map(m => {
+    container.innerHTML = friendsOnly.map(m => {
       const mName = m.nickname || m.name || "길드원";
-      const isMe = (mName === myNick);
       const mClass = m.class_name || m.job_class || "클래스 미지정";
       const mRole = m.role || "일반";
 
@@ -297,14 +304,12 @@ window.loadMainTabFriendsList = async function() {
             <div class="d-flex align-items-center" style="gap: 4px;">
               ${roleBadge}
               <span class="room-name-text">${mName}</span>
-              ${isMe ? '<span class="badge badge-me-tag ms-1">나</span>' : ''}
             </div>
             <p class="room-msg-preview class-desc-text">${mClass}</p>
           </div>
-          ${isMe ? 
-            '<i class="fa-solid fa-pen text-secondary me-1 btn-edit-profile-icon" title="프로필 변경"></i>' : 
-            `<button type="button" class="btn btn-direct-chat-pill" onclick="event.stopPropagation(); startDirectChatWith('${safeName}');"><i class="fa-solid fa-comment-dots me-1"></i>1:1 대화</button>`
-          }
+          <button type="button" class="btn btn-direct-chat-pill" onclick="event.stopPropagation(); startDirectChatWith('${safeName}');">
+            <i class="fa-solid fa-comment-dots me-1"></i>1:1 대화
+          </button>
         </div>
       `;
     }).join("");
@@ -861,6 +866,7 @@ window.closeMemberProfileCard = function() {
   if (modal) modal.style.display = "none";
 };
 
+// ⭐️ [직업 선택 동기화] 직업 선택 시 상단 내 프로필 카드 및 목록 즉각 갱신
 window.selectClassProfile = async function(icon, className) {
   let myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   let myCurrentClass = `${icon} ${className}`;
@@ -898,6 +904,7 @@ window.selectClassProfile = async function(icon, className) {
   if (typeof showKakaoToast === "function") {
     showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
   }
+  // 직업 변경 후 친구 탭 즉각 다시 그리기
   if (typeof loadMainTabFriendsList === "function") {
     loadMainTabFriendsList();
   }
