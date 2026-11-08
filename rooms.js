@@ -195,22 +195,23 @@ window.switchMainBottomTab = function(tabName) {
 };
 
 // --------------------------------------------------------
-// 헬퍼: 직업명에 따른 아바타 스타일 클래스 자동 부여 (용량 0KB)
+// 헬퍼: 직업명에 따른 아바타 스타일 클래스 자동 부여 (소프트 톤)
 // --------------------------------------------------------
 function getClassAvatarStyle(className) {
   const c = className || "";
-  if (c.includes("전사") || c.includes("무투") || c.includes("버서커")) return { cls: "avatar-warrior", icon: "⚔️" };
-  if (c.includes("궁수") || c.includes("레인저") || c.includes("스나이퍼")) return { cls: "avatar-archer", icon: "🏹" };
-  if (c.includes("마법") || c.includes("위자드") || c.includes("소서리스")) return { cls: "avatar-mage", icon: "🪄" };
-  if (c.includes("탱커") || c.includes("기사") || c.includes("가디언")) return { cls: "avatar-tanker", icon: "🛡️" };
-  if (c.includes("힐러") || c.includes("사제") || c.includes("프리스트")) return { cls: "avatar-healer", icon: "🌿" };
-  if (c.includes("암살") || c.includes("로그") || c.includes("도적")) return { cls: "avatar-assassin", icon: "🥷" };
-  if (c.includes("길드장") || c.includes("길마")) return { cls: "avatar-master", icon: "👑" };
+  if (c.includes("전사") || c.includes("무투") || c.includes("👊") || c.includes("⚔️") || c.includes("버서커")) return { cls: "avatar-warrior", icon: c.includes("👊") ? "👊" : "⚔️" };
+  if (c.includes("궁수") || c.includes("🏹") || c.includes("레인저") || c.includes("스나이퍼")) return { cls: "avatar-archer", icon: "🏹" };
+  if (c.includes("마법") || c.includes("🪄") || c.includes("위자드") || c.includes("소서리스")) return { cls: "avatar-mage", icon: "🪄" };
+  if (c.includes("탱커") || c.includes("🛡️") || c.includes("기사") || c.includes("가디언")) return { cls: "avatar-tanker", icon: "🛡️" };
+  if (c.includes("힐러") || c.includes("🌿") || c.includes("사제") || c.includes("프리스트")) return { cls: "avatar-healer", icon: "🌿" };
+  if (c.includes("암살") || c.includes("🥷") || c.includes("로그") || c.includes("도적")) return { cls: "avatar-assassin", icon: "🥷" };
+  if (c.includes("길드장") || c.includes("👑") || c.includes("길마")) return { cls: "avatar-master", icon: "👑" };
   return { cls: "avatar-default", icon: "👤" };
 }
+window.getClassAvatarStyle = getClassAvatarStyle;
 
 // --------------------------------------------------------
-// 2. ⭐️ [친구 탭] 길드원 리스트 렌더링 (본인 중복 완전 제거 & 순수 친구만 표기)
+// 2. [친구 탭] 길드원 리스트 렌더링 (본인 중복 완전 제거 & 소프트 아바타)
 // --------------------------------------------------------
 window.loadMainTabFriendsList = async function() {
   const container = document.getElementById("mainTabFriendsList");
@@ -221,7 +222,7 @@ window.loadMainTabFriendsList = async function() {
   const myClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
-  // 1. 최상단 내 프로필 카드 정보 즉시 동기화
+  // 1. 최상단 내 프로필 카드 정보 동기화 (길마 뱃지 없이 깔끔하게 표기)
   const myNickElem = document.getElementById("mainTabMyNick");
   const myAvatarElem = document.getElementById("mainTabMyAvatar");
   const myClassElem = document.getElementById("mainTabMyClass");
@@ -257,13 +258,12 @@ window.loadMainTabFriendsList = async function() {
 
     window.cachedMemberList = members;
 
-    // ⭐️ [핵심 해결] 상단에 내 프로필 카드가 이미 있으므로, 아래 친구 목록에서는 본인(myNick)을 완벽히 제외
+    // 상단에 내 프로필 카드가 이미 있으므로, 친구 목록에서는 본인(myNick)을 완벽히 제외
     const friendsOnly = members.filter(m => {
       const mName = m.nickname || m.name || "";
       return mName && mName !== myNick;
     });
 
-    // 친구 목록 인원수 표기 (본인 제외 인원)
     const countElem = document.getElementById("mainTabMemberCount");
     if (countElem) countElem.innerText = friendsOnly.length;
 
@@ -866,7 +866,7 @@ window.closeMemberProfileCard = function() {
   if (modal) modal.style.display = "none";
 };
 
-// ⭐️ [직업 선택 동기화] 직업 선택 시 상단 내 프로필 카드 및 목록 즉각 갱신
+// ⭐️ [직업 선택 동기화] 직업 선택 시 상단 내 프로필 카드 및 설정창 즉각 갱신
 window.selectClassProfile = async function(icon, className) {
   let myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   let myCurrentClass = `${icon} ${className}`;
@@ -882,7 +882,11 @@ window.selectClassProfile = async function(icon, className) {
 
   const tabAvatar = document.getElementById("mainTabMyAvatar");
   const tabClass = document.getElementById("mainTabMyClass");
-  if (tabAvatar) tabAvatar.innerText = icon;
+  if (tabAvatar) {
+    const sObj = getClassAvatarStyle(myCurrentClass);
+    tabAvatar.className = `room-avatar-large my-avatar-box ${sObj.cls}`;
+    tabAvatar.innerText = icon;
+  }
   if (tabClass) tabClass.innerText = myCurrentClass;
 
   if (myCurrentNick && typeof apiRequest === "function") {
@@ -904,9 +908,14 @@ window.selectClassProfile = async function(icon, className) {
   if (typeof showKakaoToast === "function") {
     showKakaoToast(`직업이 [${className}] (으)로 변경되었습니다.`, icon);
   }
-  // 직업 변경 후 친구 탭 즉각 다시 그리기
+
+  // 친구 목록 다시 그리기
   if (typeof loadMainTabFriendsList === "function") {
     loadMainTabFriendsList();
+  }
+  // 설정창이 열려있다면 설정창 프로필 카드도 즉시 새로고침
+  if (typeof window.refreshPsProfileCardUI === "function") {
+    window.refreshPsProfileCardUI();
   }
 };
 
