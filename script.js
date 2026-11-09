@@ -15,6 +15,7 @@ var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
 var activeRealtimeChatChannel = null;
 
+// 창 활성화 상태 정밀 추적 변수
 var isWindowCurrentlyFocused = true;
 
 window.addEventListener("focus", function() {
@@ -231,10 +232,10 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
-  // ⭐️ 1. URL 파라미터에서 방 ID 및 길드 ID 최우선 복원
+  // ⭐️ [핵심 보정] URL 파라미터에서 방 ID 및 길드 ID 엄격 정규화
   const urlParams = new URLSearchParams(window.location.search);
   const isPopupMode = urlParams.has('open_room_id');
-  const rawRoomParam = urlParams.get('open_room_id') || "";
+  const rawRoomParam = (urlParams.get('open_room_id') || "").trim();
   const popupRoomTitle = urlParams.get('open_room_title');
   const popupRoomType = urlParams.get('open_room_type');
   const urlGid = urlParams.get('current_guild_id');
@@ -248,13 +249,17 @@ async function initApp() {
     finalRoomId = rawRoomParam.split('&current_guild_id=')[0];
   }
 
-  if (isPopupMode && finalRoomId) {
-    window.currentActiveRoomId = (finalRoomId === "public" || finalRoomId === "default_public") ? "default_public" : finalRoomId;
-    window.currentActiveRoomType = popupRoomType || (window.currentActiveRoomId.includes("-") ? "direct" : "public");
+  // 기본 전체 대화방 키워드이거나 비어있을 때는 무조건 default_public으로 고정
+  if (!finalRoomId || finalRoomId === "public" || finalRoomId === "default_public" || finalRoomId === "undefined" || finalRoomId === "null") {
+    finalRoomId = "default_public";
+  }
+
+  if (isPopupMode) {
+    window.currentActiveRoomId = finalRoomId;
+    window.currentActiveRoomType = popupRoomType || (finalRoomId.includes("-") && finalRoomId.length > 20 ? "direct" : "public");
     window.currentActiveRoomTitle = popupRoomTitle || "대화방";
   }
 
-  // ⭐️ 2. 내 로그인 정보 확실히 복구
   myCurrentNick = localStorage.getItem("guild_my_nickname") || "";
   myCurrentPin = localStorage.getItem("guild_my_pin") || "";
   myCurrentClass = localStorage.getItem("guild_my_class") || "직업 설정하기";
@@ -314,7 +319,7 @@ async function initApp() {
 
   updateProfileUI(myCurrentNick);
 
-  // ⭐️ 3. 팝업 모드일 때 대화 내역 즉시 로드 & 입력창 활성화
+  // ⭐️ 팝업 모드일 때 대화 내역 즉시 로드 및 입력창 잠금 해제
   if (isPopupMode) {
     await loadPastChatMessages(window.currentActiveRoomId);
     const unlockChatInput = () => {
@@ -934,8 +939,11 @@ window.listenRealtimeChatMessages = listenRealtimeChatMessages;
 // --------------------------------------------------------
 async function loadPastChatMessages(targetRoomIdParam = null) {
   const isInChatView = (document.getElementById("chatRoomView") && document.getElementById("chatRoomView").style.display === "flex");
-  const rawActiveRoom = targetRoomIdParam || window.currentActiveRoomId || "default_public";
-  const activeRoom = (rawActiveRoom === "public") ? "default_public" : rawActiveRoom;
+  let rawActiveRoom = targetRoomIdParam || window.currentActiveRoomId || "default_public";
+  if (!rawActiveRoom || rawActiveRoom === "public" || rawActiveRoom === "undefined" || rawActiveRoom === "null") {
+    rawActiveRoom = "default_public";
+  }
+  const activeRoom = rawActiveRoom;
   window.currentActiveRoomId = activeRoom;
 
   const chatContainer = document.getElementById("chatMessagesView");
@@ -1496,23 +1504,24 @@ async function handleSendMessage() {
     return;
   }
 
-  // 방 ID 3중 안전 확보
+  // ⭐️ [보정] 방 ID 엄격 검증 및 정규화
   let activeRoom = window.currentActiveRoomId;
-  if (!activeRoom) {
+  if (!activeRoom || activeRoom === "public" || activeRoom === "undefined" || activeRoom === "null") {
     try {
       const p = new URLSearchParams(window.location.search);
       let r = p.get('open_room_id');
       if (r && r.includes('&current_guild_id=')) r = r.split('&current_guild_id=')[0];
       activeRoom = r;
-      if (activeRoom) window.currentActiveRoomId = activeRoom;
     } catch(e) {}
   }
-  if (!activeRoom || activeRoom === "public") {
+  if (!activeRoom || activeRoom === "public" || activeRoom === "undefined" || activeRoom === "null") {
     activeRoom = "default_public";
-    window.currentActiveRoomId = activeRoom;
   }
+  window.currentActiveRoomId = activeRoom;
 
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
+
+  console.log(`[메시지 전송 시도] room: ${activeRoom}, gid: ${currentGid}, sender: ${myCurrentNick}`);
 
   inputElem.value = "";
   handleInputState(inputElem);
@@ -1529,7 +1538,7 @@ async function handleSendMessage() {
     created_at: new Date().toISOString()
   };
 
-  // 1. 화면에 먼저 표시 (렌더링 에러가 나도 통신이 끊기지 않도록 방어)
+  // 1. 화면에 먼저 표시
   try {
     pendingOptimisticMessages.push(optimisticMsg);
     const isConsecutive = (myCurrentNick === lastRenderedSender);
@@ -1556,6 +1565,9 @@ async function handleSendMessage() {
       const realId = insertRes[0].id;
       const rowElem = document.getElementById("msg_" + tempId);
       if (rowElem) rowElem.id = "msg_" + realId;
+      console.log(`[메시지 DB 저장 성공] ID: ${realId}`);
+    } else {
+      console.warn("[메시지 DB 응답 확인]", insertRes);
     }
   } catch (err) {
     console.error("Chat send DB error:", err);
