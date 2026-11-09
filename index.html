@@ -17,7 +17,6 @@
   <script src="supabase.js"></script>
   <script>
     (function(){
-      // ⭐️ 0.1초 로그인 창 깜빡임 원천 차단: 팝업창 모드일 경우 즉시 클래스 부여
       try {
         var params = new URLSearchParams(window.location.search);
         if (params.has('open_room_id')) {
@@ -51,7 +50,6 @@
     *,*:before,*:after{box-sizing:border-box}
     .app-main-layout{flex:1;min-height:0;width:100%;display:flex;flex-direction:column;position:relative;overflow-x:hidden!important}
     
-    /* ⭐️ 팝업창 모드일 때 로그인 화면/대기방 깜빡임 0.001초 컷 숨김 */
     html.is-popup-chat-mode #welcomeGatewayView,
     html.is-popup-chat-mode #kakaoMainTabsView {
       display: none !important;
@@ -84,7 +82,6 @@
     .btn-hero-text-link{background:transparent;border:none;color:#64748b;font-size:0.78rem;font-weight:700;padding:10px 0 2px 0;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:color .15s ease,transform .15s ease;text-decoration:none}
     .btn-hero-text-link:hover{color:#0284c7;transform:translateY(-1px)}
     
-    /* 상단 타이틀바 및 테마 일체화 */
     .view-custom-titlebar{width:100%;height:26px!important;min-height:26px!important;display:flex;align-items:center;justify-content:flex-end;-webkit-app-region:drag;user-select:none;flex-shrink:0;padding-right:4px;box-sizing:border-box;z-index:1000}
     #welcomeGatewayView .view-custom-titlebar{background-color:transparent!important}
     #kakaoMainTabsView .view-custom-titlebar{background-color:var(--main-header-bg,#ffffff)!important;border-bottom:none!important}
@@ -99,7 +96,6 @@
     #kakaoMainTabsView .main-tabs-header{background-color:var(--main-header-bg,#ffffff)!important;border-bottom:1px solid var(--main-header-border,#e2e8f0)!important;padding:0 14px 8px 14px!important;color:var(--main-header-text,#111827)!important}
     #tabChatRoomsContent,#tabFriendsContent,#tabMoreContent{background-color:var(--main-view-bg,#f5f7fa)!important;overflow-x:hidden!important}
     
-    /* 대화방 가로 스크롤 완벽 차단 & 유연한 반응형 레이아웃 */
     #chatRoomView{background-color:var(--kakao-bg,#bacee0)!important;overflow-x:hidden!important;width:100%!important;max-width:100%!important}
     #chatRoomView .kakao-chat-header{background-color:var(--kakao-bg,#bacee0)!important;padding:0 10px 10px 10px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;-webkit-app-region:no-drag;user-select:none;flex-shrink:0;width:100%!important;overflow:hidden!important}
     .room-header-two-tier{display:flex;flex-direction:column;justify-content:center;min-width:0!important;flex:1 1 auto;overflow:hidden;line-height:1.25}
@@ -110,8 +106,21 @@
     .kakao-notice-banner{width:100%!important;max-width:100%!important;overflow:hidden!important;box-sizing:border-box}
     .chat-messages-container{width:100%!important;max-width:100%!important;overflow-x:hidden!important;overflow-y:auto;box-sizing:border-box}
     .chat-item-row{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important}
+
+    /* ⭐️ 말풍선 개별 스크롤바 원천 차단 */
+    .chat-bubble {
+      overflow: visible !important;
+      overflow-y: visible !important;
+      overflow-x: hidden !important;
+      max-height: none !important;
+      scrollbar-width: none !important;
+    }
+    .chat-bubble::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
     
-    /* ⭐️ 채팅 입력 영역: 드래그 차단 해제 및 타이핑 100% 보장 */
     .kakao-input-area{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important;-webkit-app-region:no-drag!important;pointer-events:auto!important;z-index:50!important}
     .input-textarea-custom{width:100%!important;max-width:100%!important;box-sizing:border-box;-webkit-app-region:no-drag!important;pointer-events:auto!important;user-select:text!important;cursor:text!important}
 
@@ -146,7 +155,6 @@
 
   <div id="commonDrawerBackdrop" class="drawer-backdrop" onclick="closeAllDrawers()"></div>
 
-  <!-- 1. 햄버거 메뉴 서랍 -->
   <aside id="menuSidebarDrawer" class="app-sidebar-drawer">
     <div class="sidebar-header">
       <div class="sidebar-brand">
@@ -178,14 +186,12 @@
     </div>
   </aside>
 
-  <!-- 2. 길드원 서랍 -->
   <aside id="membersSidebarDrawer" class="app-members-drawer">
     <div id="drawerMembersContainer" class="h-100 d-flex flex-column">
       <div class="text-secondary small text-center py-5">길드원을 불러오는 중...</div>
     </div>
   </aside>
 
-  <!-- 3. 보스타임 서랍 -->
   <aside id="bossTimerSidebarDrawer" class="app-boss-drawer">
     <div class="boss-drawer-header-bar">
       <div class="boss-drawer-title-box"><i class="fa-regular fa-clock"></i><span>보스타임 현황</span></div>
@@ -199,7 +205,6 @@
     </div>
   </aside>
 
-  <!-- [VIEW 0] 웰컴 화면 -->
   <div id="welcomeGatewayView" class="app-main-layout" style="display:flex;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
@@ -254,7 +259,6 @@
     </div>
   </div>
 
-  <!-- [VIEW 1] 메인 대기방 -->
   <div id="kakaoMainTabsView" class="app-main-layout" style="display:none;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
@@ -272,7 +276,6 @@
       <div class="header-right-tools"></div>
     </header>
 
-    <!-- [탭 1] 친구 -->
     <div id="tabFriendsContent" class="kakao-tab-body" style="display:none;flex:1;overflow-y:auto;">
       <div class="chat-room-card my-profile-card" onclick="openProfileEditModal()">
         <div class="room-avatar-large" id="mainTabMyAvatar">👤</div>
@@ -293,7 +296,6 @@
       </div>
     </div>
 
-    <!-- [탭 2] 대화방 목록 -->
     <div id="tabChatRoomsContent" class="kakao-tab-body" style="display:block;flex:1;overflow-y:auto;">
       <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
         <span class="text-secondary small fw-bold" style="font-size:0.72rem;">대화방 (<span id="mainTabRoomCount">0</span>)</span>
@@ -306,7 +308,6 @@
       </div>
     </div>
 
-    <!-- [탭 3] 더보기 -->
     <div id="tabMoreContent" class="kakao-tab-body" style="display:none;flex:1;overflow-y:auto;">
       <div class="more-menu-grid">
         <div class="more-menu-item" onclick="openModulePage('PageNotice')">
@@ -344,7 +345,6 @@
       </div>
     </div>
 
-    <!-- 하단 3탭 바 -->
     <nav class="kakao-bottom-tabbar">
       <div class="kakao-tab-item" id="tabItemFriends" onclick="switchMainBottomTab('friends')">
         <i class="fa-solid fa-user"></i><span>친구</span>
@@ -358,7 +358,6 @@
     </nav>
   </div>
 
-  <!-- [VIEW 2] 대화방 화면 -->
   <div id="chatRoomView" class="app-main-layout" style="display:none;">
     <div class="view-custom-titlebar">
       <div class="custom-window-controls">
@@ -403,7 +402,6 @@
     </div>
     <div id="mentionPopupBox" class="mention-popup-container"></div>
     
-    <!-- ⭐️ [핵심] 입력창 포커스 및 마우스 클릭 100% 보장 인라인 스타일 추가 -->
     <footer class="kakao-input-area" style="-webkit-app-region: no-drag !important; pointer-events: auto !important; position: relative; z-index: 9999;">
       <textarea id="inputChatMessage" class="input-textarea-custom" placeholder="메시지를 입력하세요... (@멘션 지원)" oninput="handleInputState(this)" onkeydown="checkEnterKey(event)" style="-webkit-app-region: no-drag !important; pointer-events: auto !important; user-select: text !important; cursor: text !important;"></textarea>
       <div class="input-bottom-tools" style="justify-content:flex-end;">
@@ -426,7 +424,6 @@
     <span id="kakaoToastIcon">💬</span><span id="kakaoToastMsg">알림</span>
   </div>
 
-  <!-- 팝업 모달 목록 -->
   <div id="guildLoginModal" class="kakao-modal-backdrop" style="display:none;z-index:100000;">
     <div class="kakao-modal-card" style="max-width:320px;">
       <img src="assets/raidon_shield.png" alt="RaidOn" style="width:60px;height:auto;margin-bottom:8px;background:transparent!important;" onerror="this.onerror=null;this.src='./assets/raidon_shield.png';">
