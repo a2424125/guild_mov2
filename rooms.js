@@ -643,16 +643,16 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
 };
 
 // --------------------------------------------------------
-// 6. [카카오톡 스타일 새 창 분리 팝업 핸들러 - 길드 ID 완벽 동봉]
+// 6. [카카오톡 스타일 새 창 분리 팝업 핸들러]
 // --------------------------------------------------------
 window.handleChatRoomCardClick = function(roomId, roomTitle, roomType) {
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
   window.markRoomAsReadNow(roomId);
 
-  // 데스크톱 앱(Electron) 환경인 경우: 길드 ID를 파라미터에 명확히 실어서 새 창 열기
+  // 데스크톱 앱(Electron) 환경인 경우: 파라미터 표준 규격 전달
   if (window.electronAPI && typeof window.electronAPI.openChatWindow === 'function') {
-    const fullRoomId = (!roomId || roomId === 'public' || roomId === 'default_public') ? 'default_public' : roomId;
-    window.electronAPI.openChatWindow(`${fullRoomId}&current_guild_id=${encodeURIComponent(currentGid)}`, roomTitle, roomType);
+    const targetRoom = (!roomId || roomId === 'public' || roomId === 'default_public') ? 'default_public' : roomId;
+    window.electronAPI.openChatWindow(targetRoom, roomTitle, roomType);
     return;
   }
 
@@ -669,12 +669,7 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   const gGame = curGuild?.game_name || "";
   const dynamicGuildHeader = gGame ? `[${gGame}] ${gName}` : gName;
 
-  let cleanRoomId = roomId;
-  if (cleanRoomId && cleanRoomId.includes('&current_guild_id=')) {
-    cleanRoomId = cleanRoomId.split('&current_guild_id=')[0];
-  }
-
-  const targetRoomId = (!cleanRoomId || cleanRoomId === "public" || cleanRoomId === "default_public") ? "default_public" : cleanRoomId;
+  const targetRoomId = (!roomId || roomId === "public" || roomId === "default_public") ? "default_public" : roomId;
   const isMainGuildPublic = (targetRoomId === "default_public" || roomType === "public");
 
   window.currentActiveRoomId = targetRoomId;
@@ -1076,7 +1071,7 @@ window.initRoomsRealtime = function() {
 function checkStandaloneChatPopupMode() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    const rawPopupRoomId = urlParams.get('open_room_id');
+    const popupRoomId = urlParams.get('open_room_id');
     const popupRoomTitle = urlParams.get('open_room_title');
     const popupRoomType = urlParams.get('open_room_type');
     const urlGid = urlParams.get('current_guild_id');
@@ -1085,11 +1080,8 @@ function checkStandaloneChatPopupMode() {
       localStorage.setItem("current_guild_id", urlGid);
     }
 
-    if (rawPopupRoomId) {
-      let cleanRoomId = rawPopupRoomId;
-      if (rawPopupRoomId.includes('&current_guild_id=')) {
-        cleanRoomId = rawPopupRoomId.split('&current_guild_id=')[0];
-      }
+    if (popupRoomId) {
+      const cleanRoomId = (popupRoomId === "public" || popupRoomId === "default_public") ? "default_public" : popupRoomId;
 
       const welcome = document.getElementById("welcomeGatewayView");
       const mainTabs = document.getElementById("kakaoMainTabsView");
