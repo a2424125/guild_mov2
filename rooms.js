@@ -382,6 +382,7 @@ window.loadMainTabRoomsList = async function() {
       }
     });
 
+    // 기본 전체 대화방은 무조건 default_public 식별자로 등록
     if (!hasPublicRoomInDb) {
       roomMap.set("default_public", {
         id: "default_public",
@@ -470,8 +471,9 @@ window.loadMainTabRoomsList = async function() {
       }
 
       const safeRoomName = displayTitle.replace(/'/g, "\\'");
+      const realRoomId = isMainPublic ? "default_public" : r.id;
 
-      let msgs = roomMsgMap.get(r.id) || [];
+      let msgs = roomMsgMap.get(realRoomId) || [];
       if (msgs.length === 0 && isMainPublic) {
         msgs = roomMsgMap.get("default_public") || roomMsgMap.get("public") || [];
       }
@@ -495,18 +497,18 @@ window.loadMainTabRoomsList = async function() {
         lastTimeStr = (typeof formatTime24Hour === "function") ? formatTime24Hour(r.created_at || new Date()) : "";
       }
 
-      const unreadCount = window.calculateRoomUnreadCount(msgs, r.id, myNick);
+      const unreadCount = window.calculateRoomUnreadCount(msgs, realRoomId, myNick);
 
       const unreadBadgeHtml = (unreadCount > 0)
-        ? `<span class="kakao-room-unread-badge" id="room_badge_${r.id}" data-count="${unreadCount}">${unreadCount > 99 ? '99+' : unreadCount}</span>`
-        : `<span class="kakao-room-unread-badge d-none" id="room_badge_${r.id}" data-count="0" style="display: none !important;"></span>`;
+        ? `<span class="kakao-room-unread-badge" id="room_badge_${realRoomId}" data-count="${unreadCount}">${unreadCount > 99 ? '99+' : unreadCount}</span>`
+        : `<span class="kakao-room-unread-badge d-none" id="room_badge_${realRoomId}" data-count="0" style="display: none !important;"></span>`;
 
       const cardLeaveBtn = !isMainPublic
-        ? `<button type="button" class="btn btn-sm text-secondary p-0 ms-1" title="방 나가기" style="font-size: 0.75rem; border: none; background: transparent; line-height: 1;" onclick="event.stopPropagation(); handleLeaveChatRoom('${r.id}', '${safeRoomName}')">✕</button>`
+        ? `<button type="button" class="btn btn-sm text-secondary p-0 ms-1" title="방 나가기" style="font-size: 0.75rem; border: none; background: transparent; line-height: 1;" onclick="event.stopPropagation(); handleLeaveChatRoom('${realRoomId}', '${safeRoomName}')">✕</button>`
         : '';
 
       return `
-        <div class="chat-room-card" onclick="handleChatRoomCardClick('${r.id}', '${safeRoomName}', '${r.room_type}')">
+        <div class="chat-room-card" onclick="handleChatRoomCardClick('${realRoomId}', '${safeRoomName}', '${r.room_type}')">
           <div class="room-avatar-large ${typeClass}" style="background:#181d24; border:1px solid #28303c; display:flex; align-items:center; justify-content:center;">
             ${iconHtml}
           </div>
@@ -515,11 +517,11 @@ window.loadMainTabRoomsList = async function() {
               <span class="room-name-text">${displayTitle}</span>
               ${typeBadge}
             </div>
-            <p class="room-msg-preview" id="room_preview_${r.id}">${lastText}</p>
+            <p class="room-msg-preview" id="room_preview_${realRoomId}">${lastText}</p>
           </div>
           <div class="chat-room-meta">
             <div class="d-flex align-items-center gap-1">
-              <span class="chat-room-time" id="room_time_${r.id}">${lastTimeStr}</span>
+              <span class="chat-room-time" id="room_time_${realRoomId}">${lastTimeStr}</span>
               ${cardLeaveBtn}
             </div>
             <div class="chat-room-badge-row">
@@ -643,21 +645,26 @@ window.handleLeaveChatRoom = async function(roomId, roomTitle) {
 };
 
 // --------------------------------------------------------
-// 6. [카카오톡 스타일 새 창 분리 팝업 핸들러]
+// 6. [카카오톡 스타일 새 창 분리 팝업 핸들러 - 명확한 파라미터 결합]
 // --------------------------------------------------------
 window.handleChatRoomCardClick = function(roomId, roomTitle, roomType) {
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
-  window.markRoomAsReadNow(roomId);
+  
+  // 전체 방일 때는 무조건 default_public으로 식별자 정규화
+  const isMainPublic = (!roomId || roomId === 'public' || roomId === 'default_public' || roomType === 'public');
+  const targetRoom = isMainPublic ? 'default_public' : roomId;
+  const targetType = isMainPublic ? 'public' : (roomType || 'direct');
 
-  // 데스크톱 앱(Electron) 환경인 경우: 파라미터 표준 규격 전달
+  window.markRoomAsReadNow(targetRoom);
+
+  // 데스크톱 앱(Electron) 환경인 경우: IPC로 명확히 분리 전송
   if (window.electronAPI && typeof window.electronAPI.openChatWindow === 'function') {
-    const targetRoom = (!roomId || roomId === 'public' || roomId === 'default_public') ? 'default_public' : roomId;
-    window.electronAPI.openChatWindow(targetRoom, roomTitle, roomType);
+    window.electronAPI.openChatWindow(targetRoom, roomTitle, targetType);
     return;
   }
 
   // 모바일 웹 / 브라우저 환경인 경우
-  openChatRoom(roomId, roomTitle, roomType);
+  openChatRoom(targetRoom, roomTitle, targetType);
 };
 
 window.openChatRoom = function(roomId, roomTitle, roomType) {
@@ -669,8 +676,8 @@ window.openChatRoom = function(roomId, roomTitle, roomType) {
   const gGame = curGuild?.game_name || "";
   const dynamicGuildHeader = gGame ? `[${gGame}] ${gName}` : gName;
 
-  const targetRoomId = (!roomId || roomId === "public" || roomId === "default_public") ? "default_public" : roomId;
-  const isMainGuildPublic = (targetRoomId === "default_public" || roomType === "public");
+  const isMainGuildPublic = (!roomId || roomId === "public" || roomId === "default_public" || roomType === "public");
+  const targetRoomId = isMainGuildPublic ? "default_public" : roomId;
 
   window.currentActiveRoomId = targetRoomId;
   window.currentActiveRoomType = roomType || (isMainGuildPublic ? 'public' : 'direct');
@@ -1071,7 +1078,7 @@ window.initRoomsRealtime = function() {
 function checkStandaloneChatPopupMode() {
   try {
     const urlParams = new URLSearchParams(window.location.search);
-    const popupRoomId = urlParams.get('open_room_id');
+    const rawPopupRoomId = urlParams.get('open_room_id');
     const popupRoomTitle = urlParams.get('open_room_title');
     const popupRoomType = urlParams.get('open_room_type');
     const urlGid = urlParams.get('current_guild_id');
@@ -1080,15 +1087,16 @@ function checkStandaloneChatPopupMode() {
       localStorage.setItem("current_guild_id", urlGid);
     }
 
-    if (popupRoomId) {
-      const cleanRoomId = (popupRoomId === "public" || popupRoomId === "default_public") ? "default_public" : popupRoomId;
+    if (rawPopupRoomId) {
+      const isPublic = (!rawPopupRoomId || rawPopupRoomId === "public" || rawPopupRoomId === "default_public" || popupRoomType === "public");
+      const cleanRoomId = isPublic ? "default_public" : rawPopupRoomId;
 
       const welcome = document.getElementById("welcomeGatewayView");
       const mainTabs = document.getElementById("kakaoMainTabsView");
       if (welcome) welcome.style.display = "none";
       if (mainTabs) mainTabs.style.display = "none";
 
-      openChatRoom(cleanRoomId, popupRoomTitle, popupRoomType);
+      openChatRoom(cleanRoomId, popupRoomTitle, isPublic ? "public" : popupRoomType);
     }
   } catch (e) {}
 }
