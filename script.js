@@ -1496,7 +1496,7 @@ async function handleSendMessage() {
     return;
   }
 
-  // ⭐️ 방 ID가 비어있지 않도록 3중 방어
+  // 방 ID 3중 안전 확보
   let activeRoom = window.currentActiveRoomId;
   if (!activeRoom) {
     try {
@@ -1512,7 +1512,6 @@ async function handleSendMessage() {
     window.currentActiveRoomId = activeRoom;
   }
 
-  // ⭐️ 유효한 길드 ID 확보
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
   inputElem.value = "";
@@ -1530,7 +1529,7 @@ async function handleSendMessage() {
     created_at: new Date().toISOString()
   };
 
-  // 1. 화면에 먼저 표시
+  // 1. 화면에 먼저 표시 (렌더링 에러가 나도 통신이 끊기지 않도록 방어)
   try {
     pendingOptimisticMessages.push(optimisticMsg);
     const isConsecutive = (myCurrentNick === lastRenderedSender);
