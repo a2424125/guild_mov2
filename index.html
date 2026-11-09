@@ -104,24 +104,15 @@
     .header-right-tools{display:flex!important;align-items:center!important;gap:4px!important;flex-shrink:0!important}
     
     .kakao-notice-banner{width:100%!important;max-width:100%!important;overflow:hidden!important;box-sizing:border-box}
-    .chat-messages-container{width:100%!important;max-width:100%!important;overflow-x:hidden!important;overflow-y:auto;box-sizing:border-box}
-    .chat-item-row{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important}
+    .chat-messages-container{width:100%!important;max-width:100%!important;overflow-x:hidden!important;overflow-y:auto!important;box-sizing:border-box}
 
-    /* ⭐️ 말풍선 개별 스크롤바 원천 차단 */
-    .chat-bubble {
-      overflow: visible !important;
-      overflow-y: visible !important;
-      overflow-x: hidden !important;
-      max-height: none !important;
-      scrollbar-width: none !important;
-    }
-    .chat-bubble::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
+    /* ⭐️ 행 및 말풍선 스크롤바 원천 차단 */
+    .chat-item-row{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow:visible!important;scrollbar-width:none!important}
+    .chat-item-row::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+    .chat-msg-body, .chat-bubble-flex, .chat-bubble{overflow:visible!important;scrollbar-width:none!important}
+    .chat-msg-body::-webkit-scrollbar, .chat-bubble-flex::-webkit-scrollbar, .chat-bubble::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
     
-    .kakao-input-area{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow-x:hidden!important;-webkit-app-region:no-drag!important;pointer-events:auto!important;z-index:50!important}
+    .kakao-input-area{width:100%!important;max-width:100%!important;box-sizing:border-box;overflow:visible!important;-webkit-app-region:no-drag!important;pointer-events:auto!important;z-index:50!important}
     .input-textarea-custom{width:100%!important;max-width:100%!important;box-sizing:border-box;-webkit-app-region:no-drag!important;pointer-events:auto!important;user-select:text!important;cursor:text!important}
 
     .kakao-bottom-tabbar{height:52px;min-height:52px;background:var(--main-bottom-bg,#181d24);border-top:1px solid var(--main-bottom-border,#282f3a);display:flex;align-items:center;justify-content:space-around;flex-shrink:0;z-index:20}
