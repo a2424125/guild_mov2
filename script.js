@@ -249,14 +249,15 @@ async function initApp() {
     finalRoomId = rawRoomParam.split('&current_guild_id=')[0];
   }
 
-  // 기본 전체 대화방 키워드이거나 비어있을 때는 무조건 default_public으로 고정
-  if (!finalRoomId || finalRoomId === "public" || finalRoomId === "default_public" || finalRoomId === "undefined" || finalRoomId === "null") {
+  // 전체 방 키워드이거나 비어있으면 무조건 default_public으로 고정
+  const isMainGuildPublic = (!finalRoomId || finalRoomId === "public" || finalRoomId === "default_public" || finalRoomId === "undefined" || finalRoomId === "null" || popupRoomType === "public");
+  if (isMainGuildPublic) {
     finalRoomId = "default_public";
   }
 
   if (isPopupMode) {
     window.currentActiveRoomId = finalRoomId;
-    window.currentActiveRoomType = popupRoomType || (finalRoomId.includes("-") && finalRoomId.length > 20 ? "direct" : "public");
+    window.currentActiveRoomType = isMainGuildPublic ? "public" : (popupRoomType || "direct");
     window.currentActiveRoomTitle = popupRoomTitle || "대화방";
   }
 
@@ -319,7 +320,7 @@ async function initApp() {
 
   updateProfileUI(myCurrentNick);
 
-  // ⭐️ 팝업 모드일 때 대화 내역 즉시 로드 및 입력창 잠금 해제
+  // ⭐️ 팝업 모드일 때 대화 내역 즉시 로드 및 입력창 활성화
   if (isPopupMode) {
     await loadPastChatMessages(window.currentActiveRoomId);
     const unlockChatInput = () => {
