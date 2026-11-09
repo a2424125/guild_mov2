@@ -15,7 +15,7 @@ var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
 var activeRealtimeChatChannel = null;
 
-// 창 활성화 상태 추적
+// 창 활성화 상태 정밀 추적 변수
 var isWindowCurrentlyFocused = true;
 
 window.addEventListener("focus", function() {
@@ -104,16 +104,22 @@ window.formatTime24HourWithDate = formatTime24HourWithDate;
 window.formatKSTChatTime = formatKSTChatTime;
 
 // --------------------------------------------------------
-// 1-B. [윈도우 OS 순정 트레이 알림 & 알림음 엔진]
+// 1-B. [윈도우 OS 순정 트레이 알림 & 알림음 엔진 - 정밀 포커스 감지]
 // --------------------------------------------------------
 function isUserActivelyFocusedOnRoom(msgRoomId) {
-  if (!isWindowCurrentlyFocused || document.hidden || document.visibilityState === 'hidden') {
+  // 1. 창 자체가 포커스를 잃었거나 백그라운드인 경우 -> 무조건 미확인(알림 발송 대상)
+  const isDocumentFocused = (typeof document.hasFocus === "function") ? document.hasFocus() : true;
+  if (!isWindowCurrentlyFocused || !isDocumentFocused || document.hidden || document.visibilityState === 'hidden') {
     return false;
   }
+
+  // 2. 대화방 뷰가 열려있지 않은 경우 -> 미확인(알림 발송 대상)
   const chatView = document.getElementById("chatRoomView");
   if (!chatView || chatView.style.display === 'none') {
     return false;
   }
+
+  // 3. 보고 있는 방 ID와 메시지가 온 방 ID가 다른 경우 -> 미확인(알림 발송 대상)
   const activeRoom = window.currentActiveRoomId || "default_public";
   const targetRoom = (!msgRoomId || msgRoomId === "public" || msgRoomId === "default_public") ? "default_public" : msgRoomId;
 
@@ -160,26 +166,42 @@ function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
 
-  // 내가 지금 보고 있는 방이면 알림 생략
+  // 내가 실시간으로 집중해서 보고 있는 방이면 알림 생략
   if (isUserActivelyFocusedOnRoom(msgRoomId)) return;
 
+  const notiTitle = `[${sender}]`;
+  const notiBody = msgText || "새 메시지가 도착했습니다.";
+  const targetRoom = (!msgRoomId || msgRoomId === "public" || msgRoomId === "default_public") ? "default_public" : msgRoomId;
+
+  // ⭐️ [보정] Electron 데스크톱 앱 환경: 객체 구조 및 다중 인자 호환 전송
   if (window.electronAPI && typeof window.electronAPI.showNativeNotification === 'function') {
-    window.electronAPI.showNativeNotification(`[${sender}]`, msgText || "새 메시지가 도착했습니다.", msgRoomId);
+    try {
+      // 1순위: main.js의 ({ title, body, roomId }) 객체 구조로 전송
+      window.electronAPI.showNativeNotification({
+        title: notiTitle,
+        body: notiBody,
+        roomId: targetRoom
+      });
+    } catch(err) {
+      // 2순위: 혹시 모를 기존 3인자 함수형태 대비
+      window.electronAPI.showNativeNotification(notiTitle, notiBody, targetRoom);
+    }
     return;
   }
 
+  // 웹 브라우저 환경
   if (!("Notification" in window)) return;
   if (Notification.permission === "granted") {
     try {
-      const noti = new Notification(`💬 [${sender}]`, {
-        body: msgText || "새 메시지가 도착했습니다.",
+      const noti = new Notification(`💬 ${notiTitle}`, {
+        body: notiBody,
         icon: "/favicon.ico",
         silent: true
       });
       noti.onclick = function() {
         window.focus();
-        if (msgRoomId && typeof window.openChatRoom === 'function') {
-          window.openChatRoom(msgRoomId);
+        if (targetRoom && typeof window.openChatRoom === 'function') {
+          window.openChatRoom(targetRoom);
         }
       };
     } catch (e) {}
@@ -226,7 +248,10 @@ async function initApp() {
   const chatRoom = document.getElementById("chatRoomView");
   if (chatRoom) chatRoom.style.overflowX = "hidden";
   const chatMessages = document.getElementById("chatMessagesView");
-  if (chatMessages) chatMessages.style.overflowX = "hidden";
+  if (chatMessages) {
+    chatMessages.style.overflowX = "hidden";
+    chatMessages.style.overflowY = "auto";
+  }
 
   if (window.supabase && typeof SUPABASE_CONFIG !== 'undefined') {
     supabaseClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey);
@@ -1201,7 +1226,7 @@ async function cleanupOldImagesAndChatsBackground() {
 }
 
 // --------------------------------------------------------
-// 8. ⭐️ [말풍선 렌더링 - 인라인 flex 제거로 스크롤바 원천 차단]
+// 8. ⭐️ [말풍선 렌더링 - 인라인 flex 왜곡 및 스크롤바 원천 차단]
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1246,14 +1271,14 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
 
     if (isMe) {
       html = `
-        <div class="chat-item-row me" id="${msgKey}">
-          <div class="chat-msg-body">
-            <div class="chat-bubble-flex">
-              <div class="chat-meta-box" style="align-items: flex-end !important; text-align: right !important;">
+        <div class="chat-item-row me" id="${msgKey}" style="overflow: visible !important;">
+          <div class="chat-msg-body" style="overflow: visible !important;">
+            <div class="chat-bubble-flex" style="overflow: visible !important;">
+              <div class="chat-meta-box" style="align-items: flex-end !important; text-align: right !important; overflow: visible !important;">
                 ${unreadSpanHtml}
                 <span class="chat-timestamp">${timeStr}</span>
               </div>
-              <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important;">${imgContent}</div>
+              <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important; overflow: visible !important;">${imgContent}</div>
             </div>
           </div>
         </div>
@@ -1263,13 +1288,13 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
       const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
       html = `
-        <div class="chat-item-row other ${consecutiveClass}" id="${msgKey}">
+        <div class="chat-item-row other ${consecutiveClass}" id="${msgKey}" style="overflow: visible !important;">
           <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
-          <div class="chat-msg-body">
+          <div class="chat-msg-body" style="overflow: visible !important;">
             ${nameBlock}
-            <div class="chat-bubble-flex">
-              <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important;">${imgContent}</div>
-              <div class="chat-meta-box">
+            <div class="chat-bubble-flex" style="overflow: visible !important;">
+              <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important; overflow: visible !important;">${imgContent}</div>
+              <div class="chat-meta-box" style="overflow: visible !important;">
                 ${unreadSpanHtml}
                 <span class="chat-timestamp">${timeStr}</span>
               </div>
@@ -1281,13 +1306,13 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   }
   else if (msg.msg_type === "boss_briefing") {
     html = `
-      <div class="chat-item-row other" id="${msgKey}">
+      <div class="chat-item-row other" id="${msgKey}" style="overflow: visible !important;">
         <div class="chat-sender-avatar">⏰</div>
-        <div class="chat-msg-body">
+        <div class="chat-msg-body" style="overflow: visible !important;">
           <div class="chat-sender-name"><span>보스알리미</span></div>
-          <div class="chat-bubble-flex">
-            <div class="boss-briefing-card">${cleanMessageText}</div>
-            <div class="chat-meta-box">
+          <div class="chat-bubble-flex" style="overflow: visible !important;">
+            <div class="boss-briefing-card" style="overflow: visible !important;">${cleanMessageText}</div>
+            <div class="chat-meta-box" style="overflow: visible !important;">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
@@ -1299,14 +1324,14 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   else if (isMe) {
     const consecutiveClass = isConsecutive ? "consecutive" : "";
     html = `
-      <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
-        <div class="chat-msg-body">
-          <div class="chat-bubble-flex">
-            <div class="chat-meta-box" style="align-items: flex-end !important; text-align: right !important;">
+      <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}" style="overflow: visible !important;">
+        <div class="chat-msg-body" style="overflow: visible !important;">
+          <div class="chat-bubble-flex" style="overflow: visible !important;">
+            <div class="chat-meta-box" style="align-items: flex-end !important; text-align: right !important; overflow: visible !important;">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
-            <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
+            <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}" style="overflow: visible !important;">${formatMessageWithMentions(cleanMessageText)}</div>
           </div>
         </div>
       </div>
@@ -1317,13 +1342,13 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     const avatarStyle = isConsecutive ? "visibility: hidden;" : "";
     const nameBlock = isConsecutive ? "" : `<div class="chat-sender-name"><span>${escapeHtmlText(msg.sender_name)}</span></div>`;
     html = `
-      <div class="chat-item-row other ${consecutiveClass}" id="${msgKey}">
+      <div class="chat-item-row other ${consecutiveClass}" id="${msgKey}" style="overflow: visible !important;">
         <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
-        <div class="chat-msg-body">
+        <div class="chat-msg-body" style="overflow: visible !important;">
           ${nameBlock}
-          <div class="chat-bubble-flex">
-            <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
-            <div class="chat-meta-box">
+          <div class="chat-bubble-flex" style="overflow: visible !important;">
+            <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}" style="overflow: visible !important;">${formatMessageWithMentions(cleanMessageText)}</div>
+            <div class="chat-meta-box" style="overflow: visible !important;">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
