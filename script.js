@@ -15,7 +15,7 @@ var pendingOptimisticMessages = [];
 var lastRenderedSender = null;
 var activeRealtimeChatChannel = null;
 
-// 창 활성화 상태 정밀 추적 변수
+// 창 활성화 상태 추적
 var isWindowCurrentlyFocused = true;
 
 window.addEventListener("focus", function() {
@@ -160,6 +160,7 @@ function notifyWebDesktopMessage(sender, msgText, msgRoomId) {
   const isEnabled = localStorage.getItem("guild_chat_alarm_enabled") !== "false";
   if (!isEnabled) return;
 
+  // 내가 지금 보고 있는 방이면 알림 생략
   if (isUserActivelyFocusedOnRoom(msgRoomId)) return;
 
   if (window.electronAPI && typeof window.electronAPI.showNativeNotification === 'function') {
@@ -232,7 +233,6 @@ async function initApp() {
     window.supabaseClient = supabaseClient;
   }
 
-  // ⭐️ [핵심 보정] URL 파라미터에서 방 ID 및 길드 ID 엄격 정규화
   const urlParams = new URLSearchParams(window.location.search);
   const isPopupMode = urlParams.has('open_room_id');
   const rawRoomParam = (urlParams.get('open_room_id') || "").trim();
@@ -249,7 +249,6 @@ async function initApp() {
     finalRoomId = rawRoomParam.split('&current_guild_id=')[0];
   }
 
-  // 전체 방 키워드이거나 비어있으면 무조건 default_public으로 고정
   const isMainGuildPublic = (!finalRoomId || finalRoomId === "public" || finalRoomId === "default_public" || finalRoomId === "undefined" || finalRoomId === "null" || popupRoomType === "public");
   if (isMainGuildPublic) {
     finalRoomId = "default_public";
@@ -320,7 +319,6 @@ async function initApp() {
 
   updateProfileUI(myCurrentNick);
 
-  // ⭐️ 팝업 모드일 때 대화 내역 즉시 로드 및 입력창 활성화
   if (isPopupMode) {
     await loadPastChatMessages(window.currentActiveRoomId);
     const unlockChatInput = () => {
@@ -1203,7 +1201,7 @@ async function cleanupOldImagesAndChatsBackground() {
 }
 
 // --------------------------------------------------------
-// 8. 카카오톡 말풍선 렌더링
+// 8. ⭐️ [말풍선 렌더링 - 인라인 flex 제거로 스크롤바 원천 차단]
 // --------------------------------------------------------
 function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
   const container = document.getElementById("chatMessagesView");
@@ -1250,10 +1248,10 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
       html = `
         <div class="chat-item-row me" id="${msgKey}">
           <div class="chat-msg-body">
-            <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: 4px;">
-              <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-end !important; text-align: right !important;">
+            <div class="chat-bubble-flex">
+              <div class="chat-meta-box" style="align-items: flex-end !important; text-align: right !important;">
                 ${unreadSpanHtml}
-                <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
+                <span class="chat-timestamp">${timeStr}</span>
               </div>
               <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important;">${imgContent}</div>
             </div>
@@ -1269,11 +1267,11 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
           <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
           <div class="chat-msg-body">
             ${nameBlock}
-            <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-start; gap: 4px;">
+            <div class="chat-bubble-flex">
               <div class="chat-bubble p-1" style="background: transparent !important; box-shadow: none !important;">${imgContent}</div>
-              <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-start !important; text-align: left !important;">
+              <div class="chat-meta-box">
                 ${unreadSpanHtml}
-                <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
+                <span class="chat-timestamp">${timeStr}</span>
               </div>
             </div>
           </div>
@@ -1289,7 +1287,7 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
           <div class="chat-sender-name"><span>보스알리미</span></div>
           <div class="chat-bubble-flex">
             <div class="boss-briefing-card">${cleanMessageText}</div>
-            <div class="chat-meta-box" style="align-items:flex-start !important; text-align:left !important;">
+            <div class="chat-meta-box">
               ${unreadSpanHtml}
               <span class="chat-timestamp">${timeStr}</span>
             </div>
@@ -1303,10 +1301,10 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
     html = `
       <div class="chat-item-row me ${consecutiveClass}" id="${msgKey}">
         <div class="chat-msg-body">
-          <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-end; gap: 4px;">
-            <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-end !important; text-align: right !important; margin-bottom: 2px;">
+          <div class="chat-bubble-flex">
+            <div class="chat-meta-box" style="align-items: flex-end !important; text-align: right !important;">
               ${unreadSpanHtml}
-              <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
+              <span class="chat-timestamp">${timeStr}</span>
             </div>
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
           </div>
@@ -1323,11 +1321,11 @@ function renderKakaoChatBubble(msg, doScroll = true, isConsecutive = false) {
         <div class="chat-sender-avatar" style="${avatarStyle}">${senderAvatarIcon}</div>
         <div class="chat-msg-body">
           ${nameBlock}
-          <div class="chat-bubble-flex" style="display: flex; flex-direction: row; align-items: flex-end; justify-content: flex-start; gap: 4px;">
+          <div class="chat-bubble-flex">
             <div class="chat-bubble ${isMentioned ? 'border border-warning' : ''}">${formatMessageWithMentions(cleanMessageText)}</div>
-            <div class="chat-meta-box" style="display: flex; flex-direction: column; align-items: flex-start !important; text-align: left !important; margin-bottom: 2px;">
+            <div class="chat-meta-box">
               ${unreadSpanHtml}
-              <span class="chat-timestamp" style="font-size: 0.65rem; color: #94a3b8; white-space: nowrap;">${timeStr}</span>
+              <span class="chat-timestamp">${timeStr}</span>
             </div>
           </div>
         </div>
@@ -1467,7 +1465,7 @@ function formatMessageWithMentions(text) {
 }
 
 // --------------------------------------------------------
-// 9. ⭐️ [메시지 전송 - DB 저장 및 화면 표출 100% 직결 엔진]
+// 9. [메시지 전송 파이프라인]
 // --------------------------------------------------------
 function handleInputState(textarea) {
   if (!textarea) return;
@@ -1505,7 +1503,6 @@ async function handleSendMessage() {
     return;
   }
 
-  // ⭐️ [보정] 방 ID 엄격 검증 및 정규화
   let activeRoom = window.currentActiveRoomId;
   if (!activeRoom || activeRoom === "public" || activeRoom === "undefined" || activeRoom === "null") {
     try {
@@ -1522,8 +1519,6 @@ async function handleSendMessage() {
 
   const currentGid = (typeof getCurrentGuildId === "function") ? getCurrentGuildId() : (localStorage.getItem("current_guild_id") || "default");
 
-  console.log(`[메시지 전송 시도] room: ${activeRoom}, gid: ${currentGid}, sender: ${myCurrentNick}`);
-
   inputElem.value = "";
   handleInputState(inputElem);
 
@@ -1539,7 +1534,6 @@ async function handleSendMessage() {
     created_at: new Date().toISOString()
   };
 
-  // 1. 화면에 먼저 표시
   try {
     pendingOptimisticMessages.push(optimisticMsg);
     const isConsecutive = (myCurrentNick === lastRenderedSender);
@@ -1550,7 +1544,6 @@ async function handleSendMessage() {
     console.warn("Optimistic bubble render error:", renderErr);
   }
 
-  // 2. DB 테이블 실제 삽입
   try {
     const chatPayload = {
       guild_id: currentGid,
@@ -1566,9 +1559,6 @@ async function handleSendMessage() {
       const realId = insertRes[0].id;
       const rowElem = document.getElementById("msg_" + tempId);
       if (rowElem) rowElem.id = "msg_" + realId;
-      console.log(`[메시지 DB 저장 성공] ID: ${realId}`);
-    } else {
-      console.warn("[메시지 DB 응답 확인]", insertRes);
     }
   } catch (err) {
     console.error("Chat send DB error:", err);
